@@ -1,0 +1,1411 @@
+{
+  "id": "math1-exp-func",
+  "course": "수학Ⅰ",
+  "unit": "지수함수와 로그함수",
+  "title": "지수함수",
+  "prereq": [
+    "math1-exponent",
+    "h1-transform"
+  ],
+  "suneung": [
+    "공통 10",
+    "공통 22"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$y=a^x$ ($a>0$, $a\\ne1$) 는 점 $(0,\\,1)$ 을 지나고 점근선은 $y=0$",
+    "$a>1$ 이면 증가, $0<a<1$ 이면 감소",
+    "$y=a^{x-m}+n$ 의 점근선 $y=n$",
+    "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "y0": {
+        "value": "1",
+        "check": "Rational(1, 3)**0"
+      },
+      "shx": {
+        "value": "1",
+        "check": "solve(Eq(x - 1, 0), x)[0]"
+      },
+      "shy": {
+        "value": "2",
+        "check": "(Integer(2)**(x - 1) + 1).subs(x, solve(Eq(x - 1, 0), x)[0])"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "수학Ⅰ · 지수함수",
+        "title": "밑을 바꾸면\n그래프는 어떻게 될까요?",
+        "lead": "$y=2^x$, $y=\\left(\\frac12\\right)^x$ 처럼 지수에 $x$ 가 있는 함수를 그려 봐요. 밑을 직접 돌려 보며 모양을 찾아요.",
+        "meta": [
+          "그래프",
+          "점근선·평행이동",
+          "지수방정식·부등식"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "밑이 무엇이든\n꼭 지나는 점이 있을까요?",
+        "lead": "$y=2^x$, $y=5^x$, $y=\\left(\\frac13\\right)^x$ 의 그래프가 모두 지나는 점이 하나 있어요. 그 점의 $y$ 좌표를 골라요.",
+        "choices": [
+          {
+            "value": "0",
+            "check": "2*0",
+            "feedback": "그래프는 $x$ 축에 닿지 않아요. $a^x$ 는 언제나 양수예요."
+          },
+          {
+            "value": "1",
+            "check": "Rational(1, 3)**0"
+          },
+          {
+            "value": "2",
+            "check": "Integer(2)**1",
+            "feedback": "$y=2^x$ 만 $x=1$ 에서 2 가 돼요. 밑이 바뀌면 달라져요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "Rational(1, 3)**0",
+        "reveal": "**맞아요.** $x=0$ 이면 밑과 상관없이 $a^0=1$ 이에요.",
+        "thoughts": [
+          "$2^0=5^0=\\left(\\frac13\\right)^0=1$ 이에요.",
+          "그래서 $y=a^x$ 의 그래프는 늘 점 $(0,\\,{{y0}})$ 을 지나요."
+        ],
+        "conclude": "다음 장면에서 밑을 직접 돌려 ==모든 그래프가 한 점에 묶인 것==을 확인해요."
+      },
+      {
+        "kind": "explore",
+        "id": "slider",
+        "chip": "손으로 해 보기",
+        "title": "밑을 돌려\n그래프를 바꿔 보세요",
+        "lead": "슬라이더로 밑 $a$ 를 바꿔요. $a$ 가 1 을 지날 때 그래프가 어떻게 바뀌는지, 점 P 와 Q 가 어디에 있는지 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "sliders": [
+              {
+                "id": "a",
+                "min": "1/4",
+                "max": 4,
+                "step": "1/4",
+                "value": 2,
+                "label": "밑 $a$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "one",
+                "curve": "1",
+                "label": "$y=1$",
+                "tone": "soft"
+              },
+              {
+                "id": "f",
+                "curve": "a**x",
+                "label": "$y=a^x$"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "f",
+                  "x": 0
+                },
+                "name": "P"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "f",
+                  "x": 1
+                },
+                "name": "Q"
+              },
+              {
+                "readout": "value(a)",
+                "label": "밑 $a$",
+                "digits": 2
+              },
+              {
+                "readout": "y(P)",
+                "label": "P 의 높이 ($x=0$)",
+                "digits": 2
+              },
+              {
+                "readout": "y(Q)",
+                "label": "Q 의 높이 ($x=1$)",
+                "digits": 2
+              }
+            ],
+            "intro": "$a$ 를 1 보다 크게, 또 1 보다 작게 바꿔 보세요.",
+            "done": "$a>1$ 이면 오른쪽으로 갈수록 올라가고, $0<a<1$ 이면 내려가요. $a=1$ 에서는 가로선이 돼요. P 는 언제나 $(0,\\,{{y0}})$ 이에요."
+          }
+        },
+        "after": "Q 의 높이는 늘 밑 $a$ 와 같아요. 또 어떤 $a$ 든 곡선은 $x$ 축 위에만 있어요. 왼쪽이나 오른쪽 끝에서 $x$ 축에 ==한없이 가까워지기만== 해요."
+      },
+      {
+        "kind": "explore",
+        "id": "shift",
+        "chip": "점 찍기",
+        "title": "그래프를 옮기면\n점 A 는 어디로 갈까요?",
+        "lead": "흐린 곡선이 $y=2^x$ 이고 A 는 점 $(0,\\,1)$ 이에요. $y=2^{x-1}+1$ 은 이 곡선을 오른쪽으로 1, 위로 1 옮긴 거예요. A 가 옮겨 간 자리를 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -2,
+              "max": 4,
+              "step": 1
+            },
+            "y": {
+              "min": -1,
+              "max": 8,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "b",
+                "curve": "2**x",
+                "label": "$y=2^x$",
+                "tone": "soft"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "x": 0,
+                  "y": 1
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "1",
+                  "check": "solve(Eq(x - 1, 0), x)[0]"
+                },
+                "y": {
+                  "value": "2",
+                  "check": "(Integer(2)**(x - 1) + 1).subs(x, solve(Eq(x - 1, 0), x)[0])"
+                }
+              }
+            },
+            "intro": "빈 칸을 눌러 점을 찍어요. 잘못 찍었으면 눌러서 지워요.",
+            "done": "A 가 $({{shx}},\\,{{shy}})$ 로 옮겨 갔어요. 지수 $x-1$ 이 0 이 되는 곳에서 $2^0+1$ 이에요."
+          }
+        }
+      },
+      {
+        "kind": "explore",
+        "id": "sketch",
+        "chip": "곡선 긋기",
+        "title": "옮긴 곡선을\n손으로 그어 보세요",
+        "lead": "방금 찍은 점을 지나고, 왼쪽으로 갈수록 가로선 $y=1$ 에 가까워지는 곡선 $y=2^{x-1}+1$ 이에요. '그리기 시작'을 누르고 흐린 안내선을 따라 한 번에 그어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "sketch",
+            "x": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "as",
+                "curve": "1",
+                "label": "점근선 $y=1$",
+                "tone": "accent"
+              },
+              {
+                "id": "g",
+                "curve": "2**(x-1)+1",
+                "label": "$y=2^{x-1}+1$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "sketch": {
+                "curve": "g",
+                "tol": "1/2"
+              }
+            },
+            "intro": "곡선을 왼쪽에서 오른쪽으로 그어요.",
+            "done": "왼쪽은 $y=1$ 에 붙을 듯 말 듯, 오른쪽은 빠르게 올라가요. 위로 1 옮겼더니 점근선도 $y=1$ 로 올라갔어요."
+          }
+        }
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "그래프에서 본 것에\n이름을 붙여요",
+        "terms": [
+          {
+            "term": "지수함수",
+            "body": "$a>0$, $a\\ne1$ 일 때 $y=a^x$ 를 지수함수라 해요. 정의역은 실수 전체, 치역은 양수 전체예요."
+          },
+          {
+            "term": "증가·감소",
+            "body": "$a>1$ 이면 $x$ 가 커질 때 $y$ 도 커지고(증가), $0<a<1$ 이면 작아져요(감소). 그래서 밑이 1 보다 작으면 지수와 값의 크기 순서가 거꾸로예요."
+          },
+          {
+            "term": "점근선",
+            "body": "그래프가 한없이 가까워지지만 만나지 않는 직선이에요. $y=a^x$ 는 $x$ 축, 곧 $y=0$ 이 점근선이에요."
+          },
+          {
+            "term": "평행이동",
+            "body": "$y=a^{x-m}+n$ 은 $y=a^x$ 를 오른쪽으로 $m$, 위로 $n$ 옮긴 그래프예요. 점 $(0,\\,1)$ 은 $(m,\\,1+n)$ 으로, 점근선은 $y=n$ 으로 가요."
+          }
+        ],
+        "aside": "**확인** · $y=2^{x-1}+1$ 은 $m=1$, $n=1$ 이라 점 $({{shx}},\\,{{shy}})$ 를 지나고 점근선은 $y=1$ 이에요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 지수방정식을 풀었어요. 틀린 부분을 눌러 보세요.",
+            "mode": "equivalent",
+            "from": "2**(x+1)=8",
+            "tokens": [
+              {
+                "sym": "x+1"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "4",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "3",
+              "body": "8 을 2 로 나누면 안 돼요. $8=2^3$ 으로 **밑을 맞춘 뒤** 지수끼리 같다고 놓아요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 같은 항 두 개를 더했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "2**x+2**x"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "4**x",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "2**(x+1)",
+              "body": "$2^x$ 두 개는 $2\\times2^x=2^{x+1}$ 이에요. 밑끼리 더하지 않아요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "subst",
+            "q": "방정식 $4^x-3\\cdot2^{x+1}+8=0$ 의 모든 실근의 합을 구하세요.",
+            "hint": "$2^x=t$ 로 놓으면 이차방정식이 돼요.",
+            "concepts": [
+              "$a^x=t$ ($t>0$) 로 놓으면 $a^{2x}=t^2$ 이에요.",
+              "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$ ($a>0$, $a\\ne1$)"
+            ],
+            "steps": [
+              {
+                "title": "치환하기",
+                "body": "$2^x=t$ ($t>0$) 로 놓으면 $4^x=t^2$, $3\\cdot2^{x+1}=6t$ 예요."
+              },
+              {
+                "title": "이차방정식",
+                "body": "$$t^2-6t+8=0$$"
+              },
+              {
+                "title": "인수분해",
+                "body": "$(t-2)(t-4)=0$ 이라 $t=2$ 또는 $t=4$ 예요."
+              },
+              {
+                "title": "$x$ 로 되돌리기",
+                "body": "$2^x=2$ 에서 $x=1$, $2^x=4$ 에서 $x=2$ 예요."
+              },
+              {
+                "title": "합",
+                "body": "$$1+2={{answer}}$$"
+              }
+            ],
+            "tip": "$2^{x+1}=2\\cdot2^x$ 를 놓치지 않는 것이 핵심이에요. 함정 2 와 같은 자리예요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "ans = sum(solveset(Eq(Integer(4)**x - 3*Integer(2)**(x + 1) + 8, 0), x, S.Reals))"
+          },
+          {
+            "id": "ineq",
+            "q": "부등식 $\\left(\\dfrac13\\right)^{x-2}>9$ 를 만족시키는 정수 $x$ 중 가장 큰 값을 구하세요.",
+            "hint": "$9$ 를 $\\frac13$ 의 거듭제곱으로 바꾸고 밑의 크기를 봐요.",
+            "concepts": [
+              "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+            ],
+            "steps": [
+              {
+                "title": "밑 맞추기",
+                "body": "$9=\\left(\\frac13\\right)^{-2}$ 이에요."
+              },
+              {
+                "title": "부등호 뒤집기",
+                "body": "밑 $\\frac13$ 이 1 보다 작아서 지수끼리는 방향이 바뀌어요.\n$$x-2<-2$$"
+              },
+              {
+                "title": "범위",
+                "body": "$$x<0$$"
+              },
+              {
+                "title": "가장 큰 정수",
+                "body": "$0$ 보다 작은 정수 중 가장 큰 것은 {{answer}} 이에요."
+              }
+            ],
+            "tip": "부등호를 뒤집지 않으면 $x>0$ 이 되어 가장 큰 값이 없어져요. 답이 이상하면 밑부터 다시 봐요.",
+            "answer": "-1",
+            "answerType": "int",
+            "check": "ans = Max(*[i for i in range(-20, 20) if Rational(1, 3)**(i - 2) > 9])"
+          },
+          {
+            "id": "asym",
+            "q": "함수 $y=2^{x-1}+k$ 의 그래프가 점 $(3,\\,7)$ 을 지나요. 이 그래프의 점근선이 직선 $y=p$ 일 때, $p$ 의 값을 구하세요.",
+            "hint": "점의 좌표를 넣어 $k$ 를 먼저 구해요.",
+            "concepts": [
+              "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 평행이동한 그래프이고, 점근선은 $y=n$ 이에요."
+            ],
+            "steps": [
+              {
+                "title": "점을 넣기",
+                "body": "$$7=2^{3-1}+k=4+k$$"
+              },
+              {
+                "title": "$k$ 구하기",
+                "body": "$k=3$ 이에요."
+              },
+              {
+                "title": "점근선",
+                "body": "위로 $3$ 옮긴 그래프라 점근선은 $y=3$, 곧 $p={{answer}}$ 이에요."
+              }
+            ],
+            "tip": "좌우로 옮긴 1 은 점근선과 상관없어요. 점근선은 위아래로 옮긴 만큼만 움직여요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "solve(Eq(Integer(2)**(3 - 1) + k, 7), k)[0]"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$y=a^x$ 는 밑과 상관없이 점 $(0,\\,1)$ 을 지나고, $x$ 축이 점근선이에요.",
+          "$a>1$ 이면 증가, $0<a<1$ 이면 감소. 부등식에서 밑이 1 보다 작으면 부등호를 뒤집어요.",
+          "$y=a^{x-m}+n$ 은 오른쪽으로 $m$, 위로 $n$ 이동이고 점근선은 $y=n$ 이에요.",
+          "수능에서는 10번처럼 평행이동한 지수함수 그래프의 점·점근선·넓이를 묻거나, 22번처럼 그래프의 증가·감소와 교점을 따지는 어려운 문제로 나와요."
+        ],
+        "done": "지수함수 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "ef-eq-same-base",
+    "ef-ineq-count",
+    "ef-asymptote",
+    "ef-max-min"
+  ],
+  "problems": [
+    {
+      "q": "방정식 $2^{x-1}=\\frac{1}{8}$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "fraction",
+      "check": "simplify(list(solveset(Eq(Integer(2)**(x + (-1)), Rational(1, 8)), x, S.Reals))[0])",
+      "concepts": [
+        "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$ ($a>0$, $a\\ne1$)",
+        "$(a^m)^n=a^{mn}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $2$ 의 거듭제곱으로",
+          "body": "$$2^{x-1}=2^{-3}$$"
+        },
+        {
+          "title": "지수끼리 같다고 놓기",
+          "body": "$$x-1=-3$$"
+        },
+        {
+          "title": "$x$ 구하기",
+          "body": "$$x=-2$$"
+        }
+      ],
+      "tip": "밑이 같아지면 지수만 비교하면 돼요. 오른쪽 수도 $2$ 의 거듭제곱으로 바꾸는 것이 첫걸음이에요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "ef-eq-same-base",
+      "seed": 1000
+    },
+    {
+      "q": "다음 부등식을 만족시키는 자연수 $x$ 의 개수를 구하세요.\n$$2^{x-1}\\le 2$$",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "len([i for i in range(1, 60) if Integer(2)**(i + (-1)) <= 2])",
+      "concepts": [
+        "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "오른쪽을 $2$ 의 거듭제곱으로",
+          "body": "$$2^{x-1}\\le 2^{1}$$"
+        },
+        {
+          "title": "밑이 1 보다 크면 그대로",
+          "body": "밑이 $1$ 보다 커서($2>1$) 부등호 방향이 그대로예요.\n$$x-1\\le 1$$"
+        },
+        {
+          "title": "범위 구하기",
+          "body": "$$x\\le 2$$"
+        },
+        {
+          "title": "자연수 세기",
+          "body": "$1$ 부터 $2$ 까지 $2$ 개예요."
+        }
+      ],
+      "tip": "밑이 $1$ 보다 큰 지수함수는 증가해요. 그래서 지수의 크기와 값의 크기가 같은 방향이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "ef-ineq-count",
+      "seed": 1001
+    },
+    {
+      "q": "함수 $y=2^{x}+k$ 의 그래프는 $x=1$ 일 때 $y=1$ 이에요. 이 그래프의 점근선이 직선 $y=p$ 일 때, $p$ 의 값을 구하세요. (단, $k$ 는 상수예요.)",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "solve(Eq(Integer(2)**(1 - (0)) + k, 1), k)[0]",
+      "concepts": [
+        "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 옮긴 그래프이고 점근선은 $y=n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "점을 넣기",
+          "body": "두 값을 식에 넣어요.\n$$1=2^{1}+k$$"
+        },
+        {
+          "title": "거듭제곱 계산",
+          "body": "$2^{1}=2$ 이므로 $k=1-2=-1$ 이에요."
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$y=2^{x}$ 의 그래프는 $x$ 축($y=0$)에 한없이 가까워지기만 해요. 그 그래프를 아래로 $1$ 만큼 옮겼으니 점근선은 $y=-1$, 곧 $p=-1$ 이에요."
+        }
+      ],
+      "tip": "좌우로 옮기는 것($x$ 축 방향)은 점근선을 바꾸지 않아요. 점근선은 위아래로 옮긴 만큼만 움직여요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "ef-asymptote",
+      "seed": 1002
+    },
+    {
+      "q": "$-1\\le x\\le 2$ 에서 함수 $y=\\left(\\dfrac{1}{2}\\right)^{x-2}-3$ 의 최댓값과 최솟값의 합을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "ans = (Rational(1, 2)**(x + (-2)) + (-3)).subs(x, -1) + (Rational(1, 2)**(x + (-2)) + (-3)).subs(x, 2)",
+      "concepts": [
+        "닫힌 구간에서 증가함수는 오른쪽 끝, 감소함수는 왼쪽 끝에서 최댓값을 가져요.",
+        "$a>1$ 이면 $y=a^x$ 는 증가, $0<a<1$ 이면 감소해요."
+      ],
+      "steps": [
+        {
+          "title": "증가인지 감소인지",
+          "body": "밑이 $1$ 보다 작아서($0<\\frac{1}{2}<1$) 감소함수예요. 왼쪽 끝에서 가장 커요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$x=-1$ 일 때 $y=5$ 예요."
+        },
+        {
+          "title": "최솟값",
+          "body": "$x=2$ 일 때 $y=-2$ 예요."
+        },
+        {
+          "title": "합",
+          "body": "$$5+(-2)=3$$"
+        }
+      ],
+      "tip": "지수함수는 계속 증가하거나 계속 감소해서, 닫힌 구간의 최댓값과 최솟값은 늘 양 끝에서 나와요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "ef-max-min",
+      "seed": 1003
+    },
+    {
+      "q": "방정식 $2^{x}=4$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "fraction",
+      "check": "simplify(list(solveset(Eq(Integer(2)**x, Integer(4)), x, S.Reals))[0])",
+      "concepts": [
+        "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$ ($a>0$, $a\\ne1$)",
+        "$(a^m)^n=a^{mn}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $2$ 의 거듭제곱으로",
+          "body": "$$2^{x}=2^{2}$$"
+        },
+        {
+          "title": "지수끼리 같다고 놓기",
+          "body": "$$x=2$$"
+        },
+        {
+          "title": "$x$ 구하기",
+          "body": "$$x=2$$"
+        }
+      ],
+      "tip": "밑이 같아지면 지수만 비교하면 돼요. 오른쪽 수도 $2$ 의 거듭제곱으로 바꾸는 것이 첫걸음이에요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "ef-eq-same-base",
+      "seed": 1004
+    },
+    {
+      "q": "다음 부등식을 만족시키는 자연수 $x$ 의 개수를 구하세요.\n$$3^{x-1}\\le 9$$",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "len([i for i in range(1, 60) if Integer(3)**(i + (-1)) <= 9])",
+      "concepts": [
+        "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "오른쪽을 $3$ 의 거듭제곱으로",
+          "body": "$$3^{x-1}\\le 3^{2}$$"
+        },
+        {
+          "title": "밑이 1 보다 크면 그대로",
+          "body": "밑이 $1$ 보다 커서($3>1$) 부등호 방향이 그대로예요.\n$$x-1\\le 2$$"
+        },
+        {
+          "title": "범위 구하기",
+          "body": "$$x\\le 3$$"
+        },
+        {
+          "title": "자연수 세기",
+          "body": "$1$ 부터 $3$ 까지 $3$ 개예요."
+        }
+      ],
+      "tip": "밑이 $1$ 보다 큰 지수함수는 증가해요. 그래서 지수의 크기와 값의 크기가 같은 방향이에요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "ef-ineq-count",
+      "seed": 1005
+    },
+    {
+      "q": "함수 $y=2^{x-1}+k$ 의 그래프는 $x=2$ 일 때 $y=7$ 이에요. 이 그래프의 점근선이 직선 $y=p$ 일 때, $p$ 의 값을 구하세요. (단, $k$ 는 상수예요.)",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "solve(Eq(Integer(2)**(2 - (1)) + k, 7), k)[0]",
+      "concepts": [
+        "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 옮긴 그래프이고 점근선은 $y=n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "점을 넣기",
+          "body": "두 값을 식에 넣어요.\n$$7=2^{1}+k$$"
+        },
+        {
+          "title": "거듭제곱 계산",
+          "body": "$2^{1}=2$ 이므로 $k=7-2=5$ 예요."
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$y=2^{x-1}$ 의 그래프는 $x$ 축($y=0$)에 한없이 가까워지기만 해요. 그 그래프를 위로 $5$ 만큼 옮겼으니 점근선은 $y=5$, 곧 $p=5$ 예요."
+        }
+      ],
+      "tip": "좌우로 옮기는 것($x$ 축 방향)은 점근선을 바꾸지 않아요. 점근선은 위아래로 옮긴 만큼만 움직여요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "ef-asymptote",
+      "seed": 1006
+    },
+    {
+      "q": "$-1\\le x\\le 1$ 에서 함수 $y=3^{x+1}-1$ 의 최댓값과 최솟값의 합을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "ans = (Integer(3)**(x + (1)) + (-1)).subs(x, -1) + (Integer(3)**(x + (1)) + (-1)).subs(x, 1)",
+      "concepts": [
+        "닫힌 구간에서 증가함수는 오른쪽 끝, 감소함수는 왼쪽 끝에서 최댓값을 가져요.",
+        "$a>1$ 이면 $y=a^x$ 는 증가, $0<a<1$ 이면 감소해요."
+      ],
+      "steps": [
+        {
+          "title": "증가인지 감소인지",
+          "body": "밑이 $1$ 보다 커서($3>1$) 증가함수예요. 오른쪽 끝에서 가장 커요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$x=1$ 일 때 $y=8$ 이에요."
+        },
+        {
+          "title": "최솟값",
+          "body": "$x=-1$ 일 때 $y=0$ 이에요."
+        },
+        {
+          "title": "합",
+          "body": "$$8+0=8$$"
+        }
+      ],
+      "tip": "지수함수는 계속 증가하거나 계속 감소해서, 닫힌 구간의 최댓값과 최솟값은 늘 양 끝에서 나와요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "ef-max-min",
+      "seed": 1007
+    },
+    {
+      "q": "방정식 $2^{x+2}=32$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "fraction",
+      "check": "simplify(list(solveset(Eq(Integer(2)**(x + (2)), Integer(32)), x, S.Reals))[0])",
+      "concepts": [
+        "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$ ($a>0$, $a\\ne1$)",
+        "$(a^m)^n=a^{mn}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $2$ 의 거듭제곱으로",
+          "body": "$$2^{x+2}=2^{5}$$"
+        },
+        {
+          "title": "지수끼리 같다고 놓기",
+          "body": "$$x+2=5$$"
+        },
+        {
+          "title": "$x$ 구하기",
+          "body": "$$x=3$$"
+        }
+      ],
+      "tip": "밑이 같아지면 지수만 비교하면 돼요. 오른쪽 수도 $2$ 의 거듭제곱으로 바꾸는 것이 첫걸음이에요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "ef-eq-same-base",
+      "seed": 1008
+    },
+    {
+      "q": "다음 부등식을 만족시키는 자연수 $x$ 의 개수를 구하세요.\n$$3^{x+1}\\le 27$$",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "len([i for i in range(1, 60) if Integer(3)**(i + (1)) <= 27])",
+      "concepts": [
+        "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "오른쪽을 $3$ 의 거듭제곱으로",
+          "body": "$$3^{x+1}\\le 3^{3}$$"
+        },
+        {
+          "title": "밑이 1 보다 크면 그대로",
+          "body": "밑이 $1$ 보다 커서($3>1$) 부등호 방향이 그대로예요.\n$$x+1\\le 3$$"
+        },
+        {
+          "title": "범위 구하기",
+          "body": "$$x\\le 2$$"
+        },
+        {
+          "title": "자연수 세기",
+          "body": "$1$ 부터 $2$ 까지 $2$ 개예요."
+        }
+      ],
+      "tip": "밑이 $1$ 보다 큰 지수함수는 증가해요. 그래서 지수의 크기와 값의 크기가 같은 방향이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "ef-ineq-count",
+      "seed": 1009
+    },
+    {
+      "q": "함수 $y=3^{x-1}+k$ 의 그래프는 $x=1$ 일 때 $y=0$ 이에요. 이 그래프의 점근선이 직선 $y=p$ 일 때, $p$ 의 값을 구하세요. (단, $k$ 는 상수예요.)",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "solve(Eq(Integer(3)**(1 - (1)) + k, 0), k)[0]",
+      "concepts": [
+        "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 옮긴 그래프이고 점근선은 $y=n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "점을 넣기",
+          "body": "두 값을 식에 넣어요.\n$$0=3^{0}+k$$"
+        },
+        {
+          "title": "거듭제곱 계산",
+          "body": "$3^{0}=1$ 이므로 $k=0-1=-1$ 이에요."
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$y=3^{x-1}$ 의 그래프는 $x$ 축($y=0$)에 한없이 가까워지기만 해요. 그 그래프를 아래로 $1$ 만큼 옮겼으니 점근선은 $y=-1$, 곧 $p=-1$ 이에요."
+        }
+      ],
+      "tip": "좌우로 옮기는 것($x$ 축 방향)은 점근선을 바꾸지 않아요. 점근선은 위아래로 옮긴 만큼만 움직여요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "ef-asymptote",
+      "seed": 1010
+    },
+    {
+      "q": "$-1\\le x\\le 1$ 에서 함수 $y=\\left(\\dfrac{1}{3}\\right)^{x-2}+2$ 의 최댓값과 최솟값의 합을 구하세요.",
+      "choices": null,
+      "answer": "34",
+      "answerType": "int",
+      "check": "ans = (Rational(1, 3)**(x + (-2)) + (2)).subs(x, -1) + (Rational(1, 3)**(x + (-2)) + (2)).subs(x, 1)",
+      "concepts": [
+        "닫힌 구간에서 증가함수는 오른쪽 끝, 감소함수는 왼쪽 끝에서 최댓값을 가져요.",
+        "$a>1$ 이면 $y=a^x$ 는 증가, $0<a<1$ 이면 감소해요."
+      ],
+      "steps": [
+        {
+          "title": "증가인지 감소인지",
+          "body": "밑이 $1$ 보다 작아서($0<\\frac{1}{3}<1$) 감소함수예요. 왼쪽 끝에서 가장 커요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$x=-1$ 일 때 $y=29$ 예요."
+        },
+        {
+          "title": "최솟값",
+          "body": "$x=1$ 일 때 $y=5$ 예요."
+        },
+        {
+          "title": "합",
+          "body": "$$29+5=34$$"
+        }
+      ],
+      "tip": "지수함수는 계속 증가하거나 계속 감소해서, 닫힌 구간의 최댓값과 최솟값은 늘 양 끝에서 나와요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "ef-max-min",
+      "seed": 1011
+    },
+    {
+      "q": "방정식 $4^{x}=8$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "simplify(list(solveset(Eq(Integer(4)**x, Integer(8)), x, S.Reals))[0])",
+      "concepts": [
+        "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$ ($a>0$, $a\\ne1$)",
+        "$(a^m)^n=a^{mn}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $2$ 의 거듭제곱으로",
+          "body": "$$2^{2(x)}=2^{3}$$"
+        },
+        {
+          "title": "지수끼리 같다고 놓기",
+          "body": "$$2(x)=3$$"
+        },
+        {
+          "title": "$x$ 구하기",
+          "body": "$$x=\\frac{3}{2}$$"
+        }
+      ],
+      "tip": "밑이 같아지면 지수만 비교하면 돼요. 오른쪽 수도 $2$ 의 거듭제곱으로 바꾸는 것이 첫걸음이에요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "ef-eq-same-base",
+      "seed": 1012
+    },
+    {
+      "q": "다음 부등식을 만족시키는 자연수 $x$ 의 개수를 구하세요.\n$$\\left(\\dfrac{1}{2}\\right)^{x-2}>\\dfrac{1}{16}$$",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "len([i for i in range(1, 60) if Rational(1, 2)**(i + (-2)) > Rational(1, 16)])",
+      "concepts": [
+        "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "오른쪽을 $\\frac{1}{2}$ 의 거듭제곱으로",
+          "body": "$$\\left(\\frac{1}{2}\\right)^{x-2}>\\left(\\frac{1}{2}\\right)^{4}$$"
+        },
+        {
+          "title": "밑이 1 보다 작으면 뒤집기",
+          "body": "밑이 $1$ 보다 작아서($0<\\frac{1}{2}<1$) 부등호 방향이 바뀌어요.\n$$x-2<4$$"
+        },
+        {
+          "title": "범위 구하기",
+          "body": "$$x<6$$"
+        },
+        {
+          "title": "자연수 세기",
+          "body": "$1$ 부터 $5$ 까지 $5$ 개예요."
+        }
+      ],
+      "tip": "밑이 $1$ 보다 작은 지수함수는 감소해요. 지수가 클수록 값이 작아지니 부등호를 뒤집어야 해요. 뒤집지 않으면 자연수가 끝없이 많은 엉뚱한 범위가 나와요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "ef-ineq-count",
+      "seed": 1013
+    },
+    {
+      "q": "함수 $y=2^{x-2}+k$ 의 그래프는 $x=4$ 일 때 $y=8$ 이에요. 이 그래프의 점근선이 직선 $y=p$ 일 때, $p$ 의 값을 구하세요. (단, $k$ 는 상수예요.)",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "solve(Eq(Integer(2)**(4 - (2)) + k, 8), k)[0]",
+      "concepts": [
+        "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 옮긴 그래프이고 점근선은 $y=n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "점을 넣기",
+          "body": "두 값을 식에 넣어요.\n$$8=2^{2}+k$$"
+        },
+        {
+          "title": "거듭제곱 계산",
+          "body": "$2^{2}=4$ 이므로 $k=8-4=4$ 예요."
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$y=2^{x-2}$ 의 그래프는 $x$ 축($y=0$)에 한없이 가까워지기만 해요. 그 그래프를 위로 $4$ 만큼 옮겼으니 점근선은 $y=4$, 곧 $p=4$ 예요."
+        }
+      ],
+      "tip": "좌우로 옮기는 것($x$ 축 방향)은 점근선을 바꾸지 않아요. 점근선은 위아래로 옮긴 만큼만 움직여요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "ef-asymptote",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "방정식 $9^x=27^{x-1}$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "simplify(list(solveset(Eq(Integer(9)**x, Integer(27)**(x - 1)), x, S.Reals))[0])",
+      "concepts": [
+        "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$ ($a>0$, $a\\ne1$)",
+        "$(a^m)^n=a^{mn}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 3 으로",
+          "body": "$$3^{2x}=3^{3(x-1)}$$"
+        },
+        {
+          "title": "지수끼리 같게",
+          "body": "$$2x=3x-3$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$x=3$ 이에요."
+        }
+      ],
+      "tip": "$x=3$ 을 넣으면 $9^3=729$, $27^2=729$ 로 같아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "방정식 $2^{2x+1}-5\\cdot2^x+2=0$ 의 두 실근의 곱을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "ans = prod(list(solveset(Eq(Integer(2)**(2*x + 1) - 5*Integer(2)**x + 2, 0), x, S.Reals)))",
+      "concepts": [
+        "$a^x=t$ ($t>0$) 로 놓으면 $a^{2x}=t^2$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "치환하기",
+          "body": "$2^x=t$ ($t>0$) 로 놓으면 $2^{2x+1}=2t^2$ 이에요."
+        },
+        {
+          "title": "이차방정식",
+          "body": "$$2t^2-5t+2=0$$"
+        },
+        {
+          "title": "인수분해",
+          "body": "$(2t-1)(t-2)=0$ 이라 $t=\\frac12$ 또는 $t=2$ 예요."
+        },
+        {
+          "title": "$x$ 로 되돌리기",
+          "body": "$2^x=\\frac12$ 에서 $x=-1$, $2^x=2$ 에서 $x=1$ 이에요."
+        },
+        {
+          "title": "곱",
+          "body": "$$(-1)\\times1=-1$$"
+        }
+      ],
+      "tip": "$t$ 의 두 값의 곱 $1$ 과 $x$ 의 두 값의 곱은 달라요. 꼭 $x$ 로 되돌린 뒤 곱해요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "부등식 $2^{x^2}\\le2^{x+6}$ 을 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "len([i for i in range(-20, 20) if Integer(2)**(i**2) <= Integer(2)**(i + 6)])",
+      "concepts": [
+        "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "지수 비교",
+          "body": "밑 2 가 1 보다 커서 방향이 그대로예요.\n$$x^2\\le x+6$$"
+        },
+        {
+          "title": "이차부등식",
+          "body": "$x^2-x-6\\le0$, 곧 $(x+2)(x-3)\\le0$ 이에요."
+        },
+        {
+          "title": "범위",
+          "body": "$$-2\\le x\\le3$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$-2,\\,-1,\\,0,\\,1,\\,2,\\,3$ 으로 6 개예요."
+        }
+      ],
+      "tip": "양 끝 -2 와 3 도 등호가 있어서 포함돼요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "부등식 $\\left(\\dfrac12\\right)^{2x-1}\\ge\\dfrac18$ 을 만족시키는 자연수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "len([i for i in range(1, 60) if Rational(1, 2)**(2*i - 1) >= Rational(1, 8)])",
+      "concepts": [
+        "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "밑 맞추기",
+          "body": "$\\frac18=\\left(\\frac12\\right)^3$ 이에요."
+        },
+        {
+          "title": "부등호 뒤집기",
+          "body": "밑이 1 보다 작아서 방향이 바뀌어요.\n$$2x-1\\le3$$"
+        },
+        {
+          "title": "범위",
+          "body": "$$x\\le2$$"
+        },
+        {
+          "title": "자연수 세기",
+          "body": "$1,\\,2$ 로 2 개예요."
+        }
+      ],
+      "tip": "$x=2$ 를 넣으면 $\\left(\\frac12\\right)^3=\\frac18$ 이라 등호가 성립해요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "함수 $y=3^{x+1}-2$ 의 그래프의 $y$ 절편을 $q$, 점근선을 직선 $y=p$ 라 할 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "f = Integer(3)**(x + 1) - 2\nans = f.subs(x, 0) + limit(f, x, -oo)",
+      "concepts": [
+        "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 평행이동한 그래프이고, 점근선은 $y=n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "$y$ 절편",
+          "body": "$x=0$ 을 넣으면 $3^1-2=1$ 이라 $q=1$ 이에요."
+        },
+        {
+          "title": "점근선",
+          "body": "아래로 2 옮긴 그래프라 점근선은 $y=-2$, 곧 $p=-2$ 예요."
+        },
+        {
+          "title": "합",
+          "body": "$$p+q=-2+1=-1$$"
+        }
+      ],
+      "tip": "점근선은 위아래 이동만 보면 돼요. 왼쪽으로 1 옮긴 것은 상관없어요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$0\\le x\\le3$ 에서 함수 $y=\\left(\\dfrac12\\right)^{x-2}+1$ 의 최댓값과 최솟값의 합을 구하세요.",
+      "choices": null,
+      "answer": "13/2",
+      "answerType": "fraction",
+      "check": "f = Rational(1, 2)**(x - 2) + 1\nans = f.subs(x, 0) + f.subs(x, 3)",
+      "concepts": [
+        "$a>1$ 이면 $y=a^x$ 는 증가, $0<a<1$ 이면 감소해요.",
+        "닫힌 구간에서 감소함수는 왼쪽 끝에서 최대, 오른쪽 끝에서 최소예요."
+      ],
+      "steps": [
+        {
+          "title": "감소함수",
+          "body": "밑 $\\frac12$ 이 1 보다 작아서 감소해요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$x=0$ 일 때 $\\left(\\frac12\\right)^{-2}+1=4+1=5$ 예요."
+        },
+        {
+          "title": "최솟값",
+          "body": "$x=3$ 일 때 $\\left(\\frac12\\right)^{1}+1=\\frac32$ 이에요."
+        },
+        {
+          "title": "합",
+          "body": "$$5+\\frac32=\\frac{13}{2}$$"
+        }
+      ],
+      "tip": "지수함수는 한 방향으로만 움직여서 최대·최소가 늘 양 끝에서 나와요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "함수 $y=2^x$ 의 그래프를 $x$ 축 방향으로 $m$ 만큼, $y$ 축 방향으로 $n$ 만큼 평행이동한 그래프의 점근선이 $y=1$ 이고, 이 그래프가 점 $(3,\\,5)$ 를 지나요. $m$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "n_ = 1\nans = simplify(list(solveset(Eq(Integer(2)**(3 - m) + n_, 5), m, S.Reals))[0])",
+      "concepts": [
+        "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 평행이동한 그래프이고, 점근선은 $y=n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "$n$ 구하기",
+          "body": "점근선이 $y=1$ 이라 $n=1$ 이고, 그래프는 $y=2^{x-m}+1$ 이에요."
+        },
+        {
+          "title": "점 넣기",
+          "body": "$$5=2^{3-m}+1,\\quad 2^{3-m}=4=2^2$$"
+        },
+        {
+          "title": "지수 비교",
+          "body": "$3-m=2$ 라 $m=1$ 이에요."
+        }
+      ],
+      "tip": "점 $(3,\\,5)$ 를 넣기 전에 점근선으로 $n$ 부터 정하면 미지수가 하나로 줄어요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "함수 $y=3^x$ 의 그래프를 $y$ 축에 대하여 대칭이동한 그래프가 점 $(-2,\\,k)$ 를 지날 때, $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "(Integer(3)**(-x)).subs(x, -2)",
+      "concepts": [
+        "$y=a^{-x}=\\left(\\dfrac1a\\right)^x$ 의 그래프는 $y=a^x$ 의 그래프와 $y$ 축에 대하여 대칭이에요."
+      ],
+      "steps": [
+        {
+          "title": "대칭이동한 식",
+          "body": "$x$ 대신 $-x$ 를 넣어 $y=3^{-x}$ 예요."
+        },
+        {
+          "title": "점 넣기",
+          "body": "$$k=3^{-(-2)}=3^2=9$$"
+        }
+      ],
+      "tip": "$y=3^{-x}=\\left(\\frac13\\right)^x$ 이라 감소하는 그래프예요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "세 수 $\\sqrt2$, $\\sqrt[3]{4}$, $\\sqrt[4]{8}$ 중 가장 큰 수를 $2^k$ 꼴로 나타낼 때, $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "ans = max([simplify(log(v, 2)) for v in [sqrt(2), Integer(4)**Rational(1, 3), Integer(8)**Rational(1, 4)]])",
+      "concepts": [
+        "$a>1$ 이면 $y=a^x$ 는 증가, $0<a<1$ 이면 감소해요.",
+        "$a^{\\frac mn}=\\sqrt[n]{a^m}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 2 로",
+          "body": "$\\sqrt2=2^{\\frac12}$, $\\sqrt[3]{4}=2^{\\frac23}$, $\\sqrt[4]{8}=2^{\\frac34}$ 이에요."
+        },
+        {
+          "title": "지수 비교",
+          "body": "$\\frac12=\\frac{6}{12}$, $\\frac23=\\frac{8}{12}$, $\\frac34=\\frac{9}{12}$ 이에요."
+        },
+        {
+          "title": "가장 큰 수",
+          "body": "밑 2 가 1 보다 커서 지수가 큰 쪽이 커요. $k=\\frac34$ 예요."
+        }
+      ],
+      "tip": "밑이 같으면 지수만 비교하면 돼요. 밑이 1 보다 작았다면 순서가 거꾸로였을 거예요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "두 곡선 $y=2^x$, $y=2^{4-x}$ 이 만나는 점의 $y$ 좌표를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "s = solveset(Eq(Integer(2)**x, Integer(2)**(4 - x)), x, S.Reals)\nans = simplify(Integer(2)**list(s)[0])",
+      "concepts": [
+        "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$ ($a>0$, $a\\ne1$)"
+      ],
+      "steps": [
+        {
+          "title": "같다고 놓기",
+          "body": "$$2^x=2^{4-x}$$"
+        },
+        {
+          "title": "지수 비교",
+          "body": "$x=4-x$ 라 $x=2$ 예요."
+        },
+        {
+          "title": "$y$ 좌표",
+          "body": "$$y=2^2=4$$"
+        }
+      ],
+      "tip": "두 곡선은 직선 $x=2$ 에 대하여 대칭이라 그 위에서 만나요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "함수 $y=2^{x+1}-4$ 의 그래프가 $x$ 축, $y$ 축과 만나는 점을 각각 $\\mathrm{A}$, $\\mathrm{B}$ 라 하고, 이 그래프의 점근선이 $y$ 축과 만나는 점을 $\\mathrm{C}$ 라 할 때, 삼각형 $\\mathrm{ABC}$ 의 넓이는?",
+      "choices": [
+        "$\\dfrac12$",
+        "$1$",
+        "$\\dfrac32$",
+        "$2$",
+        "$\\dfrac52$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "f = Integer(2)**(x + 1) - 4\nxa = list(solveset(Eq(f, 0), x, S.Reals))[0]\nyb = f.subs(x, 0)\nyc = limit(f, x, -oo)\nans = simplify(Rational(1, 2)*Abs(yb - yc)*Abs(xa))",
+      "choiceChecks": [
+        "Rational(1, 2)",
+        "1",
+        "Rational(3, 2)",
+        "2",
+        "Rational(5, 2)"
+      ],
+      "concepts": [
+        "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 평행이동한 그래프이고, 점근선은 $y=n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "점 A",
+          "body": "$2^{x+1}=4=2^2$ 이라 $x=1$, 곧 $\\mathrm{A}(1,\\,0)$ 이에요."
+        },
+        {
+          "title": "점 B",
+          "body": "$x=0$ 이면 $y=2-4=-2$ 라 $\\mathrm{B}(0,\\,-2)$ 예요."
+        },
+        {
+          "title": "점 C",
+          "body": "점근선이 $y=-4$ 라 $\\mathrm{C}(0,\\,-4)$ 예요."
+        },
+        {
+          "title": "넓이",
+          "body": "밑변 $\\mathrm{BC}=2$, 높이는 A 의 $x$ 좌표 $1$ 이에요.\n$$\\frac12\\times2\\times1=1$$"
+        }
+      ],
+      "tip": "B 와 C 가 모두 $y$ 축 위에 있어서 $\\mathrm{BC}$ 를 밑변으로 잡으면 높이가 바로 보여요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "$-1\\le x\\le2$ 에서 함수 $f(x)=\\left(\\dfrac13\\right)^{x-a}$ 의 최댓값이 $27$ 일 때, 최솟값은? (단, $a$ 는 상수예요.)",
+      "choices": [
+        "$\\dfrac19$",
+        "$\\dfrac13$",
+        "$1$",
+        "$3$",
+        "$9$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "a_ = simplify(list(solveset(Eq(Rational(1, 3)**(-1 - a), 27), a, S.Reals))[0])\nans = (Rational(1, 3)**(x - a_)).subs(x, 2)",
+      "choiceChecks": [
+        "Rational(1, 9)",
+        "Rational(1, 3)",
+        "1",
+        "3",
+        "9"
+      ],
+      "concepts": [
+        "$a>1$ 이면 $y=a^x$ 는 증가, $0<a<1$ 이면 감소해요.",
+        "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "감소함수",
+          "body": "밑 $\\frac13$ 이 1 보다 작아서 감소해요. 최댓값은 $x=-1$ 에서 나와요."
+        },
+        {
+          "title": "$a$ 구하기",
+          "body": "$$\\left(\\frac13\\right)^{-1-a}=3^{1+a}=27=3^3$$\n이라 $a=2$ 예요."
+        },
+        {
+          "title": "최솟값",
+          "body": "$x=2$ 에서 $\\left(\\frac13\\right)^{2-2}=1$ 이에요."
+        }
+      ],
+      "tip": "$\\left(\\frac13\\right)^{-t}=3^t$ 으로 바꾸면 계산이 편해요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "부등식 $4^x-10\\cdot2^x+16\\le0$ 을 만족시키는 정수 $x$ 의 개수는?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "len([i for i in range(-20, 20) if Integer(4)**i - 10*Integer(2)**i + 16 <= 0])",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "$a^x=t$ ($t>0$) 로 놓으면 $a^{2x}=t^2$ 이에요.",
+        "$a>1$ 이면 $a^{f(x)}<a^{g(x)} \\Leftrightarrow f(x)<g(x)$, $0<a<1$ 이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "치환하기",
+          "body": "$2^x=t$ ($t>0$) 로 놓으면 $t^2-10t+16\\le0$ 이에요."
+        },
+        {
+          "title": "이차부등식",
+          "body": "$(t-2)(t-8)\\le0$ 이라 $2\\le t\\le8$ 이에요."
+        },
+        {
+          "title": "$x$ 로 되돌리기",
+          "body": "$2^1\\le2^x\\le2^3$ 이고 밑 2 가 1 보다 커서 $1\\le x\\le3$ 이에요."
+        },
+        {
+          "title": "정수 세기",
+          "body": "$1,\\,2,\\,3$ 으로 3 개예요."
+        }
+      ],
+      "tip": "$t>0$ 조건은 이 문제에서 범위를 바꾸지 않지만, 해가 음수로 나오는 경우에는 꼭 버려야 해요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "$1$ 보다 큰 실수 $t$ 에 대하여 직선 $y=t$ 가 두 곡선 $y=2^x$, $y=8^x$ 와 만나는 점을 각각 $\\mathrm{P}$, $\\mathrm{Q}$ 라 해요. $\\overline{\\mathrm{PQ}}=4$ 일 때, $t$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "64",
+      "answerType": "int",
+      "check": "t_ = Symbol('t_', positive=True)\nans = simplify(solve(Eq(log(t_, 2) - log(t_, 8), 4), t_)[0])",
+      "concepts": [
+        "$a^{f(x)}=a^{g(x)} \\Leftrightarrow f(x)=g(x)$ ($a>0$, $a\\ne1$)",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$"
+      ],
+      "steps": [
+        {
+          "title": "P 의 $x$ 좌표",
+          "body": "$2^x=t$ 라 $x=\\log_2 t$ 예요."
+        },
+        {
+          "title": "Q 의 $x$ 좌표",
+          "body": "$8^x=2^{3x}=t$ 라 $x=\\frac13\\log_2 t$ 예요."
+        },
+        {
+          "title": "거리",
+          "body": "$t>1$ 이라 P 가 오른쪽에 있어요.\n$$\\log_2 t-\\frac13\\log_2 t=\\frac23\\log_2 t=4$$"
+        },
+        {
+          "title": "$t$ 구하기",
+          "body": "$\\log_2 t=6$ 이라 $t=2^6=64$ 예요."
+        }
+      ],
+      "tip": "같은 높이에서 $y=8^x$ 가 $y=2^x$ 보다 $x$ 좌표가 3 배 작아요. 그래서 $\\mathrm{PQ}$ 는 P 의 $x$ 좌표의 $\\frac23$ 이에요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "함수 $f(x)=2^{x-m}+n$ 의 그래프의 점근선이 직선 $y=-8$ 이고, 이 그래프가 원점을 지나요. $f(2)$ 의 값을 구하세요. (단, $m$, $n$ 은 상수예요.)",
+      "choices": null,
+      "answer": "24",
+      "answerType": "int",
+      "check": "n_ = -8\nm_ = simplify(list(solveset(Eq(Integer(2)**(0 - m) + n_, 0), m, S.Reals))[0])\nans = simplify(Integer(2)**(2 - m_) + n_)",
+      "concepts": [
+        "$y=a^{x-m}+n$ 은 $y=a^x$ 를 $x$ 축 방향으로 $m$, $y$ 축 방향으로 $n$ 만큼 평행이동한 그래프이고, 점근선은 $y=n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "$n$ 구하기",
+          "body": "점근선이 $y=-8$ 이라 $n=-8$ 이에요."
+        },
+        {
+          "title": "원점 넣기",
+          "body": "$$0=2^{-m}-8,\\quad 2^{-m}=8=2^3$$\n이라 $m=-3$ 이에요."
+        },
+        {
+          "title": "함수 정하기",
+          "body": "$f(x)=2^{x+3}-8$ 이에요."
+        },
+        {
+          "title": "$f(2)$",
+          "body": "$$2^{5}-8=32-8=24$$"
+        }
+      ],
+      "tip": "$m=-3$ 은 왼쪽으로 3 옮겼다는 뜻이에요. 부호를 헷갈리면 $f(0)=0$ 을 다시 넣어 확인해요."
+    }
+  ]
+}

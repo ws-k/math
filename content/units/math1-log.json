@@ -1,0 +1,1354 @@
+{
+  "id": "math1-log",
+  "course": "수학Ⅰ",
+  "unit": "지수함수와 로그함수",
+  "title": "로그",
+  "prereq": [
+    "math1-exponent"
+  ],
+  "suneung": [
+    "공통 6"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$a^x=N \\Leftrightarrow x=\\log_a N$",
+    "$\\log_a MN=\\log_a M+\\log_a N$",
+    "$\\log_a\\dfrac{M}{N}=\\log_a M-\\log_a N$, $\\log_a M^k=k\\log_a M$",
+    "$\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$",
+    "$\\log_{a^m} b^n=\\dfrac{n}{m}\\log_a b$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "l32": {
+        "value": "5",
+        "check": "log(32, 2)"
+      },
+      "l3": {
+        "value": "-2",
+        "check": "simplify(log(Rational(1, 9), 3))"
+      },
+      "lA": {
+        "value": "-1",
+        "check": "log(Rational(1, 2), 2)"
+      },
+      "lB": {
+        "value": "2",
+        "check": "log(9, 3)"
+      },
+      "lC": {
+        "value": "3/2",
+        "check": "simplify(log(8, 4))"
+      },
+      "l16": {
+        "value": "4",
+        "check": "log(16, 2)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "수학Ⅰ · 지수와 로그",
+        "title": "몇 번 곱했는지를\n수 하나로 적어 볼까요?",
+        "lead": "$2^x=32$ 처럼 지수를 모르는 식이 있어요. 그 지수를 바로 적는 방법이 로그예요. 지수와 로그를 오가며 익혀요.",
+        "meta": [
+          "로그의 정의",
+          "로그의 성질",
+          "밑 변환"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "2 를 몇 번 곱해야\n32 가 될까요?",
+        "lead": "$2^{\\square}=32$ 에서 $\\square$ 를 찾는 문제예요.",
+        "choices": [
+          {
+            "value": "16",
+            "check": "Integer(32) / 2",
+            "feedback": "32 를 2 로 한 번 나눈 값이에요. 물은 것은 곱한 **횟수**예요."
+          },
+          {
+            "value": "5",
+            "check": "log(32, 2)"
+          },
+          {
+            "value": "6",
+            "check": "log(64, 2)",
+            "feedback": "$2^6=64$ 예요. 한 번 더 곱했어요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "log(32, 2)",
+        "reveal": "**맞아요.** $2\\times2\\times2\\times2\\times2=32$ 예요.",
+        "thoughts": [
+          "$2\\to4\\to8\\to16\\to32$ 로 다섯 번 곱했어요.",
+          "이 횟수를 $\\log_2 32$ 라고 적어요. 곧 $\\log_2 32={{l32}}$ 예요."
+        ],
+        "conclude": "$2^x=32$ 와 $x=\\log_2 32$ 는 ==같은 말==이에요. 지수를 바로 적는 이름이 로그예요."
+      },
+      {
+        "kind": "question",
+        "id": "back",
+        "chip": "지수로 바꿔 보기",
+        "title": "$\\log_3\\frac19$ 은\n얼마일까요?",
+        "lead": "로그가 낯설면 지수로 바꿔 물어요. $3^{\\square}=\\frac19$ 이 되는 $\\square$ 를 골라요.",
+        "choices": [
+          {
+            "value": "2",
+            "check": "log(9, 3)",
+            "feedback": "$3^2=9$ 예요. 진수가 $\\frac19$ 처럼 1 보다 작으면 지수는 음수예요."
+          },
+          {
+            "value": "-2",
+            "check": "simplify(log(Rational(1, 9), 3))"
+          },
+          {
+            "value": "-3",
+            "check": "-Integer(9) / 3",
+            "feedback": "9 를 3 으로 나눈 값에 부호를 붙였네요. 나눗셈이 아니라 곱한 횟수를 세요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "simplify(log(Rational(1, 9), 3))",
+        "reveal": "**맞아요.** $3^{-2}=\\frac{1}{3^2}=\\frac19$ 이에요.",
+        "thoughts": [
+          "$\\frac19=\\frac{1}{3^2}=3^{-2}$ 이에요.",
+          "그래서 $\\log_3\\frac19$ 의 값은 {{l3}} 가 돼요."
+        ],
+        "conclude": "로그가 막히면 ==지수로 바꿔 물으면== 풀려요."
+      },
+      {
+        "kind": "question",
+        "id": "compare",
+        "chip": "수직선으로 비교",
+        "title": "세 로그 중\n가장 큰 값은?",
+        "lead": "A 는 $\\log_2\\frac12$, B 는 $\\log_3 9$, C 는 $\\log_4 8$ 이에요. 점을 끌어 각 값의 자리에 놓아 본 뒤 골라요.",
+        "widget": {
+          "type": "numberLine",
+          "params": {
+            "min": -2,
+            "max": 3,
+            "step": "1/2",
+            "label": "1",
+            "points": [
+              {
+                "id": "A",
+                "at": "-2",
+                "drag": true,
+                "label": "A"
+              },
+              {
+                "id": "B",
+                "at": "0",
+                "drag": true,
+                "label": "B"
+              },
+              {
+                "id": "C",
+                "at": "3",
+                "drag": true,
+                "label": "C"
+              }
+            ]
+          }
+        },
+        "choices": [
+          {
+            "value": "2",
+            "check": "log(9, 3)"
+          },
+          {
+            "value": "3/2",
+            "check": "simplify(log(8, 4))",
+            "feedback": "그건 C 의 값이에요. $4^{\\frac32}=8$ 이라 C 는 2 보다 작아요."
+          },
+          {
+            "value": "3",
+            "check": "log(8, 2)",
+            "feedback": "C 를 $\\log_2 8$ 로 읽었어요. C 의 밑은 4 예요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "Max(log(Rational(1, 2), 2), log(9, 3), simplify(log(8, 4)))",
+        "reveal": "**맞아요.** 수직선에서 가장 오른쪽이 B 예요.",
+        "thoughts": [
+          "$2^{-1}=\\frac12$ 이라 A 의 값은 {{lA}} 이에요.",
+          "$3^2=9$ 라 B 의 값은 {{lB}} 예요.",
+          "$4^{\\frac32}=(2^2)^{\\frac32}=2^3=8$ 이라 C 의 값은 {{lC}} 이에요."
+        ],
+        "conclude": "그래서 A, C, B 순서로 커져요. 로그값도 ==지수로 바꾸면== 수직선 위의 수예요."
+      },
+      {
+        "kind": "explore",
+        "id": "double",
+        "chip": "손으로 해 보기",
+        "title": "2배씩 갈 때\n로그는 얼마씩 늘까요?",
+        "lead": "곡선은 $y=\\log_2 x$ 예요. 점 P 를 오른쪽으로 끌며 $x$ 가 $1,\\,2,\\,4,\\,8,\\,16$ 일 때의 높이를 읽어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 16,
+              "step": 1
+            },
+            "y": {
+              "min": -1,
+              "max": 5,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "L",
+                "curve": "log(x, 2)",
+                "label": "$y=\\log_2 x$"
+              },
+              {
+                "id": "T",
+                "point": {
+                  "on": "L",
+                  "x": 16
+                },
+                "name": "T"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "L",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "$x$",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "$\\log_2 x$",
+                "digits": 2
+              }
+            ],
+            "goal": {
+              "approach": [
+                "P",
+                "T"
+              ]
+            },
+            "intro": "P 를 오른쪽 끝 T 까지 끌어 보세요.",
+            "done": "$x$ 가 2배가 될 때마다 높이는 1씩 늘어요. $\\log_2 16={{l16}}$ 예요."
+          }
+        },
+        "after": "곱하기 2 가 더하기 1 로 바뀌었어요. 그래서 $\\log_2(4\\times8)=\\log_2 4+\\log_2 8$ 처럼 ==곱의 로그는 로그의 합==이에요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "지금까지 본 것에\n이름을 붙여요",
+        "terms": [
+          {
+            "term": "로그",
+            "body": "$a>0$, $a\\ne1$, $N>0$ 일 때 $a^x=N$ 이 되는 $x$ 를 $\\log_a N$ 이라 써요. $a$ 는 밑, $N$ 은 진수예요."
+          },
+          {
+            "term": "로그의 성질",
+            "body": "$\\log_a MN=\\log_a M+\\log_a N$, $\\log_a\\dfrac{M}{N}=\\log_a M-\\log_a N$, $\\log_a M^k=k\\log_a M$. 지수법칙을 로그로 옮긴 거예요."
+          },
+          {
+            "term": "밑 변환",
+            "body": "$\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$. 밑이 다르면 같은 밑으로 바꿔 계산해요. 그래서 $\\log_a b\\times\\log_b c=\\log_a c$ 예요."
+          },
+          {
+            "term": "상용로그",
+            "body": "밑이 10 인 로그예요. 밑을 빼고 $\\log N$ 으로 적어요. $\\log1000=3$ 처럼 10 을 몇 번 곱했는지 셀 때 써요."
+          }
+        ],
+        "aside": "**확인** · $\\log_2 4+\\log_2 8=2+3$ 이고, 처음 구한 $\\log_2 32={{l32}}$ 와 같아요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 로그 두 개를 더했어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "log(4, 2)+log(8, 2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "log(12, 2)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "log(32, 2)",
+              "body": "밑이 같은 로그의 합은 진수끼리 **곱해요**. 진수끼리 더하면 안 돼요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 로그끼리 나눴어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "log(8, 2)/log(4, 2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "log(2, 2)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "log(8, 4)",
+              "body": "로그끼리 나눈 것은 진수를 나눈 로그가 아니에요. 밑 변환 공식을 거꾸로 쓰면 $\\log_4 8$ 이 돼요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "sum",
+            "q": "$\\log_2 12+\\log_2\\dfrac23$ 의 값을 구하세요.",
+            "hint": "밑이 같으니 하나의 로그로 합쳐요.",
+            "concepts": [
+              "$\\log_a MN=\\log_a M+\\log_a N$, $\\log_a\\dfrac{M}{N}=\\log_a M-\\log_a N$, $\\log_a M^k=k\\log_a M$",
+              "$a^x=N \\Leftrightarrow x=\\log_a N$ ($a>0$, $a\\ne1$, $N>0$)"
+            ],
+            "steps": [
+              {
+                "title": "합은 곱으로",
+                "body": "$$\\log_2 12+\\log_2\\frac23=\\log_2\\left(12\\times\\frac23\\right)$$"
+              },
+              {
+                "title": "진수 계산",
+                "body": "$$12\\times\\frac23=8$$"
+              },
+              {
+                "title": "로그값",
+                "body": "$$\\log_2 8=\\log_2 2^3={{answer}}$$"
+              }
+            ],
+            "tip": "따로 구하면 둘 다 깔끔한 값이 아니에요. 먼저 합쳐서 진수가 밑의 거듭제곱이 되는지 봐요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "simplify(log(12, 2) + log(Rational(2, 3), 2))"
+          },
+          {
+            "id": "chain",
+            "q": "$\\log_3 5\\times\\log_5 27$ 의 값을 구하세요.",
+            "hint": "밑이 달라요. 같은 밑으로 바꿔 봐요.",
+            "concepts": [
+              "밑 변환: $\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$",
+              "$\\log_a b\\times\\log_b c=\\log_a c$"
+            ],
+            "steps": [
+              {
+                "title": "밑을 10 으로",
+                "body": "$$\\log_3 5\\times\\log_5 27=\\frac{\\log5}{\\log3}\\times\\frac{\\log27}{\\log5}$$"
+              },
+              {
+                "title": "약분",
+                "body": "$$\\frac{\\log27}{\\log3}=\\log_3 27$$"
+              },
+              {
+                "title": "로그값",
+                "body": "$$\\log_3 27=\\log_3 3^3={{answer}}$$"
+              }
+            ],
+            "tip": "앞의 진수 5 와 뒤의 밑 5 가 같으면 사슬처럼 이어져 $\\log_3 27$ 이 돼요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "simplify(log(5, 3) * log(27, 5))"
+          },
+          {
+            "id": "base",
+            "q": "$\\log_9 27$ 의 값을 구하세요.",
+            "hint": "$9$ 와 $27$ 을 모두 $3$ 의 거듭제곱으로 써요.",
+            "concepts": [
+              "$\\log_{a^m} b^n=\\dfrac{n}{m}\\log_a b$",
+              "$a^x=N \\Leftrightarrow x=\\log_a N$ ($a>0$, $a\\ne1$, $N>0$)"
+            ],
+            "steps": [
+              {
+                "title": "3 의 거듭제곱으로",
+                "body": "$$\\log_9 27=\\log_{3^2}3^3$$"
+              },
+              {
+                "title": "지수를 앞으로",
+                "body": "$$\\log_{3^2}3^3=\\frac32\\log_3 3$$"
+              },
+              {
+                "title": "값",
+                "body": "$\\log_3 3=1$ 이라 답은 $\\frac32$ 예요."
+              }
+            ],
+            "tip": "지수로 확인해요. $9^{\\frac32}=(3^2)^{\\frac32}=3^3=27$ 이 맞아요.",
+            "answer": "3/2",
+            "answerType": "fraction",
+            "check": "simplify(log(27, 9))"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$a^x=N \\Leftrightarrow x=\\log_a N$. 로그는 밑을 몇 번 곱했는지예요.",
+          "곱의 로그는 합, 몫의 로그는 차, 진수의 지수는 앞으로 내려요.",
+          "밑이 다르면 밑 변환으로 같은 밑을 만들어요. $\\log_a b\\times\\log_b c=\\log_a c$.",
+          "수능에서는 6번처럼 로그의 성질과 밑 변환을 섞어 식의 값을 구하거나, 지수 조건을 로그로 옮겨 푸는 문제가 나와요."
+        ],
+        "done": "로그 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "lg-basic-value",
+    "lg-sum-diff",
+    "lg-change-base",
+    "lg-power-base"
+  ],
+  "problems": [
+    {
+      "q": "$\\log_{5} 125$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "simplify(log(125, 5))",
+      "concepts": [
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)",
+        "$a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "지수로 바꿔 묻기",
+          "body": "$\\log_{5} 125=x$ 라 하면 $5^x=125$ 이에요."
+        },
+        {
+          "title": "진수를 $5$ 의 거듭제곱으로",
+          "body": "$$125=5^{3}$$"
+        },
+        {
+          "title": "지수 비교하기",
+          "body": "$5^x=5^{3}$ 이므로 $x=3$ 이에요."
+        }
+      ],
+      "tip": "$5^{3}=125$ 이에요. 로그는 밑을 곱한 '횟수'예요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "lg-basic-value",
+      "seed": 1000
+    },
+    {
+      "q": "$\\log_{2} 12-\\log_{2} 3$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "simplify(log(12, 2) - log(3, 2))",
+      "concepts": [
+        "$\\log_a M-\\log_a N=\\log_a \\dfrac{M}{N}$",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)"
+      ],
+      "steps": [
+        {
+          "title": "빼기는 나누기로",
+          "body": "$$\\log_{2} 12-\\log_{2} 3=\\log_{2}\\frac{12}{3}$$"
+        },
+        {
+          "title": "진수 계산하기",
+          "body": "$$\\frac{12}{3}=4=2^{2}$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$\\log_{2} 2^{2}=2$ 예요."
+        }
+      ],
+      "tip": "$\\log_{2} 12$, $\\log_{2} 3$ 각각은 정수가 아니지만, 빼면 정수가 돼요. 따로 구하려 하지 말고 먼저 합쳐요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "lg-sum-diff",
+      "seed": 1001
+    },
+    {
+      "q": "$\\log_{3} 5\\times\\log_{5} 27$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "simplify(log(5, 3) * log(27, 5))",
+      "concepts": [
+        "밑 변환: $\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$, 그래서 $\\log_a b\\times\\log_b c=\\log_a c$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 하나로 바꾸기",
+          "body": "상용로그(밑 10)로 바꿔요.\n$$\\log_{3} 5\\times\\log_{5} 27=\\frac{\\log 5}{\\log 3}\\times\\frac{\\log 27}{\\log 5}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "분자와 분모의 $\\log 5$ 끼리 약분해요.\n$$\\frac{\\log 27}{\\log 3}=\\log_{3} 27$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$27=3^{3}$ 이므로 $\\log_{3} 27=3$ 이에요."
+        }
+      ],
+      "tip": "$\\log_a b\\times\\log_b c$ 처럼 앞의 진수와 뒤의 밑이 같으면 사슬처럼 이어져 $\\log_a c$ 가 돼요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "lg-change-base",
+      "seed": 1002
+    },
+    {
+      "q": "$\\log_{4} 32$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/2",
+      "answerType": "fraction",
+      "check": "simplify(log(32, 4))",
+      "concepts": [
+        "$\\log_{a^m} b^n=\\dfrac{n}{m}\\log_a b$",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)"
+      ],
+      "steps": [
+        {
+          "title": "밑과 진수를 $2$ 의 거듭제곱으로",
+          "body": "$$4=2^{2},\\quad 32=2^{5}$$"
+        },
+        {
+          "title": "지수를 앞으로",
+          "body": "$$\\log_{2^{2}} 2^{5}=\\frac{5}{2}\\log_{2} 2$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$\\log_{2} 2=1$ 이므로 답은 $\\frac{5}{2}$ 예요."
+        }
+      ],
+      "tip": "지수로 확인해요. $4^{\\frac{5}{2}}=(2^{2})^{\\frac{5}{2}}=2^{5}=32$ 이니 맞아요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "lg-power-base",
+      "seed": 1003
+    },
+    {
+      "q": "$\\log_{2} \\frac{1}{2}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "simplify(log(Rational(1, 2), 2))",
+      "concepts": [
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)",
+        "$a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "지수로 바꿔 묻기",
+          "body": "$\\log_{2} \\frac{1}{2}=x$ 라 하면 $2^x=\\frac{1}{2}$ 이에요."
+        },
+        {
+          "title": "진수를 $2$ 의 거듭제곱으로",
+          "body": "$$\\frac{1}{2}=2^{-1}$$"
+        },
+        {
+          "title": "지수 비교하기",
+          "body": "$2^x=2^{-1}$ 이므로 $x=-1$ 이에요."
+        }
+      ],
+      "tip": "진수가 1 보다 작은 분수면 로그값은 음수예요. 몇 번 \"나눠야\" 하는지 센다고 생각해도 돼요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "lg-basic-value",
+      "seed": 1004
+    },
+    {
+      "q": "$\\log_{2} 44-\\log_{2} 11$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "simplify(log(44, 2) - log(11, 2))",
+      "concepts": [
+        "$\\log_a M-\\log_a N=\\log_a \\dfrac{M}{N}$",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)"
+      ],
+      "steps": [
+        {
+          "title": "빼기는 나누기로",
+          "body": "$$\\log_{2} 44-\\log_{2} 11=\\log_{2}\\frac{44}{11}$$"
+        },
+        {
+          "title": "진수 계산하기",
+          "body": "$$\\frac{44}{11}=4=2^{2}$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$\\log_{2} 2^{2}=2$ 예요."
+        }
+      ],
+      "tip": "$\\log_{2} 44$, $\\log_{2} 11$ 각각은 정수가 아니지만, 빼면 정수가 돼요. 따로 구하려 하지 말고 먼저 합쳐요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "lg-sum-diff",
+      "seed": 1005
+    },
+    {
+      "q": "$\\log_{3} 2\\times\\log_{2} 81$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "simplify(log(2, 3) * log(81, 2))",
+      "concepts": [
+        "밑 변환: $\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$, 그래서 $\\log_a b\\times\\log_b c=\\log_a c$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 하나로 바꾸기",
+          "body": "상용로그(밑 10)로 바꿔요.\n$$\\log_{3} 2\\times\\log_{2} 81=\\frac{\\log 2}{\\log 3}\\times\\frac{\\log 81}{\\log 2}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "분자와 분모의 $\\log 2$ 끼리 약분해요.\n$$\\frac{\\log 81}{\\log 3}=\\log_{3} 81$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$81=3^{4}$ 이므로 $\\log_{3} 81=4$ 예요."
+        }
+      ],
+      "tip": "$\\log_a b\\times\\log_b c$ 처럼 앞의 진수와 뒤의 밑이 같으면 사슬처럼 이어져 $\\log_a c$ 가 돼요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "lg-change-base",
+      "seed": 1006
+    },
+    {
+      "q": "$\\log_{9} 3$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "simplify(log(3, 9))",
+      "concepts": [
+        "$\\log_{a^m} b^n=\\dfrac{n}{m}\\log_a b$",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)"
+      ],
+      "steps": [
+        {
+          "title": "밑과 진수를 $3$ 의 거듭제곱으로",
+          "body": "$$9=3^{2},\\quad 3=3^{1}$$"
+        },
+        {
+          "title": "지수를 앞으로",
+          "body": "$$\\log_{3^{2}} 3^{1}=\\frac{1}{2}\\log_{3} 3$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$\\log_{3} 3=1$ 이므로 답은 $\\frac{1}{2}$ 이에요."
+        }
+      ],
+      "tip": "지수로 확인해요. $9^{\\frac{1}{2}}=(3^{2})^{\\frac{1}{2}}=3^{1}=3$ 이니 맞아요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "lg-power-base",
+      "seed": 1007
+    },
+    {
+      "q": "$\\log_{5} 25$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "simplify(log(25, 5))",
+      "concepts": [
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)",
+        "$a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "지수로 바꿔 묻기",
+          "body": "$\\log_{5} 25=x$ 라 하면 $5^x=25$ 이에요."
+        },
+        {
+          "title": "진수를 $5$ 의 거듭제곱으로",
+          "body": "$$25=5^{2}$$"
+        },
+        {
+          "title": "지수 비교하기",
+          "body": "$5^x=5^{2}$ 이므로 $x=2$ 예요."
+        }
+      ],
+      "tip": "$5^{2}=25$ 이에요. 로그는 밑을 곱한 '횟수'예요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "lg-basic-value",
+      "seed": 1008
+    },
+    {
+      "q": "$\\log_{10} 8+\\log_{10} 125$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "simplify(log(8, 10) + log(125, 10))",
+      "concepts": [
+        "$\\log_a M+\\log_a N=\\log_a MN$",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)"
+      ],
+      "steps": [
+        {
+          "title": "더하기는 곱하기로",
+          "body": "$$\\log_{10} 8+\\log_{10} 125=\\log_{10}(8\\times125)$$"
+        },
+        {
+          "title": "진수 계산하기",
+          "body": "$$8\\times125=1000=10^{3}$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$\\log_{10} 10^{3}=3$ 이에요."
+        }
+      ],
+      "tip": "$\\log_{10} 8$, $\\log_{10} 125$ 각각은 깔끔한 값이 아니에요. 곱해서 밑의 거듭제곱이 되는지 먼저 봐요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "lg-sum-diff",
+      "seed": 1009
+    },
+    {
+      "q": "$\\log_{3} 7\\times\\log_{7} 81$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "simplify(log(7, 3) * log(81, 7))",
+      "concepts": [
+        "밑 변환: $\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$, 그래서 $\\log_a b\\times\\log_b c=\\log_a c$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 하나로 바꾸기",
+          "body": "상용로그(밑 10)로 바꿔요.\n$$\\log_{3} 7\\times\\log_{7} 81=\\frac{\\log 7}{\\log 3}\\times\\frac{\\log 81}{\\log 7}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "분자와 분모의 $\\log 7$ 끼리 약분해요.\n$$\\frac{\\log 81}{\\log 3}=\\log_{3} 81$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$81=3^{4}$ 이므로 $\\log_{3} 81=4$ 예요."
+        }
+      ],
+      "tip": "$\\log_a b\\times\\log_b c$ 처럼 앞의 진수와 뒤의 밑이 같으면 사슬처럼 이어져 $\\log_a c$ 가 돼요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "lg-change-base",
+      "seed": 1010
+    },
+    {
+      "q": "$\\log_{27} 243$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/3",
+      "answerType": "fraction",
+      "check": "simplify(log(243, 27))",
+      "concepts": [
+        "$\\log_{a^m} b^n=\\dfrac{n}{m}\\log_a b$",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)"
+      ],
+      "steps": [
+        {
+          "title": "밑과 진수를 $3$ 의 거듭제곱으로",
+          "body": "$$27=3^{3},\\quad 243=3^{5}$$"
+        },
+        {
+          "title": "지수를 앞으로",
+          "body": "$$\\log_{3^{3}} 3^{5}=\\frac{5}{3}\\log_{3} 3$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$\\log_{3} 3=1$ 이므로 답은 $\\frac{5}{3}$ 예요."
+        }
+      ],
+      "tip": "지수로 확인해요. $27^{\\frac{5}{3}}=(3^{3})^{\\frac{5}{3}}=3^{5}=243$ 이니 맞아요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "lg-power-base",
+      "seed": 1011
+    },
+    {
+      "q": "$\\log_{3} 3$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "simplify(log(3, 3))",
+      "concepts": [
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)",
+        "$a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "지수로 바꿔 묻기",
+          "body": "$\\log_{3} 3=x$ 라 하면 $3^x=3$ 이에요."
+        },
+        {
+          "title": "진수를 $3$ 의 거듭제곱으로",
+          "body": "$$3=3^{1}$$"
+        },
+        {
+          "title": "지수 비교하기",
+          "body": "$3^x=3^{1}$ 이므로 $x=1$ 이에요."
+        }
+      ],
+      "tip": "$3^{1}=3$ 이에요. 로그는 밑을 곱한 '횟수'예요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "lg-basic-value",
+      "seed": 1012
+    },
+    {
+      "q": "$\\log_{2} 160-\\log_{2} 10$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "simplify(log(160, 2) - log(10, 2))",
+      "concepts": [
+        "$\\log_a M-\\log_a N=\\log_a \\dfrac{M}{N}$",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)"
+      ],
+      "steps": [
+        {
+          "title": "빼기는 나누기로",
+          "body": "$$\\log_{2} 160-\\log_{2} 10=\\log_{2}\\frac{160}{10}$$"
+        },
+        {
+          "title": "진수 계산하기",
+          "body": "$$\\frac{160}{10}=16=2^{4}$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$\\log_{2} 2^{4}=4$ 예요."
+        }
+      ],
+      "tip": "$\\log_{2} 160$, $\\log_{2} 10$ 각각은 정수가 아니지만, 빼면 정수가 돼요. 따로 구하려 하지 말고 먼저 합쳐요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "lg-sum-diff",
+      "seed": 1013
+    },
+    {
+      "q": "$\\log_{2} 7\\times\\log_{7} 16$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "simplify(log(7, 2) * log(16, 7))",
+      "concepts": [
+        "밑 변환: $\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$, 그래서 $\\log_a b\\times\\log_b c=\\log_a c$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 하나로 바꾸기",
+          "body": "상용로그(밑 10)로 바꿔요.\n$$\\log_{2} 7\\times\\log_{7} 16=\\frac{\\log 7}{\\log 2}\\times\\frac{\\log 16}{\\log 7}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "분자와 분모의 $\\log 7$ 끼리 약분해요.\n$$\\frac{\\log 16}{\\log 2}=\\log_{2} 16$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$16=2^{4}$ 이므로 $\\log_{2} 16=4$ 예요."
+        }
+      ],
+      "tip": "$\\log_a b\\times\\log_b c$ 처럼 앞의 진수와 뒤의 밑이 같으면 사슬처럼 이어져 $\\log_a c$ 가 돼요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "lg-change-base",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\log_5\\sqrt5+\\log_2\\dfrac18$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5/2",
+      "answerType": "fraction",
+      "check": "simplify(log(sqrt(5), 5) + log(Rational(1, 8), 2))",
+      "concepts": [
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ ($a>0$, $a\\ne1$, $N>0$)"
+      ],
+      "steps": [
+        {
+          "title": "앞의 로그",
+          "body": "$\\sqrt5=5^{\\frac12}$ 이므로 $\\log_5\\sqrt5=\\frac12$ 이에요."
+        },
+        {
+          "title": "뒤의 로그",
+          "body": "$\\frac18=2^{-3}$ 이므로 $\\log_2\\frac18=-3$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac12+(-3)=-\\frac52$$"
+        }
+      ],
+      "tip": "근호는 지수 1/2, 역수는 지수 -1 로 바꾸면 로그값이 바로 보여요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$2\\log_3 6-\\log_3 4$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "simplify(2*log(6, 3) - log(4, 3))",
+      "concepts": [
+        "$\\log_a MN=\\log_a M+\\log_a N$, $\\log_a\\dfrac{M}{N}=\\log_a M-\\log_a N$, $\\log_a M^k=k\\log_a M$"
+      ],
+      "steps": [
+        {
+          "title": "계수를 지수로",
+          "body": "$$2\\log_3 6=\\log_3 6^2=\\log_3 36$$"
+        },
+        {
+          "title": "차는 몫으로",
+          "body": "$$\\log_3 36-\\log_3 4=\\log_3\\frac{36}{4}=\\log_3 9$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$$\\log_3 9=\\log_3 3^2=2$$"
+        }
+      ],
+      "tip": "로그 앞의 계수는 진수의 지수로 올려 보내고 나서 합치면 실수가 줄어요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$\\log_2 3\\times\\log_3 4\\times\\log_4 8$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "simplify(log(3, 2) * log(4, 3) * log(8, 4))",
+      "concepts": [
+        "밑 변환: $\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$",
+        "$\\log_a b\\times\\log_b c=\\log_a c$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 두 개",
+          "body": "$$\\log_2 3\\times\\log_3 4=\\log_2 4$$"
+        },
+        {
+          "title": "마지막 하나",
+          "body": "$$\\log_2 4\\times\\log_4 8=\\log_2 8$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$$\\log_2 8=3$$"
+        }
+      ],
+      "tip": "밑 변환으로 모두 $\\dfrac{\\log 3}{\\log 2}\\times\\dfrac{\\log 4}{\\log 3}\\times\\dfrac{\\log 8}{\\log 4}$ 로 쓰면 가운데가 모두 약분돼요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\log_{\\sqrt2}8$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "simplify(log(8, sqrt(2)))",
+      "concepts": [
+        "$\\log_{a^m} b^n=\\dfrac{n}{m}\\log_a b$",
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ ($a>0$, $a\\ne1$, $N>0$)"
+      ],
+      "steps": [
+        {
+          "title": "밑과 진수를 2 의 거듭제곱으로",
+          "body": "$$\\sqrt2=2^{\\frac12},\\quad 8=2^3$$"
+        },
+        {
+          "title": "지수를 앞으로",
+          "body": "$$\\log_{2^{\\frac12}}2^3=\\frac{3}{\\frac12}=6$$"
+        }
+      ],
+      "tip": "지수로 확인해요. $(\\sqrt2)^6=2^3=8$ 이 맞아요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\log_{x-1}(5-x)$ 가 정의되도록 하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "len([i for i in range(-20, 20) if i - 1 > 0 and i - 1 != 1 and 5 - i > 0])",
+      "concepts": [
+        "$\\log_a N$ 이 정의되려면 밑 $a>0$, $a\\ne1$, 진수 $N>0$ 이어야 해요."
+      ],
+      "steps": [
+        {
+          "title": "밑의 조건",
+          "body": "$x-1>0$ 이고 $x-1\\ne1$ 이라 $x>1$, $x\\ne2$ 예요."
+        },
+        {
+          "title": "진수의 조건",
+          "body": "$5-x>0$ 이라 $x<5$ 예요."
+        },
+        {
+          "title": "정수 세기",
+          "body": "$1<x<5$ 이고 $x\\ne2$ 인 정수는 $3,\\,4$ 로 2 개예요."
+        }
+      ],
+      "tip": "밑이 1 이 되는 경우를 빼는 것을 가장 많이 놓쳐요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$2^{1+\\log_2 5}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "10",
+      "answerType": "int",
+      "check": "simplify(Integer(2)**(1 + log(5, 2)))",
+      "concepts": [
+        "$a^{\\log_a N}=N$",
+        "$a^{x+y}=a^xa^y$"
+      ],
+      "steps": [
+        {
+          "title": "지수 나누기",
+          "body": "$$2^{1+\\log_2 5}=2^1\\times2^{\\log_2 5}$$"
+        },
+        {
+          "title": "로그의 뜻",
+          "body": "$2^{\\log_2 5}$ 는 2 를 '5 가 되는 만큼' 곱한 수라 $5$ 예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$2\\times5=10$$"
+        }
+      ],
+      "tip": "$a^{\\log_a N}=N$ 은 로그의 정의를 그대로 쓴 식이에요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$\\log4+\\log25-\\log\\dfrac{1}{10}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "simplify(log(4, 10) + log(25, 10) - log(Rational(1, 10), 10))",
+      "concepts": [
+        "$\\log_a MN=\\log_a M+\\log_a N$, $\\log_a\\dfrac{M}{N}=\\log_a M-\\log_a N$, $\\log_a M^k=k\\log_a M$",
+        "상용로그: 밑이 10 인 로그예요."
+      ],
+      "steps": [
+        {
+          "title": "앞의 두 개 합치기",
+          "body": "$$\\log4+\\log25=\\log100=2$$"
+        },
+        {
+          "title": "마지막 로그",
+          "body": "$\\frac{1}{10}=10^{-1}$ 이라 $\\log\\frac{1}{10}=-1$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$2-(-1)=3$$"
+        }
+      ],
+      "tip": "$4\\times25=100$ 처럼 곱해서 10 의 거듭제곱이 되는 짝을 먼저 찾아요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$a=\\log_2 3$ 일 때 $4^a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "simplify(Integer(4)**log(3, 2))",
+      "concepts": [
+        "$a^{\\log_a N}=N$",
+        "$(a^x)^y=a^{xy}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 2 로",
+          "body": "$$4^a=(2^2)^a=(2^a)^2$$"
+        },
+        {
+          "title": "로그의 뜻",
+          "body": "$2^a=2^{\\log_2 3}=3$ 이에요."
+        },
+        {
+          "title": "제곱",
+          "body": "$$3^2=9$$"
+        }
+      ],
+      "tip": "$a=\\log_2 3$ 은 '$2^a=3$' 과 같은 말이에요. 지수로 바꾸면 바로 풀려요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$1$ 이 아닌 두 양수 $a$, $b$ 에 대하여 $\\log_a b=3$ 일 때 $\\log_b a^2+\\log_a\\sqrt b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "13/6",
+      "answerType": "fraction",
+      "check": "a_ = 2\nb_ = a_**3\nans = simplify(log(a_**2, b_) + log(sqrt(b_), a_))",
+      "concepts": [
+        "$\\log_a MN=\\log_a M+\\log_a N$, $\\log_a\\dfrac{M}{N}=\\log_a M-\\log_a N$, $\\log_a M^k=k\\log_a M$",
+        "$\\log_b a=\\dfrac{1}{\\log_a b}$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 로그",
+          "body": "$$\\log_b a^2=2\\log_b a=\\frac{2}{\\log_a b}=\\frac23$$"
+        },
+        {
+          "title": "뒤의 로그",
+          "body": "$$\\log_a\\sqrt b=\\frac12\\log_a b=\\frac32$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac23+\\frac32=\\frac{4+9}{6}=\\frac{13}{6}$$"
+        }
+      ],
+      "tip": "$a=2$, $b=8$ 처럼 조건에 맞는 수를 넣어 확인할 수 있어요. 결과는 같아요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$100$ 이하의 자연수 $x$ 중에서 $\\log_2 x$ 의 값이 자연수가 되는 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "len([i for i in range(1, 101) if log(i, 2).is_integer and log(i, 2) > 0])",
+      "concepts": [
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ ($a>0$, $a\\ne1$, $N>0$)"
+      ],
+      "steps": [
+        {
+          "title": "지수로 바꾸기",
+          "body": "$\\log_2 x=n$ ($n$ 은 자연수) 이면 $x=2^n$ 이에요."
+        },
+        {
+          "title": "범위 안의 $2^n$",
+          "body": "$2,\\,4,\\,8,\\,16,\\,32,\\,64$ 가 100 이하이고, $2^7=128$ 은 넘어요."
+        },
+        {
+          "title": "세기",
+          "body": "모두 6 개예요."
+        }
+      ],
+      "tip": "$x=1$ 이면 $\\log_2 1=0$ 이라 자연수가 아니에요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "$\\dfrac{\\log_5 72}{\\log_5 2}-4\\log_2\\dfrac{\\sqrt6}{2}$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "5",
+      "answerType": "choice",
+      "check": "simplify(log(72, 5) / log(2, 5) - 4*log(sqrt(6)/2, 2))",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "밑 변환: $\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$",
+        "$\\log_a MN=\\log_a M+\\log_a N$, $\\log_a\\dfrac{M}{N}=\\log_a M-\\log_a N$, $\\log_a M^k=k\\log_a M$"
+      ],
+      "steps": [
+        {
+          "title": "밑 변환",
+          "body": "$$\\frac{\\log_5 72}{\\log_5 2}=\\log_2 72$$"
+        },
+        {
+          "title": "계수를 지수로",
+          "body": "$$4\\log_2\\frac{\\sqrt6}{2}=\\log_2\\left(\\frac{\\sqrt6}{2}\\right)^4=\\log_2\\frac{36}{16}$$"
+        },
+        {
+          "title": "차는 몫으로",
+          "body": "$$\\log_2 72-\\log_2\\frac{36}{16}=\\log_2\\left(72\\times\\frac{16}{36}\\right)=\\log_2 32$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$$\\log_2 32=5$$"
+        }
+      ],
+      "tip": "분수 모양의 로그는 밑 변환 공식을 거꾸로 읽어 한 개의 로그로 만들어요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "두 양수 $a$, $b$ 가 $\\log_2 a+\\log_2 b=5$, $\\log_2 a-\\log_2 b=1$ 을 만족시킬 때, $a+b$ 의 값은?",
+      "choices": [
+        "$8$",
+        "$10$",
+        "$12$",
+        "$14$",
+        "$16$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "u, v = symbols(\"u v\")\ns = solve([u + v - 5, u - v - 1], [u, v])\nans = 2**s[u] + 2**s[v]",
+      "choiceChecks": [
+        "8",
+        "10",
+        "12",
+        "14",
+        "16"
+      ],
+      "concepts": [
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ ($a>0$, $a\\ne1$, $N>0$)"
+      ],
+      "steps": [
+        {
+          "title": "로그를 문자로",
+          "body": "$\\log_2 a=u$, $\\log_2 b=v$ 라 하면 $u+v=5$, $u-v=1$ 이에요."
+        },
+        {
+          "title": "연립하기",
+          "body": "두 식을 더하면 $2u=6$ 이라 $u=3$, $v=2$ 예요."
+        },
+        {
+          "title": "지수로 되돌리기",
+          "body": "$a=2^3=8$, $b=2^2=4$ 예요."
+        },
+        {
+          "title": "합",
+          "body": "$$a+b=8+4=12$$"
+        }
+      ],
+      "tip": "$\\log_2 ab=5$, $\\log_2\\frac ab=1$ 로 보고 $ab=32$, $\\frac ab=2$ 를 풀어도 같아요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "두 실수 $a$, $b$ 가 $3^a=7$, $7^b=\\sqrt3$ 을 만족시킬 때, $ab$ 의 값은?",
+      "choices": [
+        "$\\dfrac14$",
+        "$\\dfrac13$",
+        "$\\dfrac12$",
+        "$1$",
+        "$2$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "a_ = log(7, 3)\nb_ = log(sqrt(3), 7)\nans = simplify(a_*b_)",
+      "choiceChecks": [
+        "Rational(1, 4)",
+        "Rational(1, 3)",
+        "Rational(1, 2)",
+        "1",
+        "2"
+      ],
+      "concepts": [
+        "$a^x=N \\Leftrightarrow x=\\log_a N$ ($a>0$, $a\\ne1$, $N>0$)",
+        "$\\log_a b\\times\\log_b c=\\log_a c$"
+      ],
+      "steps": [
+        {
+          "title": "로그로 바꾸기",
+          "body": "$a=\\log_3 7$, $b=\\log_7\\sqrt3$ 이에요."
+        },
+        {
+          "title": "사슬로 잇기",
+          "body": "$$ab=\\log_3 7\\times\\log_7\\sqrt3=\\log_3\\sqrt3$$"
+        },
+        {
+          "title": "로그값",
+          "body": "$\\sqrt3=3^{\\frac12}$ 이라 $ab=\\frac12$ 예요."
+        }
+      ],
+      "tip": "지수만으로도 풀려요. $3^{ab}=(3^a)^b=7^b=\\sqrt3=3^{\\frac12}$ 이에요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "$1\\le n\\le100$ 인 자연수 $n$ 중에서 $\\log_2 n+\\log_4 n$ 의 값이 자연수가 되도록 하는 $n$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "ans = len([i for i in range(1, 101) if simplify(log(i, 2) + log(i, 4)).is_integer and simplify(log(i, 2) + log(i, 4)) > 0])",
+      "concepts": [
+        "밑 변환: $\\log_a b=\\dfrac{\\log_c b}{\\log_c a}$",
+        "$\\log_{a^m} b^n=\\dfrac{n}{m}\\log_a b$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 2 로 맞추기",
+          "body": "$$\\log_4 n=\\log_{2^2}n=\\frac12\\log_2 n$$"
+        },
+        {
+          "title": "하나로 합치기",
+          "body": "$$\\log_2 n+\\frac12\\log_2 n=\\frac32\\log_2 n$$"
+        },
+        {
+          "title": "2 의 거듭제곱만 가능",
+          "body": "$\\log_2 n$ 이 유리수가 되려면 $n=2^m$ ($m$ 은 0 이상의 정수) 꼴이어야 해요."
+        },
+        {
+          "title": "자연수 조건",
+          "body": "$\\frac32 m$ 이 자연수이려면 $m$ 은 $2,\\,4,\\,6,\\,\\cdots$ 처럼 짝수여야 해요."
+        },
+        {
+          "title": "$n$ 찾기",
+          "body": "$n=2^2,\\,2^4,\\,2^6$, 곧 $4,\\,16,\\,64$ 이고 $2^8=256$ 은 100 을 넘어요."
+        },
+        {
+          "title": "개수",
+          "body": "모두 3 개예요."
+        }
+      ],
+      "tip": "$n$ 이 2 의 거듭제곱이 아니면 $\\log_2 n$ 은 무리수라서 자연수가 될 수 없어요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "$1$ 보다 큰 두 실수 $a$, $b$ 에 대하여 $\\log_a b=\\dfrac32$ 일 때, $\\log_b a^6+\\log_a b^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "a_ = 4\nb_ = 8\nans = simplify(log(a_**6, b_) + log(b_**2, a_))",
+      "concepts": [
+        "$\\log_a MN=\\log_a M+\\log_a N$, $\\log_a\\dfrac{M}{N}=\\log_a M-\\log_a N$, $\\log_a M^k=k\\log_a M$",
+        "$\\log_b a=\\dfrac{1}{\\log_a b}$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 로그",
+          "body": "$$\\log_b a^6=6\\log_b a=6\\times\\frac23=4$$"
+        },
+        {
+          "title": "뒤의 로그",
+          "body": "$$\\log_a b^2=2\\log_a b=2\\times\\frac32=3$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$4+3=7$$"
+        }
+      ],
+      "tip": "$\\log_b a$ 는 $\\log_a b$ 의 역수예요. $a=4$, $b=8$ 이면 $\\log_4 8=\\frac32$ 라 넣어서 확인할 수 있어요."
+    }
+  ]
+}
