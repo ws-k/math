@@ -47,6 +47,11 @@ test('함수·상수: 제곱근·삼각·지수·로그·절댓값·π·e', () =
   assert.equal(symToTex('E**2'), 'e^{2}');
 });
 
+test("미분 기호: diff(식, x) → {식}' (x 로만 미분)", () => {
+  assert.equal(symToTex('diff(x**2*(x+1),x)'), "\\left\\{x^{2}(x+1)\\right\\}'");
+  assert.equal(symToTex('2*diff(x**3,x)'), "2\\left\\{x^{3}\\right\\}'");
+});
+
 const SAMPLES = [
   '2*3*4',
   'x*2',
@@ -75,6 +80,8 @@ const SAMPLES = [
   'log(8,2)+log(x)',
   'Abs(-3)*x',
   'pi*r**2',
+  'diff(x**2*(x+1),x)',
+  'diff((x**2-3)**3,x)+1',
   '1/(1/2)',
   '+3*x',
   '--3',
@@ -104,6 +111,9 @@ test('지원하지 않는 꼴은 예외', () => {
     '2**',
     '(x+1',
     'X',
+    'diff(x**2)',
+    'diff(x**2,y)',
+    'diff(x**2,2)',
   ])
     assert.throws(() => symToTex(bad), bad);
 });

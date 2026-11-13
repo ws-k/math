@@ -116,7 +116,126 @@ def check_approx(it):
     return None
 
 
-KINDS = {"spot": check_spot, "equiv": check_equiv, "sameeq": check_sameeq, "approx": check_approx}
+def read(s):
+    """레슨 부품이 넘긴 식 글자. 1/2 가 실수 0.5 가 되지 않게 parse_expr(정수→Integer)로 읽는다."""
+    return parse_expr(str(s), local_dict=dict(NS))
+
+
+def defined(v):
+    """실수이고 유한한가(zoo·nan·복소수는 '정의 안 됨')"""
+    return v.is_real is True and v.is_finite is True
+
+
+def check_parity(it):
+    """그래프 계산기(TS)와 sympy 가 같은 식을 같은 값으로 계산하는가. 상대오차 1e-9, 정의 안 되는 자리는 양쪽 다."""
+    pts, vals = it["points"], it["values"]
+    if len(pts) != len(vals) or not pts:
+        return "점과 값의 개수가 다르거나 비어 있음"
+    e = read(it["expr"])
+    for pt, ts in zip(pts, vals):
+        sub = {sympy.Symbol(k): read(v) for k, v in pt.items()}
+        v = sympy.N(e.subs(sub), 30)
+        if not defined(v):
+            if ts is not None:
+                return f"{it['expr']} @ {pt}: sympy 는 정의 안 됨({v}), TS 는 {ts}"
+            continue
+        if ts is None:
+            return f"{it['expr']} @ {pt}: TS 는 정의 안 됨, sympy 는 {v}"
+        if abs(float(v) - ts) > 1e-9 * max(1.0, abs(float(v))):
+            return f"{it['expr']} @ {pt}: TS {ts} ≠ sympy {v}"
+    return None
+
+
+def _grid(view):
+    """보기 범위 안 격자 칸 번호 (i 목록, j 목록)와 칸 간격·범위"""
+    xmin, xmax = read(view["x"][0]), read(view["x"][1])
+    ymin, ymax = read(view["y"][0]), read(view["y"][1])
+    sx, sy = read(view["sx"]), read(view["sy"])
+    I = range(int(sympy.ceiling(xmin / sx)), int(sympy.floor(xmax / sx)) + 1)
+    J = range(int(sympy.ceiling(ymin / sy)), int(sympy.floor(ymax / sy)) + 1)
+    return I, J, sx, sy, (xmin, xmax, ymin, ymax)
+
+
+def _on_grid(v, step):
+    k = sympy.nsimplify(sympy.simplify(v / step))
+    return k.is_integer is True
+
+
+def check_plot(it):
+    """좌표 찍기·그리기 과제가 범위 안 격자로 풀리는 문제인가."""
+    view = it["view"]
+    I, J, sx, sy, (xmin, xmax, ymin, ymax) = _grid(view)
+    task = it["task"]
+    if task == "point":
+        X, Y = evaluate(it["x"]), evaluate(it["y"])
+        if not (defined(X) and defined(Y)):
+            return f"점 ({X}, {Y}) 가 실수가 아님"
+        if not (xmin <= X <= xmax and ymin <= Y <= ymax):
+            return f"점 ({X}, {Y}) 가 화면 밖"
+        if not (_on_grid(X, sx) and _on_grid(Y, sy)):
+            return f"점 ({X}, {Y}) 가 격자 위가 아님"
+        return None
+    if task == "pointsOn":
+        f = read(it["curve"])
+        x = sympy.Symbol("x")
+        hits = 0
+        for i in I:
+            Y = sympy.simplify(f.subs(x, i * sx))
+            if defined(Y) and ymin <= Y <= ymax and _on_grid(Y, sy):
+                hits += 1
+        if hits < it["count"]:
+            return f"곡선 {it['curve']} 위 격자점 {hits}개 < {it['count']}개"
+        return None
+    if task == "line":
+        # 칸 간격이 유리수일 때만(직선 과제는 형식 검사에서 그렇게 막는다). 분수로 빠르게 센다.
+        from fractions import Fraction as F
+
+        def fr(v):
+            v = sympy.Rational(evaluate(v)) if isinstance(v, str) else sympy.Rational(v)
+            return F(int(v.p), int(v.q))
+
+        fsx, fsy = fr(sx), fr(sy)
+        pts = [(i * fsx, j * fsy) for i in I for j in J]
+        m = fr(it["slope"]) if "slope" in it else None
+        c = fr(it["intercept"]) if "intercept" in it else None
+        P = (fr(it["through"][0]), fr(it["through"][1])) if "through" in it else None
+        for a in range(len(pts)):
+            for b in range(a + 1, len(pts)):
+                (x1, y1), (x2, y2) = pts[a], pts[b]
+                if x1 == x2:
+                    continue
+                k = (y2 - y1) / (x2 - x1)
+                if m is not None and k != m:
+                    continue
+                if c is not None and y1 - k * x1 != c:
+                    continue
+                if P is not None and P[1] - y1 != k * (P[0] - x1):
+                    continue
+                return None
+        return "조건을 만족하는 직선이 범위 안 격자점 2개를 지나지 않음"
+    if task == "sketch":
+        tol = read(it["tol"])
+        if not (tol > 0 and tol <= sx and tol <= sy):
+            return f"허용 오차 {tol} 가 0 이하이거나 격자 간격보다 큼"
+        f = read(it["curve"])
+        x = sympy.Symbol("x")
+        for k in range(21):
+            X = xmin + (xmax - xmin) * k / 20
+            Y = sympy.N(f.subs(x, X), 30)
+            if not defined(Y) or not (ymin <= Y <= ymax):
+                return f"곡선 {it['curve']} 이 x={X} 에서 정의 안 되거나 화면 밖({Y})"
+        return None
+    return f"알 수 없는 과제 {task}"
+
+
+KINDS = {
+    "spot": check_spot,
+    "equiv": check_equiv,
+    "sameeq": check_sameeq,
+    "approx": check_approx,
+    "parity": check_parity,
+    "plot": check_plot,
+}
 
 
 def check_item(it):

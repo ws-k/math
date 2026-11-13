@@ -121,3 +121,80 @@ test('같은 식 대조(sameeq)와 근삿값(approx)', () => {
     assert.equal(r.status, 1, JSON.stringify(bad) + r.stdout);
   }
 });
+
+const parity = { unit: 'u', ref: 'u/lesson:graph:parity', kind: 'parity' };
+
+test('식 일치(parity): TS 값과 sympy 값이 같고 정의 안 되는 자리가 같으면 통과', () => {
+  const r = runVerify([
+    {
+      ...parity,
+      expr: '1/x',
+      points: [{ x: '-2' }, { x: '0' }, { x: '1/2' }],
+      values: [-0.5, null, 2],
+    },
+    {
+      ...parity,
+      expr: 'log(x)+a',
+      points: [
+        { x: '-1', a: '1' },
+        { x: 'E', a: '1' },
+      ],
+      values: [null, 2],
+    },
+    { ...parity, expr: 'diff(x**5,x)', points: [{ x: '1' }], values: [5] },
+    { ...parity, expr: 'tan(x)', points: [{ x: 'pi/2' }, { x: 'pi/4' }], values: [null, 1] },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+for (const [name, it] of [
+  ['값이 다름', { expr: 'x**2', points: [{ x: '3' }], values: [9.0001] }],
+  ['TS 는 정의 안 됨, sympy 는 값', { expr: 'x**2', points: [{ x: '3' }], values: [null] }],
+  ['TS 는 값, sympy 는 정의 안 됨', { expr: 'sqrt(x)', points: [{ x: '-4' }], values: [2] }],
+  ['점과 값 개수가 다름', { expr: 'x', points: [{ x: '1' }], values: [1, 2] }],
+] as const) {
+  test(`실패해야 함(parity): ${name}`, () => {
+    const r = runVerify([{ ...parity, ...it }]);
+    assert.equal(r.status, 1, r.stdout);
+  });
+}
+
+const plot = {
+  unit: 'u',
+  ref: 'u/lesson:graph:과제',
+  kind: 'plot',
+  view: { x: ['-2', '3'], y: ['-3', '4'], sx: '1', sy: '1' },
+};
+
+test('좌표 과제(plot): 범위 안 격자로 답을 낼 수 있으면 통과', () => {
+  const r = runVerify([
+    { ...plot, task: 'point', x: '1+1', y: 'diff(x**2,x).subs(x,1)' },
+    { ...plot, task: 'pointsOn', curve: 'x**2-1', count: 3 },
+    { ...plot, task: 'line', slope: '2', through: ['1', '0'] },
+    { ...plot, task: 'line', slope: '1/2' },
+    { ...plot, task: 'line', intercept: '-1', slope: '-1' },
+    { ...plot, task: 'sketch', curve: 'x/2', tol: '1/2' },
+    {
+      ...plot,
+      view: { x: ['0', '2*pi'], y: ['-1', '1'], sx: 'pi/6', sy: '1/2' },
+      task: 'pointsOn',
+      curve: 'sin(x)',
+      count: 5,
+    },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+for (const [name, it] of [
+  ['점이 범위 밖', { task: 'point', x: '2+2', y: '0' }],
+  ['점이 격자 위가 아님', { task: 'point', x: '1/2', y: '0' }],
+  ['곡선 위 격자점이 모자람', { task: 'pointsOn', curve: 'x**2-1', count: 6 }],
+  ['격자점 2개를 지나는 직선이 없음', { task: 'line', slope: '2', through: ['1/4', '0'] }],
+  ['허용 오차가 격자보다 큼', { task: 'sketch', curve: 'x/2', tol: '2' }],
+  ['곡선이 화면 밖', { task: 'sketch', curve: 'x**3', tol: '1/2' }],
+] as const) {
+  test(`실패해야 함(plot): ${name}`, () => {
+    const r = runVerify([{ ...plot, ...it }]);
+    assert.equal(r.status, 1, r.stdout);
+  });
+}

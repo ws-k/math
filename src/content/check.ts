@@ -53,7 +53,48 @@ export interface ApproxCheck {
   digits: number;
 }
 
-export type CheckItem = AnswerCheck | SpotCheck | EquivCheck | SameEqCheck | ApproxCheck;
+/**
+ * 그래프 계산기(src/lesson/expr.ts)와 sympy 가 같은 식을 같은 값으로 계산하는가. points 의 각 점에서
+ * TS 가 낸 값(values, 정의 안 되면 null)과 sympy 값이 상대오차 1e-9 안이고, 정의 안 되는 자리가 같아야 한다.
+ */
+export interface ParityCheck {
+  ref: string;
+  unit: string;
+  kind: 'parity';
+  expr: string;
+  points: Record<string, string>[];
+  values: (number | null)[];
+}
+
+/** 좌표 화면(격자 칸 간격·범위). 모두 sympy 식 글자 */
+export interface PlotView {
+  x: [string, string];
+  y: [string, string];
+  sx: string;
+  sy: string;
+}
+
+/** 좌표 찍기·그리기 과제가 풀 수 있는 문제인가(범위 안 격자로 답을 낼 수 있나) */
+export type PlotCheck = {
+  ref: string;
+  unit: string;
+  kind: 'plot';
+  view: PlotView;
+} & (
+  | { task: 'point'; x: string; y: string }
+  | { task: 'pointsOn'; curve: string; count: number }
+  | { task: 'line'; slope?: string; through?: [string, string]; intercept?: string }
+  | { task: 'sketch'; curve: string; tol: string }
+);
+
+export type CheckItem =
+  | AnswerCheck
+  | SpotCheck
+  | EquivCheck
+  | SameEqCheck
+  | ApproxCheck
+  | ParityCheck
+  | PlotCheck;
 
 const TYPES = new Set(['int', 'fraction', 'expr', 'choice']);
 /** 계산 없이 숫자만 적은 검산식 (예: "8", "5/3", "Rational(5,3)") */

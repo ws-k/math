@@ -3,7 +3,8 @@
 // 다른 식을 그려 냈다. 검산한 식과 보이는 식이 같아야 하므로 구조를 거쳐 만든다.
 // 연산 우선순위는 파이썬(sympy 가 읽는 방식)을 그대로 따른다: -2*x = (-2)*x, -x**2 = -(x**2), 2**3**2 = 2**(3**2).
 
-export type Fn = 'sqrt' | 'sin' | 'cos' | 'tan' | 'log' | 'Abs';
+/** diff 는 x 로 미분한 식(틀린 곳 찾기에서 "{f(x)g(x)}' = …" 을 적으려고). 둘째 인자는 늘 x */
+export type Fn = 'sqrt' | 'sin' | 'cos' | 'tan' | 'log' | 'Abs' | 'diff';
 
 export type Node =
   | { t: 'num'; v: string }
@@ -22,6 +23,7 @@ const FNS: Record<string, number[]> = {
   exp: [1],
   log: [1, 2],
   Abs: [1],
+  diff: [2],
 };
 
 /** 검산기(verify.py)가 기호로 아는 글자만. e·i 등은 sympy 에서 다른 뜻이거나 모르는 이름이다 */
@@ -113,6 +115,9 @@ export function parseSym(src: string): Node {
       eat(')');
       if (!arity.includes(args.length)) fail(src, `${name} 인자 수`);
       if (name === 'exp') return { t: 'pow', a: { t: 'const', v: 'E' }, b: args[0] as Node };
+      // 화면 글자 {…}' 에는 무엇으로 미분했는지가 없다 — x 가 아니면 보이는 식과 검산 식이 달라진다
+      if (name === 'diff' && (args[1]?.t !== 'var' || args[1].v !== 'x'))
+        fail(src, 'diff 는 x 로만 미분');
       return { t: 'call', f: name as Fn, args };
     }
     if (VARS.has(name)) return { t: 'var', v: name };
@@ -145,6 +150,7 @@ function tex(n: Node): string {
       const [a, b] = n.args.map(tex) as [string, string | undefined];
       if (n.f === 'sqrt') return `\\sqrt{${a}}`;
       if (n.f === 'Abs') return `\\left|${a}\\right|`;
+      if (n.f === 'diff') return `\\left\\{${a}\\right\\}'`;
       if (n.f === 'log') return b === undefined ? `\\ln(${a})` : `\\log_{${b}}(${a})`;
       return `\\${n.f}(${a})`;
     }
@@ -241,6 +247,24 @@ export function texToSym(src: string): string {
       const inner = texToSym(src.slice(i, end));
       i = end + 7;
       value(`Abs(${inner})`);
+    } else if (cmd('\\left\\{')) {
+      i += 7;
+      // 짝 맞추기: 안에 또 {…}' 가 있을 수 있다
+      let depth = 1;
+      let end = i;
+      while (depth > 0) {
+        const open = src.indexOf('\\left\\{', end);
+        const close = src.indexOf("\\right\\}'", end);
+        if (close < 0) return fail(src, '{ } 짝');
+        if (open >= 0 && open < close) {
+          depth++;
+          end = open + 7;
+        } else if (--depth > 0) end = close + 9;
+        else end = close;
+      }
+      const inner = texToSym(src.slice(i, end));
+      i = end + 9;
+      value(`diff(${inner},x)`);
     } else if (cmd('\\log_')) {
       i += 5;
       const base = group();
