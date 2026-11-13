@@ -1,0 +1,1217 @@
+{
+  "id": "e-proportion",
+  "course": "초등",
+  "unit": "변화와 관계",
+  "title": "비례식과 비례배분",
+  "prereq": [
+    "e-ratio"
+  ],
+  "suneung": [],
+  "hours": 1.5,
+  "lesson": {
+    "minutes": 15,
+    "equations": {
+      "beads": "4*x=6*10"
+    },
+    "values": {
+      "milk": {
+        "value": "6",
+        "check": "Rational(2,3)*9"
+      },
+      "blue": {
+        "value": "15",
+        "eq": "beads"
+      },
+      "sis": {
+        "value": "12",
+        "check": "20*Rational(3,3+2)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "초등 · 변화와 관계",
+        "title": "비율이 같은 두 비,\n등호로 이어 봐요",
+        "lead": "요리 양을 늘리거나 간식을 나눌 때 쓰는 계산이에요. 직접 찍고 나눠 보며 익혀요.",
+        "meta": [
+          "비례식과 비례배분"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "밀가루를 9컵 넣으면\n우유는 몇 컵일까요?",
+        "widget": {
+          "type": "table",
+          "params": {
+            "title": "핫케이크 반죽",
+            "unit": "컵",
+            "rows": [
+              {
+                "label": "밀가루",
+                "value": "3"
+              },
+              {
+                "label": "우유",
+                "value": "2"
+              }
+            ]
+          }
+        },
+        "choices": [
+          {
+            "value": "6",
+            "check": "Rational(2,3)*9"
+          },
+          {
+            "value": "8",
+            "check": "2+(9-3)",
+            "feedback": "밀가루가 6컵 늘었다고 우유도 6컵 늘렸네요. 늘어난 양이 아니라 몇 배가 됐는지 봐야 해요."
+          },
+          {
+            "value": "18",
+            "check": "2*9",
+            "feedback": "밀가루 1컵에 우유 2컵이 아니에요. 밀가루 3컵에 우유 2컵이에요."
+          }
+        ],
+        "format": {
+          "unit": "컵"
+        },
+        "answer": 0,
+        "answerCheck": "Rational(2,3)*9",
+        "reveal": "**맞아요!** 이렇게 생각했을 거예요.",
+        "thoughts": [
+          "밀가루가 3컵에서 9컵, 3배가 됐어요.",
+          "맛이 같으려면 우유도 3배. {{milk}}컵이에요."
+        ],
+        "conclude": "$3:2$ 와 $9:6$ 은 두 항에 똑같이 3을 곱한 비예요. 그래서 ==비율이 같아요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "grid",
+        "chip": "손으로 해 보기",
+        "title": "우유가 8컵이면\n밀가루는 몇 컵일까요?",
+        "lead": "가로는 밀가루, 세로는 우유 컵 수예요. 점 A가 처음 반죽이에요. 우유 8컵 반죽의 자리를 눌러 찍어 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": 0,
+              "max": 12,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "A",
+                "point": {
+                  "x": 3,
+                  "y": 2
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "12",
+                  "check": "Rational(3,2)*8"
+                },
+                "y": {
+                  "value": "8",
+                  "check": "Rational(2,3)*12"
+                }
+              }
+            },
+            "intro": "가로로 한 칸이 밀가루 1컵, 세로로 한 칸이 우유 1컵이에요.",
+            "done": "우유가 2컵에서 8컵, 4배예요. 밀가루도 4배라서 12컵이에요."
+          }
+        },
+        "gate": true,
+        "after": "==두 항에 같은 수를 곱해도== 비율은 같아요. 같은 수로 나누어도 그래요. $12:8$ 을 4로 나누면 $3:2$ 예요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 한 일에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "전항 · 후항",
+            "body": "비 $3:2$ 에서 앞의 수가 전항, 뒤의 수가 후항이에요."
+          },
+          {
+            "term": "비례식",
+            "body": "비율이 같은 두 비를 $3:2=12:8$ 처럼 등호로 이은 식이에요."
+          },
+          {
+            "term": "외항 · 내항",
+            "body": "비례식의 바깥쪽 두 수가 외항, 안쪽 두 수가 내항이에요."
+          }
+        ],
+        "aside": "**참고** · $3:2=12:8$ 에서 외항의 곱 $3\\times8$ 과 내항의 곱 $2\\times12$ 를 계산해 보세요. 둘 다 24예요. 비례식에서는 늘 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "cross",
+        "chip": "지름길",
+        "title": "몇 배인지 안 보이면\n두 곱이 같다는 걸 써요",
+        "lead": "빨간 구슬과 파란 구슬을 $4:6$ 으로 꿴 팔찌예요. 빨간 구슬이 10개면 파란 구슬 $x$ 개는? $4:6=10:x$ 에서 외항의 곱과 내항의 곱이 같아요.",
+        "widget": {
+          "type": "balance",
+          "params": {
+            "unit": "개",
+            "left": {
+              "x": 4,
+              "c": 0
+            },
+            "right": {
+              "c": 60
+            },
+            "intro": "왼쪽은 외항의 곱 $4\\times x$, 오른쪽은 내항의 곱 $6\\times10$ 이에요.",
+            "ops": [
+              {
+                "op": "div",
+                "value": 4,
+                "side": "both",
+                "say": "수평 그대로예요. 파란 구슬은 $x = {{x}}$ 개예요."
+              },
+              {
+                "op": "div",
+                "value": 4,
+                "side": "left",
+                "say": "기울었어요! 한쪽만 나누면 양쪽이 같지 않아요.",
+                "undo": "되돌렸어요. 이번엔 양쪽을 함께 나눠 보세요."
+              }
+            ]
+          },
+          "eq": "beads"
+        },
+        "gate": true,
+        "after": "확인: $4:6$ 과 $10:{{blue}}$ 은 비율이 같아요. ==외항의 곱 = 내항의 곱==이면 몇 배인지 몰라도 풀려요."
+      },
+      {
+        "kind": "explore",
+        "id": "share",
+        "chip": "두 번째 해 보기",
+        "title": "사탕 20개를\n$3:2$ 로 나눠요",
+        "lead": "언니가 3묶음, 동생이 2묶음을 가져요. 언니 몫이 끝나는 자리로 점 P를 옮겨 보세요.",
+        "widget": {
+          "type": "numberLine",
+          "params": {
+            "min": 0,
+            "max": 20,
+            "step": "1",
+            "label": "5",
+            "points": [
+              {
+                "id": "P",
+                "at": "0",
+                "drag": true
+              }
+            ],
+            "task": {
+              "type": "point",
+              "point": "P",
+              "answer": "12",
+              "check": "20*Rational(3,3+2)"
+            }
+          }
+        },
+        "gate": true,
+        "after": "전체를 $3+2$, 곧 5묶음으로 나눠 그중 3묶음이에요. 언니 몫은 {{sis}}개. 이렇게 나누는 것을 ==비례배분==이라고 해요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $2:3$ 의 두 항에 4를 더해 $6:7$ 을 만들었어요. 비율로 쓰면 이래요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "2/3"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(2+4)/(3+4)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "(2*4)/(3*4)",
+              "body": "같은 수를 **더하면** 비율이 달라져요. 두 항에 같은 수를 **곱해야** 해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 사탕 20개를 $3:2$ 로 나눴어요. 두 사람 몫을 더하면 20개여야 해요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "20*(3/2)",
+                "bad": true
+              },
+              {
+                "sym": "+20*(2/5)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "20"
+              }
+            ],
+            "fix": {
+              "sym": "20*(3/5)",
+              "body": "언니 몫은 전체의 $\\frac{3}{5}$ 예요. 분모는 두 항의 합 $3+2$ 예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "rice",
+            "q": "쌀 2컵에 물 3컵을 넣어 밥을 지어요. 쌀이 5컵이면 물은 몇 컵 넣어야 할까요?",
+            "hint": "$2:3=5:\\square$ 로 놓고 외항의 곱과 내항의 곱이 같다는 걸 써요.",
+            "placeholder": "컵",
+            "steps": [
+              {
+                "title": "비례식 세우기",
+                "body": "$$2:3=5:\\square$$"
+              },
+              {
+                "title": "외항의 곱 = 내항의 곱",
+                "body": "$$2\\times\\square=3\\times5=15$$"
+              },
+              {
+                "title": "나누기",
+                "body": "$$\\square=15\\div2=7.5$$"
+              }
+            ],
+            "answer": "15/2",
+            "answerType": "fraction",
+            "check": "solve(Eq(2*x, 3*5), x)[0]"
+          },
+          {
+            "id": "blank",
+            "q": "$\\square$ 에 알맞은 수를 구하세요.\n$$5:8=\\square:24$$",
+            "hint": "후항이 8에서 24, 몇 배가 됐나요?",
+            "placeholder": "□",
+            "steps": [
+              {
+                "title": "몇 배인지 보기",
+                "body": "$$8\\times3=24$$"
+              },
+              {
+                "title": "전항도 똑같이",
+                "body": "$$5\\times3={{answer}}$$"
+              }
+            ],
+            "answer": "15",
+            "answerType": "int",
+            "check": "solve(Eq(5*24, 8*x), x)[0]"
+          },
+          {
+            "id": "money",
+            "q": "용돈 15,000원을 형과 동생이 $3:2$ 의 비로 나눠요. 동생은 몇 원을 받을까요?",
+            "hint": "전체를 $3+2$ 묶음으로 나눈다고 생각해요.",
+            "placeholder": "원",
+            "steps": [
+              {
+                "title": "전체 묶음 수",
+                "body": "$$3+2=5$$"
+              },
+              {
+                "title": "동생 몫",
+                "body": "$$15000\\times\\frac{2}{5}={{answer}}$$"
+              }
+            ],
+            "answer": "6000",
+            "answerType": "int",
+            "check": "15000*Rational(2,3+2)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "두 항에 같은 수를 **곱하거나 나눠도** 비율은 같아요. 더하면 안 돼요.",
+          "비례식에서 **외항의 곱 = 내항의 곱**이에요.",
+          "전체를 $m:n$ 으로 나누면 한쪽 몫은 전체 × $\\frac{m}{m+n}$ 이에요.",
+          "나눈 몫을 더해 전체가 되는지 **확인**해요."
+        ],
+        "done": "비례식과 비례배분 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$a:b=(a\\times k):(b\\times k)=(a\\div k):(b\\div k)$",
+    "$a:b=c:d \\Leftrightarrow a\\times d=b\\times c$",
+    "전체 $A$ 를 $m:n$ 으로 나누면 $A\\times\\dfrac{m}{m+n},\\ A\\times\\dfrac{n}{m+n}$"
+  ],
+  "generators": [
+    "prop-equiv-ratio",
+    "prop-simplest",
+    "prop-cross",
+    "prop-share",
+    "prop-word"
+  ],
+  "problems": [
+    {
+      "q": "$\\square$ 에 알맞은 수를 구하세요.\n$$7:9=\\square:18$$",
+      "choices": null,
+      "answer": "14",
+      "answerType": "int",
+      "check": "solve(Eq(7*18, 9*x), x)[0]",
+      "concepts": [
+        "비의 전항과 후항에 0이 아닌 같은 수를 곱하거나 나누어도 비율은 같아요.",
+        "$a:b=(a\\times k):(b\\times k)$"
+      ],
+      "steps": [
+        {
+          "title": "몇 배 했는지 찾기",
+          "body": "후항끼리 비교해요.\n$$9\\times2=18$$"
+        },
+        {
+          "title": "전항에도 똑같이",
+          "body": "비의 성질: 두 항에 같은 수를 곱해도 비율은 같아요.\n$$7\\times2=14$$"
+        }
+      ],
+      "tip": "두 항에 같은 수를 더하면 비율이 달라져요. 꼭 곱하거나 나눠요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prop-equiv-ratio",
+      "seed": 1000
+    },
+    {
+      "q": "다음 비를 가장 간단한 자연수의 비로 나타내면 $3:\\square$ 예요. $\\square$ 에 알맞은 수를 구하세요.\n$$15:5$$",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "Rational(5,15)*3",
+      "concepts": [
+        "두 항을 두 수의 최대공약수로 나누면 가장 간단한 자연수의 비가 돼요."
+      ],
+      "steps": [
+        {
+          "title": "최대공약수 찾기",
+          "body": "두 항의 최대공약수를 찾아요(최대공약수: $5$)."
+        },
+        {
+          "title": "두 항을 나누기",
+          "body": "$$15\\div5=3,\\quad 5\\div5=1$$"
+        }
+      ],
+      "tip": "나눈 뒤 두 수가 1 말고 공약수가 없으면 끝이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prop-simplest",
+      "seed": 1001
+    },
+    {
+      "q": "비례식에서 $\\square$ 에 알맞은 수를 구하세요.\n$$5:\\square=20:24$$",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "solve(Eq(5*24, x*20), x)[0]",
+      "concepts": [
+        "비례식에서 외항의 곱과 내항의 곱은 같아요.",
+        "$a:b=c:d \\Leftrightarrow ad=bc$"
+      ],
+      "steps": [
+        {
+          "title": "외항의 곱 = 내항의 곱",
+          "body": "$$5\\times24=\\square\\times20$$"
+        },
+        {
+          "title": "아는 쪽 계산하기",
+          "body": "$$120=\\square\\times20$$"
+        },
+        {
+          "title": "나누어 구하기",
+          "body": "$$\\square=120\\div20=6$$"
+        }
+      ],
+      "tip": "구한 수를 넣어 외항의 곱과 내항의 곱이 같은지 확인해요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prop-cross",
+      "seed": 1002
+    },
+    {
+      "q": "사탕 40개를 하준이와 서윤이가 $3:2$의 비로 나누어 가져요. 서윤이의 몫은 몇 개인가요?",
+      "choices": null,
+      "answer": "16",
+      "answerTex": "16개",
+      "answerType": "int",
+      "check": "40*Rational(2,3+2)",
+      "concepts": [
+        "전체를 $m:n$ 으로 나누면 한쪽 몫은 전체 × $\\frac{m}{m+n}$ 이에요.",
+        "분모는 두 항의 합(전체 묶음 수)이에요."
+      ],
+      "steps": [
+        {
+          "title": "전체 묶음 수",
+          "body": "$$3+2=5$$"
+        },
+        {
+          "title": "서윤이의 몫 비율",
+          "body": "서윤이의 몫은 전체의 $\\frac{2}{5}$ 만큼이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$40\\times\\frac{2}{5}=16$$"
+        }
+      ],
+      "tip": "두 사람 몫을 더해 전체가 되는지 확인해요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prop-share",
+      "seed": 1003
+    },
+    {
+      "q": "공책 6권의 값이 4,200원이에요. 같은 공책 2권의 값은 몇 원일까요?",
+      "choices": null,
+      "answer": "1400",
+      "answerTex": "1,400원",
+      "answerType": "int",
+      "check": "solve(Eq(6*x, 4200*2), x)[0]",
+      "concepts": [
+        "공책 수와 값의 비가 늘 같으므로 비례식을 세울 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "비례식 세우기",
+          "body": "구할 값을 $\\square$ 로 두어요.\n$$6:4200=2:\\square$$"
+        },
+        {
+          "title": "외항의 곱 = 내항의 곱",
+          "body": "$$6\\times\\square=4200\\times2=8400$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\square=8400\\div6=1400$$"
+        }
+      ],
+      "tip": "한 권에 얼마인지 먼저 구해서 곱해도 같아요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prop-word",
+      "seed": 1004
+    },
+    {
+      "q": "$\\square$ 에 알맞은 수를 구하세요.\n$$4:7=24:\\square$$",
+      "choices": null,
+      "answer": "42",
+      "answerType": "int",
+      "check": "solve(Eq(4*x, 7*24), x)[0]",
+      "concepts": [
+        "비의 전항과 후항에 0이 아닌 같은 수를 곱하거나 나누어도 비율은 같아요.",
+        "$a:b=(a\\times k):(b\\times k)$"
+      ],
+      "steps": [
+        {
+          "title": "몇 배 했는지 찾기",
+          "body": "전항끼리 비교해요.\n$$4\\times6=24$$"
+        },
+        {
+          "title": "후항에도 똑같이",
+          "body": "비의 성질: 두 항에 같은 수를 곱해도 비율은 같아요.\n$$7\\times6=42$$"
+        }
+      ],
+      "tip": "두 항에 같은 수를 더하면 비율이 달라져요. 꼭 곱하거나 나눠요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prop-equiv-ratio",
+      "seed": 1005
+    },
+    {
+      "q": "다음 비를 가장 간단한 자연수의 비로 나타내면 $2:\\square$ 예요. $\\square$ 에 알맞은 수를 구하세요.\n$$0.2:0.9$$",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "Rational(9,10)/Rational(2,10)*2",
+      "concepts": [
+        "소수의 비는 두 항에 10, 100 같은 수를 곱해 자연수의 비로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "10 곱하기",
+          "body": "두 항에 10을 곱해 자연수로 만들어요.\n$$0.2:0.9=2:9$$"
+        }
+      ],
+      "tip": "두 항에 같은 수를 곱했으니 비율은 그대로예요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prop-simplest",
+      "seed": 1006
+    },
+    {
+      "q": "비례식에서 $\\square$ 에 알맞은 수를 구하세요.\n$$8:\\square=16:6$$",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "solve(Eq(8*6, x*16), x)[0]",
+      "concepts": [
+        "비례식에서 외항의 곱과 내항의 곱은 같아요.",
+        "$a:b=c:d \\Leftrightarrow ad=bc$"
+      ],
+      "steps": [
+        {
+          "title": "외항의 곱 = 내항의 곱",
+          "body": "$$8\\times6=\\square\\times16$$"
+        },
+        {
+          "title": "아는 쪽 계산하기",
+          "body": "$$48=\\square\\times16$$"
+        },
+        {
+          "title": "나누어 구하기",
+          "body": "$$\\square=48\\div16=3$$"
+        }
+      ],
+      "tip": "구한 수를 넣어 외항의 곱과 내항의 곱이 같은지 확인해요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prop-cross",
+      "seed": 1007
+    },
+    {
+      "q": "구슬 36개를 형과 동생이 $4:5$의 비로 나누어 가져요. 동생의 몫은 몇 개인가요?",
+      "choices": null,
+      "answer": "20",
+      "answerTex": "20개",
+      "answerType": "int",
+      "check": "36*Rational(5,4+5)",
+      "concepts": [
+        "전체를 $m:n$ 으로 나누면 한쪽 몫은 전체 × $\\frac{m}{m+n}$ 이에요.",
+        "분모는 두 항의 합(전체 묶음 수)이에요."
+      ],
+      "steps": [
+        {
+          "title": "전체 묶음 수",
+          "body": "$$4+5=9$$"
+        },
+        {
+          "title": "동생의 몫 비율",
+          "body": "동생의 몫은 전체의 $\\frac{5}{9}$ 만큼이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$36\\times\\frac{5}{9}=20$$"
+        }
+      ],
+      "tip": "두 사람 몫을 더해 전체가 되는지 확인해요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prop-share",
+      "seed": 1008
+    },
+    {
+      "q": "공책 7권의 값이 4,900원이에요. 같은 공책 6권의 값은 몇 원일까요?",
+      "choices": null,
+      "answer": "4200",
+      "answerTex": "4,200원",
+      "answerType": "int",
+      "check": "solve(Eq(7*x, 4900*6), x)[0]",
+      "concepts": [
+        "공책 수와 값의 비가 늘 같으므로 비례식을 세울 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "비례식 세우기",
+          "body": "구할 값을 $\\square$ 로 두어요.\n$$7:4900=6:\\square$$"
+        },
+        {
+          "title": "외항의 곱 = 내항의 곱",
+          "body": "$$7\\times\\square=4900\\times6=29400$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\square=29400\\div7=4200$$"
+        }
+      ],
+      "tip": "한 권에 얼마인지 먼저 구해서 곱해도 같아요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prop-word",
+      "seed": 1009
+    },
+    {
+      "q": "$\\square$ 에 알맞은 수를 구하세요.\n$$1:9=\\square:54$$",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "solve(Eq(1*54, 9*x), x)[0]",
+      "concepts": [
+        "비의 전항과 후항에 0이 아닌 같은 수를 곱하거나 나누어도 비율은 같아요.",
+        "$a:b=(a\\times k):(b\\times k)$"
+      ],
+      "steps": [
+        {
+          "title": "몇 배 했는지 찾기",
+          "body": "후항끼리 비교해요.\n$$9\\times6=54$$"
+        },
+        {
+          "title": "전항에도 똑같이",
+          "body": "비의 성질: 두 항에 같은 수를 곱해도 비율은 같아요.\n$$1\\times6=6$$"
+        }
+      ],
+      "tip": "두 항에 같은 수를 더하면 비율이 달라져요. 꼭 곱하거나 나눠요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prop-equiv-ratio",
+      "seed": 1010
+    },
+    {
+      "q": "다음 비를 가장 간단한 자연수의 비로 나타내면 $3:\\square$ 예요. $\\square$ 에 알맞은 수를 구하세요.\n$$0.3:0.1$$",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "Rational(1,10)/Rational(3,10)*3",
+      "concepts": [
+        "소수의 비는 두 항에 10, 100 같은 수를 곱해 자연수의 비로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "10 곱하기",
+          "body": "두 항에 10을 곱해 자연수로 만들어요.\n$$0.3:0.1=3:1$$"
+        }
+      ],
+      "tip": "두 항에 같은 수를 곱했으니 비율은 그대로예요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prop-simplest",
+      "seed": 1011
+    },
+    {
+      "q": "비례식에서 $\\square$ 에 알맞은 수를 구하세요.\n$$4:6=\\square:24$$",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "solve(Eq(4*24, 6*x), x)[0]",
+      "concepts": [
+        "비례식에서 외항의 곱과 내항의 곱은 같아요.",
+        "$a:b=c:d \\Leftrightarrow ad=bc$"
+      ],
+      "steps": [
+        {
+          "title": "외항의 곱 = 내항의 곱",
+          "body": "$$4\\times24=6\\times\\square$$"
+        },
+        {
+          "title": "아는 쪽 계산하기",
+          "body": "$$96=6\\times\\square$$"
+        },
+        {
+          "title": "나누어 구하기",
+          "body": "$$\\square=96\\div6=16$$"
+        }
+      ],
+      "tip": "구한 수를 넣어 외항의 곱과 내항의 곱이 같은지 확인해요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prop-cross",
+      "seed": 1012
+    },
+    {
+      "q": "용돈 3,000원을 언니와 동생이 $1:2$의 비로 나누어 가져요. 언니의 몫은 몇 원인가요?",
+      "choices": null,
+      "answer": "1000",
+      "answerTex": "1,000원",
+      "answerType": "int",
+      "check": "3000*Rational(1,1+2)",
+      "concepts": [
+        "전체를 $m:n$ 으로 나누면 한쪽 몫은 전체 × $\\frac{m}{m+n}$ 이에요.",
+        "분모는 두 항의 합(전체 묶음 수)이에요."
+      ],
+      "steps": [
+        {
+          "title": "전체 묶음 수",
+          "body": "$$1+2=3$$"
+        },
+        {
+          "title": "언니의 몫 비율",
+          "body": "언니의 몫은 전체의 $\\frac{1}{3}$ 만큼이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3000\\times\\frac{1}{3}=1000$$"
+        }
+      ],
+      "tip": "두 사람 몫을 더해 전체가 되는지 확인해요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prop-share",
+      "seed": 1013
+    },
+    {
+      "q": "같은 빠르기로 8분 동안 640 m를 걸었어요. 같은 빠르기로 14분 동안 걸으면 몇 m를 걸을까요?",
+      "choices": null,
+      "answer": "1120",
+      "answerTex": "1120 m",
+      "answerType": "int",
+      "check": "solve(Eq(8*x, 640*14), x)[0]",
+      "concepts": [
+        "시간과 거리의 비가 늘 같으므로 비례식을 세울 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "비례식 세우기",
+          "body": "구할 값을 $\\square$ 로 두어요.\n$$8:640=14:\\square$$"
+        },
+        {
+          "title": "외항의 곱 = 내항의 곱",
+          "body": "$$8\\times\\square=640\\times14=8960$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\square=8960\\div8=1120$$"
+        }
+      ],
+      "tip": "한 분에 얼마인지 먼저 구해서 곱해도 같아요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prop-word",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "다음 중 $4:7$ 과 비율이 같은 비를 고르세요.",
+      "choices": [
+        "$5:8$",
+        "$12:28$",
+        "$8:14$",
+        "$7:4$",
+        "$16:21$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "Rational(4)/7",
+      "choiceChecks": [
+        "Rational(5)/8",
+        "Rational(12)/28",
+        "Rational(8)/14",
+        "Rational(7)/4",
+        "Rational(16)/21"
+      ],
+      "concepts": [
+        "두 항에 같은 수를 곱하거나 나눈 비는 비율이 같아요."
+      ],
+      "steps": [
+        {
+          "title": "두 항에 2 곱하기",
+          "body": "$$4:7=(4\\times2):(7\\times2)=8:14$$"
+        },
+        {
+          "title": "다른 보기 확인",
+          "body": "$12:28$ 은 4로 나누면 $3:7$, $16:21$ 은 전항만 4배예요. $5:8$ 은 두 항에 1씩 더한 비예요."
+        }
+      ],
+      "tip": "$7:4$ 는 전항과 후항을 바꾼 비라서 비율이 달라요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "비례식 $3:5=12:20$ 에서 외항의 곱은 얼마인가요?",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "check": "3*20",
+      "concepts": [
+        "외항은 바깥쪽 두 수, 내항은 안쪽 두 수예요."
+      ],
+      "steps": [
+        {
+          "title": "외항 찾기",
+          "body": "바깥쪽 두 수 3과 20이 외항이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3\\times20=60$$"
+        }
+      ],
+      "tip": "내항의 곱 $5\\times12$ 도 60이에요. 같으니 바른 비례식이에요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "다음 비를 가장 간단한 자연수의 비로 나타내면 $3:\\square$ 예요. $\\square$ 에 알맞은 수를 구하세요.\n$$0.6:\\frac{4}{5}$$",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "Rational(4,5)/Rational(6,10)*3",
+      "concepts": [
+        "소수와 분수가 섞이면 한쪽 꼴로 맞춘 뒤 자연수의 비로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "분수를 소수로",
+          "body": "$$\\frac{4}{5}=0.8$$"
+        },
+        {
+          "title": "10 곱하기",
+          "body": "$$0.6:0.8=6:8$$"
+        },
+        {
+          "title": "2로 나누기",
+          "body": "$$6:8=3:4$$"
+        }
+      ],
+      "tip": "$0.6=\\frac{3}{5}$ 로 바꿔 분수끼리 비교해도 돼요. $\\frac{3}{5}:\\frac{4}{5}=3:4$ 예요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\square$ 에 알맞은 수를 구하세요.\n$$\\frac{1}{2}:\\frac{1}{3}=15:\\square$$",
+      "choices": null,
+      "answer": "10",
+      "answerType": "int",
+      "check": "solve(Eq(Rational(1,2)*x, Rational(1,3)*15), x)[0]",
+      "concepts": [
+        "외항의 곱 = 내항의 곱은 분수가 있어도 성립해요."
+      ],
+      "steps": [
+        {
+          "title": "외항의 곱 = 내항의 곱",
+          "body": "$$\\frac{1}{2}\\times\\square=\\frac{1}{3}\\times15=5$$"
+        },
+        {
+          "title": "구하기",
+          "body": "어떤 수의 $\\frac{1}{2}$ 이 5이므로\n$$\\square=5\\times2=10$$"
+        }
+      ],
+      "tip": "$\\frac{1}{2}:\\frac{1}{3}$ 을 먼저 $3:2$ 로 바꾸면 $3:2=15:\\square$, 5배라서 10이에요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\square$ 에 알맞은 수를 구하세요.\n$$0.4:1.2=5:\\square$$",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "solve(Eq(Rational(4,10)*x, Rational(12,10)*5), x)[0]",
+      "concepts": [
+        "소수의 비는 10을 곱해 자연수의 비로 바꾸면 쉬워요."
+      ],
+      "steps": [
+        {
+          "title": "자연수의 비로",
+          "body": "$$0.4:1.2=4:12=1:3$$"
+        },
+        {
+          "title": "몇 배인지 보기",
+          "body": "전항이 1에서 5, 5배예요."
+        },
+        {
+          "title": "후항도 5배",
+          "body": "$$3\\times5=15$$"
+        }
+      ],
+      "tip": "외항의 곱 $0.4\\times15=6$, 내항의 곱 $1.2\\times5=6$ 으로 확인해요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "축척이 $1:50000$ 인 지도에서 두 마을 사이가 4 cm예요. 실제 거리는 몇 km인가요?",
+      "choices": null,
+      "answer": "2",
+      "answerTex": "2 km",
+      "answerType": "int",
+      "check": "Rational(4*50000, 100*1000)",
+      "concepts": [
+        "축척 $1:50000$ 은 지도의 1 cm가 실제로 50000 cm라는 뜻이에요."
+      ],
+      "steps": [
+        {
+          "title": "비례식 세우기",
+          "body": "$$1:50000=4:\\square$$"
+        },
+        {
+          "title": "실제 거리(cm)",
+          "body": "$$\\square=4\\times50000=200000$$"
+        },
+        {
+          "title": "km로 바꾸기",
+          "body": "1 m = 100 cm, 1 km = 1000 m이므로\n$$200000\\div100\\div1000=2$$"
+        }
+      ],
+      "tip": "단위를 바꿀 때 cm → m 는 ÷100, m → km 는 ÷1000이에요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "길이 84 cm인 끈을 $3:4$ 로 잘랐어요. 긴 끈은 짧은 끈보다 몇 cm 더 긴가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "12 cm",
+      "answerType": "int",
+      "check": "84*Rational(4,7) - 84*Rational(3,7)",
+      "concepts": [
+        "비례배분: 전체 × (자기 항) ÷ (두 항의 합)"
+      ],
+      "steps": [
+        {
+          "title": "짧은 끈",
+          "body": "$$84\\times\\frac{3}{7}=36$$"
+        },
+        {
+          "title": "긴 끈",
+          "body": "$$84\\times\\frac{4}{7}=48$$"
+        },
+        {
+          "title": "차",
+          "body": "$$48-36=12$$"
+        }
+      ],
+      "tip": "두 끈의 차는 1묶음이에요. $84\\div7=12$ 로 바로 구할 수도 있어요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "둘레가 56 cm이고 가로와 세로의 비가 $4:3$ 인 직사각형이 있어요. 이 직사각형의 넓이는 몇 $\\text{cm}^2$ 인가요?",
+      "choices": null,
+      "answer": "192",
+      "answerTex": "$192\\text{ cm}^2$",
+      "answerType": "int",
+      "check": "(Rational(56,2)*Rational(4,7))*(Rational(56,2)*Rational(3,7))",
+      "concepts": [
+        "둘레의 절반이 가로 + 세로예요. 그것을 비례배분해요."
+      ],
+      "steps": [
+        {
+          "title": "가로 + 세로",
+          "body": "$$56\\div2=28$$"
+        },
+        {
+          "title": "가로",
+          "body": "$$28\\times\\frac{4}{7}=16$$"
+        },
+        {
+          "title": "세로",
+          "body": "$$28\\times\\frac{3}{7}=12$$"
+        },
+        {
+          "title": "넓이",
+          "body": "$$16\\times12=192$$"
+        }
+      ],
+      "tip": "둘레 56을 바로 나누면 가로 두 개와 세로 두 개를 섞어 나누게 돼요. 절반부터 구해요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "맞물려 도는 두 톱니바퀴가 있어요. 가는 톱니가 24개, 나는 36개예요. 가가 9바퀴 도는 동안 나는 몇 바퀴 돌까요?",
+      "choices": null,
+      "answer": "6",
+      "answerTex": "6바퀴",
+      "answerType": "int",
+      "check": "solve(Eq(24*9, 36*x), x)[0]",
+      "concepts": [
+        "맞물린 두 바퀴가 지나가는 톱니 수는 같아요."
+      ],
+      "steps": [
+        {
+          "title": "가가 움직인 톱니 수",
+          "body": "$$24\\times9=216$$"
+        },
+        {
+          "title": "나도 216개만큼",
+          "body": "$$36\\times\\square=216$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\square=216\\div36=6$$"
+        }
+      ],
+      "tip": "톱니가 많은 바퀴가 더 천천히 돌아요. 답이 9보다 작은지 확인해요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "같은 시각에 길이 1.2 m인 막대의 그림자는 0.8 m, 나무의 그림자는 6 m였어요. 나무의 높이는 몇 m인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "9 m",
+      "answerType": "int",
+      "check": "solve(Eq(Rational(12,10)*6, Rational(8,10)*x), x)[0]",
+      "concepts": [
+        "같은 시각에는 물체 높이와 그림자 길이의 비가 같아요."
+      ],
+      "steps": [
+        {
+          "title": "비례식 세우기",
+          "body": "높이 : 그림자로 써요.\n$$1.2:0.8=\\square:6$$"
+        },
+        {
+          "title": "외항의 곱 = 내항의 곱",
+          "body": "$$1.2\\times6=0.8\\times\\square$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$7.2=0.8\\times\\square,\\quad \\square=9$$"
+        }
+      ],
+      "tip": "$1.2:0.8=3:2$ 로 줄이면 $3:2=\\square:6$, 3배라서 9예요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "형과 동생이 구슬을 $5:3$ 으로 나눴더니 형이 동생보다 12개 더 많았어요. 처음 구슬은 모두 몇 개였나요?",
+      "choices": null,
+      "answer": "48",
+      "answerTex": "48개",
+      "answerType": "int",
+      "check": "solve(Eq(x*Rational(5,8) - x*Rational(3,8), 12), x)[0]",
+      "concepts": [
+        "비례배분을 거꾸로: 차이가 몇 묶음인지 보면 한 묶음의 크기를 알 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "차이는 몇 묶음",
+          "body": "$$5-3=2$$"
+        },
+        {
+          "title": "한 묶음",
+          "body": "2묶음이 12개이므로\n$$12\\div2=6$$"
+        },
+        {
+          "title": "전체",
+          "body": "전체는 $5+3=8$ 묶음이에요.\n$$6\\times8=48$$"
+        }
+      ],
+      "tip": "확인: 형 30개, 동생 18개, 차는 12개예요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "두 모둠이 재료비를 18,000원, 24,000원씩 내서 쿠키 280개를 만들었어요. 낸 돈의 비로 쿠키를 나누면 18,000원을 낸 모둠은 몇 개를 받나요?",
+      "choices": null,
+      "answer": "120",
+      "answerTex": "120개",
+      "answerType": "int",
+      "check": "280*Rational(18000, 18000+24000)",
+      "concepts": [
+        "낸 돈의 비를 가장 간단한 자연수의 비로 바꾼 뒤 비례배분해요."
+      ],
+      "steps": [
+        {
+          "title": "낸 돈의 비",
+          "body": "6000으로 나눠요.\n$$18000:24000=3:4$$"
+        },
+        {
+          "title": "전체 묶음",
+          "body": "$$3+4=7$$"
+        },
+        {
+          "title": "비례배분",
+          "body": "$$280\\times\\frac{3}{7}=120$$"
+        }
+      ],
+      "tip": "다른 모둠은 $280\\times\\frac{4}{7}=160$ 개. 더하면 280개예요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "$\\text{(가)}:\\text{(나)}=2:3$, $\\text{(나)}:\\text{(다)}=4:5$ 예요. $\\text{(가)}:\\text{(다)}$ 를 가장 간단한 자연수의 비로 나타내면 $8:\\square$ 예요. $\\square$ 에 알맞은 수를 구하세요.",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "Rational(5,4)*Rational(3,2)*8",
+      "concepts": [
+        "두 비에 함께 나오는 (나)의 수를 같게 맞추면 세 양을 한 줄로 비교할 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "(나)를 같게 맞추기",
+          "body": "3과 4의 최소공배수 12로 맞춰요.\n$$2:3=8:12,\\quad 4:5=12:15$$"
+        },
+        {
+          "title": "세 양의 비",
+          "body": "$$\\text{(가)}:\\text{(나)}:\\text{(다)}=8:12:15$$"
+        },
+        {
+          "title": "(가):(다)",
+          "body": "$$8:15$$"
+        }
+      ],
+      "tip": "$2:5$ 로 바로 이으면 틀려요. (나)의 크기가 두 비에서 달라서 먼저 맞춰야 해요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "어느 반의 남학생과 여학생의 비는 $4:5$ 이고, 모두 36명이에요. 남학생 2명이 전학을 오면 남학생과 여학생의 비는 가장 간단한 자연수의 비로 $9:\\square$ 가 돼요. $\\square$ 에 알맞은 수를 구하세요.",
+      "choices": null,
+      "answer": "10",
+      "answerType": "int",
+      "check": "(36*Rational(5,9))/(36*Rational(4,9)+2)*9",
+      "concepts": [
+        "비례배분으로 처음 인원을 구한 뒤, 바뀐 인원으로 새 비를 써요."
+      ],
+      "steps": [
+        {
+          "title": "처음 남학생",
+          "body": "$$36\\times\\frac{4}{9}=16$$"
+        },
+        {
+          "title": "처음 여학생",
+          "body": "$$36\\times\\frac{5}{9}=20$$"
+        },
+        {
+          "title": "전학 온 뒤",
+          "body": "남학생은 $16+2=18$ 명이에요.\n$$18:20=9:10$$"
+        }
+      ],
+      "tip": "두 항에 2씩 더한 게 아니라 남학생에만 2를 더했어요. 비는 인원부터 다시 구해요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "빨간 물감과 노란 물감을 $3:5$ 로 섞어 주황 물감을 만들어요. 빨간 물감 18 mL, 노란 물감 25 mL가 있을 때 주황 물감을 가장 많이 몇 mL 만들 수 있나요?",
+      "choices": null,
+      "answer": "40",
+      "answerTex": "40 mL",
+      "answerType": "int",
+      "check": "Min(18*Rational(8,3), 25*Rational(8,5))",
+      "concepts": [
+        "어느 물감이 먼저 떨어지는지 비례식으로 확인해요."
+      ],
+      "steps": [
+        {
+          "title": "빨강을 다 쓰면",
+          "body": "$3:5=18:\\square$ 에서 노랑이 $\\square=30$ mL 필요해요. 25 mL뿐이라 모자라요."
+        },
+        {
+          "title": "노랑을 다 쓰면",
+          "body": "$3:5=\\square:25$ 에서 빨강은 $\\square=15$ mL면 돼요. 18 mL가 있으니 충분해요."
+        },
+        {
+          "title": "만든 양",
+          "body": "$$15+25=40$$"
+        }
+      ],
+      "tip": "두 물감을 다 섞으면 $18+25=43$ mL지만, 그러면 비가 $3:5$ 가 아니에요."
+    }
+  ]
+}
