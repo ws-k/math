@@ -22,6 +22,9 @@ export interface CheckResult {
 
 const LEVEL_MIN: Record<string, number> = { 기초: 15, 표준: 10 };
 const TYPES = new Set(['int', 'fraction', 'expr', 'choice']);
+/** 계산 없이 숫자만 적은 검산식 (예: "8", "5/3", "Rational(5,3)") */
+const LITERAL =
+  /^\s*(-?\d+(\s*\/\s*\d+)?|Rational\(\s*-?\d+\s*,\s*\d+\s*\)|Integer\(\s*-?\d+\s*\))\s*$/;
 
 function texOk(where: string, s: string | undefined | null, errors: string[]) {
   if (s == null) return;
@@ -35,6 +38,8 @@ function texOk(where: string, s: string | undefined | null, errors: string[]) {
 function checkAnswerShape(where: string, p: Problem | Example, errors: string[]) {
   if (!TYPES.has(p.answerType)) errors.push(`${where}: answerType 이상 (${p.answerType})`);
   if (!p.check?.trim()) errors.push(`${where}: check(검산식) 없음`);
+  else if (LITERAL.test(p.check))
+    errors.push(`${where}: check 가 답을 그대로 적은 값임 — 문제 조건으로 계산하는 식이어야 함`);
   if (p.answerType === 'int' && !/^-?\d+$/.test(p.answer))
     errors.push(`${where}: int 답 형식 (${p.answer})`);
   if (p.answerType === 'fraction' && !/^-?\d+(\/\d+)?$/.test(p.answer))
@@ -67,16 +72,18 @@ const item = (ref: string, unit: string, p: Problem | Example): CheckItem => ({
   ...(p.choiceChecks ? { choiceChecks: p.choiceChecks } : {}),
 });
 
-export function checkContent(root = '.', samples = 200): CheckResult {
+export function checkContent(root = '.', samples = 200, onlyUnit?: string): CheckResult {
   const errors: string[] = [];
   const items: CheckItem[] = [];
   const cur: Curriculum = JSON.parse(readFileSync(join(root, 'content/curriculum.json'), 'utf8'));
   const curById = new Map(cur.units.map((u) => [u.id, u]));
   const dir = join(root, 'content/units');
   const units: Unit[] = [];
-  for (const f of readdirSync(dir)
-    .filter((f) => f.endsWith('.json'))
-    .sort()) {
+  const files = readdirSync(dir)
+    .filter((f) => f.endsWith('.json') && (!onlyUnit || f === `${onlyUnit}.json`))
+    .sort();
+  if (onlyUnit && files.length === 0) errors.push(`${onlyUnit}: 단원 파일 없음`);
+  for (const f of files) {
     const u: Unit = JSON.parse(readFileSync(join(dir, f), 'utf8'));
     units.push(u);
     const W = u.id;
@@ -118,6 +125,7 @@ export function checkContent(root = '.', samples = 200): CheckResult {
   }
   const gids = new Set<string>();
   for (const g of allGenerators) {
+    if (onlyUnit && g.unitId !== onlyUnit) continue;
     if (gids.has(g.id)) errors.push(`생성기 id 중복: ${g.id}`);
     gids.add(g.id);
     for (let seed = 1; seed <= samples; seed++) {

@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit -p .",
     "lint": "biome check .",
     "test": "node --test 'test/**/*.test.ts'",
-    "setup-python": "python3 -m venv .venv && .venv/bin/pip install -q -r verify/requirements.txt"
+    "setup-python": "python3 -m venv .venv && .venv/bin/pip install -q -r verify/requirements.txt",
+    "verify:unit": "sh -c 'node scripts/dump-problems.ts --unit \"$0\" && .venv/bin/python verify/verify.py .cache/problems-\"$0\".json'"
   },
   "dependencies": {
     "katex": "0.19.1",
