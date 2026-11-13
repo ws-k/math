@@ -6,10 +6,11 @@ import { type CardState, type Grade, gradeCard } from '../lib/srs.ts';
 import { Book } from './Book.tsx';
 import { unitById } from './content.ts';
 import { type LayoutMode, layoutMode } from './layout.ts';
+import { FIRST, normalizeProfiles } from './profile.ts';
 import { parseRoute, type Route, routeHash } from './route.ts';
 import { Home, MapScreen, SettingsScreen, WrongNote } from './Screens.tsx';
 import { DEFAULT_SETTINGS, normalizeSettings, type Settings } from './settings.ts';
-import { requestPersist, saver, store } from './store.ts';
+import { requestPersist, saver, setCurrentProfile, store } from './store.ts';
 import type { Cards } from './today.ts';
 
 type UnitRoute = Extract<Route, { name: 'unit' }>;
@@ -51,10 +52,24 @@ function SaveWarning() {
 }
 
 export function App() {
+  // 지금 프로필(기기 공통 키)을 먼저 읽고 화면을 그린다. 프로필이 바뀌면 key 가 바뀌어 화면 상태가
+  // 통째로 새로 만들어진다(앞 사람의 카드·설정이 남지 않게).
+  const [profile, setProfile] = useState<string | null>(null);
+  useEffect(() => {
+    void Promise.all([store.get<string>('profile'), store.get('profiles')])
+      .catch(() => [undefined, undefined] as const)
+      .then(([id, list]) => {
+        // 목록에 없는 프로필(지워졌거나 깨진 값)이면 첫 프로필로
+        const known = normalizeProfiles(list).some((x) => x.id === id);
+        const p = known && typeof id === 'string' ? id : FIRST;
+        setCurrentProfile(p);
+        setProfile(p);
+      });
+  }, []);
   return (
     <>
       <SaveWarning />
-      <Screen />
+      {profile === null ? <main className="screen paper" /> : <Screen key={profile} />}
     </>
   );
 }

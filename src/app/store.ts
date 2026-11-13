@@ -1,6 +1,7 @@
 // IndexedDB 얇은 래퍼. 키 하나에 값 하나(진행 카드·설정·쪽마다 필기)만 넣는 단순한 저장소.
 // localStorage 는 5MB 언저리에서 막히고 동기라 필기 저장에 맞지 않아 IndexedDB 를 쓴다.
 
+import { createScopedStore, FIRST, type RawStore, scopedKey } from './profile.ts';
 import { createSaver } from './saver.ts';
 
 const DB = 'math-rebuild';
@@ -45,7 +46,7 @@ async function write(f: (s: IDBObjectStore) => IDBRequest): Promise<void> {
 /** prefix 로 시작하는 키 범위 (문자열 키 순서상 prefix 뒤에 오는 가장 큰 글자까지) */
 const range = (prefix: string) => IDBKeyRange.bound(prefix, `${prefix}￿`);
 
-export const store = {
+const raw: RawStore = {
   get<T>(key: string): Promise<T | undefined> {
     return run('readonly', (s) => s.get(key) as IDBRequest<T | undefined>);
   },
@@ -76,8 +77,24 @@ export const store = {
   },
 };
 
-/** 앱의 모든 저장은 이것을 거친다 — 실패하면 쥐고 있다가 다시 시도하고, 화면 위 경고로 알린다. */
-export const saver = createSaver(store.set, { retryMs: 3000 });
+let profile = FIRST;
+/** 지금 학습자 프로필. 바꿀 때는 profile.ts 의 switchProfile 순서를 따른다 */
+export const currentProfile = () => profile;
+export const setCurrentProfile = (id: string) => {
+  profile = id;
+};
+
+/** 지금 프로필의 키만 보이는 저장소(읽기). 화면 코드는 프로필을 모른 채 이것을 쓴다 */
+export const store = createScopedStore(raw, currentProfile);
+
+/**
+ * 앱의 모든 저장은 이것을 거친다 — 실패하면 쥐고 있다가 다시 시도하고, 화면 위 경고로 알린다.
+ * 프로필 접두어는 save() 순간에 붙여 쥔다(저장 도중 프로필이 바뀌어도 섞이지 않게).
+ */
+export const saver = createSaver(raw.set, {
+  retryMs: 3000,
+  scope: (k) => scopedKey(profile, k),
+});
 
 /** 홈 화면 앱에서도 저장소가 지워지지 않게 "영구 저장"을 요청한다. 결과(허용 여부)를 돌려준다. */
 export async function requestPersist(): Promise<boolean> {

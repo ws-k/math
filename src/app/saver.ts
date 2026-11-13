@@ -4,6 +4,8 @@
 
 export interface Saver {
   save(key: string, value: unknown): void;
+  /** 쥐고 있는 값이 모두 써질 때까지 기다린다(프로필 바꾸기 전에). 실패 중이면 성공할 때까지 */
+  idle(): Promise<void>;
   /** 지금 저장에 실패해 다시 시도하는 중인가 */
   failing(): boolean;
   subscribe(f: () => void): () => void;
@@ -11,13 +13,28 @@ export interface Saver {
 
 export function createSaver(
   write: (key: string, value: unknown) => Promise<void>,
-  o: { retryMs: number; later?: (f: () => void, ms: number) => void },
+  o: {
+    retryMs: number;
+    later?: (f: () => void, ms: number) => void;
+    /**
+     * 키를 실제 저장 키로(프로필 접두어). save() 를 부른 순간 바꿔 쥐므로, 쓰기 전에 프로필이 바뀌어도
+     * 다시 시도까지 처음 프로필로 써진다.
+     */
+    scope?: (key: string) => string;
+  },
 ): Saver {
   const later = o.later ?? ((f, ms) => setTimeout(f, ms));
   const pending = new Map<string, unknown>();
   const busy = new Set<string>();
   const failed = new Set<string>();
   const listeners = new Set<() => void>();
+  let waiters: (() => void)[] = [];
+  const settle = () => {
+    if (pending.size > 0 || busy.size > 0) return;
+    const ws = waiters;
+    waiters = [];
+    for (const w of ws) w();
+  };
   let wasFailing = false;
   const notify = () => {
     const now = failed.size > 0;
@@ -37,6 +54,7 @@ export function createSaver(
         failed.delete(key);
         notify();
         pump(key);
+        settle();
       },
       () => {
         busy.delete(key);
@@ -50,10 +68,17 @@ export function createSaver(
   };
 
   return {
-    save(key, value) {
+    save(rawKey, value) {
+      const key = o.scope ? o.scope(rawKey) : rawKey;
       pending.set(key, value);
       // 실패 중인 키는 다시 시도 타이머가 이어 쓴다(바로 또 쓰면 실패를 연달아 쌓는다)
       if (!failed.has(key)) pump(key);
+    },
+    idle() {
+      return new Promise<void>((resolve) => {
+        waiters.push(resolve);
+        settle();
+      });
     },
     failing: () => failed.size > 0,
     subscribe(f) {
