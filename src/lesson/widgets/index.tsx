@@ -2,7 +2,9 @@
 // 검사기가 통과시킨 바로 그 해석을 화면도 쓰게 하려고.
 import { type ComponentType, useMemo } from 'react';
 import type { WidgetSpec } from '../types.ts';
+import { AreaModel } from './AreaModel.tsx';
 import { Balance } from './Balance.tsx';
+import { Coord } from './Coord.tsx';
 import { widgetDefs } from './specs.ts';
 import { Table } from './Table.tsx';
 import { TermDrag } from './TermDrag.tsx';
@@ -20,6 +22,8 @@ export const widgetViews: Record<string, ComponentType<WidgetProps<any>>> = {
   balance: Balance,
   termDrag: TermDrag,
   table: Table,
+  coord: Coord,
+  areaModel: AreaModel,
 };
 
 export function Widget({

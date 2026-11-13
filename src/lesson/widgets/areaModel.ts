@@ -404,3 +404,141 @@ export const areaModelDef: WidgetDef<AreaParams> = {
     return out;
   },
 };
+
+// ---- 그릴 목록(상태 → 그릴 것). 끄는 동안 화면이 이것을 DOM 에 직접 적용한다 ----
+
+export interface Rect {
+  key: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  cls: string;
+}
+
+const PAD = 12;
+const r1 = (v: number) => Math.round(v * 10) / 10;
+
+/** 숫자 글자(자리수 3, 뒤 0 지우기, 진짜 빼기 기호) */
+export function fmt(v: number, digits = 3): string {
+  if (!Number.isFinite(v)) return '—';
+  let t = v.toFixed(digits).replace(/\.?0+$/, '');
+  if (/^-0$/.test(t)) t = '0';
+  return t.replace('-', '−');
+}
+
+/** grow: 가장 크게 늘린 직사각형이 상자에 들어가는 배율(px / 길이) */
+function growScale(p: GrowParams, box: { w: number; h: number }) {
+  const v = growView(p, growSteps(p));
+  return Math.min((box.w - 2 * PAD) / (v.w + v.dw), (box.h - 2 * PAD) / (v.h + v.dh));
+}
+
+/** grow 의 그릴 것: 기준 직사각형·오른쪽 띠·위쪽 띠·모서리, 끄는 손잡이(바깥 모서리), 읽는 값 */
+export function growDraw(p: GrowParams, k: number, box: { w: number; h: number }) {
+  const v = growView(p, k);
+  const s = growScale(p, box);
+  const x0 = PAD;
+  const y0 = box.h - PAD;
+  const W = v.w * s;
+  const H = v.h * s;
+  const dW = v.dw * s;
+  const dH = v.dh * s;
+  const rects: Rect[] = [
+    { key: 'base', x: r1(x0), y: r1(y0 - H), w: r1(W), h: r1(H), cls: 'base' },
+    { key: 'right', x: r1(x0 + W), y: r1(y0 - H), w: r1(dW), h: r1(H), cls: 'strip a' },
+    { key: 'top', x: r1(x0), y: r1(y0 - H - dH), w: r1(W), h: r1(dH), cls: 'strip b' },
+    { key: 'corner', x: r1(x0 + W), y: r1(y0 - H - dH), w: r1(dW), h: r1(dH), cls: 'corner' },
+  ];
+  const d = Number((k * p.stepN).toPrecision(12));
+  return {
+    rects,
+    handle: { x: r1(x0 + W + dW), y: r1(y0 - H - dH) },
+    d,
+    readouts: [
+      { key: 'dx', label: '$\\Delta x$', text: fmt(d) },
+      { key: 'right', label: '오른쪽 띠', text: fmt(v.right) },
+      { key: 'top', label: '위쪽 띠', text: fmt(v.top) },
+      { key: 'corner', label: '모서리', text: fmt(v.corner) },
+      { key: 'sr', label: '띠 두 개 ÷ $\\Delta x$', text: fmt(v.stripsRate) },
+      { key: 'cr', label: '모서리 ÷ $\\Delta x$', text: fmt(v.cornerRate) },
+    ],
+  };
+}
+
+/** grow 손잡이가 갈 수 있는 자리들(Δx 칸 1~끝). 누른 자리에서 가장 가까운 것을 고른다 */
+export function growStops(p: GrowParams, box: { w: number; h: number }) {
+  return Array.from({ length: growSteps(p) }, (_, n) => {
+    const k = n + 1;
+    return { k, ...growDraw(p, k, box).handle };
+  });
+}
+
+/** tiles: 판의 한 변(길이 단위). x 둘에 1 여섯까지 들어간다 */
+export const BOARD = 2 * XLEN + 6;
+
+export interface TileRect extends Rect {
+  n: number;
+  placed: boolean;
+}
+
+/**
+ * tiles 의 그릴 것. 판 위 타일은 자리(a·x+b)대로, 판 밖 타일은 판 아래 놓는 곳에 줄지어. u = 길이 1 의 px.
+ * 놓는 곳 높이까지 돌려줘 화면이 SVG 높이를 정한다.
+ */
+export function tilesDraw(
+  tiles: Tile[],
+  u: number,
+): { rects: TileRect[]; trayTop: number; height: number } {
+  const rects: TileRect[] = [];
+  const trayTop = BOARD * u + 14;
+  let x = 0;
+  let y = trayTop;
+  let rowH = 0;
+  const gap = 8;
+  tiles.forEach((t, n) => {
+    const s = tileSize(t);
+    const w = lenN(s.w) * u;
+    const h = lenN(s.h) * u;
+    if (t.at) {
+      rects.push({
+        key: `t${n}`,
+        n,
+        x: r1(lenN(t.at.x) * u),
+        y: r1(lenN(t.at.y) * u),
+        w: r1(w),
+        h: r1(h),
+        cls: `tile ${t.kind}`,
+        placed: true,
+      });
+      return;
+    }
+    if (x > 0 && x + w > BOARD * u) {
+      x = 0;
+      y += rowH + gap;
+      rowH = 0;
+    }
+    rects.push({
+      key: `t${n}`,
+      n,
+      x: r1(x),
+      y: r1(y),
+      w: r1(w),
+      h: r1(h),
+      cls: `tile ${t.kind}`,
+      placed: false,
+    });
+    x += w + gap;
+    rowH = Math.max(rowH, h);
+  });
+  return { rects, trayTop, height: r1(y + rowH + 4) };
+}
+
+/** 타일을 판 위 px 자리(왼쪽 위)에 놓은 자리. 판 밖으로 나가면 null(놓는 곳으로 돌아간다) */
+export function placeAt(t: Tile, px: number, py: number, u: number): { x: Len; y: Len } | null {
+  const s = tileSize(t);
+  const x = snapLen(px / u);
+  const y = snapLen(py / u);
+  if (lenN(x) + lenN(s.w) > BOARD + EPS || lenN(y) + lenN(s.h) > BOARD + EPS) return null;
+  if (px + (lenN(s.w) * u) / 2 < 0 || py > BOARD * u) return null;
+  return { x, y };
+}

@@ -6,7 +6,13 @@ import { type RefObject, useContext, useEffect, useRef } from 'react';
 import { DragGuard } from './dragGuard.ts';
 
 export interface DragHandlers {
-  onStart?(): void;
+  /**
+   * 누른 자리(화면 좌표)에서 끌기를 시작할지. 없으면 늘 시작한다. 한 요소 안에 손잡이가 여럿이거나
+   * 빈 곳 누르기(점 찍기)를 따로 다룰 때(좌표평면) 쓴다. false 면 이벤트를 건드리지 않아 스크롤이 산다.
+   */
+  pick?(x: number, y: number): boolean;
+  /** 끌기를 시작한 자리(화면 좌표) */
+  onStart?(x: number, y: number): void;
   /** 누른 곳에서 움직인 거리(px). 프레임마다 많아야 한 번 */
   onMove(dx: number, dy: number): void;
   /**
@@ -28,11 +34,12 @@ export function useDrag(ref: RefObject<HTMLElement | SVGElement | null>, h: Drag
     const down = (e: PointerEvent) => {
       // 두 번째 손가락·마우스 오른쪽 단추는 무시
       if (drag || !e.isPrimary || e.button !== 0) return;
+      if (latest.current.pick && !latest.current.pick(e.clientX, e.clientY)) return;
       e.preventDefault();
       drag = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, dy: 0 };
       el.setPointerCapture(e.pointerId);
       guard(true);
-      latest.current.onStart?.();
+      latest.current.onStart?.(e.clientX, e.clientY);
     };
     const move = (e: PointerEvent) => {
       if (!drag || e.pointerId !== drag.id) return;

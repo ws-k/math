@@ -892,3 +892,244 @@
 .lesson .scale-eq {
   display: block;
 }
+
+/* 좌표평면(coord). 폭은 카드 폭을 그대로 쓰고(SVG viewBox = 실제 px), 높이는 부품이 화면 절반 안으로 정한다 */
+.lesson .coord-host,
+.lesson .area-host {
+  width: 100%;
+  /* 손잡이를 길게 눌러도 iOS 확대경·복사 메뉴가 뜨지 않게 */
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.lesson .coord,
+.lesson .area,
+.lesson .tiles {
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+}
+.lesson .coord .grid line {
+  stroke: var(--surface-2);
+  stroke-width: 1;
+}
+.lesson .coord .grid line.axis {
+  stroke: var(--faint);
+  stroke-width: 1.6;
+}
+.lesson .coord .ticks text {
+  font-size: 11px;
+  fill: var(--sub);
+  font-variant-numeric: tabular-nums;
+}
+.lesson .coord .curve {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lesson .coord .curve.main {
+  stroke: var(--primary);
+}
+.lesson .coord .curve.soft {
+  stroke: var(--faint);
+  stroke-width: 2;
+}
+.lesson .coord .curve.accent {
+  stroke: var(--good);
+}
+.lesson .coord .sec,
+.lesson .coord .tan,
+.lesson .coord .uline {
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.lesson .coord .sec {
+  stroke: var(--coin);
+}
+.lesson .coord .tan {
+  stroke: var(--bad);
+}
+.lesson .coord .uline {
+  stroke: var(--ink);
+  stroke-dasharray: 6 5;
+}
+.lesson .coord .conn,
+.lesson .coord .stroke {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lesson .coord .pt {
+  fill: var(--ink);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+.lesson .coord .pname {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.lesson .coord.m-sketch.sketching {
+  outline: 2px dashed var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+  cursor: crosshair;
+}
+.lesson .handle:focus-visible circle:last-child {
+  stroke: var(--ink);
+}
+.lesson .legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.92rem;
+  color: var(--sub);
+}
+.lesson .legend .lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lesson .legend .lg i {
+  width: 16px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+.lesson .legend .lg.soft i {
+  background: var(--faint);
+}
+.lesson .legend .lg.accent i {
+  background: var(--good);
+}
+.lesson .legend .lg.base i {
+  height: 12px;
+  width: 12px;
+  background: var(--primary-soft);
+  border: 2px solid var(--primary);
+}
+.lesson .readouts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px;
+}
+.lesson .readouts .ro {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 0.92rem;
+  color: var(--sub);
+}
+.lesson .readouts .ro b {
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+.lesson .cslider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lesson .cslider input {
+  flex: 1;
+  min-height: 44px;
+  accent-color: var(--primary);
+}
+
+/* 넓이 모형 */
+.lesson .area .base {
+  fill: var(--primary-soft);
+  stroke: var(--primary);
+  stroke-width: 2;
+}
+.lesson .area .strip {
+  stroke-width: 2;
+}
+.lesson .area .strip.a {
+  fill: color-mix(in srgb, var(--coin) 45%, transparent);
+  stroke: var(--coin);
+}
+.lesson .area .strip.b {
+  fill: color-mix(in srgb, var(--good) 30%, transparent);
+  stroke: var(--good);
+}
+.lesson .area .corner {
+  fill: color-mix(in srgb, var(--bad) 40%, transparent);
+  stroke: var(--bad);
+  stroke-width: 2;
+}
+.lesson .readouts .ro.right b {
+  color: var(--coin-ink);
+}
+.lesson .readouts .ro.top b {
+  color: var(--good);
+}
+.lesson .readouts .ro.corner b,
+.lesson .readouts .ro.cr b {
+  color: var(--bad);
+}
+.lesson .split {
+  display: grid;
+  gap: 4px;
+  align-items: stretch;
+}
+.lesson .split .side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sub);
+  padding: 2px 6px;
+}
+.lesson .split .cell {
+  min-height: 56px;
+  border-radius: 10px;
+  border: 2px solid var(--primary);
+  background: var(--bg);
+  color: var(--sub);
+  font-weight: 700;
+}
+.lesson .split .cell.open {
+  background: var(--primary-soft);
+  color: var(--ink);
+}
+.lesson .tiles .board {
+  fill: var(--bg);
+  stroke: var(--surface-2);
+  stroke-width: 2;
+}
+.lesson .tiles .tray-line {
+  stroke: var(--surface-2);
+  stroke-dasharray: 4 4;
+}
+.lesson .tiles .tile {
+  stroke: var(--bg);
+  stroke-width: 1.5;
+  cursor: grab;
+}
+.lesson .tiles .tile.x2 {
+  fill: var(--primary);
+}
+.lesson .tiles .tile.x {
+  fill: var(--good);
+}
+.lesson .tiles .tile.one {
+  fill: var(--coin);
+}
+.lesson .tiles .tile.sel {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+@media (max-height: 600px) {
+  .lesson .readouts {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+  .lesson .readouts .ro {
+    padding: 4px 10px;
+  }
+}

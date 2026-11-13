@@ -137,3 +137,44 @@ test('tiles: 자리 붙이기와 만들 수 없는 타일', () => {
     parseArea({ mode: 'tiles', tiles: { x2: 1, x: 1, one: 1 }, factor: '(x+1)*(x+1)' }),
   );
 });
+
+test('grow 그릴 목록: 조각 넷의 key 는 Δx 가 바뀌어도 같고, 손잡이 자리 중 가장 가까운 것을 고른다', async () => {
+  const { growDraw, growStops } = await import('../src/lesson/widgets/areaModel.ts');
+  const p = grow();
+  const box = { w: 300, h: 300 };
+  const a = growDraw(p, 10, box);
+  const b = growDraw(p, 1, box);
+  assert.deepEqual(
+    a.rects.map((r) => r.key),
+    b.rects.map((r) => r.key),
+  );
+  // 가장 크게 늘린 것도 상자 안
+  assert.ok(a.handle.x <= 300 && a.handle.y >= 0);
+  assert.ok(b.rects[3] && a.rects[3] && b.rects[3].w < a.rects[3].w);
+  assert.equal(growStops(p, box).length, 10);
+  assert.equal(a.readouts.find((r) => r.key === 'dx')?.text, '0.5');
+});
+
+test('tiles 놓기: 판 밖이면 놓는 곳으로, 판 안이면 a·x+b 자리로', async () => {
+  const { placeAt, tilesDraw, BOARD } = await import('../src/lesson/widgets/areaModel.ts');
+  const u = 20;
+  const t: Tile = { kind: 'x', rot: false, at: null };
+  assert.deepEqual(placeAt(t, XLEN * u + 3, u * 1.1, u), { x: { a: 1, b: 0 }, y: { a: 0, b: 1 } });
+  assert.equal(placeAt(t, (BOARD - 1) * u, 0, u), null);
+  const d = tilesDraw(
+    [t, { kind: 'one', rot: false, at: { x: { a: 0, b: 0 }, y: { a: 0, b: 0 } } }],
+    u,
+  );
+  assert.equal(d.rects[0]?.placed, false);
+  assert.ok((d.rects[0]?.y ?? 0) >= d.trayTop);
+  assert.deepEqual(d.rects[1], {
+    key: 't1',
+    n: 1,
+    x: 0,
+    y: 0,
+    w: 20,
+    h: 20,
+    cls: 'tile one',
+    placed: true,
+  });
+});
