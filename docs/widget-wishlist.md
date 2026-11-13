@@ -51,3 +51,5 @@
 - areaModel tiles: 판 크기 확대(x²+7x+12) — m3-factoring
 - spot: 허수 I 허용((3+2i)(3−2i) 함정) — h1-complex
 - 조립제법·세로 나눗셈 부품 — h1-poly-ops, h1-remainder-factor
+- numberLine: 양쪽 막힌 구간(a<x<b)·두 조각 구간(x<a 또는 x>b) 고르기 — h1-inequalities
+- coord: x축 위/아래 구간 칠하기·고르기 과제, 식 값 읽기(판별식), x 범위 칠하기·끌기 범위 제한, 목표 점 숨기기, 원(음함수) 그리기 — h1-inequalities, h1-quad-eq-func, h1-higher-eq
