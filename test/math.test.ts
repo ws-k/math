@@ -31,3 +31,25 @@ test('renderRich 는 글자를 이스케이프하고 줄바꿈을 살린다', ()
   assert.ok(html.startsWith('&lt;b&gt;<br>'));
   assert.ok(html.includes('katex'));
 });
+
+test('강조 옵션: **굵게** 와 ==강조== 를 태그로 바꾼다', () => {
+  const html = renderRich('규칙은 **하나**, ==양쪽에 똑같이== $x$', false, { emph: true });
+  assert.ok(html.includes('<b>하나</b>'));
+  assert.ok(html.includes('<span class="hl">양쪽에 똑같이</span>'));
+  assert.ok(html.includes('katex'));
+});
+
+test('강조 옵션이 없으면 기호를 글자 그대로 둔다', () => {
+  assert.equal(renderRich('**a** ==b=='), '**a** ==b==');
+});
+
+test('강조 안의 글자도 이스케이프된다', () => {
+  assert.equal(renderRich('**<i>**', false, { emph: true }), '<b>&lt;i&gt;</b>');
+});
+
+test('강조가 수식 경계를 넘거나 짝이 안 맞으면 strict 에서 거부', () => {
+  assert.throws(() => renderRich('**$x$는**', true, { emph: true }));
+  assert.throws(() => renderRich('==열고 안 닫음', true, { emph: true }));
+  assert.throws(() => renderRich('**a** 그리고 **', true, { emph: true }));
+  assert.doesNotThrow(() => renderRich('$x$ 는 **해**', true, { emph: true }));
+});

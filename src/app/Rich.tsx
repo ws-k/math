@@ -6,12 +6,15 @@ export function Rich({
   src,
   inline,
   className,
+  emph,
 }: {
   src: string;
   inline?: boolean;
   className?: string;
+  /** **굵게**·==강조== 표기를 살린다(레슨 글) */
+  emph?: boolean;
 }) {
-  const html = useMemo(() => renderRich(src), [src]);
+  const html = useMemo(() => renderRich(src, false, { emph }), [src, emph]);
   const Tag = inline ? 'span' : 'div';
   return (
     <Tag

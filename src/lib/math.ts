@@ -48,14 +48,35 @@ const escapeHtml = (s: string) =>
 
 const cache = new Map<string, string>();
 
+export interface RichOptions {
+  /** 레슨 글의 **굵게**·==강조== 표기를 태그로 바꾼다. 문제 글에서는 기호가 그대로 보여야 해서 옵션이다. */
+  emph?: boolean;
+}
+
+/**
+ * 글 조각 하나 안의 강조 표기를 바꾼다. 짝은 같은 글 조각 안에서만 찾는다 — 수식($…$)을 사이에 두고
+ * 열고 닫으면 KaTeX 결과 HTML 을 태그가 가로질러 깨지므로 거부한다(strict). 남은 기호가 있으면 짝이 안 맞은 것.
+ */
+function emphasize(html: string, strict: boolean): string {
+  const out = html
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/==(.+?)==/g, '<span class="hl">$1</span>');
+  if (strict && (out.includes('**') || out.includes('==')))
+    throw new Error(`강조 표기 짝이 안 맞거나 수식 경계를 넘음: ${html.slice(0, 40)}`);
+  return out;
+}
+
 /** 글+수식 문자열을 HTML 로. strict 이면 수식 오류에서 예외를 던진다(검산 단계용). */
-export function renderRich(src: string, strict = false): string {
-  const key = strict ? `!${src}` : src;
+export function renderRich(src: string, strict = false, opt: RichOptions = {}): string {
+  const key = `${strict ? '!' : ''}${opt.emph ? '*' : ''}|${src}`;
   const hit = cache.get(key);
   if (hit !== undefined) return hit;
   const html = splitMath(src)
     .map((s) => {
-      if (s.type === 'text') return escapeHtml(s.value).replace(/\n/g, '<br>');
+      if (s.type === 'text') {
+        const t = escapeHtml(s.value).replace(/\n/g, '<br>');
+        return opt.emph ? emphasize(t, strict) : t;
+      }
       return katex.renderToString(s.value, {
         displayMode: s.type === 'display',
         throwOnError: strict,
