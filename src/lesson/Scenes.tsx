@@ -5,9 +5,11 @@ import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
 import type { InkControl } from '../app/InkPage.tsx';
 import { InkPage } from '../app/InkPage.tsx';
 import { NumPad } from '../app/NumPad.tsx';
+import { store } from '../app/store.ts';
 import type { Background, Tool } from '../ink/types.ts';
 import { compareAnswer } from '../lib/answer.ts';
 import { formatValue, handsOnCount, spotEquation, spotFixed, symToTex } from './format.ts';
+import { legacyInkKey, lessonInkKey, migrateInk } from './inkKeys.ts';
 import type {
   ExploreScene,
   IntroScene,
@@ -275,7 +277,8 @@ function Solve({ s, env }: { s: SolveScene; env: SceneEnv }) {
           key={it.id}
           it={it}
           n={i + 1}
-          inkKey={`ink:${env.unitId}:lesson:${s.id}:${it.id}`}
+          inkKey={lessonInkKey(env.unitId, s.id, it.id)}
+          legacyKey={legacyInkKey(env.unitId, s.id, i)}
           env={env}
           onSolved={() => {
             solved.current.add(it.id);
@@ -296,6 +299,8 @@ function SolveCard(p: {
   it: SolveItem;
   n: number;
   inkKey: string;
+  /** 문제 번호로 저장하던 예전 필기 키. 노트를 처음 열 때 새 키로 옮긴다 */
+  legacyKey: string;
   env: SceneEnv;
   onSolved(): void;
 }) {
@@ -309,6 +314,8 @@ function SolveCard(p: {
   const [hint, setHint] = useState(false);
   const [shown, setShown] = useState(0);
   const [note, setNote] = useState(false);
+  /** 옛 키 필기를 옮긴 뒤에 노트를 연다 — InkPage 가 먼저 새 키(빈 값)를 읽으면 옛 필기가 안 보인다 */
+  const [noteReady, setNoteReady] = useState(false);
   const [dots, setDots] = useState<{ id: number; style: CSSProperties }[]>([]);
   const ok = fb?.cls === 'ok';
   const cardRef = useRef<HTMLDivElement>(null);
@@ -429,11 +436,17 @@ function SolveCard(p: {
         type="button"
         className="lbtn quiet"
         aria-expanded={note}
-        onClick={() => setNote(!note)}
+        onClick={() => {
+          setNote(!note);
+          if (!noteReady)
+            void migrateInk(store, p.legacyKey, p.inkKey)
+              .catch(() => undefined)
+              .finally(() => setNoteReady(true));
+        }}
       >
         {note ? '풀이 노트 닫기' : '풀이 노트 열기'}
       </button>
-      {note && (
+      {note && noteReady && (
         <div className="note-drawer">
           <InkPage
             inkKey={p.inkKey}
