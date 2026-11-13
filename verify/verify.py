@@ -39,7 +39,54 @@ def equal(a, b):
         return False
 
 
+def parse_eq(s):
+    """레슨 식 "왼쪽=오른쪽" → (왼쪽, 오른쪽). 1/2 가 실수 0.5 가 되지 않게 parse_expr(정수→Integer)로 읽는다."""
+    sides = s.split("=")
+    if len(sides) != 2:
+        raise ValueError(f"등호가 하나인 등식이 아님: {s}")
+    return tuple(parse_expr(x, local_dict=dict(NS)) for x in sides)
+
+
+def holds(eq):
+    """항등식인가(어떤 값을 넣어도 성립)"""
+    l, r = eq
+    return equal(l, r)
+
+
+def solutions(eq):
+    l, r = eq
+    syms = (l - r).free_symbols
+    if len(syms) != 1:
+        raise ValueError(f"미지수가 하나인 방정식이 아님: {l} = {r}")
+    return sympy.solveset(sympy.Eq(l, r), syms.pop(), domain=sympy.S.Reals)
+
+
+def check_spot(it):
+    """틀린 곳 찾기: 틀린 식은 성립하지 않고(또는 해가 달라지고), 고친 식은 성립해야(해가 같아야) 한다."""
+    wrong, fixed = parse_eq(it["wrong"]), parse_eq(it["fixed"])
+    if it["mode"] == "identity":
+        if holds(wrong):
+            return f"틀린 식 {it['wrong']} 이 사실은 항등식"
+        if not holds(fixed):
+            return f"고친 식 {it['fixed']} 이 항등식이 아님"
+        return None
+    if it["mode"] == "equivalent":
+        want = solutions(parse_eq(it["from"]))
+        if solutions(fixed) != want:
+            return f"고친 식의 해 {solutions(fixed)} ≠ 원래 식의 해 {want}"
+        if solutions(wrong) == want:
+            return f"틀린 식 {it['wrong']} 의 해가 원래 식과 같음 {want}"
+        return None
+    return f"알 수 없는 mode {it['mode']}"
+
+
+KINDS = {"spot": check_spot}
+
+
 def check_item(it):
+    if "kind" in it:
+        f = KINDS.get(it["kind"])
+        return f(it) if f else f"알 수 없는 kind {it['kind']}"
     typ, ans = it["answerType"], it["answer"]
     val = evaluate(it["check"])
     if typ == "int":
@@ -70,7 +117,12 @@ def main(path):
     total, passed = defaultdict(int), defaultdict(int)
     fails = []
     for it in items:
-        kind = "생성기 표본" if it["ref"].startswith("gen:") else "문제·예제"
+        if it["ref"].startswith("gen:"):
+            kind = "생성기 표본"
+        elif "/lesson:" in it["ref"]:
+            kind = "레슨"
+        else:
+            kind = "문제·예제"
         key = (it["unit"], kind)
         total[key] += 1
         try:

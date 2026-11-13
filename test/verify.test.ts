@@ -50,3 +50,36 @@ for (const [name, it] of [
     assert.equal(r.status, 1, r.stdout);
   });
 }
+
+const spot = { unit: 'u', ref: 'u/lesson:traps:1', kind: 'spot' };
+
+test('틀린 곳 찾기(spot): 틀린 식은 성립하지 않고 고친 식은 성립하면 통과', () => {
+  const r = runVerify([
+    { ...spot, mode: 'identity', wrong: '-(x-3)=-x-3', fixed: '-(x-3)=-x+3' },
+    { ...spot, mode: 'equivalent', from: 'x/2+1=x/3', wrong: '3*x+1=2*x', fixed: '3*x+6=2*x' },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /레슨/);
+});
+
+for (const [name, it] of [
+  [
+    'identity: 틀린 식이 사실은 항등식',
+    { mode: 'identity', wrong: '2*(x+1)=2*x+2', fixed: '-(x-3)=-x+3' },
+  ],
+  ['identity: 고친 식이 틀림', { mode: 'identity', wrong: '-(x-3)=-x-3', fixed: '-(x-3)=-x-2' }],
+  [
+    'equivalent: 고친 식의 해가 다름',
+    { mode: 'equivalent', from: 'x/2+1=x/3', wrong: '3*x+1=2*x', fixed: '3*x+1=2*x' },
+  ],
+  [
+    'equivalent: 틀린 식의 해가 같음',
+    { mode: 'equivalent', from: 'x/2+1=x/3', wrong: '6*x+12=4*x', fixed: '3*x+6=2*x' },
+  ],
+  ['등호가 없는 식', { mode: 'identity', wrong: '-(x-3)', fixed: '-(x-3)=-x+3' }],
+] as const) {
+  test(`실패해야 함(spot): ${name}`, () => {
+    const r = runVerify([{ ...spot, ...it }]);
+    assert.equal(r.status, 1, r.stdout);
+  });
+}
