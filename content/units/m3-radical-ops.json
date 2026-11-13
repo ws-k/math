@@ -1,0 +1,1321 @@
+{
+  "id": "m3-radical-ops",
+  "course": "중3",
+  "unit": "수와 연산",
+  "title": "근호를 포함한 식의 계산",
+  "prereq": [
+    "m3-sqrt"
+  ],
+  "suneung": [
+    "공통 8",
+    "확통 26"
+  ],
+  "hours": 2,
+  "lesson": {
+    "minutes": 20,
+    "values": {
+      "area": {
+        "value": "4",
+        "check": "sqrt(2)*sqrt(8)"
+      },
+      "count": {
+        "value": "3",
+        "check": "(sqrt(2) + sqrt(8))/sqrt(2)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중3 · 수와 연산",
+        "title": "근호끼리 곱하고 더하는\n규칙을 찾아요",
+        "lead": "근호가 붙은 수도 계산할 수 있어요. 격자 위의 길이와 넓이로 규칙을 먼저 보고, 이름은 나중에 붙여요.",
+        "meta": [
+          "근호를 포함한 식의 계산"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$\\sqrt{2}\\times\\sqrt{8}$,\n얼마일까요?",
+        "lead": "근호가 두 개나 붙어 있으니 답에도 근호가 남을 것 같아요. 정말 그럴까요?",
+        "choices": [
+          {
+            "value": "16",
+            "check": "2*8",
+            "feedback": "근호 안끼리 곱한 수에서 멈췄어요. 그 수에 근호를 다시 씌워야 해요."
+          },
+          {
+            "value": "4",
+            "check": "sqrt(2)*sqrt(8)"
+          },
+          {
+            "value": "10",
+            "check": "2+8",
+            "feedback": "근호 안끼리 더했어요. 곱셈이니 근호 안끼리 곱해요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "sqrt(2)*sqrt(8)",
+        "reveal": "**맞아요.** 근호 안끼리 곱하면 $\\sqrt{16}$, 곧 {{area}}예요.",
+        "thoughts": [
+          "근호 안끼리 곱해 $\\sqrt{2\\times8}=\\sqrt{16}$ 으로 봐요.",
+          "$16=4^2$ 이라서 근호가 벗겨져요."
+        ],
+        "conclude": "그런데 왜 근호 안끼리 곱해도 될까요? ==격자 위 직사각형==으로 확인해요."
+      },
+      {
+        "kind": "explore",
+        "id": "rect",
+        "chip": "손으로 해 보기",
+        "title": "가로 $\\sqrt{8}$, 세로 $\\sqrt{2}$\n직사각형의 넓이",
+        "lead": "기울어진 직사각형 ABCD 에서 AD 는 한 칸짜리 정사각형의 대각선이라 $\\sqrt{2}$, AB 는 $\\sqrt{8}$ 이에요. 점 M 을 AB 위에서 끌어 AMND 가 정사각형이 되게 해 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 4,
+              "h": 3
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 1,
+                "y": 0
+              },
+              {
+                "id": "B",
+                "x": 3,
+                "y": 2
+              },
+              {
+                "id": "C",
+                "x": 2,
+                "y": 3
+              },
+              {
+                "id": "D",
+                "x": 0,
+                "y": 1
+              },
+              {
+                "id": "N",
+                "x": 1,
+                "y": 2
+              },
+              {
+                "id": "M",
+                "x": 3,
+                "y": 2,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "A",
+                    "B"
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C",
+                "D"
+              ],
+              [
+                "A",
+                "M",
+                "N",
+                "D"
+              ]
+            ],
+            "segments": [
+              [
+                "M",
+                "N"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "M"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "D"
+                ]
+              },
+              {
+                "area": 1
+              },
+              {
+                "area": 0
+              }
+            ],
+            "digits": 2,
+            "note": "M 을 AB 의 가운데로 끌어 보세요."
+          }
+        },
+        "after": "M 이 가운데에 오면 넓이 2 인 정사각형 두 개로 나뉘어요. 가로 $\\sqrt{8}$ 은 $\\sqrt{2}$ 두 개, 곧 $2\\sqrt{2}$ 예요. 그래서 넓이는 $\\sqrt{2}\\times\\sqrt{8}=$ {{area}}, 근호 안끼리 곱한 $\\sqrt{16}$ 과 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "add",
+        "chip": "두 번째 해 보기",
+        "title": "$\\sqrt{2}+\\sqrt{8}$ 은\n$\\sqrt{10}$ 일까요?",
+        "lead": "AB 는 $\\sqrt{2}$, BC 는 $\\sqrt{8}$, AP 는 $\\sqrt{10}$ 이에요. 점 M 을 A 에서 C 까지 끌며 길이를 재 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 4,
+              "h": 4
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 0,
+                "y": 0
+              },
+              {
+                "id": "B",
+                "x": 1,
+                "y": 1
+              },
+              {
+                "id": "C",
+                "x": 3,
+                "y": 3
+              },
+              {
+                "id": "P",
+                "x": 3,
+                "y": 1
+              },
+              {
+                "id": "M",
+                "x": 0,
+                "y": 0,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "A",
+                    "C"
+                  ]
+                }
+              }
+            ],
+            "segments": [
+              [
+                "A",
+                "C"
+              ],
+              [
+                "A",
+                "P"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "M"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "P"
+                ]
+              }
+            ],
+            "digits": 2,
+            "note": "M 을 한 칸씩 끌어 C 까지 옮겨 보세요."
+          }
+        },
+        "after": "AC 는 $\\sqrt{2}$ 짜리 칸 {{count}}개라서 약 4.24, AP 는 약 3.16 이에요. 근호끼리 더할 때는 안의 수를 더하지 않고 ==같은 근호가 몇 개인지== 세요. $\\sqrt{8}=2\\sqrt{2}$ 이니까 $\\sqrt{2}+\\sqrt{8}=3\\sqrt{2}$ 예요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 규칙에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "제곱근의 곱셈·나눗셈",
+            "body": "$a>0$, $b>0$ 이면 $\\sqrt{a}\\times\\sqrt{b}=\\sqrt{ab}$, $\\sqrt{a}\\div\\sqrt{b}=\\sqrt{\\frac{a}{b}}$ 예요. 근호 안끼리 계산해요."
+          },
+          {
+            "term": "근호 밖으로 꺼내기",
+            "body": "$\\sqrt{a^2b}=a\\sqrt{b}$ $(a>0)$. $\\sqrt{8}=\\sqrt{2^2\\times2}=2\\sqrt{2}$ 처럼 근호 안의 제곱 인수만 밖으로 나와요."
+          },
+          {
+            "term": "제곱근의 덧셈·뺄셈",
+            "body": "근호 안이 같은 것끼리만 앞의 수를 더하고 빼요. $m\\sqrt{a}+n\\sqrt{a}=(m+n)\\sqrt{a}$, 동류항 계산과 같아요."
+          }
+        ],
+        "aside": "**주의** · $\\sqrt{2}+\\sqrt{3}$ 은 더 간단히 할 수 없어요. 근호 안이 다르면 그대로 둬요."
+      },
+      {
+        "kind": "question",
+        "id": "rational",
+        "chip": "지름길",
+        "title": "분모의 근호를\n없애 볼까요?",
+        "lead": "$\\frac{1}{\\sqrt{2}}$ 의 분모와 분자에 $\\sqrt{2}$ 를 똑같이 곱하면 값은 그대로예요. $\\frac{1}{\\sqrt{2}}=\\frac{\\sqrt{2}}{\\square}$ 의 $\\square$ 에 들어갈 수는?",
+        "choices": [
+          {
+            "value": "2",
+            "check": "sqrt(2)/(1/sqrt(2))"
+          },
+          {
+            "value": "4",
+            "check": "2**2",
+            "feedback": "$\\sqrt{2}\\times\\sqrt{2}$ 를 $2\\times2$ 로 계산했어요. 같은 근호를 두 번 곱하면 근호 안의 수가 돼요."
+          },
+          {
+            "value": "1",
+            "check": "sqrt(2)/sqrt(2)",
+            "feedback": "분자에만 곱하고 분모는 그대로 두었네요. 분모에도 똑같이 곱해야 값이 그대로예요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "sqrt(2)/(1/sqrt(2))",
+        "reveal": "**맞아요.** $\\sqrt{2}\\times\\sqrt{2}=2$ 라서 분모가 자연수가 돼요.",
+        "thoughts": [
+          "분모와 분자에 같은 수를 곱하면 1 을 곱한 셈이에요.",
+          "$\\frac{\\sqrt{2}}{2}$ 는 1.414 를 2 로 나눈 값이라 어림하기도 쉬워요."
+        ],
+        "conclude": "이렇게 분모의 근호를 없애는 것을 ==분모의 유리화==라고 해요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 근호끼리 더했어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt(2)+sqrt(8)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sqrt(10)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "3*sqrt(2)",
+              "body": "근호 안끼리 더하면 안 돼요. $\\sqrt{8}=2\\sqrt{2}$ 로 바꿔 같은 근호끼리 세요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 분모를 유리화했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "6/sqrt(3)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "6*sqrt(3)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "2*sqrt(3)",
+              "body": "분자에만 $\\sqrt{3}$ 을 곱했어요. 분모에도 곱하면 $\\frac{6\\sqrt{3}}{3}$ 이 되고, 약분하면 $2\\sqrt{3}$ 이에요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "out",
+            "q": "$\\sqrt{75}=a\\sqrt{3}$ 일 때, 자연수 $a$ 의 값을 구하세요.",
+            "hint": "$75$ 를 (제곱수) $\\times3$ 으로 나눠요.",
+            "placeholder": "a",
+            "concepts": [
+              "$\\sqrt{a^2b}=a\\sqrt{b}\\ (a>0)$"
+            ],
+            "steps": [
+              {
+                "title": "제곱수 찾기",
+                "body": "$$75=25\\times3=5^2\\times3$$"
+              },
+              {
+                "title": "밖으로 꺼내기",
+                "body": "$$\\sqrt{75}=5\\sqrt{3}$$"
+              },
+              {
+                "title": "답",
+                "body": "$a={{answer}}$ 예요."
+              }
+            ],
+            "answer": "5",
+            "answerType": "int",
+            "check": "sqrt(75)/sqrt(3)"
+          },
+          {
+            "id": "mixed",
+            "q": "$\\sqrt{12}+\\sqrt{27}-\\sqrt{3}=a\\sqrt{3}$ 일 때, 정수 $a$ 의 값을 구하세요.",
+            "hint": "세 수를 모두 $\\square\\sqrt{3}$ 꼴로 바꿔요.",
+            "placeholder": "a",
+            "concepts": [
+              "근호 안이 같은 것끼리만 앞의 수를 더하고 빼요."
+            ],
+            "steps": [
+              {
+                "title": "꼴 맞추기",
+                "body": "$\\sqrt{12}=2\\sqrt{3}$, $\\sqrt{27}=3\\sqrt{3}$ 이에요."
+              },
+              {
+                "title": "앞의 수끼리",
+                "body": "$$2\\sqrt{3}+3\\sqrt{3}-\\sqrt{3}=(2+3-1)\\sqrt{3}$$"
+              },
+              {
+                "title": "답",
+                "body": "$a={{answer}}$ 예요."
+              }
+            ],
+            "answer": "4",
+            "answerType": "int",
+            "check": "(sqrt(12) + sqrt(27) - sqrt(3))/sqrt(3)"
+          },
+          {
+            "id": "rat",
+            "q": "$\\frac{10}{\\sqrt{5}}$ 의 분모를 유리화하면 $a\\sqrt{5}$ 예요. $a$ 의 값을 구하세요.",
+            "hint": "분모와 분자에 $\\sqrt{5}$ 를 곱해요.",
+            "placeholder": "a",
+            "concepts": [
+              "$\\frac{k}{\\sqrt{a}}=\\frac{k\\sqrt{a}}{a}$"
+            ],
+            "steps": [
+              {
+                "title": "같은 근호 곱하기",
+                "body": "$$\\frac{10\\times\\sqrt{5}}{\\sqrt{5}\\times\\sqrt{5}}=\\frac{10\\sqrt{5}}{5}$$"
+              },
+              {
+                "title": "약분하기",
+                "body": "$$\\frac{10\\sqrt{5}}{5}=2\\sqrt{5}$$"
+              },
+              {
+                "title": "답",
+                "body": "$a={{answer}}$ 예요."
+              }
+            ],
+            "answer": "2",
+            "answerType": "int",
+            "check": "10/sqrt(5)/sqrt(5)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "곱셈·나눗셈은 근호 안끼리: $\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$.",
+          "근호 안의 제곱 인수는 밖으로: $\\sqrt{a^2b}=a\\sqrt{b}$.",
+          "덧셈·뺄셈은 근호 안이 같은 것끼리 앞의 수만 계산해요. 근호 안끼리 더하면 안 돼요.",
+          "분모에 근호가 있으면 분모·분자에 같은 근호를 곱해요: $\\frac{1}{\\sqrt{a}}=\\frac{\\sqrt{a}}{a}$."
+        ],
+        "done": "근호를 포함한 식의 계산 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$\\sqrt a\\sqrt b=\\sqrt{ab},\\quad \\frac{\\sqrt a}{\\sqrt b}=\\sqrt{\\frac ab}\\ (a>0,\\ b>0)$",
+    "$\\sqrt{a^2b}=a\\sqrt b\\ (a>0)$",
+    "$m\\sqrt a+n\\sqrt a=(m+n)\\sqrt a$",
+    "$\\frac{1}{\\sqrt a}=\\frac{\\sqrt a}{a}$"
+  ],
+  "generators": [
+    "rad-simplify",
+    "rad-mul-div",
+    "rad-rationalize",
+    "rad-addsub"
+  ],
+  "problems": [
+    {
+      "q": "$\\sqrt{32}=a\\sqrt{b}$ 일 때, $a+b$ 의 값을 구하세요. (단, $b$ 는 가장 작은 자연수예요.)",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "e = sqrt(32)\nco, rt = e.as_coeff_Mul()\nans = co + rt**2",
+      "concepts": [
+        "근호 밖으로 꺼내기: $\\sqrt{a^2b}=a\\sqrt{b}\\ (a>0)$. 근호 안의 제곱인 수만 밖으로 나와요."
+      ],
+      "steps": [
+        {
+          "title": "제곱수 찾기",
+          "body": "$32$ 를 가장 큰 제곱수와 나머지로 나눠요.\n$$32=16\\times2=4^2\\times2$$"
+        },
+        {
+          "title": "제곱수만 밖으로",
+          "body": "$$\\sqrt{32}=\\sqrt{4^2}\\times\\sqrt{2}=4\\sqrt{2}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$a=4$, $b=2$ 이므로 $a+b=6$ 이에요."
+        }
+      ],
+      "tip": "작은 제곱수로 한 번만 꺼내면 덜 꺼낸 거예요. 근호 안에 $4$, $9$, $16$ 같은 제곱 인수가 남았는지 꼭 확인해요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "rad-simplify",
+      "seed": 1000
+    },
+    {
+      "q": "$3\\sqrt{2}\\times2\\sqrt{8}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "24",
+      "answerType": "int",
+      "check": "3*sqrt(2) * 2*sqrt(8)",
+      "concepts": [
+        "$a>0$, $b>0$ 이면 $\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$, $\\frac{\\sqrt{a}}{\\sqrt{b}}=\\sqrt{\\frac{a}{b}}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 밖끼리, 안끼리",
+          "body": "밖의 수끼리 곱하고, 근호 안의 수끼리 곱해요.\n$$6\\sqrt{2\\times8}=6\\sqrt{16}$$"
+        },
+        {
+          "title": "제곱수 꺼내기",
+          "body": "$16=4^2$ 이므로 $\\sqrt{16}=4$ 예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$6\\times4=24$$"
+        }
+      ],
+      "tip": "근호 안을 먼저 곱한 뒤 제곱수를 찾으면 계산이 짧아요. 근호 밖의 수를 근호 안에 곱하지 않도록 조심해요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "rad-mul-div",
+      "seed": 1001
+    },
+    {
+      "q": "$\\frac{5}{\\sqrt{5}}$ 의 분모를 유리화하면 $a\\sqrt{5}$ 예요. 유리수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "fraction",
+      "check": "5/sqrt(5) / sqrt(5)",
+      "concepts": [
+        "분모의 유리화: 분모와 분자에 같은 $\\sqrt{a}$ 를 곱해요. $\\frac{k}{\\sqrt{a}}=\\frac{k\\sqrt{a}}{a}$"
+      ],
+      "steps": [
+        {
+          "title": "분모·분자에 같은 근호 곱하기",
+          "body": "$$\\frac{5}{\\sqrt{5}}=\\frac{5\\times\\sqrt{5}}{\\sqrt{5}\\times\\sqrt{5}}=\\frac{5\\sqrt{5}}{5}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "근호 밖의 수 $\\frac{5}{5}$ 를 약분하면 $1$ 이에요."
+        },
+        {
+          "title": "답 읽기",
+          "body": "$a=1$ 이에요."
+        }
+      ],
+      "tip": "분자에만 $\\sqrt{a}$ 를 곱하면 값이 바뀌어요. 분모와 분자에 똑같이 곱해야 1 을 곱한 셈이에요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "rad-rationalize",
+      "seed": 1002
+    },
+    {
+      "q": "$\\sqrt{27}+\\sqrt{48}-\\sqrt{12}=a\\sqrt{3}$ 일 때, 정수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "(sqrt(27) + sqrt(48) - sqrt(12)) / sqrt(3)",
+      "concepts": [
+        "근호 밖으로 꺼내기: $\\sqrt{a^2b}=a\\sqrt{b}\\ (a>0)$. 근호 안의 제곱인 수만 밖으로 나와요.",
+        "근호 안이 같은 수끼리만 더하고 빼요. $m\\sqrt{a}+n\\sqrt{a}=(m+n)\\sqrt{a}$ (동류항처럼)"
+      ],
+      "steps": [
+        {
+          "title": "근호 안을 같게 만들기",
+          "body": "세 수 모두 $3$ 에 제곱수가 곱해진 수예요. 하나씩 꺼내요.\n$$3\\sqrt{3}+4\\sqrt{3}-2\\sqrt{3}$$"
+        },
+        {
+          "title": "근호 앞의 수끼리 계산",
+          "body": "$\\sqrt{3}$ 을 한 묶음으로 보고 앞의 수끼리 계산해요.\n$$(3+4-2)\\sqrt{3}=5\\sqrt{3}$$"
+        },
+        {
+          "title": "답 읽기",
+          "body": "$a=5$ 예요."
+        }
+      ],
+      "tip": "$\\sqrt{27}+\\sqrt{48}$ 을 $\\sqrt{75}$ 로 합치면 틀려요. 근호 안을 같게 만든 뒤 앞의 수끼리 더해요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "rad-addsub",
+      "seed": 1003
+    },
+    {
+      "q": "$\\sqrt{18}=a\\sqrt{b}$ 일 때, $a+b$ 의 값을 구하세요. (단, $b$ 는 가장 작은 자연수예요.)",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "e = sqrt(18)\nco, rt = e.as_coeff_Mul()\nans = co + rt**2",
+      "concepts": [
+        "근호 밖으로 꺼내기: $\\sqrt{a^2b}=a\\sqrt{b}\\ (a>0)$. 근호 안의 제곱인 수만 밖으로 나와요."
+      ],
+      "steps": [
+        {
+          "title": "제곱수 찾기",
+          "body": "$18$ 을 가장 큰 제곱수와 나머지로 나눠요.\n$$18=9\\times2=3^2\\times2$$"
+        },
+        {
+          "title": "제곱수만 밖으로",
+          "body": "$$\\sqrt{18}=\\sqrt{3^2}\\times\\sqrt{2}=3\\sqrt{2}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$a=3$, $b=2$ 이므로 $a+b=5$ 예요."
+        }
+      ],
+      "tip": "작은 제곱수로 한 번만 꺼내면 덜 꺼낸 거예요. 근호 안에 $4$, $9$, $16$ 같은 제곱 인수가 남았는지 꼭 확인해요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "rad-simplify",
+      "seed": 1004
+    },
+    {
+      "q": "$3\\sqrt{96}\\div\\sqrt{6}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "3*sqrt(96) / sqrt(6)",
+      "concepts": [
+        "$a>0$, $b>0$ 이면 $\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$, $\\frac{\\sqrt{a}}{\\sqrt{b}}=\\sqrt{\\frac{a}{b}}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 안끼리 나누기",
+          "body": "$$3\\sqrt{\\frac{96}{6}}=3\\sqrt{16}$$"
+        },
+        {
+          "title": "제곱수 꺼내기",
+          "body": "$\\sqrt{16}=4$ 이므로 값은 $3\\times4=12$ 예요."
+        }
+      ],
+      "tip": "나눗셈도 곱셈처럼 근호 안끼리 해요. 분수로 바꿔 약분하면 실수가 줄어요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "rad-mul-div",
+      "seed": 1005
+    },
+    {
+      "q": "$\\frac{3}{\\sqrt{5}}$ 의 분모를 유리화하면 $a\\sqrt{5}$ 예요. 유리수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/5",
+      "answerType": "fraction",
+      "check": "3/sqrt(5) / sqrt(5)",
+      "concepts": [
+        "분모의 유리화: 분모와 분자에 같은 $\\sqrt{a}$ 를 곱해요. $\\frac{k}{\\sqrt{a}}=\\frac{k\\sqrt{a}}{a}$"
+      ],
+      "steps": [
+        {
+          "title": "분모·분자에 같은 근호 곱하기",
+          "body": "$$\\frac{3}{\\sqrt{5}}=\\frac{3\\times\\sqrt{5}}{\\sqrt{5}\\times\\sqrt{5}}=\\frac{3\\sqrt{5}}{5}$$"
+        },
+        {
+          "title": "약분 확인",
+          "body": "근호 밖의 수 $\\frac{3}{5}$: 기약분수라 더 약분할 것이 없어요."
+        },
+        {
+          "title": "답 읽기",
+          "body": "$a=\\frac{3}{5}$ 이에요."
+        }
+      ],
+      "tip": "분자에만 $\\sqrt{a}$ 를 곱하면 값이 바뀌어요. 분모와 분자에 똑같이 곱해야 1 을 곱한 셈이에요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "rad-rationalize",
+      "seed": 1006
+    },
+    {
+      "q": "$\\sqrt{80}+\\sqrt{5}-\\sqrt{45}=a\\sqrt{5}$ 일 때, 정수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "(sqrt(80) + sqrt(5) - sqrt(45)) / sqrt(5)",
+      "concepts": [
+        "근호 밖으로 꺼내기: $\\sqrt{a^2b}=a\\sqrt{b}\\ (a>0)$. 근호 안의 제곱인 수만 밖으로 나와요.",
+        "근호 안이 같은 수끼리만 더하고 빼요. $m\\sqrt{a}+n\\sqrt{a}=(m+n)\\sqrt{a}$ (동류항처럼)"
+      ],
+      "steps": [
+        {
+          "title": "근호 안을 같게 만들기",
+          "body": "세 수 모두 $5$ 에 제곱수가 곱해진 수예요. 하나씩 꺼내요.\n$$4\\sqrt{5}+\\sqrt{5}-3\\sqrt{5}$$"
+        },
+        {
+          "title": "근호 앞의 수끼리 계산",
+          "body": "$\\sqrt{5}$ 를 한 묶음으로 보고 앞의 수끼리 계산해요.\n$$(4+1-3)\\sqrt{5}=2\\sqrt{5}$$"
+        },
+        {
+          "title": "답 읽기",
+          "body": "$a=2$ 예요."
+        }
+      ],
+      "tip": "$\\sqrt{80}+\\sqrt{5}$ 를 $\\sqrt{85}$ 로 합치면 틀려요. 근호 안을 같게 만든 뒤 앞의 수끼리 더해요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "rad-addsub",
+      "seed": 1007
+    },
+    {
+      "q": "$\\sqrt{150}=a\\sqrt{b}$ 일 때, $a+b$ 의 값을 구하세요. (단, $b$ 는 가장 작은 자연수예요.)",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "e = sqrt(150)\nco, rt = e.as_coeff_Mul()\nans = co + rt**2",
+      "concepts": [
+        "근호 밖으로 꺼내기: $\\sqrt{a^2b}=a\\sqrt{b}\\ (a>0)$. 근호 안의 제곱인 수만 밖으로 나와요."
+      ],
+      "steps": [
+        {
+          "title": "제곱수 찾기",
+          "body": "$150$ 을 가장 큰 제곱수와 나머지로 나눠요.\n$$150=25\\times6=5^2\\times6$$"
+        },
+        {
+          "title": "제곱수만 밖으로",
+          "body": "$$\\sqrt{150}=\\sqrt{5^2}\\times\\sqrt{6}=5\\sqrt{6}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$a=5$, $b=6$ 이므로 $a+b=11$ 이에요."
+        }
+      ],
+      "tip": "작은 제곱수로 한 번만 꺼내면 덜 꺼낸 거예요. 근호 안에 $4$, $9$, $16$ 같은 제곱 인수가 남았는지 꼭 확인해요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "rad-simplify",
+      "seed": 1008
+    },
+    {
+      "q": "$3\\sqrt{45}\\div\\sqrt{5}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "3*sqrt(45) / sqrt(5)",
+      "concepts": [
+        "$a>0$, $b>0$ 이면 $\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$, $\\frac{\\sqrt{a}}{\\sqrt{b}}=\\sqrt{\\frac{a}{b}}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 안끼리 나누기",
+          "body": "$$3\\sqrt{\\frac{45}{5}}=3\\sqrt{9}$$"
+        },
+        {
+          "title": "제곱수 꺼내기",
+          "body": "$\\sqrt{9}=3$ 이므로 값은 $3\\times3=9$ 예요."
+        }
+      ],
+      "tip": "나눗셈도 곱셈처럼 근호 안끼리 해요. 분수로 바꿔 약분하면 실수가 줄어요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "rad-mul-div",
+      "seed": 1009
+    },
+    {
+      "q": "$\\frac{10}{\\sqrt{5}}$ 의 분모를 유리화하면 $a\\sqrt{5}$ 예요. 유리수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "fraction",
+      "check": "10/sqrt(5) / sqrt(5)",
+      "concepts": [
+        "분모의 유리화: 분모와 분자에 같은 $\\sqrt{a}$ 를 곱해요. $\\frac{k}{\\sqrt{a}}=\\frac{k\\sqrt{a}}{a}$"
+      ],
+      "steps": [
+        {
+          "title": "분모·분자에 같은 근호 곱하기",
+          "body": "$$\\frac{10}{\\sqrt{5}}=\\frac{10\\times\\sqrt{5}}{\\sqrt{5}\\times\\sqrt{5}}=\\frac{10\\sqrt{5}}{5}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "근호 밖의 수 $\\frac{10}{5}$ 을 약분하면 $2$ 예요."
+        },
+        {
+          "title": "답 읽기",
+          "body": "$a=2$ 예요."
+        }
+      ],
+      "tip": "분자에만 $\\sqrt{a}$ 를 곱하면 값이 바뀌어요. 분모와 분자에 똑같이 곱해야 1 을 곱한 셈이에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "rad-rationalize",
+      "seed": 1010
+    },
+    {
+      "q": "$\\sqrt{5}+\\sqrt{80}-\\sqrt{20}=a\\sqrt{5}$ 일 때, 정수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "(sqrt(5) + sqrt(80) - sqrt(20)) / sqrt(5)",
+      "concepts": [
+        "근호 밖으로 꺼내기: $\\sqrt{a^2b}=a\\sqrt{b}\\ (a>0)$. 근호 안의 제곱인 수만 밖으로 나와요.",
+        "근호 안이 같은 수끼리만 더하고 빼요. $m\\sqrt{a}+n\\sqrt{a}=(m+n)\\sqrt{a}$ (동류항처럼)"
+      ],
+      "steps": [
+        {
+          "title": "근호 안을 같게 만들기",
+          "body": "세 수 모두 $5$ 에 제곱수가 곱해진 수예요. 하나씩 꺼내요.\n$$\\sqrt{5}+4\\sqrt{5}-2\\sqrt{5}$$"
+        },
+        {
+          "title": "근호 앞의 수끼리 계산",
+          "body": "$\\sqrt{5}$ 를 한 묶음으로 보고 앞의 수끼리 계산해요.\n$$(1+4-2)\\sqrt{5}=3\\sqrt{5}$$"
+        },
+        {
+          "title": "답 읽기",
+          "body": "$a=3$ 이에요."
+        }
+      ],
+      "tip": "$\\sqrt{5}+\\sqrt{80}$ 을 $\\sqrt{85}$ 로 합치면 틀려요. 근호 안을 같게 만든 뒤 앞의 수끼리 더해요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "rad-addsub",
+      "seed": 1011
+    },
+    {
+      "q": "$\\sqrt{48}=a\\sqrt{b}$ 일 때, $a+b$ 의 값을 구하세요. (단, $b$ 는 가장 작은 자연수예요.)",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "e = sqrt(48)\nco, rt = e.as_coeff_Mul()\nans = co + rt**2",
+      "concepts": [
+        "근호 밖으로 꺼내기: $\\sqrt{a^2b}=a\\sqrt{b}\\ (a>0)$. 근호 안의 제곱인 수만 밖으로 나와요."
+      ],
+      "steps": [
+        {
+          "title": "제곱수 찾기",
+          "body": "$48$ 을 가장 큰 제곱수와 나머지로 나눠요.\n$$48=16\\times3=4^2\\times3$$"
+        },
+        {
+          "title": "제곱수만 밖으로",
+          "body": "$$\\sqrt{48}=\\sqrt{4^2}\\times\\sqrt{3}=4\\sqrt{3}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$a=4$, $b=3$ 이므로 $a+b=7$ 이에요."
+        }
+      ],
+      "tip": "작은 제곱수로 한 번만 꺼내면 덜 꺼낸 거예요. 근호 안에 $4$, $9$, $16$ 같은 제곱 인수가 남았는지 꼭 확인해요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "rad-simplify",
+      "seed": 1012
+    },
+    {
+      "q": "$3\\sqrt{18}\\times2\\sqrt{2}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "36",
+      "answerType": "int",
+      "check": "3*sqrt(18) * 2*sqrt(2)",
+      "concepts": [
+        "$a>0$, $b>0$ 이면 $\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$, $\\frac{\\sqrt{a}}{\\sqrt{b}}=\\sqrt{\\frac{a}{b}}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 밖끼리, 안끼리",
+          "body": "밖의 수끼리 곱하고, 근호 안의 수끼리 곱해요.\n$$6\\sqrt{18\\times2}=6\\sqrt{36}$$"
+        },
+        {
+          "title": "제곱수 꺼내기",
+          "body": "$36=6^2$ 이므로 $\\sqrt{36}=6$ 이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$6\\times6=36$$"
+        }
+      ],
+      "tip": "근호 안을 먼저 곱한 뒤 제곱수를 찾으면 계산이 짧아요. 근호 밖의 수를 근호 안에 곱하지 않도록 조심해요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "rad-mul-div",
+      "seed": 1013
+    },
+    {
+      "q": "$\\frac{10}{\\sqrt{2}}$ 의 분모를 유리화하면 $a\\sqrt{2}$ 예요. 유리수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "fraction",
+      "check": "10/sqrt(2) / sqrt(2)",
+      "concepts": [
+        "분모의 유리화: 분모와 분자에 같은 $\\sqrt{a}$ 를 곱해요. $\\frac{k}{\\sqrt{a}}=\\frac{k\\sqrt{a}}{a}$"
+      ],
+      "steps": [
+        {
+          "title": "분모·분자에 같은 근호 곱하기",
+          "body": "$$\\frac{10}{\\sqrt{2}}=\\frac{10\\times\\sqrt{2}}{\\sqrt{2}\\times\\sqrt{2}}=\\frac{10\\sqrt{2}}{2}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "근호 밖의 수 $\\frac{10}{2}$ 을 약분하면 $5$ 예요."
+        },
+        {
+          "title": "답 읽기",
+          "body": "$a=5$ 예요."
+        }
+      ],
+      "tip": "분자에만 $\\sqrt{a}$ 를 곱하면 값이 바뀌어요. 분모와 분자에 똑같이 곱해야 1 을 곱한 셈이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "rad-rationalize",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\sqrt{3}\\times\\sqrt{6}\\times\\sqrt{2}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "sqrt(3)*sqrt(6)*sqrt(2)",
+      "concepts": [
+        "$\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$"
+      ],
+      "steps": [
+        {
+          "title": "근호 안끼리 곱하기",
+          "body": "$$\\sqrt{3\\times6\\times2}=\\sqrt{36}$$"
+        },
+        {
+          "title": "근호 벗기기",
+          "body": "$36=6^2$ 이므로 값은 $6$ 이에요."
+        }
+      ],
+      "tip": "세 개를 곱해도 근호 안끼리 한꺼번에 곱하면 돼요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$2\\sqrt{5}\\times3\\sqrt{10}=a\\sqrt{2}$ 일 때, 자연수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "30",
+      "answerType": "int",
+      "check": "2*sqrt(5)*3*sqrt(10)/sqrt(2)",
+      "concepts": [
+        "$m\\sqrt{a}\\times n\\sqrt{b}=mn\\sqrt{ab}$",
+        "$\\sqrt{a^2b}=a\\sqrt{b}$"
+      ],
+      "steps": [
+        {
+          "title": "밖끼리, 안끼리",
+          "body": "$$2\\times3\\times\\sqrt{5\\times10}=6\\sqrt{50}$$"
+        },
+        {
+          "title": "밖으로 꺼내기",
+          "body": "$\\sqrt{50}=\\sqrt{5^2\\times2}=5\\sqrt{2}$ 예요."
+        },
+        {
+          "title": "정리",
+          "body": "$$6\\times5\\sqrt{2}=30\\sqrt{2}$$ 따라서 $a=30$ 이에요."
+        }
+      ],
+      "tip": "근호 밖의 수는 밖의 수끼리, 근호 안의 수는 안의 수끼리 곱해요. 섞어 곱하지 않아요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$\\sqrt{0.12}=k\\sqrt{3}$ 일 때, 유리수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/5",
+      "answerType": "fraction",
+      "check": "sqrt(Rational(12, 100))/sqrt(3)",
+      "concepts": [
+        "소수는 분수로 바꾼 뒤 근호를 꺼내요.",
+        "$\\sqrt{\\frac{a}{b}}=\\frac{\\sqrt{a}}{\\sqrt{b}}$"
+      ],
+      "steps": [
+        {
+          "title": "분수로 바꾸기",
+          "body": "$$0.12=\\frac{12}{100}$$"
+        },
+        {
+          "title": "분모·분자 따로",
+          "body": "$$\\sqrt{\\frac{12}{100}}=\\frac{\\sqrt{12}}{10}=\\frac{2\\sqrt{3}}{10}$$"
+        },
+        {
+          "title": "약분",
+          "body": "$\\frac{2\\sqrt{3}}{10}=\\frac{1}{5}\\sqrt{3}$ 이므로 $k=\\frac{1}{5}$ 이에요."
+        }
+      ],
+      "tip": "분모 $100=10^2$ 처럼 제곱수가 되게 분수로 바꾸면 근호를 쉽게 벗겨요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\sqrt{2}=a$, $\\sqrt{3}=b$ 라 할 때, $\\sqrt{54}$ 를 $a^mb^n$ 꼴로 나타냈어요. 자연수 $m$, $n$ 에 대하여 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "ans = [i + j for i in range(0, 6) for j in range(0, 6) if sqrt(2)**i * sqrt(3)**j == sqrt(54)][0]",
+      "concepts": [
+        "$\\sqrt{ab}=\\sqrt{a}\\sqrt{b}$",
+        "$(\\sqrt{a})^2=a$"
+      ],
+      "steps": [
+        {
+          "title": "소인수분해",
+          "body": "$54=2\\times3^3$ 이에요."
+        },
+        {
+          "title": "근호를 나누기",
+          "body": "$$\\sqrt{54}=\\sqrt{2}\\times\\sqrt{3}\\times\\sqrt{3}\\times\\sqrt{3}=ab^3$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$m=1$, $n=3$ 이므로 $m+n=4$ 예요."
+        }
+      ],
+      "tip": "$3^3$ 을 $\\sqrt{3}$ 세 개로 나눠 쓰면 $b$ 가 세 번 곱해진 꼴이 보여요. $3\\sqrt{6}$ 으로 꺼낸 뒤 $3=b^2$, $\\sqrt{6}=ab$ 로 바꿔도 같아요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\frac{\\sqrt{2}}{\\sqrt{6}}$ 의 분모를 유리화하면 $\\frac{\\sqrt{3}}{k}$ 예요. 자연수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "sqrt(3)/(sqrt(2)/sqrt(6))",
+      "concepts": [
+        "$\\frac{\\sqrt{a}}{\\sqrt{b}}=\\sqrt{\\frac{a}{b}}$",
+        "$\\frac{1}{\\sqrt{a}}=\\frac{\\sqrt{a}}{a}$"
+      ],
+      "steps": [
+        {
+          "title": "먼저 약분",
+          "body": "$$\\frac{\\sqrt{2}}{\\sqrt{6}}=\\sqrt{\\frac{2}{6}}=\\frac{1}{\\sqrt{3}}$$"
+        },
+        {
+          "title": "유리화",
+          "body": "$$\\frac{1}{\\sqrt{3}}=\\frac{\\sqrt{3}}{3}$$"
+        },
+        {
+          "title": "답",
+          "body": "$k=3$ 이에요."
+        }
+      ],
+      "tip": "곧바로 $\\sqrt{6}$ 을 곱해도 되지만, 근호 안을 먼저 약분하면 계산이 짧아요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$\\frac{6}{\\sqrt{2}}-\\sqrt{18}+\\sqrt{32}=a\\sqrt{2}$ 일 때, 정수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "(6/sqrt(2) - sqrt(18) + sqrt(32))/sqrt(2)",
+      "concepts": [
+        "$\\frac{k}{\\sqrt{a}}=\\frac{k\\sqrt{a}}{a}$",
+        "근호 안이 같은 것끼리 앞의 수를 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "유리화",
+          "body": "$$\\frac{6}{\\sqrt{2}}=\\frac{6\\sqrt{2}}{2}=3\\sqrt{2}$$"
+        },
+        {
+          "title": "꺼내기",
+          "body": "$\\sqrt{18}=3\\sqrt{2}$, $\\sqrt{32}=4\\sqrt{2}$ 예요."
+        },
+        {
+          "title": "앞의 수끼리",
+          "body": "$$(3-3+4)\\sqrt{2}=4\\sqrt{2}$$ 따라서 $a=4$ 예요."
+        }
+      ],
+      "tip": "분모에 근호가 있는 항부터 유리화하면 모든 항이 $\\square\\sqrt{2}$ 꼴로 맞춰져요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$\\sqrt{3}(\\sqrt{6}+\\sqrt{12})-\\sqrt{2}=a\\sqrt{2}+b$ 일 때, 유리수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "e = expand(sqrt(3)*(sqrt(6) + sqrt(12)) - sqrt(2))\nb_ = e.as_coeff_Add()[0]\nans = (e - b_)/sqrt(2) + b_",
+      "concepts": [
+        "분배법칙: $a(b+c)=ab+ac$",
+        "$\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$"
+      ],
+      "steps": [
+        {
+          "title": "괄호 풀기",
+          "body": "$$\\sqrt{18}+\\sqrt{36}-\\sqrt{2}$$"
+        },
+        {
+          "title": "꺼내기",
+          "body": "$\\sqrt{18}=3\\sqrt{2}$, $\\sqrt{36}=6$ 이에요."
+        },
+        {
+          "title": "정리",
+          "body": "$$3\\sqrt{2}+6-\\sqrt{2}=2\\sqrt{2}+6$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$a=2$, $b=6$ 이므로 $a+b=8$ 이에요."
+        }
+      ],
+      "tip": "근호가 남는 항과 유리수 항은 따로 모아요. $2\\sqrt{2}+6$ 은 더 합칠 수 없어요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$\\sqrt{48}\\div\\sqrt{3}\\times\\sqrt{5}=a\\sqrt{5}$ 일 때, 자연수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "sqrt(48)/sqrt(3)*sqrt(5)/sqrt(5)",
+      "concepts": [
+        "$\\sqrt{a}\\div\\sqrt{b}=\\sqrt{\\frac{a}{b}}$"
+      ],
+      "steps": [
+        {
+          "title": "앞에서부터 나누기",
+          "body": "$$\\sqrt{48}\\div\\sqrt{3}=\\sqrt{16}=4$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$4\\times\\sqrt{5}=4\\sqrt{5}$$ 따라서 $a=4$ 예요."
+        }
+      ],
+      "tip": "곱셈과 나눗셈이 섞이면 앞에서부터 차례로 계산해요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$\\sqrt{2}\\times\\sqrt{a}\\times\\sqrt{18}=12$ 를 만족시키는 자연수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "solve(Eq(sqrt(2)*sqrt(a)*sqrt(18), 12), a)[0]",
+      "concepts": [
+        "$\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$"
+      ],
+      "steps": [
+        {
+          "title": "아는 것끼리 곱하기",
+          "body": "$$\\sqrt{2}\\times\\sqrt{18}=\\sqrt{36}=6$$"
+        },
+        {
+          "title": "식 정리",
+          "body": "$6\\sqrt{a}=12$ 이므로 $\\sqrt{a}=2$ 예요."
+        },
+        {
+          "title": "제곱하기",
+          "body": "$a=2^2=4$ 예요."
+        }
+      ],
+      "tip": "근호 안끼리 곱해 제곱수가 되는 짝($2$ 와 $18$)을 먼저 찾으면 빨라요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$\\frac{\\sqrt{3}}{\\sqrt{2}}+\\frac{\\sqrt{2}}{\\sqrt{3}}=k\\sqrt{6}$ 일 때, 유리수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/6",
+      "answerType": "fraction",
+      "check": "(sqrt(3)/sqrt(2) + sqrt(2)/sqrt(3))/sqrt(6)",
+      "concepts": [
+        "$\\frac{\\sqrt{b}}{\\sqrt{a}}=\\frac{\\sqrt{ab}}{a}$",
+        "근호 안이 같은 것끼리 앞의 수를 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "앞 항 유리화",
+          "body": "$$\\frac{\\sqrt{3}\\times\\sqrt{2}}{\\sqrt{2}\\times\\sqrt{2}}=\\frac{\\sqrt{6}}{2}$$"
+        },
+        {
+          "title": "뒤 항 유리화",
+          "body": "$$\\frac{\\sqrt{2}\\times\\sqrt{3}}{\\sqrt{3}\\times\\sqrt{3}}=\\frac{\\sqrt{6}}{3}$$"
+        },
+        {
+          "title": "통분해서 더하기",
+          "body": "$$\\frac{3\\sqrt{6}}{6}+\\frac{2\\sqrt{6}}{6}=\\frac{5}{6}\\sqrt{6}$$"
+        },
+        {
+          "title": "답",
+          "body": "$k=\\frac{5}{6}$ 이에요."
+        }
+      ],
+      "tip": "유리화하면 두 항이 모두 $\\sqrt{6}$ 의 몇 배가 돼요. 그다음은 분수 덧셈이에요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "넓이가 각각 $8\\text{ cm}^2$, $18\\text{ cm}^2$ 인 정사각형 모양 색종이 두 장을 아랫변을 맞춰 겹치지 않게 나란히 붙였어요. 붙인 모양의 둘레가 $a\\sqrt{2}$ cm 일 때, 자연수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "(2*(sqrt(8) + sqrt(18)) + 2*Max(sqrt(8), sqrt(18)))/sqrt(2)",
+      "concepts": [
+        "넓이가 $S$ 인 정사각형의 한 변은 $\\sqrt{S}$ 예요.",
+        "근호 안이 같은 것끼리 앞의 수를 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "한 변 구하기",
+          "body": "$\\sqrt{8}=2\\sqrt{2}$, $\\sqrt{18}=3\\sqrt{2}$ 예요."
+        },
+        {
+          "title": "둘레를 직사각형으로 보기",
+          "body": "계단 모양의 둘레는 가로 $5\\sqrt{2}$, 세로 $3\\sqrt{2}$ 인 직사각형의 둘레와 같아요."
+        },
+        {
+          "title": "둘레 계산",
+          "body": "$$2\\times(5\\sqrt{2}+3\\sqrt{2})=16\\sqrt{2}$$ 따라서 $a=16$ 이에요."
+        }
+      ],
+      "tip": "작은 쪽 윗변과 계단의 세로 변을 위·오른쪽으로 밀어 붙이면 큰 직사각형의 둘레가 돼요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "직각을 낀 두 변의 길이가 $\\sqrt{3}$ cm, $\\sqrt{6}$ cm 인 직각삼각형의 넓이가 $k\\sqrt{2}\\text{ cm}^2$ 일 때, 유리수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "Rational(1, 2)*sqrt(3)*sqrt(6)/sqrt(2)",
+      "concepts": [
+        "직각삼각형의 넓이 $=\\frac{1}{2}\\times$(직각을 낀 두 변의 곱)",
+        "$\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$"
+      ],
+      "steps": [
+        {
+          "title": "넓이 식",
+          "body": "$$\\frac{1}{2}\\times\\sqrt{3}\\times\\sqrt{6}=\\frac{1}{2}\\sqrt{18}$$"
+        },
+        {
+          "title": "꺼내기",
+          "body": "$\\sqrt{18}=3\\sqrt{2}$ 이므로 넓이는 $\\frac{3}{2}\\sqrt{2}$ 예요."
+        },
+        {
+          "title": "답",
+          "body": "$k=\\frac{3}{2}$ 예요."
+        }
+      ],
+      "tip": "근호가 있어도 넓이 공식은 그대로 써요. 곱셈 규칙만 지키면 돼요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "$x=\\frac{2}{\\sqrt{3}}$, $y=\\frac{\\sqrt{3}}{2}$ 일 때, $\\frac{x}{y}+\\frac{y}{x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "25/12",
+      "answerType": "fraction",
+      "check": "X = 2/sqrt(3)\nY = sqrt(3)/2\nans = X/Y + Y/X",
+      "concepts": [
+        "$(\\sqrt{a})^2=a$",
+        "분수의 나눗셈은 뒤의 수를 뒤집어 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "$\\frac{x}{y}$ 구하기",
+          "body": "$$\\frac{2}{\\sqrt{3}}\\times\\frac{2}{\\sqrt{3}}=\\frac{4}{3}$$"
+        },
+        {
+          "title": "$\\frac{y}{x}$ 는 뒤집은 수",
+          "body": "$\\frac{y}{x}=\\frac{3}{4}$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{4}{3}+\\frac{3}{4}=\\frac{16+9}{12}=\\frac{25}{12}$$"
+        }
+      ],
+      "tip": "$x$ 와 $y$ 를 각각 유리화하지 않아도 돼요. 나눗셈 꼴에서는 근호가 저절로 사라져요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "$\\sqrt{3}(a\\sqrt{3}-2)+a\\sqrt{12}$ 가 유리수가 되도록 하는 유리수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "e = expand(sqrt(3)*(a*sqrt(3) - 2) + a*sqrt(12))\nans = solve(Eq(e.coeff(sqrt(3)), 0), a)[0]",
+      "concepts": [
+        "$m+n\\sqrt{3}$ ($m$, $n$ 유리수) 이 유리수이려면 $n=0$ 이어야 해요."
+      ],
+      "steps": [
+        {
+          "title": "괄호 풀기",
+          "body": "$$3a-2\\sqrt{3}+a\\sqrt{12}$$"
+        },
+        {
+          "title": "꺼내기",
+          "body": "$a\\sqrt{12}=2a\\sqrt{3}$ 이므로 $$3a+(2a-2)\\sqrt{3}$$"
+        },
+        {
+          "title": "근호 부분이 0",
+          "body": "유리수가 되려면 $2a-2=0$ 이어야 해요."
+        },
+        {
+          "title": "답",
+          "body": "$a=1$ 이에요."
+        }
+      ],
+      "tip": "$a=1$ 을 넣으면 $3-2\\sqrt{3}+2\\sqrt{3}=3$ 으로 유리수가 맞아요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "$\\sqrt{12}$ 의 정수 부분을 $a$, 소수 부분을 $b$ 라 해요. $\\frac{a}{b+3}$ 의 분모를 유리화하면 $k\\sqrt{3}$ 일 때, 유리수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "A = floor(sqrt(12))\nB = sqrt(12) - A\nans = (A/(B + 3))/sqrt(3)",
+      "concepts": [
+        "(소수 부분) $=$ (그 수) $-$ (정수 부분)",
+        "$\\frac{k}{\\sqrt{a}}=\\frac{k\\sqrt{a}}{a}$"
+      ],
+      "steps": [
+        {
+          "title": "정수 부분",
+          "body": "$9<12<16$ 이므로 $3<\\sqrt{12}<4$, 곧 $a=3$ 이에요."
+        },
+        {
+          "title": "소수 부분",
+          "body": "$b=\\sqrt{12}-3=2\\sqrt{3}-3$ 이므로 $b+3=2\\sqrt{3}$ 이에요."
+        },
+        {
+          "title": "유리화",
+          "body": "$$\\frac{3}{2\\sqrt{3}}=\\frac{3\\sqrt{3}}{2\\times3}=\\frac{\\sqrt{3}}{2}$$"
+        },
+        {
+          "title": "답",
+          "body": "$k=\\frac{1}{2}$ 이에요."
+        }
+      ],
+      "tip": "소수 부분은 0.46… 처럼 어림값이 아니라 $\\sqrt{12}-3$ 처럼 정확한 식으로 써야 계산이 이어져요."
+    }
+  ]
+}

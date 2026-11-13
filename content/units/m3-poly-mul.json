@@ -1,0 +1,1228 @@
+{
+  "id": "m3-poly-mul",
+  "course": "중3",
+  "unit": "문자와 식",
+  "title": "다항식의 곱셈 (곱셈 공식)",
+  "prereq": [
+    "m2-exponent-poly"
+  ],
+  "suneung": [
+    "공통 5"
+  ],
+  "hours": 2,
+  "lesson": {
+    "minutes": 20,
+    "values": {
+      "inc": {
+        "value": "39",
+        "check": "(5+3)**2 - 5**2"
+      },
+      "strips": {
+        "value": "30",
+        "check": "5*3 + 3*5"
+      },
+      "corner": {
+        "value": "9",
+        "check": "3*3"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중3 · 문자와 식",
+        "title": "정사각형을 늘리면\n넓이는 얼마나 늘까요?",
+        "lead": "곱셈 공식은 외우는 게 아니라 넓이 그림에서 읽어 내는 거예요. 띠와 모서리를 직접 늘려 보며 찾아요.",
+        "meta": [
+          "곱셈 공식"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "한 변이 5 인 정사각형,\n3 씩 늘리면?",
+        "lead": "가로와 세로를 모두 3 씩 늘려 한 변이 8 인 정사각형을 만들어요. 넓이는 얼마나 늘어날까요?",
+        "choices": [
+          {
+            "value": "30",
+            "check": "5*3 + 3*5",
+            "feedback": "띠 두 개만 셌어요. 오른쪽 위 모서리에 작은 정사각형이 하나 더 붙어요."
+          },
+          {
+            "value": "39",
+            "check": "(5+3)**2 - 5**2"
+          },
+          {
+            "value": "9",
+            "check": "3**2",
+            "feedback": "모서리의 작은 정사각형만 셌어요. 오른쪽과 위쪽에 붙는 띠 두 개도 있어요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "(5+3)**2 - 5**2",
+        "reveal": "**맞아요.** 새 넓이에서 처음 넓이를 빼면 {{inc}}예요.",
+        "thoughts": [
+          "늘어난 부분은 오른쪽 띠, 위쪽 띠, 오른쪽 위 모서리 세 조각이에요.",
+          "띠 두 개를 합하면 {{strips}}, 모서리는 {{corner}}예요."
+        ],
+        "conclude": "띠를 빠뜨리거나 모서리를 빠뜨리는 실수가 가장 많아요. ==직접 늘려 보며== 확인해요."
+      },
+      {
+        "kind": "explore",
+        "id": "grow",
+        "chip": "손으로 해 보기",
+        "title": "모서리를 끌어\n띠와 모서리를 보세요",
+        "lead": "가로·세로가 모두 $x=5$ 인 정사각형이에요. 오른쪽 위 손잡이를 끌면 가로·세로가 똑같이 $\\Delta x$ 만큼 늘어나요. 띠 두 개와 모서리의 넓이를 보며 $\\Delta x$ 를 1 까지 줄여 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "areaModel",
+          "params": {
+            "mode": "grow",
+            "w": "x",
+            "h": "x",
+            "wLabel": "가로 $x$",
+            "hLabel": "세로 $x$",
+            "at": 5,
+            "max": 3,
+            "step": "1/2",
+            "goal": 1,
+            "intro": "$\\Delta x$ 를 1 까지 줄여 보세요.",
+            "done": "늘린 길이가 얼마든 띠는 같은 크기로 두 개, 모서리는 늘린 길이의 제곱이에요."
+          }
+        },
+        "after": "늘린 길이를 $b$ 라 하면 띠는 $5\\times b$ 가 두 개, 모서리는 $b\\times b$ 예요. 그래서 $(5+b)^2=5^2+2\\times5\\times b+b^2$. 처음 한 변이 몇이든 ==띠 두 개와 모서리 하나==가 붙어요."
+      },
+      {
+        "kind": "explore",
+        "id": "square",
+        "chip": "식으로 옮기기",
+        "title": "$(x+3)^2$ 을\n네 칸으로 나눠 봐요",
+        "lead": "한 변이 $x+3$ 인 정사각형을 $x$ 와 $3$ 으로 잘랐어요. 칸을 눌러 넓이를 열어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "areaModel",
+          "params": {
+            "mode": "split",
+            "w": [
+              "x",
+              "3"
+            ],
+            "h": [
+              "x",
+              "3"
+            ],
+            "intro": "네 칸을 모두 열어 보세요.",
+            "done": "$3x$ 띠가 두 개라서 $x^2+6x+9$ 예요."
+          }
+        },
+        "after": "큰 정사각형 $x^2$, 띠 $3x$ 두 개, 모서리 $9$. 늘 ==띠는 두 개==라서 가운데 항에 2 가 붙어요."
+      },
+      {
+        "kind": "explore",
+        "id": "rect",
+        "chip": "두 번째 해 보기",
+        "title": "$(x+2)(x+5)$ 는\n어떻게 펼쳐질까요?",
+        "lead": "이번에는 가로 $x+5$, 세로 $x+2$ 인 직사각형이에요. 칸을 열고 $x$ 가 붙은 칸끼리 모아 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "areaModel",
+          "params": {
+            "mode": "split",
+            "w": [
+              "x",
+              "5"
+            ],
+            "h": [
+              "x",
+              "2"
+            ],
+            "intro": "네 칸을 모두 열어 보세요.",
+            "done": "$x$ 칸 $5x$ 와 $2x$ 를 모으면 $7x$, 숫자 칸은 $10$ 이에요."
+          }
+        },
+        "after": "$x$ 의 계수는 두 수의 합, 상수항은 두 수의 곱이에요. 띠의 폭이 다를 뿐 ==모든 칸을 더한다==는 건 똑같아요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "전개",
+            "body": "괄호를 풀어 항의 합으로 나타내는 것이에요. 넓이를 칸마다 나눠 적는 것과 같아요."
+          },
+          {
+            "term": "완전제곱 꼴",
+            "body": "$(a+b)^2=a^2+2ab+b^2$, $(a-b)^2=a^2-2ab+b^2$. 가운데 $2ab$ 가 띠 두 개예요."
+          },
+          {
+            "term": "합과 차의 곱",
+            "body": "$(a+b)(a-b)=a^2-b^2$. 칸을 다 더하면 $+ab$ 와 $-ab$ 가 서로 지워져서 두 항만 남아요."
+          },
+          {
+            "term": "일차식 두 개의 곱",
+            "body": "$(x+a)(x+b)=x^2+(a+b)x+ab$, $(ax+b)(cx+d)=acx^2+(ad+bc)x+bd$."
+          }
+        ],
+        "aside": "**참고** · 곱셈 공식은 모두 '모든 칸의 넓이 더하기'를 줄여 쓴 거예요. 헷갈리면 칸을 그려 확인해요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 완전제곱 꼴을 전개했어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(x+3)**2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "x**2"
+              },
+              {
+                "sym": "+9",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "+6*x+9",
+              "body": "띠 두 개 $3x+3x$ 를 빠뜨렸어요. 제곱은 각 항을 제곱하는 게 아니라 두 괄호를 곱하는 거예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 빼기가 있는 제곱이에요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(x-4)**2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "x**2"
+              },
+              {
+                "sym": "-16",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "-8*x+16",
+              "body": "합과 차의 곱 $(x+4)(x-4)$ 와 헷갈렸어요. $(x-4)(x-4)$ 는 가운데 $-8x$ 가 생기고, 끝은 $(-4)\\times(-4)$ 라서 양수예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "sq",
+            "q": "$(2x-3)^2$ 을 전개했을 때, $x$ 의 계수를 구하세요.",
+            "hint": "가운데 항은 두 항을 곱한 값의 2배예요.",
+            "placeholder": "계수",
+            "concepts": [
+              "$(a-b)^2=a^2-2ab+b^2$"
+            ],
+            "steps": [
+              {
+                "title": "두 항 정하기",
+                "body": "$a=2x$, $b=3$ 인 $(a-b)^2$ 꼴이에요."
+              },
+              {
+                "title": "가운데 항",
+                "body": "$$-2\\times2x\\times3=-12x$$"
+              },
+              {
+                "title": "계수 읽기",
+                "body": "$x$ 의 계수는 ${{answer}}$ 예요."
+              }
+            ],
+            "answer": "-12",
+            "answerType": "int",
+            "check": "expand((2*x - 3)**2).coeff(x, 1)"
+          },
+          {
+            "id": "diff",
+            "q": "$(x+7)(x-7)$ 을 전개했을 때, 상수항을 구하세요.",
+            "hint": "합과 차의 곱이에요. 가운데 항이 지워져요.",
+            "placeholder": "상수항",
+            "concepts": [
+              "$(a+b)(a-b)=a^2-b^2$"
+            ],
+            "steps": [
+              {
+                "title": "공식 쓰기",
+                "body": "$$x^2-7^2=x^2-49$$"
+              },
+              {
+                "title": "상수항 읽기",
+                "body": "부호까지 포함해서 ${{answer}}$ 이에요."
+              }
+            ],
+            "answer": "-49",
+            "answerType": "int",
+            "check": "expand((x + 7)*(x - 7)).coeff(x, 0)"
+          },
+          {
+            "id": "num",
+            "q": "곱셈 공식을 이용해 $51\\times49$ 를 계산하세요.",
+            "hint": "두 수의 가운데 수는 50 이에요. $(50+1)(50-1)$ 로 바꿔요.",
+            "placeholder": "값",
+            "concepts": [
+              "$(a+b)(a-b)=a^2-b^2$"
+            ],
+            "steps": [
+              {
+                "title": "합과 차로 쓰기",
+                "body": "$$51\\times49=(50+1)(50-1)$$"
+              },
+              {
+                "title": "공식 쓰기",
+                "body": "$$50^2-1^2=2500-1$$"
+              },
+              {
+                "title": "빼기",
+                "body": "$${{answer}}$$"
+              }
+            ],
+            "answer": "2499",
+            "answerType": "int",
+            "check": "51*49"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "전개는 모든 칸의 넓이를 더하는 거예요.",
+          "$(a\\pm b)^2=a^2\\pm2ab+b^2$. 가운데 $2ab$ 는 띠 두 개, 끝 $b^2$ 은 늘 양수예요.",
+          "$(a+b)(a-b)=a^2-b^2$. 가운데 항이 지워져요.",
+          "$(x+a)(x+b)=x^2+(a+b)x+ab$. 합은 $x$ 의 계수, 곱은 상수항이에요."
+        ],
+        "done": "곱셈 공식 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$(a+b)^2=a^2+2ab+b^2$",
+    "$(a-b)^2=a^2-2ab+b^2$",
+    "$(a+b)(a-b)=a^2-b^2$",
+    "$(x+a)(x+b)=x^2+(a+b)x+ab$",
+    "$(ax+b)(cx+d)=acx^2+(ad+bc)x+bd$"
+  ],
+  "generators": [
+    "poly-square",
+    "poly-diff-squares",
+    "poly-x-ab",
+    "poly-general"
+  ],
+  "problems": [
+    {
+      "q": "$(4x+6)^2$ 을 전개하면 $Ax^2+Bx+C$ 예요. $A+B+C$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "100",
+      "answerType": "int",
+      "check": "f = expand((4*x + 6)**2)\nans = f.coeff(x, 2) + f.coeff(x, 1) + f.coeff(x, 0)",
+      "concepts": [
+        "$(a+b)^2=a^2+2ab+b^2$, $(a-b)^2=a^2-2ab+b^2$. 가운데 항 $2ab$ 를 빠뜨리지 마세요."
+      ],
+      "steps": [
+        {
+          "title": "두 항 정하기",
+          "body": "$a=4x$, $b=6$ 으로 보면 $(a+b)^2$ 꼴이에요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$(4x)^2+2\\times 4x\\times 6+6^2$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$16x^2+48x+36$$"
+        },
+        {
+          "title": "계수 더하기",
+          "body": "$$16+48+36=100$$"
+        }
+      ],
+      "tip": "$A+B+C$ 는 $x=1$ 을 넣은 값과 같아요. 전개 전 식에 $x=1$ 을 넣어 검산할 수 있어요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "poly-square",
+      "seed": 1000
+    },
+    {
+      "q": "곱셈 공식을 이용해 $31\\times29$ 를 계산하세요.",
+      "choices": null,
+      "answer": "899",
+      "answerType": "int",
+      "check": "31*29",
+      "concepts": [
+        "$(a+b)(a-b)=a^2-b^2$. 가운데 항이 서로 지워져요."
+      ],
+      "steps": [
+        {
+          "title": "합과 차로 쓰기",
+          "body": "$31=30+1$, $29=30-1$ 이에요.\n$$(30+1)(30-1)$$"
+        },
+        {
+          "title": "공식 쓰기",
+          "body": "$$30^2-1^2=900-1$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$900-1=899$$"
+        }
+      ],
+      "tip": "두 수의 가운데 수를 찾으면 합과 차의 곱으로 바꿀 수 있어요. 가운데 수의 제곱에서 거리의 제곱을 빼요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "poly-diff-squares",
+      "seed": 1001
+    },
+    {
+      "q": "$(x+5)(x-4)$ 를 전개했을 때, 상수항을 구하세요.",
+      "choices": null,
+      "answer": "-20",
+      "answerType": "int",
+      "check": "expand((1*x + 5)*(1*x - 4)).coeff(x, 0)",
+      "concepts": [
+        "$(x+a)(x+b)=x^2+(a+b)x+ab$"
+      ],
+      "steps": [
+        {
+          "title": "공식에 맞추기",
+          "body": "$a=5$, $b=-4$ 인 $(x+a)(x+b)$ 꼴이에요."
+        },
+        {
+          "title": "상수항 = 두 수의 곱",
+          "body": "$$5\\times (-4)=-20$$"
+        },
+        {
+          "title": "전체 식",
+          "body": "$$x^2+x-20$$"
+        }
+      ],
+      "tip": "합은 $x$ 의 계수, 곱은 상수항이에요. 부호까지 같이 더하고 곱해요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "poly-x-ab",
+      "seed": 1002
+    },
+    {
+      "q": "$(2x+7)(2x+4)$ 를 전개했을 때, $x$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "22",
+      "answerType": "int",
+      "check": "expand((2*x + 7)*(2*x + 4)).coeff(x, 1)",
+      "concepts": [
+        "$(ax+b)(cx+d)=acx^2+(ad+bc)x+bd$"
+      ],
+      "steps": [
+        {
+          "title": "바깥끼리 곱하기",
+          "body": "$2x$ 와 $4$ 를 곱하면 $8x$ 예요."
+        },
+        {
+          "title": "안쪽끼리 곱하기",
+          "body": "$7$ 과 $2x$ 를 곱하면 $14x$ 예요."
+        },
+        {
+          "title": "두 $x$ 항 더하기",
+          "body": "$$2\\times 4+7\\times 2=22$$"
+        },
+        {
+          "title": "전체 식",
+          "body": "$$4x^2+22x+28$$"
+        }
+      ],
+      "tip": "$x$ 항은 두 군데(바깥끼리, 안쪽끼리)에서 생겨요. 하나만 세면 계수가 틀려요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "poly-general",
+      "seed": 1003
+    },
+    {
+      "q": "$(x-2)^2$ 을 전개하면 $Ax^2+Bx+C$ 예요. $A+B+C$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "f = expand((1*x - 2)**2)\nans = f.coeff(x, 2) + f.coeff(x, 1) + f.coeff(x, 0)",
+      "concepts": [
+        "$(a+b)^2=a^2+2ab+b^2$, $(a-b)^2=a^2-2ab+b^2$. 가운데 항 $2ab$ 를 빠뜨리지 마세요."
+      ],
+      "steps": [
+        {
+          "title": "두 항 정하기",
+          "body": "$a=x$, $b=-2$ 로 보면 $(a+b)^2$ 꼴이에요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$x^2+2\\times x\\times (-2)+(-2)^2$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$x^2-4x+4$$"
+        },
+        {
+          "title": "계수 더하기",
+          "body": "$$1-4+4=1$$"
+        }
+      ],
+      "tip": "$A+B+C$ 는 $x=1$ 을 넣은 값과 같아요. 전개 전 식에 $x=1$ 을 넣어 검산할 수 있어요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "poly-square",
+      "seed": 1004
+    },
+    {
+      "q": "$(4x+5)(4x-5)$ 를 전개하면 $Ax^2+B$ 예요. $A+B$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-9",
+      "answerType": "int",
+      "check": "f = expand((4*x + 5)*(4*x - 5))\nans = f.coeff(x, 2) + f.coeff(x, 0)",
+      "concepts": [
+        "$(a+b)(a-b)=a^2-b^2$. 가운데 항이 서로 지워져요."
+      ],
+      "steps": [
+        {
+          "title": "합과 차의 곱 알아보기",
+          "body": "$a=4x$, $b=5$ 인 $(a+b)(a-b)$ 꼴이에요."
+        },
+        {
+          "title": "공식 쓰기",
+          "body": "$$(4x)^2-5^2=16x^2-25$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$A=16$, $B=-25$ 이므로 $A+B=-9$ 예요."
+        }
+      ],
+      "tip": "하나씩 곱하면 $20x$ 와 $-20x$ 가 생겨 서로 지워져요. 그래서 항이 두 개만 남아요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "poly-diff-squares",
+      "seed": 1005
+    },
+    {
+      "q": "$(x-4)(x+9)$ 를 전개했을 때, 상수항을 구하세요.",
+      "choices": null,
+      "answer": "-36",
+      "answerType": "int",
+      "check": "expand((1*x - 4)*(1*x + 9)).coeff(x, 0)",
+      "concepts": [
+        "$(x+a)(x+b)=x^2+(a+b)x+ab$"
+      ],
+      "steps": [
+        {
+          "title": "공식에 맞추기",
+          "body": "$a=-4$, $b=9$ 인 $(x+a)(x+b)$ 꼴이에요."
+        },
+        {
+          "title": "상수항 = 두 수의 곱",
+          "body": "$$-4\\times 9=-36$$"
+        },
+        {
+          "title": "전체 식",
+          "body": "$$x^2+5x-36$$"
+        }
+      ],
+      "tip": "합은 $x$ 의 계수, 곱은 상수항이에요. 부호까지 같이 더하고 곱해요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "poly-x-ab",
+      "seed": 1006
+    },
+    {
+      "q": "$(5x-1)(2x-2)$ 를 전개했을 때, $x$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "-12",
+      "answerType": "int",
+      "check": "expand((5*x - 1)*(2*x - 2)).coeff(x, 1)",
+      "concepts": [
+        "$(ax+b)(cx+d)=acx^2+(ad+bc)x+bd$"
+      ],
+      "steps": [
+        {
+          "title": "바깥끼리 곱하기",
+          "body": "$5x$ 와 $-2$ 를 곱하면 $-10x$ 예요."
+        },
+        {
+          "title": "안쪽끼리 곱하기",
+          "body": "$-1$ 과 $2x$ 를 곱하면 $-2x$ 예요."
+        },
+        {
+          "title": "두 $x$ 항 더하기",
+          "body": "$$5\\times (-2)-1\\times 2=-12$$"
+        },
+        {
+          "title": "전체 식",
+          "body": "$$10x^2-12x+2$$"
+        }
+      ],
+      "tip": "$x$ 항은 두 군데(바깥끼리, 안쪽끼리)에서 생겨요. 하나만 세면 계수가 틀려요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "poly-general",
+      "seed": 1007
+    },
+    {
+      "q": "$(4x+6)^2$ 을 전개하면 $Ax^2+Bx+C$ 예요. $A+B+C$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "100",
+      "answerType": "int",
+      "check": "f = expand((4*x + 6)**2)\nans = f.coeff(x, 2) + f.coeff(x, 1) + f.coeff(x, 0)",
+      "concepts": [
+        "$(a+b)^2=a^2+2ab+b^2$, $(a-b)^2=a^2-2ab+b^2$. 가운데 항 $2ab$ 를 빠뜨리지 마세요."
+      ],
+      "steps": [
+        {
+          "title": "두 항 정하기",
+          "body": "$a=4x$, $b=6$ 으로 보면 $(a+b)^2$ 꼴이에요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$(4x)^2+2\\times 4x\\times 6+6^2$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$16x^2+48x+36$$"
+        },
+        {
+          "title": "계수 더하기",
+          "body": "$$16+48+36=100$$"
+        }
+      ],
+      "tip": "$A+B+C$ 는 $x=1$ 을 넣은 값과 같아요. 전개 전 식에 $x=1$ 을 넣어 검산할 수 있어요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "poly-square",
+      "seed": 1008
+    },
+    {
+      "q": "$(4x+4)(4x-4)$ 를 전개하면 $Ax^2+B$ 예요. $A+B$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerType": "int",
+      "check": "f = expand((4*x + 4)*(4*x - 4))\nans = f.coeff(x, 2) + f.coeff(x, 0)",
+      "concepts": [
+        "$(a+b)(a-b)=a^2-b^2$. 가운데 항이 서로 지워져요."
+      ],
+      "steps": [
+        {
+          "title": "합과 차의 곱 알아보기",
+          "body": "$a=4x$, $b=4$ 인 $(a+b)(a-b)$ 꼴이에요."
+        },
+        {
+          "title": "공식 쓰기",
+          "body": "$$(4x)^2-4^2=16x^2-16$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$A=16$, $B=-16$ 이므로 $A+B=0$ 이에요."
+        }
+      ],
+      "tip": "하나씩 곱하면 $16x$ 와 $-16x$ 가 생겨 서로 지워져요. 그래서 항이 두 개만 남아요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "poly-diff-squares",
+      "seed": 1009
+    },
+    {
+      "q": "$(x+4)(x-8)$ 를 전개했을 때, $x$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "expand((1*x + 4)*(1*x - 8)).coeff(x, 1)",
+      "concepts": [
+        "$(x+a)(x+b)=x^2+(a+b)x+ab$"
+      ],
+      "steps": [
+        {
+          "title": "공식에 맞추기",
+          "body": "$a=4$, $b=-8$ 인 $(x+a)(x+b)$ 꼴이에요."
+        },
+        {
+          "title": "$x$ 의 계수 = 두 수의 합",
+          "body": "$$4-8=-4$$"
+        },
+        {
+          "title": "전체 식",
+          "body": "$$x^2-4x-32$$"
+        }
+      ],
+      "tip": "합은 $x$ 의 계수, 곱은 상수항이에요. 부호까지 같이 더하고 곱해요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "poly-x-ab",
+      "seed": 1010
+    },
+    {
+      "q": "$(5x+7)(4x-2)$ 를 전개했을 때, $x$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "18",
+      "answerType": "int",
+      "check": "expand((5*x + 7)*(4*x - 2)).coeff(x, 1)",
+      "concepts": [
+        "$(ax+b)(cx+d)=acx^2+(ad+bc)x+bd$"
+      ],
+      "steps": [
+        {
+          "title": "바깥끼리 곱하기",
+          "body": "$5x$ 와 $-2$ 를 곱하면 $-10x$ 예요."
+        },
+        {
+          "title": "안쪽끼리 곱하기",
+          "body": "$7$ 과 $4x$ 를 곱하면 $28x$ 예요."
+        },
+        {
+          "title": "두 $x$ 항 더하기",
+          "body": "$$5\\times (-2)+7\\times 4=18$$"
+        },
+        {
+          "title": "전체 식",
+          "body": "$$20x^2+18x-14$$"
+        }
+      ],
+      "tip": "$x$ 항은 두 군데(바깥끼리, 안쪽끼리)에서 생겨요. 하나만 세면 계수가 틀려요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "poly-general",
+      "seed": 1011
+    },
+    {
+      "q": "$(2x-4)^2$ 을 전개하면 $Ax^2+Bx+C$ 예요. $A+B+C$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "f = expand((2*x - 4)**2)\nans = f.coeff(x, 2) + f.coeff(x, 1) + f.coeff(x, 0)",
+      "concepts": [
+        "$(a+b)^2=a^2+2ab+b^2$, $(a-b)^2=a^2-2ab+b^2$. 가운데 항 $2ab$ 를 빠뜨리지 마세요."
+      ],
+      "steps": [
+        {
+          "title": "두 항 정하기",
+          "body": "$a=2x$, $b=-4$ 로 보면 $(a+b)^2$ 꼴이에요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$(2x)^2+2\\times 2x\\times (-4)+(-4)^2$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$4x^2-16x+16$$"
+        },
+        {
+          "title": "계수 더하기",
+          "body": "$$4-16+16=4$$"
+        }
+      ],
+      "tip": "$A+B+C$ 는 $x=1$ 을 넣은 값과 같아요. 전개 전 식에 $x=1$ 을 넣어 검산할 수 있어요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "poly-square",
+      "seed": 1012
+    },
+    {
+      "q": "곱셈 공식을 이용해 $23\\times17$ 을 계산하세요.",
+      "choices": null,
+      "answer": "391",
+      "answerType": "int",
+      "check": "23*17",
+      "concepts": [
+        "$(a+b)(a-b)=a^2-b^2$. 가운데 항이 서로 지워져요."
+      ],
+      "steps": [
+        {
+          "title": "합과 차로 쓰기",
+          "body": "$23=20+3$, $17=20-3$ 이에요.\n$$(20+3)(20-3)$$"
+        },
+        {
+          "title": "공식 쓰기",
+          "body": "$$20^2-3^2=400-9$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$400-9=391$$"
+        }
+      ],
+      "tip": "두 수의 가운데 수를 찾으면 합과 차의 곱으로 바꿀 수 있어요. 가운데 수의 제곱에서 거리의 제곱을 빼요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "poly-diff-squares",
+      "seed": 1013
+    },
+    {
+      "q": "$(x+2)(x+8)$ 를 전개했을 때, 상수항을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "expand((1*x + 2)*(1*x + 8)).coeff(x, 0)",
+      "concepts": [
+        "$(x+a)(x+b)=x^2+(a+b)x+ab$"
+      ],
+      "steps": [
+        {
+          "title": "공식에 맞추기",
+          "body": "$a=2$, $b=8$ 인 $(x+a)(x+b)$ 꼴이에요."
+        },
+        {
+          "title": "상수항 = 두 수의 곱",
+          "body": "$$2\\times 8=16$$"
+        },
+        {
+          "title": "전체 식",
+          "body": "$$x^2+10x+16$$"
+        }
+      ],
+      "tip": "합은 $x$ 의 계수, 곱은 상수항이에요. 부호까지 같이 더하고 곱해요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "poly-x-ab",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$(x+4)^2-(x-4)^2$ 을 간단히 하면 $kx$ 예요. 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "expand((x + 4)**2 - (x - 4)**2).coeff(x, 1)",
+      "concepts": [
+        "$(a\\pm b)^2=a^2\\pm2ab+b^2$"
+      ],
+      "steps": [
+        {
+          "title": "앞 식 전개",
+          "body": "$$(x+4)^2=x^2+8x+16$$"
+        },
+        {
+          "title": "뒤 식 전개",
+          "body": "$$(x-4)^2=x^2-8x+16$$"
+        },
+        {
+          "title": "빼기",
+          "body": "괄호 앞이 빼기라서 뒤 식의 부호가 모두 바뀌어요.\n$$x^2+8x+16-x^2+8x-16=16x$$"
+        },
+        {
+          "title": "답",
+          "body": "$k=16$ 이에요."
+        }
+      ],
+      "tip": "두 식은 가운데 항의 부호만 달라요. 그래서 빼면 가운데 항의 2배만 남아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$(3x+2y)(3x-2y)$ 를 전개하면 $ax^2+by^2$ 이에요. $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "f = expand((3*x + 2*y)*(3*x - 2*y))\nans = f.coeff(x, 2) + f.coeff(y, 2)",
+      "concepts": [
+        "$(a+b)(a-b)=a^2-b^2$"
+      ],
+      "steps": [
+        {
+          "title": "공식에 맞추기",
+          "body": "$a=3x$, $b=2y$ 인 합과 차의 곱이에요."
+        },
+        {
+          "title": "제곱해서 빼기",
+          "body": "$$(3x)^2-(2y)^2=9x^2-4y^2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$a=9$, $b=-4$ 이므로 $a+b=5$ 예요."
+        }
+      ],
+      "tip": "$(3x)^2$ 은 $3x^2$ 이 아니라 $9x^2$ 이에요. 계수도 함께 제곱해요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$(x+a)(x-6)$ 을 전개한 식에서 $x$ 의 계수가 $-2$ 예요. 이때 상수항을 구하세요. (단, $a$ 는 상수)",
+      "choices": null,
+      "answer": "-24",
+      "answerType": "int",
+      "check": "A = solve(Eq(expand((x + a)*(x - 6)).coeff(x, 1), -2), a)[0]\nans = expand((x + A)*(x - 6)).coeff(x, 0)",
+      "concepts": [
+        "$(x+a)(x+b)=x^2+(a+b)x+ab$"
+      ],
+      "steps": [
+        {
+          "title": "x 의 계수",
+          "body": "두 수의 합이 $x$ 의 계수이므로 $a+(-6)=-2$ 예요."
+        },
+        {
+          "title": "a 구하기",
+          "body": "$a=4$ 예요."
+        },
+        {
+          "title": "상수항",
+          "body": "두 수의 곱이므로 $4\\times(-6)=-24$ 예요."
+        }
+      ],
+      "tip": "$x$ 의 계수(합)로 $a$ 를 먼저 찾고, 그다음 상수항(곱)을 구해요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$(2x+a)(3x-1)$ 을 전개한 식에서 $x$ 의 계수가 $7$ 일 때, 상수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "solve(Eq(expand((2*x + a)*(3*x - 1)).coeff(x, 1), 7), a)[0]",
+      "concepts": [
+        "$(ax+b)(cx+d)=acx^2+(ad+bc)x+bd$"
+      ],
+      "steps": [
+        {
+          "title": "바깥끼리",
+          "body": "$2x\\times(-1)=-2x$ 예요."
+        },
+        {
+          "title": "안쪽끼리",
+          "body": "$a\\times3x=3ax$ 예요."
+        },
+        {
+          "title": "방정식",
+          "body": "$-2+3a=7$ 이므로 $3a=9$, $a=3$ 이에요."
+        }
+      ],
+      "tip": "$x$ 항은 바깥끼리, 안쪽끼리 두 군데에서 나와요. 하나만 세면 방정식이 틀려져요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "곱셈 공식을 이용해 $98^2$ 을 계산하세요.",
+      "choices": null,
+      "answer": "9604",
+      "answerType": "int",
+      "check": "98**2",
+      "concepts": [
+        "$(a-b)^2=a^2-2ab+b^2$"
+      ],
+      "steps": [
+        {
+          "title": "가까운 수로 쓰기",
+          "body": "$$98^2=(100-2)^2$$"
+        },
+        {
+          "title": "공식 쓰기",
+          "body": "$$100^2-2\\times100\\times2+2^2=10000-400+4$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$9604$$"
+        }
+      ],
+      "tip": "100, 50 같은 계산하기 쉬운 수와의 차로 바꾸면 암산이 돼요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$x+y=5$, $xy=3$ 일 때, $x^2+y^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "19",
+      "answerType": "int",
+      "check": "S = solve([Eq(x + y, 5), Eq(x*y, 3)], [x, y], dict=True)[0]\nans = simplify(S[x]**2 + S[y]**2)",
+      "concepts": [
+        "$(x+y)^2=x^2+2xy+y^2$ 이므로 $x^2+y^2=(x+y)^2-2xy$"
+      ],
+      "steps": [
+        {
+          "title": "식 바꾸기",
+          "body": "$$x^2+y^2=(x+y)^2-2xy$$"
+        },
+        {
+          "title": "대입",
+          "body": "$$5^2-2\\times3=25-6$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$19$$"
+        }
+      ],
+      "tip": "$x$, $y$ 를 직접 구하지 않아도 돼요. 합과 곱만으로 제곱의 합을 구할 수 있어요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$x-y=3$, $xy=4$ 일 때, $(x+y)^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "25",
+      "answerType": "int",
+      "check": "S = solve([Eq(x - y, 3), Eq(x*y, 4)], [x, y], dict=True)[0]\nans = simplify((S[x] + S[y])**2)",
+      "concepts": [
+        "$(x+y)^2-(x-y)^2=4xy$ 이므로 $(x+y)^2=(x-y)^2+4xy$"
+      ],
+      "steps": [
+        {
+          "title": "두 식의 차이",
+          "body": "$(x+y)^2$ 과 $(x-y)^2$ 은 가운데 항 $2xy$ 와 $-2xy$ 만 달라요. 차이는 $4xy$ 예요."
+        },
+        {
+          "title": "식 바꾸기",
+          "body": "$$(x+y)^2=(x-y)^2+4xy$$"
+        },
+        {
+          "title": "대입",
+          "body": "$$3^2+4\\times4=9+16=25$$"
+        }
+      ],
+      "tip": "넓이 그림으로 보면 큰 정사각형 $(x+y)^2$ 은 작은 정사각형 $(x-y)^2$ 과 직사각형 $xy$ 네 개로 채워져요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$(x+1)(x-1)(x+2)(x-2)$ 를 전개했을 때, $x^2$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "-5",
+      "answerType": "int",
+      "check": "expand((x + 1)*(x - 1)*(x + 2)*(x - 2)).coeff(x, 2)",
+      "concepts": [
+        "$(a+b)(a-b)=a^2-b^2$"
+      ],
+      "steps": [
+        {
+          "title": "짝지어 곱하기",
+          "body": "$(x+1)(x-1)=x^2-1$, $(x+2)(x-2)=x^2-4$ 예요."
+        },
+        {
+          "title": "두 식 곱하기",
+          "body": "$$(x^2-1)(x^2-4)=x^4-5x^2+4$$"
+        },
+        {
+          "title": "계수 읽기",
+          "body": "$x^2$ 의 계수는 $-5$ 예요."
+        }
+      ],
+      "tip": "합과 차의 곱이 되도록 짝을 지으면 네 개의 곱도 두 번의 계산으로 끝나요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$(a+b-3)(a-b-3)$ 을 전개했을 때, $a$ 의 계수와 상수항의 합을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "f = expand((a + b - 3)*(a - b - 3))\nans = f.coeff(a, 1).subs(b, 0) + f.subs({a: 0, b: 0})",
+      "concepts": [
+        "공통 부분을 한 문자로 바꿔 곱셈 공식을 써요.",
+        "$(A+b)(A-b)=A^2-b^2$"
+      ],
+      "steps": [
+        {
+          "title": "공통 부분 묶기",
+          "body": "$a-3=A$ 로 두면 $(A+b)(A-b)$ 예요."
+        },
+        {
+          "title": "합과 차의 곱",
+          "body": "$$A^2-b^2=(a-3)^2-b^2$$"
+        },
+        {
+          "title": "전개",
+          "body": "$$a^2-6a+9-b^2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$a$ 의 계수 $-6$ 과 상수항 $9$ 를 더하면 $3$ 이에요."
+        }
+      ],
+      "tip": "괄호 안에서 부호가 같은 부분($a-3$)과 다른 부분($b$)을 나누면 공식이 보여요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$(x+3)^2-(x+2)(x-2)$ 를 간단히 하면 $ax+b$ 예요. $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "19",
+      "answerType": "int",
+      "check": "f = expand((x + 3)**2 - (x + 2)*(x - 2))\nans = f.coeff(x, 1) + f.coeff(x, 0)",
+      "concepts": [
+        "$(a+b)^2=a^2+2ab+b^2$",
+        "$(a+b)(a-b)=a^2-b^2$"
+      ],
+      "steps": [
+        {
+          "title": "앞 식",
+          "body": "$$(x+3)^2=x^2+6x+9$$"
+        },
+        {
+          "title": "뒤 식",
+          "body": "$$(x+2)(x-2)=x^2-4$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$x^2+6x+9-x^2+4=6x+13$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$a=6$, $b=13$ 이므로 $a+b=19$ 예요."
+        }
+      ],
+      "tip": "뒤 식을 괄호째로 빼야 $-4$ 가 $+4$ 로 바뀌어요. 괄호를 먼저 쳐 두면 부호 실수를 막아요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "한 변이 $x$ m 인 정사각형 꽃밭이 있어요. 가로를 3 m 늘이고 세로를 3 m 줄여 직사각형 꽃밭으로 바꾸면, 넓이는 처음보다 몇 $\\text{m}^2$ 줄어들까요? (단, $x>3$)",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "expand(x**2 - (x + 3)*(x - 3))",
+      "concepts": [
+        "$(a+b)(a-b)=a^2-b^2$"
+      ],
+      "steps": [
+        {
+          "title": "바꾼 넓이",
+          "body": "$$(x+3)(x-3)=x^2-9$$"
+        },
+        {
+          "title": "처음과 비교",
+          "body": "$$x^2-(x^2-9)=9$$"
+        },
+        {
+          "title": "답",
+          "body": "$x$ 가 얼마든 $9\\text{ m}^2$ 줄어요."
+        }
+      ],
+      "tip": "가로에 붙은 띠와 세로에서 잘린 띠는 크기가 거의 같지만, 모서리 $3\\times3$ 만큼 차이가 나요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "$(2x-1)(x+3)$ 을 전개하면 $ax^2+bx+c$ 예요. $a-b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-6",
+      "answerType": "int",
+      "check": "f = expand((2*x - 1)*(x + 3))\nans = f.coeff(x, 2) - f.coeff(x, 1) + f.coeff(x, 0)",
+      "concepts": [
+        "$(ax+b)(cx+d)=acx^2+(ad+bc)x+bd$"
+      ],
+      "steps": [
+        {
+          "title": "x² 항",
+          "body": "$2x\\times x=2x^2$ 이므로 $a=2$ 예요."
+        },
+        {
+          "title": "x 항",
+          "body": "$2x\\times3+(-1)\\times x=5x$ 이므로 $b=5$ 예요."
+        },
+        {
+          "title": "상수항",
+          "body": "$(-1)\\times3=-3$ 이므로 $c=-3$ 이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$2-5+(-3)=-6$$"
+        }
+      ],
+      "tip": "$a-b+c$ 는 $x=-1$ 을 넣은 값이에요. 전개 전 식에 넣으면 $(-3)\\times2=-6$ 으로 바로 확인돼요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "$\\frac{1}{\\sqrt{2}+1}$ 의 분모를 유리화하면 $\\sqrt{2}+k$ 예요. 정수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "radsimp(1/(sqrt(2) + 1)) - sqrt(2)",
+      "concepts": [
+        "$(a+b)(a-b)=a^2-b^2$ 를 쓰면 근호가 사라져요."
+      ],
+      "steps": [
+        {
+          "title": "짝 곱하기",
+          "body": "분모·분자에 $\\sqrt{2}-1$ 을 곱해요."
+        },
+        {
+          "title": "분모 계산",
+          "body": "$$(\\sqrt{2}+1)(\\sqrt{2}-1)=2-1=1$$"
+        },
+        {
+          "title": "정리",
+          "body": "$$\\frac{\\sqrt{2}-1}{1}=\\sqrt{2}-1$$ 따라서 $k=-1$ 이에요."
+        }
+      ],
+      "tip": "분모가 $\\sqrt{a}+b$ 꼴이면 부호만 바꾼 $\\sqrt{a}-b$ 를 곱해요. 합과 차의 곱이 근호를 없애 줘요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "$x+\\frac{1}{x}=4$ 일 때, $x^2+\\frac{1}{x^2}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "14",
+      "answerType": "int",
+      "check": "s = solve(Eq(x + 1/x, 4), x)[0]\nans = simplify(s**2 + 1/s**2)",
+      "concepts": [
+        "$\\left(x+\\frac{1}{x}\\right)^2=x^2+2+\\frac{1}{x^2}$"
+      ],
+      "steps": [
+        {
+          "title": "양변 제곱",
+          "body": "$$\\left(x+\\frac{1}{x}\\right)^2=16$$"
+        },
+        {
+          "title": "왼쪽 전개",
+          "body": "가운데 항은 $2\\times x\\times\\frac{1}{x}=2$ 예요.\n$$x^2+2+\\frac{1}{x^2}=16$$"
+        },
+        {
+          "title": "답",
+          "body": "$$x^2+\\frac{1}{x^2}=16-2=14$$"
+        }
+      ],
+      "tip": "$x$ 와 $\\frac{1}{x}$ 의 곱이 1 이라서 가운데 항이 숫자 2 로 떨어져요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "$(2+1)(2^2+1)(2^4+1)=2^n-1$ 일 때, 자연수 $n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "ans = [k for k in range(1, 20) if 2**k - 1 == (2 + 1)*(2**2 + 1)*(2**4 + 1)][0]",
+      "concepts": [
+        "$(a-1)(a+1)=a^2-1$ 을 되풀이해 써요."
+      ],
+      "steps": [
+        {
+          "title": "1 곱하기",
+          "body": "$1=2-1$ 이므로 앞에 $(2-1)$ 을 곱해도 값은 같아요."
+        },
+        {
+          "title": "첫 짝",
+          "body": "$$(2-1)(2+1)=2^2-1$$"
+        },
+        {
+          "title": "둘째 짝",
+          "body": "$$(2^2-1)(2^2+1)=2^4-1$$"
+        },
+        {
+          "title": "셋째 짝",
+          "body": "$$(2^4-1)(2^4+1)=2^8-1$$ 따라서 $n=8$ 이에요."
+        }
+      ],
+      "tip": "합과 차의 곱을 연달아 쓰면 지수가 2배씩 커져요. 곱셈을 직접 하면 $3\\times5\\times17=255=2^8-1$ 로 확인돼요."
+    }
+  ]
+}
