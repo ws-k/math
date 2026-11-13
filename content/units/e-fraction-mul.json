@@ -1,0 +1,1156 @@
+{
+  "id": "e-fraction-mul",
+  "course": "초등",
+  "unit": "수와 연산",
+  "title": "분수의 곱셈",
+  "prereq": [
+    "e-fraction-addsub"
+  ],
+  "suneung": [],
+  "hours": 1.5,
+  "lesson": {
+    "minutes": 15,
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "초등 · 수와 연산",
+        "title": "분수를 곱하면\n왜 작아질까요?",
+        "lead": "케이크 남은 것의 절반은 한 판의 얼마일까요? 넓이로 그려 보며 알아봐요.",
+        "meta": [
+          "분수의 곱셈"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$\\frac{2}{3}$판의 절반은\\n얼마일까요?",
+        "lead": "케이크가 $\\frac{2}{3}$판 남았어요. 그 절반을 먹었어요.",
+        "choices": [
+          {
+            "value": "7/6",
+            "check": "Rational(2,3)+Rational(1,2)",
+            "feedback": "더했네요. 절반을 먹었으니 $\\frac{2}{3}$보다 작아야 해요."
+          },
+          {
+            "value": "1/3",
+            "check": "Rational(2,3)*Rational(1,2)"
+          },
+          {
+            "value": "4/3",
+            "check": "Rational(2,3)/Rational(1,2)",
+            "feedback": "두 배가 됐네요. 절반은 반으로 나눈 거예요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "Rational(2,3)*Rational(1,2)",
+        "reveal": "**맞아요!** 아마 이렇게 생각했을 거예요.",
+        "thoughts": [
+          "$\\frac{2}{3}$은 $\\frac{1}{3}$ 조각 2개예요.",
+          "2개의 절반은 1개, 곧 $\\frac{1}{3}$판이에요."
+        ],
+        "conclude": "\"~의 절반\"은 $\\times\\frac{1}{2}$이에요. ==분수의 곱셈은 \"~의 얼마\"를 구하는 일==이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "repeat",
+        "chip": "손으로 해 보기",
+        "title": "같은 조각을\n여러 번 더하면",
+        "lead": "물을 $\\frac{3}{4}$ L씩 3번 부으면 몇 L일까요? 화살표를 하나씩 펼쳐 보세요.",
+        "widget": {
+          "type": "numberLine",
+          "params": {
+            "min": 0,
+            "max": 3,
+            "step": "1/4",
+            "jumps": {
+              "start": "0",
+              "moves": [
+                "3/4",
+                "3/4",
+                "3/4"
+              ]
+            }
+          }
+        },
+        "gate": true,
+        "after": "같은 분수를 여러 번 더하는 것이 (분수)×(자연수)예요. ==조각 크기(분모)는 그대로==, 조각 수(분자)만 곱한 만큼 늘어나요."
+      },
+      {
+        "kind": "explore",
+        "id": "area",
+        "chip": "손으로 해 보기",
+        "title": "분수의 분수는\n넓이로 보여요",
+        "lead": "가로 손잡이를 $\\frac{2}{3}$, 세로 손잡이를 $\\frac{3}{4}$까지 끌어 보세요. 두 색이 겹친 칸이 답이에요.",
+        "widget": {
+          "type": "fraction",
+          "params": {
+            "shape": "bar",
+            "mode": "mul",
+            "a": "2/3",
+            "b": "3/4"
+          }
+        },
+        "gate": true,
+        "after": "겹친 칸 수는 분자끼리의 곱, 전체 칸 수는 분모끼리의 곱이에요. ==분자는 분자끼리, 분모는 분모끼리 곱해요.=="
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 찾은 규칙을\n정리해요",
+        "terms": [
+          {
+            "term": "(분수)×(자연수)",
+            "body": "자연수는 분자에만 곱해요. 조각 크기인 분모는 그대로예요."
+          },
+          {
+            "term": "(분수)×(분수)",
+            "body": "분자는 분자끼리, 분모는 분모끼리 곱해요."
+          },
+          {
+            "term": "약분",
+            "body": "분자와 분모를 같은 수로 나누는 일. 곱하기 전에 해도 돼요."
+          }
+        ],
+        "aside": "**참고** · 1보다 작은 분수를 곱하면 처음보다 작아져요. 일부만 가져오는 셈이라서요."
+      },
+      {
+        "kind": "explore",
+        "id": "cancel",
+        "chip": "지름길",
+        "title": "곱하기 전에\n먼저 줄여요",
+        "lead": "가로 $\\frac{4}{5}$, 세로 $\\frac{5}{8}$을 칠해 보세요. 겹친 칸은 전체의 얼마일까요?",
+        "widget": {
+          "type": "fraction",
+          "params": {
+            "shape": "bar",
+            "mode": "mul",
+            "a": "4/5",
+            "b": "5/8"
+          }
+        },
+        "gate": true,
+        "after": "곱하기 전에 ==분자와 다른 분수의 분모를 약분==하면 처음부터 작은 수로 계산해요. 답은 겹친 칸을 약분한 값과 같아요.\\n$$\\frac{4}{5}\\times\\frac{5}{8}=\\frac{1}{1}\\times\\frac{1}{2}$$"
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "2/9*3"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "6/27",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "6/9",
+              "body": "자연수는 분자에만 곱해요. 분모까지 곱하면 $\\frac{6}{27}=\\frac{2}{9}$, 처음 그대로예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $2\\frac{1}{2}\\times1\\frac{1}{3}$을 자연수끼리, 분수끼리 곱했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(2+1/2)*(1+1/3)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "2+1/6",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "10/3",
+              "body": "대분수는 자연수와 분수의 덧셈이라 곱할 조각이 더 있어요. 가분수로 바꿔 곱해요. $\\frac{5}{2}\\times\\frac{4}{3}$이에요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "milk",
+            "q": "우유 $\\frac{3}{4}$ L 가운데 $\\frac{2}{3}$를 마셨어요. 마신 우유는 몇 L일까요?",
+            "hint": "\"~의 $\\frac{2}{3}$\"는 $\\times\\frac{2}{3}$이에요.",
+            "placeholder": "L",
+            "steps": [
+              {
+                "title": "식 세우기",
+                "body": "$$\\frac{3}{4}\\times\\frac{2}{3}$$"
+              },
+              {
+                "title": "엇갈려 약분하기",
+                "body": "분자와 다른 분수의 분모를 같은 수로 나눠요.\\n$$\\frac{1}{2}\\times\\frac{1}{1}=\\frac{1}{2}$$"
+              }
+            ],
+            "answer": "1/2",
+            "answerType": "fraction",
+            "check": "Rational(3,4)*Rational(2,3)"
+          },
+          {
+            "id": "walk",
+            "q": "매일 $\\frac{5}{6}$ km씩 걸어요. 4일 동안 걸으면 모두 몇 km일까요?",
+            "hint": "자연수는 분자에만 곱해요. 곱하기 전에 약분할 수 있는지 봐요.",
+            "placeholder": "km",
+            "steps": [
+              {
+                "title": "식 세우기",
+                "body": "$$\\frac{5}{6}\\times4$$"
+              },
+              {
+                "title": "약분하며 곱하기",
+                "body": "자연수와 분모를 같은 수로 나눠요.\\n$$\\frac{5}{3}\\times2=\\frac{10}{3}$$"
+              },
+              {
+                "title": "대분수로 바꾸기",
+                "body": "$$\\frac{10}{3}=3\\frac{1}{3}$$"
+              }
+            ],
+            "answer": "10/3",
+            "answerType": "fraction",
+            "check": "Rational(5,6)*4"
+          },
+          {
+            "id": "mixed",
+            "q": "다음을 계산하세요.\\n$$1\\frac{1}{2}\\times2\\frac{2}{3}$$",
+            "hint": "먼저 두 대분수를 가분수로 바꿔요.",
+            "placeholder": "답",
+            "steps": [
+              {
+                "title": "가분수로 바꾸기",
+                "body": "$$1\\frac{1}{2}=\\frac{3}{2},\\quad 2\\frac{2}{3}=\\frac{8}{3}$$"
+              },
+              {
+                "title": "엇갈려 약분하기",
+                "body": "분자와 다른 분수의 분모를 같은 수로 나눠요.\\n$$\\frac{1}{1}\\times\\frac{4}{1}={{answer}}$$"
+              }
+            ],
+            "answer": "4",
+            "answerType": "int",
+            "check": "(1+Rational(1,2))*(2+Rational(2,3))"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "(분수)×(자연수): 자연수는 **분자에만** 곱해요.",
+          "(분수)×(분수): **분자끼리, 분모끼리** 곱해요.",
+          "곱하기 전에 **엇갈려 약분**하면 수가 작아요.",
+          "대분수는 **가분수로 바꾼 다음** 곱해요."
+        ],
+        "done": "분수의 곱셈 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$\\frac{a}{b}\\times n=\\frac{a\\times n}{b}$",
+    "$\\frac{a}{b}\\times\\frac{c}{d}=\\frac{a\\times c}{b\\times d}$",
+    "$a\\frac{b}{c}=\\frac{a\\times c+b}{c}$"
+  ],
+  "generators": [
+    "frac-mul-whole",
+    "frac-mul-frac",
+    "frac-mul-mixed"
+  ],
+  "problems": [
+    {
+      "q": "다음을 계산하세요.\n$$9\\times\\frac{7}{10}$$",
+      "choices": null,
+      "answer": "63/10",
+      "answerTex": "$6\\frac{3}{10}$",
+      "answerType": "fraction",
+      "check": "9 * Rational(7,10)",
+      "concepts": [
+        "(분수)×(자연수)는 같은 분수를 여러 번 더한 것과 같아요.",
+        "자연수는 분자에만 곱해요. 분모는 조각의 크기라서 그대로예요."
+      ],
+      "steps": [
+        {
+          "title": "자연수는 분자에만 곱하기",
+          "body": "자연수 $9$는 분모가 1인 분수 $\\frac{9}{1}$예요. 분모 1은 곱해도 그대로라 분자에만 곱해요.\n$$9\\times\\frac{7}{10}=\\frac{7\\times9}{10}=\\frac{63}{10}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $63\\div10=6$, 나머지 $3$이므로\n$$\\frac{63}{10}=6\\frac{3}{10}$$"
+        }
+      ],
+      "tip": "분모에도 자연수를 곱하면 조각만 잘아지고 값은 그대로예요. 분자에만 곱해요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "frac-mul-whole",
+      "seed": 1000
+    },
+    {
+      "q": "다음을 계산하세요.\n$$\\frac{1}{3}\\times\\frac{1}{4}$$",
+      "choices": null,
+      "answer": "1/12",
+      "answerTex": "$\\frac{1}{12}$",
+      "answerType": "fraction",
+      "check": "Rational(1,3) * Rational(1,4)",
+      "concepts": [
+        "분수끼리 곱할 때는 분자끼리, 분모끼리 곱해요.",
+        "$\\frac{a}{b}\\times\\frac{c}{d}=\\frac{a\\times c}{b\\times d}$",
+        "곱하기 전에 분자와 다른 분수의 분모를 약분하면 수가 작아져요."
+      ],
+      "steps": [
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{1}{3}\\times\\frac{1}{4}=\\frac{1\\times1}{3\\times4}=\\frac{1}{12}$$"
+        }
+      ],
+      "tip": "1보다 작은 분수끼리 곱하면 답은 두 수보다 작아요. 답이 더 커졌다면 다시 살펴봐요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "frac-mul-frac",
+      "seed": 1001
+    },
+    {
+      "q": "다음을 계산하세요.\n$$2\\frac{3}{5}\\times2\\frac{1}{6}$$",
+      "choices": null,
+      "answer": "169/30",
+      "answerTex": "$5\\frac{19}{30}$",
+      "answerType": "fraction",
+      "check": "(2 + Rational(3,5)) * (2 + Rational(1,6))",
+      "concepts": [
+        "대분수는 가분수로 바꾼 다음 곱해요.",
+        "자연수끼리, 분수끼리 따로 곱하면 안 돼요. 대분수는 자연수와 분수의 덧셈이라서요."
+      ],
+      "steps": [
+        {
+          "title": "대분수를 가분수로 바꾸기",
+          "body": "자연수 $2$는 $\\frac{10}{5}$이에요. 분수 부분과 합쳐요.\n$$2\\frac{3}{5}=\\frac{2\\times5+3}{5}=\\frac{13}{5}$$"
+        },
+        {
+          "title": "대분수를 가분수로 바꾸기",
+          "body": "자연수 $2$는 $\\frac{12}{6}$예요. 분수 부분과 합쳐요.\n$$2\\frac{1}{6}=\\frac{2\\times6+1}{6}=\\frac{13}{6}$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{13}{5}\\times\\frac{13}{6}=\\frac{13\\times13}{5\\times6}=\\frac{169}{30}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $169\\div30=5$, 나머지 $19$이므로\n$$\\frac{169}{30}=5\\frac{19}{30}$$"
+        }
+      ],
+      "tip": "자연수끼리 곱하고 분수끼리 곱하면 틀려요. $2\\frac{3}{5}$은 $2+\\frac{3}{5}$이라서 곱할 조각이 더 있어요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "frac-mul-mixed",
+      "seed": 1002
+    },
+    {
+      "q": "다음을 계산하세요.\n$$\\frac{5}{6}\\times9$$",
+      "choices": null,
+      "answer": "15/2",
+      "answerTex": "$7\\frac{1}{2}$",
+      "answerType": "fraction",
+      "check": "Rational(5,6) * 9",
+      "concepts": [
+        "(분수)×(자연수)는 같은 분수를 여러 번 더한 것과 같아요.",
+        "자연수는 분자에만 곱해요. 분모는 조각의 크기라서 그대로예요."
+      ],
+      "steps": [
+        {
+          "title": "자연수는 분자에만 곱하기",
+          "body": "자연수 $9$는 분모가 1인 분수 $\\frac{9}{1}$예요. 분모 1은 곱해도 그대로라 분자에만 곱해요.\n$$\\frac{5}{6}\\times9=\\frac{5\\times9}{6}=\\frac{45}{6}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "분자와 분모를 둘의 최대공약수 $3$으로 나눠요.\n$$\\frac{45}{6}=\\frac{15}{2}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $15\\div2=7$, 나머지 $1$이므로\n$$\\frac{15}{2}=7\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "분모에도 자연수를 곱하면 조각만 잘아지고 값은 그대로예요. 분자에만 곱해요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "frac-mul-whole",
+      "seed": 1003
+    },
+    {
+      "q": "다음을 계산하세요.\n$$\\frac{5}{7}\\times\\frac{2}{5}$$",
+      "choices": null,
+      "answer": "2/7",
+      "answerTex": "$\\frac{2}{7}$",
+      "answerType": "fraction",
+      "check": "Rational(5,7) * Rational(2,5)",
+      "concepts": [
+        "분수끼리 곱할 때는 분자끼리, 분모끼리 곱해요.",
+        "$\\frac{a}{b}\\times\\frac{c}{d}=\\frac{a\\times c}{b\\times d}$",
+        "곱하기 전에 분자와 다른 분수의 분모를 약분하면 수가 작아져요."
+      ],
+      "steps": [
+        {
+          "title": "엇갈려 약분하기",
+          "body": "분자와 다른 분수의 분모를 같은 수로 나눠요. $5$와 $5$를 $5$로 나눠요.\n$$\\frac{5}{7}\\times\\frac{2}{5}=\\frac{1}{7}\\times2$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{1}{7}\\times2=\\frac{1\\times2}{7\\times1}=\\frac{2}{7}$$"
+        }
+      ],
+      "tip": "1보다 작은 분수끼리 곱하면 답은 두 수보다 작아요. 답이 더 커졌다면 다시 살펴봐요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "frac-mul-frac",
+      "seed": 1004
+    },
+    {
+      "q": "다음을 계산하세요.\n$$3\\frac{3}{4}\\times\\frac{1}{6}$$",
+      "choices": null,
+      "answer": "5/8",
+      "answerTex": "$\\frac{5}{8}$",
+      "answerType": "fraction",
+      "check": "(3 + Rational(3,4)) * (Rational(1,6))",
+      "concepts": [
+        "대분수는 가분수로 바꾼 다음 곱해요.",
+        "자연수끼리, 분수끼리 따로 곱하면 안 돼요. 대분수는 자연수와 분수의 덧셈이라서요."
+      ],
+      "steps": [
+        {
+          "title": "대분수를 가분수로 바꾸기",
+          "body": "자연수 $3$은 $\\frac{12}{4}$예요. 분수 부분과 합쳐요.\n$$3\\frac{3}{4}=\\frac{3\\times4+3}{4}=\\frac{15}{4}$$"
+        },
+        {
+          "title": "엇갈려 약분하기",
+          "body": "분자와 다른 분수의 분모를 같은 수로 나눠요. $15$와 $6$을 $3$으로 나눠요.\n$$\\frac{15}{4}\\times\\frac{1}{6}=\\frac{5}{4}\\times\\frac{1}{2}$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{5}{4}\\times\\frac{1}{2}=\\frac{5\\times1}{4\\times2}=\\frac{5}{8}$$"
+        }
+      ],
+      "tip": "자연수끼리 곱하고 분수끼리 곱하면 틀려요. $3\\frac{3}{4}$은 $3+\\frac{3}{4}$이라서 곱할 조각이 더 있어요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "frac-mul-mixed",
+      "seed": 1005
+    },
+    {
+      "q": "다음을 계산하세요.\n$$\\frac{5}{6}\\times9$$",
+      "choices": null,
+      "answer": "15/2",
+      "answerTex": "$7\\frac{1}{2}$",
+      "answerType": "fraction",
+      "check": "Rational(5,6) * 9",
+      "concepts": [
+        "(분수)×(자연수)는 같은 분수를 여러 번 더한 것과 같아요.",
+        "자연수는 분자에만 곱해요. 분모는 조각의 크기라서 그대로예요."
+      ],
+      "steps": [
+        {
+          "title": "자연수는 분자에만 곱하기",
+          "body": "자연수 $9$는 분모가 1인 분수 $\\frac{9}{1}$예요. 분모 1은 곱해도 그대로라 분자에만 곱해요.\n$$\\frac{5}{6}\\times9=\\frac{5\\times9}{6}=\\frac{45}{6}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "분자와 분모를 둘의 최대공약수 $3$으로 나눠요.\n$$\\frac{45}{6}=\\frac{15}{2}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $15\\div2=7$, 나머지 $1$이므로\n$$\\frac{15}{2}=7\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "분모에도 자연수를 곱하면 조각만 잘아지고 값은 그대로예요. 분자에만 곱해요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "frac-mul-whole",
+      "seed": 1006
+    },
+    {
+      "q": "다음을 계산하세요.\n$$\\frac{2}{3}\\times\\frac{9}{10}$$",
+      "choices": null,
+      "answer": "3/5",
+      "answerTex": "$\\frac{3}{5}$",
+      "answerType": "fraction",
+      "check": "Rational(2,3) * Rational(9,10)",
+      "concepts": [
+        "분수끼리 곱할 때는 분자끼리, 분모끼리 곱해요.",
+        "$\\frac{a}{b}\\times\\frac{c}{d}=\\frac{a\\times c}{b\\times d}$",
+        "곱하기 전에 분자와 다른 분수의 분모를 약분하면 수가 작아져요."
+      ],
+      "steps": [
+        {
+          "title": "엇갈려 약분하기",
+          "body": "분자와 다른 분수의 분모를 같은 수로 나눠요. $2$와 $10$을 $2$로, $9$와 $3$을 $3$으로 나눠요.\n$$\\frac{2}{3}\\times\\frac{9}{10}=1\\times\\frac{3}{5}$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$1\\times\\frac{3}{5}=\\frac{1\\times3}{1\\times5}=\\frac{3}{5}$$"
+        }
+      ],
+      "tip": "1보다 작은 분수끼리 곱하면 답은 두 수보다 작아요. 답이 더 커졌다면 다시 살펴봐요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "frac-mul-frac",
+      "seed": 1007
+    },
+    {
+      "q": "다음을 계산하세요.\n$$3\\frac{5}{7}\\times\\frac{3}{5}$$",
+      "choices": null,
+      "answer": "78/35",
+      "answerTex": "$2\\frac{8}{35}$",
+      "answerType": "fraction",
+      "check": "(3 + Rational(5,7)) * (Rational(3,5))",
+      "concepts": [
+        "대분수는 가분수로 바꾼 다음 곱해요.",
+        "자연수끼리, 분수끼리 따로 곱하면 안 돼요. 대분수는 자연수와 분수의 덧셈이라서요."
+      ],
+      "steps": [
+        {
+          "title": "대분수를 가분수로 바꾸기",
+          "body": "자연수 $3$은 $\\frac{21}{7}$이에요. 분수 부분과 합쳐요.\n$$3\\frac{5}{7}=\\frac{3\\times7+5}{7}=\\frac{26}{7}$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{26}{7}\\times\\frac{3}{5}=\\frac{26\\times3}{7\\times5}=\\frac{78}{35}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $78\\div35=2$, 나머지 $8$이므로\n$$\\frac{78}{35}=2\\frac{8}{35}$$"
+        }
+      ],
+      "tip": "자연수끼리 곱하고 분수끼리 곱하면 틀려요. $3\\frac{5}{7}$는 $3+\\frac{5}{7}$이라서 곱할 조각이 더 있어요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "frac-mul-mixed",
+      "seed": 1008
+    },
+    {
+      "q": "다음을 계산하세요.\n$$\\frac{4}{9}\\times5$$",
+      "choices": null,
+      "answer": "20/9",
+      "answerTex": "$2\\frac{2}{9}$",
+      "answerType": "fraction",
+      "check": "Rational(4,9) * 5",
+      "concepts": [
+        "(분수)×(자연수)는 같은 분수를 여러 번 더한 것과 같아요.",
+        "자연수는 분자에만 곱해요. 분모는 조각의 크기라서 그대로예요."
+      ],
+      "steps": [
+        {
+          "title": "자연수는 분자에만 곱하기",
+          "body": "자연수 $5$는 분모가 1인 분수 $\\frac{5}{1}$예요. 분모 1은 곱해도 그대로라 분자에만 곱해요.\n$$\\frac{4}{9}\\times5=\\frac{4\\times5}{9}=\\frac{20}{9}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $20\\div9=2$, 나머지 $2$이므로\n$$\\frac{20}{9}=2\\frac{2}{9}$$"
+        }
+      ],
+      "tip": "분모에도 자연수를 곱하면 조각만 잘아지고 값은 그대로예요. 분자에만 곱해요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "frac-mul-whole",
+      "seed": 1009
+    },
+    {
+      "q": "다음을 계산하세요.\n$$\\frac{1}{2}\\times\\frac{1}{10}$$",
+      "choices": null,
+      "answer": "1/20",
+      "answerTex": "$\\frac{1}{20}$",
+      "answerType": "fraction",
+      "check": "Rational(1,2) * Rational(1,10)",
+      "concepts": [
+        "분수끼리 곱할 때는 분자끼리, 분모끼리 곱해요.",
+        "$\\frac{a}{b}\\times\\frac{c}{d}=\\frac{a\\times c}{b\\times d}$",
+        "곱하기 전에 분자와 다른 분수의 분모를 약분하면 수가 작아져요."
+      ],
+      "steps": [
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{1}{2}\\times\\frac{1}{10}=\\frac{1\\times1}{2\\times10}=\\frac{1}{20}$$"
+        }
+      ],
+      "tip": "1보다 작은 분수끼리 곱하면 답은 두 수보다 작아요. 답이 더 커졌다면 다시 살펴봐요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "frac-mul-frac",
+      "seed": 1010
+    },
+    {
+      "q": "다음을 계산하세요.\n$$4\\frac{5}{8}\\times\\frac{1}{3}$$",
+      "choices": null,
+      "answer": "37/24",
+      "answerTex": "$1\\frac{13}{24}$",
+      "answerType": "fraction",
+      "check": "(4 + Rational(5,8)) * (Rational(1,3))",
+      "concepts": [
+        "대분수는 가분수로 바꾼 다음 곱해요.",
+        "자연수끼리, 분수끼리 따로 곱하면 안 돼요. 대분수는 자연수와 분수의 덧셈이라서요."
+      ],
+      "steps": [
+        {
+          "title": "대분수를 가분수로 바꾸기",
+          "body": "자연수 $4$는 $\\frac{32}{8}$예요. 분수 부분과 합쳐요.\n$$4\\frac{5}{8}=\\frac{4\\times8+5}{8}=\\frac{37}{8}$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{37}{8}\\times\\frac{1}{3}=\\frac{37\\times1}{8\\times3}=\\frac{37}{24}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $37\\div24=1$, 나머지 $13$이므로\n$$\\frac{37}{24}=1\\frac{13}{24}$$"
+        }
+      ],
+      "tip": "자연수끼리 곱하고 분수끼리 곱하면 틀려요. $4\\frac{5}{8}$는 $4+\\frac{5}{8}$이라서 곱할 조각이 더 있어요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "frac-mul-mixed",
+      "seed": 1011
+    },
+    {
+      "q": "다음을 계산하세요.\n$$4\\times\\frac{7}{9}$$",
+      "choices": null,
+      "answer": "28/9",
+      "answerTex": "$3\\frac{1}{9}$",
+      "answerType": "fraction",
+      "check": "4 * Rational(7,9)",
+      "concepts": [
+        "(분수)×(자연수)는 같은 분수를 여러 번 더한 것과 같아요.",
+        "자연수는 분자에만 곱해요. 분모는 조각의 크기라서 그대로예요."
+      ],
+      "steps": [
+        {
+          "title": "자연수는 분자에만 곱하기",
+          "body": "자연수 $4$는 분모가 1인 분수 $\\frac{4}{1}$예요. 분모 1은 곱해도 그대로라 분자에만 곱해요.\n$$4\\times\\frac{7}{9}=\\frac{7\\times4}{9}=\\frac{28}{9}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $28\\div9=3$, 나머지 $1$이므로\n$$\\frac{28}{9}=3\\frac{1}{9}$$"
+        }
+      ],
+      "tip": "분모에도 자연수를 곱하면 조각만 잘아지고 값은 그대로예요. 분자에만 곱해요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "frac-mul-whole",
+      "seed": 1012
+    },
+    {
+      "q": "다음을 계산하세요.\n$$\\frac{1}{2}\\times\\frac{2}{3}$$",
+      "choices": null,
+      "answer": "1/3",
+      "answerTex": "$\\frac{1}{3}$",
+      "answerType": "fraction",
+      "check": "Rational(1,2) * Rational(2,3)",
+      "concepts": [
+        "분수끼리 곱할 때는 분자끼리, 분모끼리 곱해요.",
+        "$\\frac{a}{b}\\times\\frac{c}{d}=\\frac{a\\times c}{b\\times d}$",
+        "곱하기 전에 분자와 다른 분수의 분모를 약분하면 수가 작아져요."
+      ],
+      "steps": [
+        {
+          "title": "엇갈려 약분하기",
+          "body": "분자와 다른 분수의 분모를 같은 수로 나눠요. $2$와 $2$를 $2$로 나눠요.\n$$\\frac{1}{2}\\times\\frac{2}{3}=1\\times\\frac{1}{3}$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$1\\times\\frac{1}{3}=\\frac{1\\times1}{1\\times3}=\\frac{1}{3}$$"
+        }
+      ],
+      "tip": "1보다 작은 분수끼리 곱하면 답은 두 수보다 작아요. 답이 더 커졌다면 다시 살펴봐요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "frac-mul-frac",
+      "seed": 1013
+    },
+    {
+      "q": "다음을 계산하세요.\n$$4\\frac{2}{3}\\times\\frac{5}{6}$$",
+      "choices": null,
+      "answer": "35/9",
+      "answerTex": "$3\\frac{8}{9}$",
+      "answerType": "fraction",
+      "check": "(4 + Rational(2,3)) * (Rational(5,6))",
+      "concepts": [
+        "대분수는 가분수로 바꾼 다음 곱해요.",
+        "자연수끼리, 분수끼리 따로 곱하면 안 돼요. 대분수는 자연수와 분수의 덧셈이라서요."
+      ],
+      "steps": [
+        {
+          "title": "대분수를 가분수로 바꾸기",
+          "body": "자연수 $4$는 $\\frac{12}{3}$예요. 분수 부분과 합쳐요.\n$$4\\frac{2}{3}=\\frac{4\\times3+2}{3}=\\frac{14}{3}$$"
+        },
+        {
+          "title": "엇갈려 약분하기",
+          "body": "분자와 다른 분수의 분모를 같은 수로 나눠요. $14$와 $6$을 $2$로 나눠요.\n$$\\frac{14}{3}\\times\\frac{5}{6}=\\frac{7}{3}\\times\\frac{5}{3}$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{7}{3}\\times\\frac{5}{3}=\\frac{7\\times5}{3\\times3}=\\frac{35}{9}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "분자가 분모보다 큰 가분수예요. $35\\div9=3$, 나머지 $8$이므로\n$$\\frac{35}{9}=3\\frac{8}{9}$$"
+        }
+      ],
+      "tip": "자연수끼리 곱하고 분수끼리 곱하면 틀려요. $4\\frac{2}{3}$는 $4+\\frac{2}{3}$이라서 곱할 조각이 더 있어요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "frac-mul-mixed",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "다음을 계산하세요.\\n$$\\frac{3}{4}\\times\\frac{2}{9}\\times\\frac{6}{5}$$",
+      "choices": null,
+      "answer": "1/5",
+      "answerType": "fraction",
+      "answerTex": "$\\frac{1}{5}$",
+      "check": "Rational(3,4)*Rational(2,9)*Rational(6,5)",
+      "concepts": [
+        "세 분수의 곱도 분자는 분자끼리, 분모는 분모끼리 한꺼번에 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "한 분수로 모아 적기",
+          "body": "$$\\frac{3\\times2\\times6}{4\\times9\\times5}=\\frac{36}{180}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "36과 180의 최대공약수는 36이에요.\\n$$\\frac{36}{180}=\\frac{1}{5}$$"
+        }
+      ],
+      "tip": "곱하기 전에 약분하면 큰 수를 다루지 않아도 돼요. 분자와 분모에서 같은 수로 나눌 수 있는 짝을 먼저 찾아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "다음을 계산하세요.\\n$$2\\frac{3}{4}\\times6$$",
+      "choices": null,
+      "answer": "33/2",
+      "answerType": "fraction",
+      "answerTex": "$16\\frac{1}{2}$",
+      "check": "(2+Rational(3,4))*6",
+      "concepts": [
+        "대분수는 가분수로 바꾼 다음 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "가분수로 바꾸기",
+          "body": "$$2\\frac{3}{4}=\\frac{2\\times4+3}{4}=\\frac{11}{4}$$"
+        },
+        {
+          "title": "약분하며 곱하기",
+          "body": "6과 4를 2로 나눠요.\\n$$\\frac{11}{4}\\times6=\\frac{11}{2}\\times3=\\frac{33}{2}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "$33\\div2=16$, 나머지 $1$이에요.\\n$$\\frac{33}{2}=16\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "자연수 부분과 분수 부분에 따로 곱해도 돼요: $2\\times6+\\frac{3}{4}\\times6=12+4\\frac{1}{2}$. 두 방법의 답이 같아요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "다음을 계산하세요.\\n$$1\\frac{2}{5}\\times3\\frac{1}{3}$$",
+      "choices": null,
+      "answer": "14/3",
+      "answerType": "fraction",
+      "answerTex": "$4\\frac{2}{3}$",
+      "check": "(1+Rational(2,5))*(3+Rational(1,3))",
+      "concepts": [
+        "대분수끼리 곱할 때도 둘 다 가분수로 바꾼 다음 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "가분수로 바꾸기",
+          "body": "$$1\\frac{2}{5}=\\frac{7}{5},\\quad 3\\frac{1}{3}=\\frac{10}{3}$$"
+        },
+        {
+          "title": "엇갈려 약분하기",
+          "body": "10과 5를 5로 나눠요.\\n$$\\frac{7}{5}\\times\\frac{10}{3}=\\frac{7}{1}\\times\\frac{2}{3}$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$\\frac{7\\times2}{1\\times3}=\\frac{14}{3}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "$$\\frac{14}{3}=4\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "자연수끼리($1\\times3$), 분수끼리($\\frac{2}{5}\\times\\frac{1}{3}$) 곱하면 $3\\frac{2}{15}$가 돼 틀려요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "한 시간에 $4\\frac{1}{2}$ km를 걷는 사람이 같은 빠르기로 $1\\frac{1}{3}$시간 동안 걸었어요. 걸은 거리는 몇 km인가요?",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "answerTex": "$6$ km",
+      "check": "(4+Rational(1,2))*(1+Rational(1,3))",
+      "concepts": [
+        "걸은 거리 = 한 시간에 걷는 거리 × 걸은 시간"
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$4\\frac{1}{2}\\times1\\frac{1}{3}$$"
+        },
+        {
+          "title": "가분수로 바꾸기",
+          "body": "$$\\frac{9}{2}\\times\\frac{4}{3}$$"
+        },
+        {
+          "title": "엇갈려 약분하기",
+          "body": "9와 3을 3으로, 4와 2를 2로 나눠요.\\n$$\\frac{3}{1}\\times\\frac{2}{1}=6$$"
+        }
+      ],
+      "tip": "1시간보다 조금 더 걸었으니 답은 한 시간 거리보다 조금 커야 해요. 어림으로 확인해요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "가로가 $\\frac{5}{6}$ m, 세로가 $\\frac{9}{10}$ m인 직사각형의 넓이는 몇 $\\text{m}^2$인가요?",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "answerTex": "$\\frac{3}{4}\\,\\text{m}^2$",
+      "check": "Rational(5,6)*Rational(9,10)",
+      "concepts": [
+        "직사각형의 넓이 = 가로 × 세로. 분수여도 똑같아요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{5}{6}\\times\\frac{9}{10}$$"
+        },
+        {
+          "title": "엇갈려 약분하기",
+          "body": "5와 10을 5로, 9와 6을 3으로 나눠요.\\n$$\\frac{1}{2}\\times\\frac{3}{2}$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$\\frac{1\\times3}{2\\times2}=\\frac{3}{4}$$"
+        }
+      ],
+      "tip": "1 m보다 짧은 변끼리 곱했으니 넓이는 1 m²보다 작아요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "용돈 $12000$원의 $\\frac{2}{5}$를 저금했어요. 저금한 돈은 얼마인가요?",
+      "choices": null,
+      "answer": "4800",
+      "answerType": "int",
+      "answerTex": "$4800$원",
+      "check": "12000*Rational(2,5)",
+      "concepts": [
+        "\"~의 $\\frac{2}{5}$\"는 $\\times\\frac{2}{5}$예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$12000\\times\\frac{2}{5}$$"
+        },
+        {
+          "title": "자연수와 분모 약분하기",
+          "body": "12000을 5로 나눠요.\\n$$12000\\div5=2400$$"
+        },
+        {
+          "title": "분자 곱하기",
+          "body": "$$2400\\times2=4800$$"
+        }
+      ],
+      "tip": "$\\frac{2}{5}$는 \"5로 나눈 것 2개\"예요. 먼저 나누면 수가 작아져 편해요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "계산 결과가 $\\frac{5}{8}$보다 작은 것은 어느 것인가요?",
+      "choices": [
+        "$\\frac{5}{8}\\times\\frac{3}{2}$",
+        "$\\frac{5}{8}\\times1$",
+        "$\\frac{5}{8}\\times1\\frac{1}{4}$",
+        "$\\frac{5}{8}\\times\\frac{2}{5}$",
+        "$\\frac{5}{8}\\times3$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "Rational(5,8)*Rational(2,5)",
+      "choiceChecks": [
+        "Rational(5,8)*Rational(3,2)",
+        "Rational(5,8)*1",
+        "Rational(5,8)*(1+Rational(1,4))",
+        "Rational(5,8)*Rational(2,5)",
+        "Rational(5,8)*3"
+      ],
+      "concepts": [
+        "1보다 작은 수를 곱하면 작아지고, 1보다 큰 수를 곱하면 커져요."
+      ],
+      "steps": [
+        {
+          "title": "곱하는 수의 크기 보기",
+          "body": "1보다 큰 수를 곱하면 커지고, 1을 곱하면 그대로, 1보다 작은 수를 곱하면 작아져요."
+        },
+        {
+          "title": "1보다 작은 수 찾기",
+          "body": "$\\frac{3}{2}$, $1\\frac{1}{4}$, $3$은 1보다 크고 $1$은 1과 같아요. 1보다 작은 것은 $\\frac{2}{5}$뿐이에요."
+        },
+        {
+          "title": "확인하기",
+          "body": "$$\\frac{5}{8}\\times\\frac{2}{5}=\\frac{1}{4}$$\\n$\\frac{1}{4}=\\frac{2}{8}$은 $\\frac{5}{8}$보다 작아요."
+        }
+      ],
+      "tip": "다 계산하지 않아도 돼요. 곱하는 수가 1보다 큰지 작은지만 보면 답이 보여요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "텃밭의 $\\frac{3}{5}$에 채소를 심고, 채소밭의 $\\frac{1}{4}$에 상추를 심었어요. 상추밭은 텃밭 전체의 몇 분의 몇인가요?",
+      "choices": null,
+      "answer": "3/20",
+      "answerType": "fraction",
+      "answerTex": "$\\frac{3}{20}$",
+      "check": "Rational(3,5)*Rational(1,4)",
+      "concepts": [
+        "\"채소밭의 $\\frac{1}{4}$\"는 채소밭 넓이에 $\\frac{1}{4}$을 곱한 거예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "상추밭은 \"텃밭의 $\\frac{3}{5}$의 $\\frac{1}{4}$\"이에요.\\n$$\\frac{3}{5}\\times\\frac{1}{4}$$"
+        },
+        {
+          "title": "분자끼리, 분모끼리 곱하기",
+          "body": "$$\\frac{3\\times1}{5\\times4}=\\frac{3}{20}$$"
+        }
+      ],
+      "tip": "\"~의 ~\"가 이어지면 곱셈이 이어져요. 무엇의 몇 분의 몇인지 기준을 꼭 확인해요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$\\frac{5}{12}$시간은 몇 분인가요?",
+      "choices": null,
+      "answer": "25",
+      "answerType": "int",
+      "answerTex": "$25$분",
+      "check": "60*Rational(5,12)",
+      "concepts": [
+        "1시간은 60분이에요. 시간에 60을 곱하면 분이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$60\\times\\frac{5}{12}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "60과 12를 12로 나눠요.\\n$$5\\times5=25$$"
+        }
+      ],
+      "tip": "$\\frac{1}{12}$시간이 5분이에요. 그 5배라서 25분이에요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "다음을 계산하세요.\\n$$\\frac{4}{7}\\times\\frac{14}{15}\\times\\frac{5}{8}$$",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "answerTex": "$\\frac{1}{3}$",
+      "check": "Rational(4,7)*Rational(14,15)*Rational(5,8)",
+      "concepts": [
+        "세 분수의 곱도 분자와 다른 분수의 분모를 엇갈려 약분할 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "14와 7 약분하기",
+          "body": "$$\\frac{4}{7}\\times\\frac{14}{15}\\times\\frac{5}{8}=\\frac{4}{1}\\times\\frac{2}{15}\\times\\frac{5}{8}$$"
+        },
+        {
+          "title": "4와 8 약분하기",
+          "body": "$$=\\frac{1}{1}\\times\\frac{2}{15}\\times\\frac{5}{2}$$"
+        },
+        {
+          "title": "2와 2, 5와 15 약분하기",
+          "body": "$$=\\frac{1}{1}\\times\\frac{1}{3}\\times\\frac{1}{1}=\\frac{1}{3}$$"
+        }
+      ],
+      "tip": "약분할 짝을 하나씩 지워 가면 마지막에 남는 수가 작아요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "끈 $24$ m의 $\\frac{3}{8}$을 잘라 쓰고, 남은 끈의 $\\frac{2}{5}$를 또 잘라 썼어요. 남은 끈은 몇 m인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "answerTex": "$9$ m",
+      "check": "24 - 24*Rational(3,8) - (24 - 24*Rational(3,8))*Rational(2,5)",
+      "concepts": [
+        "\"남은 것의 몇 분의 몇\"은 처음 양이 아니라 남은 양에 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "처음 쓴 끈",
+          "body": "$$24\\times\\frac{3}{8}=9$$"
+        },
+        {
+          "title": "처음 남은 끈",
+          "body": "$$24-9=15$$"
+        },
+        {
+          "title": "두 번째로 쓴 끈",
+          "body": "남은 15 m의 $\\frac{2}{5}$예요.\\n$$15\\times\\frac{2}{5}=6$$"
+        },
+        {
+          "title": "마지막에 남은 끈",
+          "body": "$$15-6=9$$"
+        }
+      ],
+      "tip": "남은 비율을 곱해도 돼요: $24\\times\\frac{5}{8}\\times\\frac{3}{5}=9$."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "공은 떨어진 높이의 $\\frac{3}{5}$만큼 튀어 올라요. $25$ m 높이에서 공을 떨어뜨렸을 때, 두 번째로 튀어 오른 높이는 몇 m인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "answerTex": "$9$ m",
+      "check": "25*Rational(3,5)*Rational(3,5)",
+      "concepts": [
+        "튀어 오를 때마다 그 전 높이에 $\\frac{3}{5}$을 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "첫 번째 튀어 오른 높이",
+          "body": "$$25\\times\\frac{3}{5}=15$$"
+        },
+        {
+          "title": "두 번째 튀어 오른 높이",
+          "body": "$$15\\times\\frac{3}{5}=9$$"
+        }
+      ],
+      "tip": "한 번에 적으면 $25\\times\\frac{3}{5}\\times\\frac{3}{5}$이에요. 몇 번째인지 세어 곱하는 횟수를 맞춰요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "어떤 수에 $\\frac{3}{4}$을 곱해야 할 것을 잘못하여 더했더니 $2\\frac{1}{4}$이 되었어요. 바르게 계산한 값은 얼마인가요?",
+      "choices": null,
+      "answer": "9/8",
+      "answerType": "fraction",
+      "answerTex": "$1\\frac{1}{8}$",
+      "check": "(2+Rational(1,4)-Rational(3,4))*Rational(3,4)",
+      "concepts": [
+        "잘못 계산한 식을 거꾸로 풀어 어떤 수를 먼저 찾아요."
+      ],
+      "steps": [
+        {
+          "title": "어떤 수 찾기",
+          "body": "어떤 수 $+\\frac{3}{4}=2\\frac{1}{4}$이므로 거꾸로 빼요.\\n$$2\\frac{1}{4}-\\frac{3}{4}=1\\frac{2}{4}=1\\frac{1}{2}$$"
+        },
+        {
+          "title": "가분수로 바꾸기",
+          "body": "$$1\\frac{1}{2}=\\frac{3}{2}$$"
+        },
+        {
+          "title": "바르게 계산하기",
+          "body": "$$\\frac{3}{2}\\times\\frac{3}{4}=\\frac{9}{8}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "$$\\frac{9}{8}=1\\frac{1}{8}$$"
+        }
+      ],
+      "tip": "어떤 수를 찾았으면 잘못한 계산에 넣어 확인해요: $1\\frac{1}{2}+\\frac{3}{4}=2\\frac{1}{4}$."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "직사각형의 가로는 $3\\frac{1}{3}$ m이고, 세로는 가로의 $\\frac{3}{5}$이에요. 이 직사각형의 넓이는 몇 $\\text{m}^2$인가요?",
+      "choices": null,
+      "answer": "20/3",
+      "answerType": "fraction",
+      "answerTex": "$6\\frac{2}{3}\\,\\text{m}^2$",
+      "check": "(3+Rational(1,3))*((3+Rational(1,3))*Rational(3,5))",
+      "concepts": [
+        "\"가로의 몇 분의 몇\"으로 세로를 먼저 구한 뒤 넓이를 구해요."
+      ],
+      "steps": [
+        {
+          "title": "가분수로 바꾸기",
+          "body": "$$3\\frac{1}{3}=\\frac{10}{3}$$"
+        },
+        {
+          "title": "세로 구하기",
+          "body": "$$\\frac{10}{3}\\times\\frac{3}{5}=2$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$\\frac{10}{3}\\times2=\\frac{20}{3}$$"
+        },
+        {
+          "title": "대분수로 바꾸기",
+          "body": "$$\\frac{20}{3}=6\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "세로를 구하는 곱셈에서 3과 3, 10과 5가 약분돼 2가 나와요. 약분을 먼저 하면 계산이 짧아요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "수 카드 $2$, $5$, $7$ 가운데 두 장을 골라 진분수를 만들어요. 만들 수 있는 가장 큰 진분수와 가장 작은 진분수의 곱은 얼마인가요?",
+      "choices": null,
+      "answer": "10/49",
+      "answerType": "fraction",
+      "answerTex": "$\\frac{10}{49}$",
+      "check": "Max(Rational(2,5),Rational(2,7),Rational(5,7))*Min(Rational(2,5),Rational(2,7),Rational(5,7))",
+      "concepts": [
+        "진분수는 분자가 분모보다 작은 분수예요."
+      ],
+      "steps": [
+        {
+          "title": "진분수 모두 만들기",
+          "body": "작은 수를 분자에 두어요.\\n$$\\frac{2}{5},\\quad \\frac{2}{7},\\quad \\frac{5}{7}$$"
+        },
+        {
+          "title": "가장 큰 진분수",
+          "body": "분모가 7로 같은 $\\frac{2}{7}$, $\\frac{5}{7}$ 중에서는 $\\frac{5}{7}$이 커요. $\\frac{2}{5}=\\frac{14}{35}$, $\\frac{5}{7}=\\frac{25}{35}$이므로 가장 큰 것은 $\\frac{5}{7}$이에요."
+        },
+        {
+          "title": "가장 작은 진분수",
+          "body": "분자가 2로 같으면 분모가 클수록 작아요. 가장 작은 것은 $\\frac{2}{7}$이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$\\frac{5}{7}\\times\\frac{2}{7}=\\frac{10}{49}$$"
+        }
+      ],
+      "tip": "분자가 같으면 분모가 큰 쪽이 작고, 분모가 같으면 분자가 큰 쪽이 커요."
+    }
+  ]
+}
