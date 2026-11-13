@@ -1,0 +1,1391 @@
+{
+  "id": "math1-exponent",
+  "course": "수학Ⅰ",
+  "unit": "지수함수와 로그함수",
+  "title": "거듭제곱근과 지수",
+  "prereq": [
+    "m2-exponent-poly",
+    "m3-radical-ops"
+  ],
+  "suneung": [
+    "공통 1"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$",
+    "$a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$ ($a>0$)",
+    "$a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$",
+    "$(a^x)^y=a^{xy}$, $(ab)^x=a^xb^x$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "two0": {
+        "value": "1",
+        "check": "Integer(2)**0"
+      },
+      "twoN1": {
+        "value": "1/2",
+        "check": "Integer(2)**(-1)"
+      },
+      "twoN2": {
+        "value": "1/4",
+        "check": "Integer(2)**(-2)"
+      },
+      "four12": {
+        "value": "2",
+        "check": "Integer(4)**Rational(1, 2)"
+      },
+      "e813": {
+        "value": "2",
+        "check": "Integer(8)**Rational(1, 3)"
+      },
+      "e823": {
+        "value": "4",
+        "check": "Integer(8)**Rational(2, 3)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "수학Ⅰ · 지수와 로그",
+        "title": "지수가 0 이나 분수라면\n무슨 뜻일까요?",
+        "lead": "$2^3$ 은 2 를 세 번 곱한 수예요. 그럼 $2^0$, $2^{-1}$, $8^{\\frac23}$ 은요? 그래프를 끌어 보며 지수의 뜻을 넓혀 가요.",
+        "meta": [
+          "거듭제곱근",
+          "지수 넓히기",
+          "지수법칙"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$2^0$ 은\n얼마일까요?",
+        "lead": "$2^3=8$, $2^2=4$, $2^1=2$ 예요. 지수가 하나씩 줄 때의 규칙을 이어 가 보세요.",
+        "choices": [
+          {
+            "value": "0",
+            "check": "2*0",
+            "feedback": "2 를 0 번 곱하면 아무것도 없다고 생각했네요. 지수가 1 줄 때마다 값이 어떻게 바뀌는지 따라가 보세요."
+          },
+          {
+            "value": "1",
+            "check": "Integer(2)**0"
+          },
+          {
+            "value": "2",
+            "check": "Integer(2)**1",
+            "feedback": "그건 $2^1$ 이에요. 한 칸 더 내려가야 해요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "Integer(2)**0",
+        "reveal": "**맞아요.** 지수가 1 줄 때마다 값은 2 로 나눠져요.",
+        "thoughts": [
+          "$8\\to4\\to2$ 로, 지수가 1 줄 때마다 $\\div2$ 예요.",
+          "그러니 $2^0=2\\div2={{two0}}$ 이에요."
+        ],
+        "conclude": "같은 규칙을 더 이어 가면 ==지수가 음수인 곳==도 정할 수 있어요."
+      },
+      {
+        "kind": "explore",
+        "id": "halve",
+        "chip": "손으로 해 보기",
+        "title": "점을 왼쪽으로 끌어\n지수를 음수로 넘겨 보세요",
+        "lead": "곡선은 $y=2^x$ 예요. 점 P 를 한 칸씩 왼쪽으로 옮기며 높이가 어떻게 바뀌는지 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "f",
+                "curve": "2**x",
+                "label": "$y=2^x$"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "on": "f",
+                  "x": -2
+                },
+                "name": "A"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "f",
+                  "x": 3,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "지수 $x$",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "높이 $2^x$",
+                "digits": 3
+              }
+            ],
+            "goal": {
+              "approach": [
+                "P",
+                "A"
+              ]
+            },
+            "intro": "P 를 A 까지 끌어 보세요.",
+            "done": "한 칸 왼쪽으로 갈 때마다 높이가 절반이 돼요. $2^{-1}={{twoN1}}$, $2^{-2}={{twoN2}}$ 이에요."
+          }
+        },
+        "after": "곡선은 $x$ 축에 닿지 않고 가까워지기만 해요. $2$ 의 거듭제곱은 ==지수가 음수여도 양수==예요."
+      },
+      {
+        "kind": "explore",
+        "id": "half",
+        "chip": "반 칸 옮기기",
+        "title": "지수가 반이면\n어떤 수일까요?",
+        "lead": "곡선은 $y=4^x$ 예요. 이번에는 점 P 를 반 칸씩 움직일 수 있어요. $x=\\frac12$ 인 점 H 에서 높이를 읽어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -1,
+              "max": 2,
+              "step": "1/2"
+            },
+            "y": {
+              "min": 0,
+              "max": 16,
+              "step": 2
+            },
+            "objects": [
+              {
+                "id": "g",
+                "curve": "4**x",
+                "label": "$y=4^x$"
+              },
+              {
+                "id": "H",
+                "point": {
+                  "on": "g",
+                  "x": 0.5
+                },
+                "name": "H"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "g",
+                  "x": 2,
+                  "drag": "x",
+                  "snap": "1/2"
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "지수 $x$",
+                "digits": 1
+              },
+              {
+                "readout": "y(P)",
+                "label": "높이 $4^x$",
+                "digits": 2
+              }
+            ],
+            "goal": {
+              "approach": [
+                "P",
+                "H"
+              ]
+            },
+            "intro": "P 를 H 까지 끌어 보세요.",
+            "done": "$4^{\\frac12}={{four12}}$ 예요. $4^{\\frac12}\\times4^{\\frac12}=4^1$ 이니까, 제곱해서 4 가 되는 양수예요."
+          }
+        },
+        "after": "그래서 $a^{\\frac1n}$ 은 $n$ 번 곱해 $a$ 가 되는 양수, 곧 $\\sqrt[n]{a}$ 로 정해요. 지수법칙이 깨지지 않게 정한 거예요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 넓힌 지수에\n이름과 규칙이 있어요",
+        "terms": [
+          {
+            "term": "거듭제곱근",
+            "body": "$n$ 제곱해서 $a$ 가 되는 수를 $a$ 의 $n$제곱근이라 해요. $a>0$ 이면 그중 양수 하나를 $\\sqrt[n]{a}$ 로 적어요."
+          },
+          {
+            "term": "0 과 음의 정수 지수",
+            "body": "$a\\ne0$ 일 때 $a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$. 지수가 1 줄 때마다 $a$ 로 나눈 결과예요."
+          },
+          {
+            "term": "유리수 지수",
+            "body": "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$. 분모는 '몇 제곱근', 분자는 '몇 제곱'이에요."
+          },
+          {
+            "term": "지수법칙",
+            "body": "$a>0$, $b>0$ 이고 $x$, $y$ 가 실수이면 $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$, $(ab)^x=a^xb^x$ 예요."
+          }
+        ],
+        "aside": "**확인** · $8^{\\frac13}$ 은 세제곱해서 8 이 되는 수라 {{e813}}예요."
+      },
+      {
+        "kind": "explore",
+        "id": "line",
+        "chip": "직접 놓아 보기",
+        "title": "분수 지수의 값을\n수직선 위에 놓아 보세요",
+        "lead": "$8^{\\frac23}=(8^{\\frac13})^2$ 이에요. 세제곱해서 8 이 되는 수를 먼저 찾고, 그 수를 제곱한 자리로 P 를 옮겨요.",
+        "gate": true,
+        "widget": {
+          "type": "numberLine",
+          "params": {
+            "min": 0,
+            "max": 10,
+            "step": "1",
+            "points": [
+              {
+                "id": "P",
+                "at": "0",
+                "drag": true,
+                "label": "P"
+              }
+            ],
+            "task": {
+              "type": "point",
+              "point": "P",
+              "answer": "4",
+              "check": "Integer(8)**Rational(2, 3)"
+            }
+          }
+        },
+        "after": "$8^{\\frac23}$ 은 $8^{\\frac13}={{e813}}$ 을 두 번 곱한 {{e823}}예요. 분수 지수는 '분모 제곱근 → 분자 제곱' 순서로 나눠 생각하면 쉬워요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 거듭제곱을 또 거듭제곱했어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(2**3)**2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "2**5",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "2**6",
+              "body": "거듭제곱의 거듭제곱은 지수끼리 **곱해요**. 지수끼리 더하는 것은 같은 밑을 곱할 때예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 음의 지수를 계산했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "2**(-2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "-4",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "1/4",
+              "body": "지수가 음수라고 값이 음수가 되지 않아요. $2^{-2}$ 는 $2^2$ 의 **역수**예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "root",
+            "q": "$\\sqrt[3]{4}\\times2^{\\frac13}$ 의 값을 구하세요.",
+            "hint": "$\\sqrt[3]{4}$ 를 $2$ 의 거듭제곱으로 바꿔요.",
+            "concepts": [
+              "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+              "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+            ],
+            "steps": [
+              {
+                "title": "거듭제곱근을 지수로",
+                "body": "$$\\sqrt[3]{4}=4^{\\frac13}=(2^2)^{\\frac13}=2^{\\frac23}$$"
+              },
+              {
+                "title": "지수끼리 더하기",
+                "body": "$$2^{\\frac23}\\times2^{\\frac13}=2^{\\frac23+\\frac13}=2^1$$"
+              },
+              {
+                "title": "값",
+                "body": "$$2^1={{answer}}$$"
+              }
+            ],
+            "tip": "밑을 2 로 맞추는 것이 지수 계산의 첫걸음이에요.",
+            "answer": "2",
+            "answerType": "int",
+            "check": "Integer(4)**Rational(1, 3) * Integer(2)**Rational(1, 3)"
+          },
+          {
+            "id": "mixed",
+            "q": "$27^{\\frac23}\\times9^{-\\frac12}$ 의 값을 구하세요.",
+            "hint": "$27$ 과 $9$ 를 모두 $3$ 의 거듭제곱으로 바꿔요.",
+            "concepts": [
+              "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$",
+              "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$"
+            ],
+            "steps": [
+              {
+                "title": "밑을 3 으로",
+                "body": "$27=3^3$, $9=3^2$ 이에요."
+              },
+              {
+                "title": "앞의 수",
+                "body": "$$27^{\\frac23}=3^{3\\times\\frac23}=3^2=9$$"
+              },
+              {
+                "title": "뒤의 수",
+                "body": "$$9^{-\\frac12}=3^{2\\times(-\\frac12)}=3^{-1}=\\frac13$$"
+              },
+              {
+                "title": "곱하기",
+                "body": "$$9\\times\\frac13={{answer}}$$"
+              }
+            ],
+            "tip": "한 번에 $3^{2}\\times3^{-1}=3^{1}$ 로 지수끼리 더해도 같아요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "Integer(27)**Rational(2, 3) * Integer(9)**Rational(-1, 2)"
+          },
+          {
+            "id": "real",
+            "q": "$\\left(3^{\\sqrt2}\\right)^{\\sqrt2}\\div3^{-1}$ 의 값을 구하세요.",
+            "hint": "지수가 무리수여도 지수법칙은 그대로예요.",
+            "concepts": [
+              "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+            ],
+            "steps": [
+              {
+                "title": "거듭제곱의 거듭제곱",
+                "body": "$$\\left(3^{\\sqrt2}\\right)^{\\sqrt2}=3^{\\sqrt2\\times\\sqrt2}=3^2$$"
+              },
+              {
+                "title": "나누면 지수끼리 빼기",
+                "body": "$$3^2\\div3^{-1}=3^{2-(-1)}=3^3$$"
+              },
+              {
+                "title": "값",
+                "body": "$$3^3={{answer}}$$"
+              }
+            ],
+            "tip": "$\\sqrt2\\times\\sqrt2=2$ 처럼 지수끼리 곱해서 무리수가 사라지게 만든 문제예요.",
+            "answer": "27",
+            "answerType": "int",
+            "check": "(Integer(3)**sqrt(2))**sqrt(2) / Integer(3)**(-1)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$. 지수가 1 줄면 $a$ 로 한 번 나눠요.",
+          "$a^{\\frac{m}{n}}=\\sqrt[n]{a^m}$. 분모는 '몇 제곱근', 분자는 '몇 제곱'이에요.",
+          "지수법칙은 실수 지수에서도 그대로예요. 밑을 같은 수로 맞추고 지수끼리 계산해요.",
+          "수능에서는 1번 문제로 거듭제곱근과 분수 지수가 섞인 식의 값을 자주 물어요. 밑을 2·3 같은 소수의 거듭제곱으로 바꾸면 빨라요."
+        ],
+        "done": "거듭제곱근과 지수 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "ex1-frac-power",
+    "ex1-same-base",
+    "ex1-root-product",
+    "ex1-neg-zero"
+  ],
+  "problems": [
+    {
+      "q": "$4^{\\frac{1}{2}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "fraction",
+      "check": "Integer(4)**Rational(1, 2)",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $(a^x)^y=a^{xy}$",
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 거듭제곱으로 쓰기",
+          "body": "밑을 $2$ 의 거듭제곱으로 바꿔요.\n$$4=2^{2}$$"
+        },
+        {
+          "title": "지수끼리 곱하기",
+          "body": "$$4^{\\frac{1}{2}}=(2^{2})^{\\frac{1}{2}}=2^{2\\times\\frac{1}{2}}=2^{1}$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{1}=2$$"
+        }
+      ],
+      "tip": "$4^{\\frac{1}{2}}=\\sqrt[2]{4}$, 곧 '$2$ 제곱하면 $4$ 인 양수'예요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "ex1-frac-power",
+      "seed": 1000
+    },
+    {
+      "q": "$2^{\\frac{1}{2}}\\times2^{\\frac{3}{2}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "fraction",
+      "check": "Integer(2)**Rational(1, 2) * Integer(2)**Rational(3, 2)",
+      "concepts": [
+        "지수법칙: $a^x\\times a^y=a^{x+y}$",
+        "지수법칙: $a^x\\div a^y=a^{x-y}$",
+        "지수가 분수여도 밑이 같으면 지수끼리 더하고 빼요."
+      ],
+      "steps": [
+        {
+          "title": "곱하면 지수끼리 더하기",
+          "body": "밑이 $2$ 로 같아요.\n$$2^{\\frac{1}{2}}\\times2^{\\frac{3}{2}}=2^{\\frac{1}{2}+\\frac{3}{2}}$$"
+        },
+        {
+          "title": "지수 계산하기",
+          "body": "$$\\frac{1}{2}+\\frac{3}{2}=2$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{2}=4$$"
+        }
+      ],
+      "tip": "거듭제곱근으로 바꾸지 않고 지수끼리 계산하면 한 줄로 끝나요. 답 $4$ 예요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "ex1-same-base",
+      "seed": 1001
+    },
+    {
+      "q": "$\\sqrt[3]{4}\\times\\sqrt[3]{2}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "Integer(4)**Rational(1, 3) * Integer(2)**Rational(1, 3)",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^x\\times a^y=a^{x+y}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 하나로 맞추기",
+          "body": "두 수를 $2$ 의 거듭제곱으로 바꿔요.\n$$4=2^{2},\\quad 2=2^{1}$$"
+        },
+        {
+          "title": "분수 지수로 바꾸기",
+          "body": "$$\\sqrt[3]{4}\\times\\sqrt[3]{2}=2^{\\frac{2}{3}}\\times2^{\\frac{1}{3}}$$"
+        },
+        {
+          "title": "지수끼리 더하기",
+          "body": "$$2^{\\frac{2}{3}+\\frac{1}{3}}=2^{1}$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{1}=2$$"
+        }
+      ],
+      "tip": "$\\sqrt[3]{4\\times2}=\\sqrt[3]{8}$ 로 먼저 합쳐도 같아요. $8=2^{3}$ 이기 때문이에요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "ex1-root-product",
+      "seed": 1002
+    },
+    {
+      "q": "$\\left(\\dfrac{3}{5}\\right)^{-2}+9^{0}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "34/9",
+      "answerType": "fraction",
+      "check": "Rational(3, 5)**(-2) + Integer(9)**0",
+      "concepts": [
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$",
+        "$\\left(\\dfrac{a}{b}\\right)^{-n}=\\left(\\dfrac{b}{a}\\right)^{n}$"
+      ],
+      "steps": [
+        {
+          "title": "음의 지수는 뒤집기",
+          "body": "$$\\left(\\frac{3}{5}\\right)^{-2}=\\left(\\frac{5}{3}\\right)^{2}=\\frac{25}{9}$$"
+        },
+        {
+          "title": "0 제곱은 1",
+          "body": "$9^{0}=1$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{25}{9}+1=\\frac{34}{9}$$"
+        }
+      ],
+      "tip": "$9^0$ 을 $0$ 으로 적는 실수가 많아요. 0 이 아닌 수의 0 제곱은 언제나 $1$ 이에요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "ex1-neg-zero",
+      "seed": 1003
+    },
+    {
+      "q": "$4^{-\\frac{1}{2}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "Integer(4)**Rational(-1, 2)",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $(a^x)^y=a^{xy}$",
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 거듭제곱으로 쓰기",
+          "body": "밑을 $2$ 의 거듭제곱으로 바꿔요.\n$$4=2^{2}$$"
+        },
+        {
+          "title": "지수끼리 곱하기",
+          "body": "$$4^{-\\frac{1}{2}}=(2^{2})^{-\\frac{1}{2}}=2^{2\\times(-\\frac{1}{2})}=2^{-1}$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{-1}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "지수가 음수면 값도 음수라고 착각하기 쉬워요. $2^{-1}$ 는 $2^{1}$ 의 역수예요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "ex1-frac-power",
+      "seed": 1004
+    },
+    {
+      "q": "$2^{\\frac{3}{2}}\\times2^{\\frac{3}{2}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "fraction",
+      "check": "Integer(2)**Rational(3, 2) * Integer(2)**Rational(3, 2)",
+      "concepts": [
+        "지수법칙: $a^x\\times a^y=a^{x+y}$",
+        "지수법칙: $a^x\\div a^y=a^{x-y}$",
+        "지수가 분수여도 밑이 같으면 지수끼리 더하고 빼요."
+      ],
+      "steps": [
+        {
+          "title": "곱하면 지수끼리 더하기",
+          "body": "밑이 $2$ 로 같아요.\n$$2^{\\frac{3}{2}}\\times2^{\\frac{3}{2}}=2^{\\frac{3}{2}+\\frac{3}{2}}$$"
+        },
+        {
+          "title": "지수 계산하기",
+          "body": "$$\\frac{3}{2}+\\frac{3}{2}=3$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{3}=8$$"
+        }
+      ],
+      "tip": "거듭제곱근으로 바꾸지 않고 지수끼리 계산하면 한 줄로 끝나요. 답 $8$ 이에요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "ex1-same-base",
+      "seed": 1005
+    },
+    {
+      "q": "$\\sqrt[4]{64}\\times\\sqrt[4]{64}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "Integer(64)**Rational(1, 4) * Integer(64)**Rational(1, 4)",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^x\\times a^y=a^{x+y}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 하나로 맞추기",
+          "body": "두 수를 $2$ 의 거듭제곱으로 바꿔요.\n$$64=2^{6},\\quad 64=2^{6}$$"
+        },
+        {
+          "title": "분수 지수로 바꾸기",
+          "body": "$$\\sqrt[4]{64}\\times\\sqrt[4]{64}=2^{\\frac{3}{2}}\\times2^{\\frac{3}{2}}$$"
+        },
+        {
+          "title": "지수끼리 더하기",
+          "body": "$$2^{\\frac{3}{2}+\\frac{3}{2}}=2^{3}$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{3}=8$$"
+        }
+      ],
+      "tip": "$\\sqrt[4]{64\\times64}=\\sqrt[4]{4096}$ 로 먼저 합쳐도 같아요. $4096=8^{4}$ 이기 때문이에요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "ex1-root-product",
+      "seed": 1006
+    },
+    {
+      "q": "$\\left(\\dfrac{5}{2}\\right)^{-1}+5^{0}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7/5",
+      "answerType": "fraction",
+      "check": "Rational(5, 2)**(-1) + Integer(5)**0",
+      "concepts": [
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$",
+        "$\\left(\\dfrac{a}{b}\\right)^{-n}=\\left(\\dfrac{b}{a}\\right)^{n}$"
+      ],
+      "steps": [
+        {
+          "title": "음의 지수는 뒤집기",
+          "body": "$$\\left(\\frac{5}{2}\\right)^{-1}=\\left(\\frac{2}{5}\\right)^{1}=\\frac{2}{5}$$"
+        },
+        {
+          "title": "0 제곱은 1",
+          "body": "$5^{0}=1$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{2}{5}+1=\\frac{7}{5}$$"
+        }
+      ],
+      "tip": "$5^0$ 을 $0$ 으로 적는 실수가 많아요. 0 이 아닌 수의 0 제곱은 언제나 $1$ 이에요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "ex1-neg-zero",
+      "seed": 1007
+    },
+    {
+      "q": "$27^{\\frac{2}{3}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "fraction",
+      "check": "Integer(27)**Rational(2, 3)",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $(a^x)^y=a^{xy}$",
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 거듭제곱으로 쓰기",
+          "body": "밑을 $3$ 의 거듭제곱으로 바꿔요.\n$$27=3^{3}$$"
+        },
+        {
+          "title": "지수끼리 곱하기",
+          "body": "$$27^{\\frac{2}{3}}=(3^{3})^{\\frac{2}{3}}=3^{3\\times\\frac{2}{3}}=3^{2}$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$3^{2}=9$$"
+        }
+      ],
+      "tip": "$27^{\\frac{2}{3}}$ 는 '$3$ 제곱하면 $27$ 인 양수'를 $2$ 번 곱한 거예요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "ex1-frac-power",
+      "seed": 1008
+    },
+    {
+      "q": "$7^{\\frac{3}{2}}\\times7^{\\frac{1}{2}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "49",
+      "answerType": "fraction",
+      "check": "Integer(7)**Rational(3, 2) * Integer(7)**Rational(1, 2)",
+      "concepts": [
+        "지수법칙: $a^x\\times a^y=a^{x+y}$",
+        "지수법칙: $a^x\\div a^y=a^{x-y}$",
+        "지수가 분수여도 밑이 같으면 지수끼리 더하고 빼요."
+      ],
+      "steps": [
+        {
+          "title": "곱하면 지수끼리 더하기",
+          "body": "밑이 $7$ 로 같아요.\n$$7^{\\frac{3}{2}}\\times7^{\\frac{1}{2}}=7^{\\frac{3}{2}+\\frac{1}{2}}$$"
+        },
+        {
+          "title": "지수 계산하기",
+          "body": "$$\\frac{3}{2}+\\frac{1}{2}=2$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$7^{2}=49$$"
+        }
+      ],
+      "tip": "거듭제곱근으로 바꾸지 않고 지수끼리 계산하면 한 줄로 끝나요. 답 $49$ 예요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "ex1-same-base",
+      "seed": 1009
+    },
+    {
+      "q": "$\\sqrt[3]{2}\\times\\sqrt[3]{32}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "Integer(2)**Rational(1, 3) * Integer(32)**Rational(1, 3)",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^x\\times a^y=a^{x+y}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 하나로 맞추기",
+          "body": "두 수를 $2$ 의 거듭제곱으로 바꿔요.\n$$2=2^{1},\\quad 32=2^{5}$$"
+        },
+        {
+          "title": "분수 지수로 바꾸기",
+          "body": "$$\\sqrt[3]{2}\\times\\sqrt[3]{32}=2^{\\frac{1}{3}}\\times2^{\\frac{5}{3}}$$"
+        },
+        {
+          "title": "지수끼리 더하기",
+          "body": "$$2^{\\frac{1}{3}+\\frac{5}{3}}=2^{2}$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{2}=4$$"
+        }
+      ],
+      "tip": "$\\sqrt[3]{2\\times32}=\\sqrt[3]{64}$ 로 먼저 합쳐도 같아요. $64=4^{3}$ 이기 때문이에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "ex1-root-product",
+      "seed": 1010
+    },
+    {
+      "q": "$\\left(\\dfrac{2}{3}\\right)^{-1}+2^{0}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/2",
+      "answerType": "fraction",
+      "check": "Rational(2, 3)**(-1) + Integer(2)**0",
+      "concepts": [
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$",
+        "$\\left(\\dfrac{a}{b}\\right)^{-n}=\\left(\\dfrac{b}{a}\\right)^{n}$"
+      ],
+      "steps": [
+        {
+          "title": "음의 지수는 뒤집기",
+          "body": "$$\\left(\\frac{2}{3}\\right)^{-1}=\\left(\\frac{3}{2}\\right)^{1}=\\frac{3}{2}$$"
+        },
+        {
+          "title": "0 제곱은 1",
+          "body": "$2^{0}=1$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{3}{2}+1=\\frac{5}{2}$$"
+        }
+      ],
+      "tip": "$2^0$ 을 $0$ 으로 적는 실수가 많아요. 0 이 아닌 수의 0 제곱은 언제나 $1$ 이에요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "ex1-neg-zero",
+      "seed": 1011
+    },
+    {
+      "q": "$8^{-\\frac{1}{3}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "Integer(8)**Rational(-1, 3)",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $(a^x)^y=a^{xy}$",
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 거듭제곱으로 쓰기",
+          "body": "밑을 $2$ 의 거듭제곱으로 바꿔요.\n$$8=2^{3}$$"
+        },
+        {
+          "title": "지수끼리 곱하기",
+          "body": "$$8^{-\\frac{1}{3}}=(2^{3})^{-\\frac{1}{3}}=2^{3\\times(-\\frac{1}{3})}=2^{-1}$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{-1}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "지수가 음수면 값도 음수라고 착각하기 쉬워요. $2^{-1}$ 는 $2^{1}$ 의 역수예요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "ex1-frac-power",
+      "seed": 1012
+    },
+    {
+      "q": "$2^{\\frac{3}{2}}\\div2^{\\frac{1}{2}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "fraction",
+      "check": "Integer(2)**Rational(3, 2) / Integer(2)**Rational(1, 2)",
+      "concepts": [
+        "지수법칙: $a^x\\times a^y=a^{x+y}$",
+        "지수법칙: $a^x\\div a^y=a^{x-y}$",
+        "지수가 분수여도 밑이 같으면 지수끼리 더하고 빼요."
+      ],
+      "steps": [
+        {
+          "title": "나누면 지수끼리 빼기",
+          "body": "밑이 $2$ 로 같아요.\n$$2^{\\frac{3}{2}}\\div2^{\\frac{1}{2}}=2^{\\frac{3}{2}-\\frac{1}{2}}$$"
+        },
+        {
+          "title": "지수 계산하기",
+          "body": "$$\\frac{3}{2}-\\frac{1}{2}=1$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{1}=2$$"
+        }
+      ],
+      "tip": "거듭제곱근으로 바꾸지 않고 지수끼리 계산하면 한 줄로 끝나요. 답 $2$ 예요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "ex1-same-base",
+      "seed": 1013
+    },
+    {
+      "q": "$\\sqrt[4]{64}\\times\\sqrt[4]{64}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "Integer(64)**Rational(1, 4) * Integer(64)**Rational(1, 4)",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^x\\times a^y=a^{x+y}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 하나로 맞추기",
+          "body": "두 수를 $2$ 의 거듭제곱으로 바꿔요.\n$$64=2^{6},\\quad 64=2^{6}$$"
+        },
+        {
+          "title": "분수 지수로 바꾸기",
+          "body": "$$\\sqrt[4]{64}\\times\\sqrt[4]{64}=2^{\\frac{3}{2}}\\times2^{\\frac{3}{2}}$$"
+        },
+        {
+          "title": "지수끼리 더하기",
+          "body": "$$2^{\\frac{3}{2}+\\frac{3}{2}}=2^{3}$$"
+        },
+        {
+          "title": "값 계산하기",
+          "body": "$$2^{3}=8$$"
+        }
+      ],
+      "tip": "$\\sqrt[4]{64\\times64}=\\sqrt[4]{4096}$ 로 먼저 합쳐도 같아요. $4096=8^{4}$ 이기 때문이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "ex1-root-product",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\sqrt[3]{-27}+\\sqrt[4]{16}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "real_root(-27, 3) + Integer(16)**Rational(1, 4)",
+      "concepts": [
+        "$n$ 제곱해서 $a$ 가 되는 수가 $a$ 의 $n$제곱근이에요.",
+        "$n$ 이 홀수면 음수의 $n$제곱근 중 실수는 하나예요."
+      ],
+      "steps": [
+        {
+          "title": "세제곱근",
+          "body": "$(-3)^3=-27$ 이므로 $\\sqrt[3]{-27}=-3$ 이에요."
+        },
+        {
+          "title": "네제곱근",
+          "body": "$2^4=16$ 이고 $\\sqrt[4]{16}$ 은 양수이므로 $2$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$-3+2=-1$$"
+        }
+      ],
+      "tip": "짝수 제곱근 기호 $\\sqrt[4]{\\ }$ 는 양수 하나만 뜻해요. $-2$ 는 들어가지 않아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\left(\\sqrt[3]{2\\sqrt2}\\right)^4$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "((2*sqrt(2))**Rational(1, 3))**4",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+      ],
+      "steps": [
+        {
+          "title": "안쪽을 지수로",
+          "body": "$$2\\sqrt2=2^1\\times2^{\\frac12}=2^{\\frac32}$$"
+        },
+        {
+          "title": "세제곱근",
+          "body": "$$\\sqrt[3]{2^{\\frac32}}=2^{\\frac32\\times\\frac13}=2^{\\frac12}$$"
+        },
+        {
+          "title": "네제곱",
+          "body": "$$\\left(2^{\\frac12}\\right)^4=2^2=4$$"
+        }
+      ],
+      "tip": "근호가 겹쳐 있으면 안쪽부터 지수로 바꿔 한 줄로 정리해요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$a>0$ 일 때 $\\sqrt{a\\sqrt{a}}=a^k$ 를 만족시키는 유리수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "a = Symbol('a', positive=True)\nans = simplify(expand_log(log(sqrt(a*sqrt(a))), force=True) / log(a))",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+      ],
+      "steps": [
+        {
+          "title": "안쪽을 지수로",
+          "body": "$$a\\sqrt a=a^1\\times a^{\\frac12}=a^{\\frac32}$$"
+        },
+        {
+          "title": "제곱근 씌우기",
+          "body": "$$\\sqrt{a^{\\frac32}}=a^{\\frac32\\times\\frac12}=a^{\\frac34}$$"
+        },
+        {
+          "title": "지수 비교",
+          "body": "$k=\\frac34$ 이에요."
+        }
+      ],
+      "tip": "$a=16$ 을 넣어 확인해요. $\\sqrt{16\\times4}=8$ 이고 $16^{\\frac34}=2^3=8$ 이라 같아요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$2^x=3$ 일 때 $4^x+8^{-\\frac{x}{3}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "28/3",
+      "answerType": "fraction",
+      "check": "simplify((Integer(4)**x + Integer(8)**(-x/3)).subs(x, log(3, 2)))",
+      "concepts": [
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 항",
+          "body": "$$4^x=(2^2)^x=(2^x)^2=3^2=9$$"
+        },
+        {
+          "title": "뒤의 항",
+          "body": "$$8^{-\\frac x3}=(2^3)^{-\\frac x3}=2^{-x}=\\frac{1}{2^x}=\\frac13$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$9+\\frac13=\\frac{28}{3}$$"
+        }
+      ],
+      "tip": "$x$ 를 직접 구하지 않아도 돼요. 모든 항을 $2^x$ 로 바꾸면 끝나요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "양수 $a$ 에 대하여 $a^{2x}=5$ 일 때 $\\dfrac{a^{3x}+a^{-3x}}{a^x+a^{-x}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "21/5",
+      "answerType": "fraction",
+      "check": "t = sqrt(5)\nans = simplify((t**3 + t**(-3)) / (t + t**(-1)))",
+      "concepts": [
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$",
+        "$p^3+q^3=(p+q)(p^2-pq+q^2)$"
+      ],
+      "steps": [
+        {
+          "title": "분자 인수분해",
+          "body": "$p=a^x$, $q=a^{-x}$ 라 하면 분자는 $p^3+q^3=(p+q)(p^2-pq+q^2)$ 이에요."
+        },
+        {
+          "title": "약분",
+          "body": "분모 $p+q$ 와 약분하면 $p^2-pq+q^2$ 만 남아요."
+        },
+        {
+          "title": "각 항의 값",
+          "body": "$p^2=a^{2x}=5$, $pq=a^0=1$, $q^2=a^{-2x}=\\frac15$ 이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$5-1+\\frac15=\\frac{21}{5}$$"
+        }
+      ],
+      "tip": "$a^x$ 와 $a^{-x}$ 를 곱하면 $a^0=1$ 이 되는 점이 핵심이에요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$\\left(2^{\\sqrt3}\\right)^{\\sqrt{12}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "64",
+      "answerType": "int",
+      "check": "(Integer(2)**sqrt(3))**sqrt(12)",
+      "concepts": [
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+      ],
+      "steps": [
+        {
+          "title": "지수끼리 곱하기",
+          "body": "$$\\left(2^{\\sqrt3}\\right)^{\\sqrt{12}}=2^{\\sqrt3\\times\\sqrt{12}}$$"
+        },
+        {
+          "title": "지수 계산",
+          "body": "$$\\sqrt3\\times\\sqrt{12}=\\sqrt{36}=6$$"
+        },
+        {
+          "title": "값",
+          "body": "$$2^6=64$$"
+        }
+      ],
+      "tip": "지수가 무리수여도 밑이 양수면 지수법칙을 그대로 써요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$a>0$ 일 때 $\\sqrt[3]{a^2}\\times\\sqrt{a}\\div a^{\\frac16}=a^k$ 를 만족시키는 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "a = Symbol('a', positive=True)\nans = simplify(expand_log(log(a**Rational(2, 3) * sqrt(a) / a**Rational(1, 6)), force=True) / log(a))",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+      ],
+      "steps": [
+        {
+          "title": "모두 지수로",
+          "body": "$$a^{\\frac23}\\times a^{\\frac12}\\div a^{\\frac16}$$"
+        },
+        {
+          "title": "지수 계산",
+          "body": "$$\\frac23+\\frac12-\\frac16=\\frac{4+3-1}{6}=1$$"
+        },
+        {
+          "title": "답",
+          "body": "$k=1$ 이에요."
+        }
+      ],
+      "tip": "분모가 다른 분수 지수는 통분해서 더하고 빼요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$-8$ 의 세제곱근 중 실수인 것을 $a$, $16$ 의 네제곱근 중 실수인 것의 개수를 $b$ 라 할 때, $ab$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "ans = real_root(-8, 3) * len([r for r in solve(x**4 - 16, x) if r.is_real])",
+      "concepts": [
+        "$n$ 제곱해서 $a$ 가 되는 수가 $a$ 의 $n$제곱근이에요.",
+        "$n$ 이 홀수면 실수인 $n$제곱근은 하나, 짝수면 양수의 실수인 $n$제곱근은 두 개($\\pm$)예요."
+      ],
+      "steps": [
+        {
+          "title": "$a$ 구하기",
+          "body": "$x^3=-8$ 의 실근은 $x=-2$ 하나라 $a=-2$ 예요."
+        },
+        {
+          "title": "$b$ 구하기",
+          "body": "$x^4=16$ 의 실근은 $x=2$, $x=-2$ 라 $b=2$ 예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$ab=-2\\times2=-4$$"
+        }
+      ],
+      "tip": "'네제곱근 중 실수인 것'은 $\\pm2$ 두 개예요. 기호 $\\sqrt[4]{16}$ 은 그중 양수 $2$ 만 가리켜요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$3^x=2$ 일 때 $9^{x+1}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "36",
+      "answerType": "int",
+      "check": "simplify((Integer(9)**(x + 1)).subs(x, log(2, 3)))",
+      "concepts": [
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+      ],
+      "steps": [
+        {
+          "title": "밑을 3 으로",
+          "body": "$$9^{x+1}=3^{2x+2}=(3^x)^2\\times3^2$$"
+        },
+        {
+          "title": "주어진 값 넣기",
+          "body": "$$2^2\\times9=4\\times9=36$$"
+        }
+      ],
+      "tip": "$9^{x+1}$ 을 $9^x\\times9$ 로 나눠도 돼요. $9^x=(3^x)^2=4$ 예요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$\\left(\\dfrac{4}{9}\\right)^{-\\frac32}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "27/8",
+      "answerType": "fraction",
+      "check": "Rational(4, 9)**Rational(-3, 2)",
+      "concepts": [
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$",
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$"
+      ],
+      "steps": [
+        {
+          "title": "음의 지수는 뒤집기",
+          "body": "$$\\left(\\frac49\\right)^{-\\frac32}=\\left(\\frac94\\right)^{\\frac32}$$"
+        },
+        {
+          "title": "제곱근 먼저",
+          "body": "$$\\left(\\frac94\\right)^{\\frac12}=\\frac32$$"
+        },
+        {
+          "title": "세제곱",
+          "body": "$$\\left(\\frac32\\right)^3=\\frac{27}{8}$$"
+        }
+      ],
+      "tip": "$(ab)^x=a^xb^x$ 이 분수에도 통해서 분자·분모에 따로 지수를 씌워도 돼요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "$\\left(\\dfrac{\\sqrt[3]{4}}{2}\\right)^{-3}$ 의 값은?",
+      "choices": [
+        "$\\dfrac14$",
+        "$\\dfrac12$",
+        "$1$",
+        "$2$",
+        "$4$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "(Integer(4)**Rational(1, 3) / 2)**(-3)",
+      "choiceChecks": [
+        "Rational(1, 4)",
+        "Rational(1, 2)",
+        "1",
+        "2",
+        "4"
+      ],
+      "concepts": [
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$",
+        "$a^0=1$, $a^{-n}=\\dfrac{1}{a^n}$"
+      ],
+      "steps": [
+        {
+          "title": "분자를 지수로",
+          "body": "$\\sqrt[3]{4}=2^{\\frac23}$ 이에요."
+        },
+        {
+          "title": "괄호 안 정리",
+          "body": "$$\\frac{2^{\\frac23}}{2^1}=2^{\\frac23-1}=2^{-\\frac13}$$"
+        },
+        {
+          "title": "지수 곱하기",
+          "body": "$$\\left(2^{-\\frac13}\\right)^{-3}=2^{1}=2$$"
+        }
+      ],
+      "tip": "괄호 안을 밑 하나로 정리한 뒤 바깥 지수를 곱하면 계산이 한 번에 끝나요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "$\\sqrt[3]{24}\\times3^{\\frac23}$ 의 값은?",
+      "choices": [
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$",
+        "$6$"
+      ],
+      "answer": "5",
+      "answerType": "choice",
+      "check": "Integer(24)**Rational(1, 3) * Integer(3)**Rational(2, 3)",
+      "choiceChecks": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$",
+        "$(ab)^x=a^xb^x$"
+      ],
+      "steps": [
+        {
+          "title": "곱으로 나누기",
+          "body": "$$\\sqrt[3]{24}=\\sqrt[3]{8\\times3}=2\\times3^{\\frac13}$$"
+        },
+        {
+          "title": "같은 밑끼리",
+          "body": "$$3^{\\frac13}\\times3^{\\frac23}=3^1=3$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$2\\times3=6$$"
+        }
+      ],
+      "tip": "$24=2^3\\times3$ 처럼 세제곱 인수를 먼저 떼어 내면 깔끔해요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "$\\left(\\dfrac{4}{2^{\\sqrt2}}\\right)^{2+\\sqrt2}$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$4$",
+        "$8$",
+        "$16$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "simplify((4 / Integer(2)**sqrt(2))**(2 + sqrt(2)))",
+      "choiceChecks": [
+        "1",
+        "2",
+        "4",
+        "8",
+        "16"
+      ],
+      "concepts": [
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$",
+        "$(a-b)(a+b)=a^2-b^2$"
+      ],
+      "steps": [
+        {
+          "title": "괄호 안 정리",
+          "body": "$$\\frac{4}{2^{\\sqrt2}}=\\frac{2^2}{2^{\\sqrt2}}=2^{2-\\sqrt2}$$"
+        },
+        {
+          "title": "지수 곱하기",
+          "body": "$$\\left(2^{2-\\sqrt2}\\right)^{2+\\sqrt2}=2^{(2-\\sqrt2)(2+\\sqrt2)}$$"
+        },
+        {
+          "title": "지수 계산",
+          "body": "$$(2-\\sqrt2)(2+\\sqrt2)=4-2=2$$"
+        },
+        {
+          "title": "값",
+          "body": "$$2^2=4$$"
+        }
+      ],
+      "tip": "무리수 지수가 나오면 곱해서 무리수가 사라지는 짝(합차 공식)을 찾아요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "두 실수 $a$, $b$ 가 $2^a=3$, $3^b=\\sqrt[3]{16}$ 을 만족시킬 때, $6ab$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "a_ = log(3, 2)\nb_ = log(Integer(16)**Rational(1, 3), 3)\nans = simplify(6*a_*b_)",
+      "concepts": [
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$",
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$"
+      ],
+      "steps": [
+        {
+          "title": "두 식 잇기",
+          "body": "$3=2^a$ 를 $3^b$ 에 넣으면 $3^b=(2^a)^b=2^{ab}$ 이에요."
+        },
+        {
+          "title": "오른쪽을 지수로",
+          "body": "$$\\sqrt[3]{16}=(2^4)^{\\frac13}=2^{\\frac43}$$"
+        },
+        {
+          "title": "지수 비교",
+          "body": "$2^{ab}=2^{\\frac43}$ 이므로 $ab=\\frac43$ 이에요."
+        },
+        {
+          "title": "답",
+          "body": "$$6ab=6\\times\\frac43=8$$"
+        }
+      ],
+      "tip": "$a$, $b$ 를 따로 구하지 않고 $2^{ab}$ 하나로 묶는 것이 핵심이에요. 로그를 배우면 $ab=\\log_2 3\\times\\log_3\\sqrt[3]{16}$ 으로도 볼 수 있어요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "$2\\le n\\le12$ 인 자연수 $n$ 에 대하여 $\\left(\\sqrt[n]{8}\\right)^4$ 의 값이 자연수가 되도록 하는 모든 $n$ 의 값의 합을 구하세요.",
+      "choices": null,
+      "answer": "27",
+      "answerType": "int",
+      "check": "ans = sum([i for i in range(2, 13) if ((Integer(8)**Rational(1, i))**4).is_integer])",
+      "concepts": [
+        "$a>0$ 일 때 $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}=(\\sqrt[n]{a})^m$",
+        "지수법칙: $a^xa^y=a^{x+y}$, $a^x\\div a^y=a^{x-y}$, $(a^x)^y=a^{xy}$"
+      ],
+      "steps": [
+        {
+          "title": "지수로 바꾸기",
+          "body": "$$\\left(\\sqrt[n]{8}\\right)^4=\\left(2^{\\frac3n}\\right)^4=2^{\\frac{12}{n}}$$"
+        },
+        {
+          "title": "자연수가 될 조건",
+          "body": "$\\frac{12}{n}$ 이 자연수여야 해요. 즉 $n$ 이 $12$ 의 약수예요."
+        },
+        {
+          "title": "범위 안의 $n$",
+          "body": "$2\\le n\\le12$ 인 $12$ 의 약수는 $2,\\,3,\\,4,\\,6,\\,12$ 예요."
+        },
+        {
+          "title": "합",
+          "body": "$$2+3+4+6+12=27$$"
+        }
+      ],
+      "tip": "$n=1$ 은 범위 밖이라 빠져요. 조건의 범위를 마지막에 꼭 다시 확인해요."
+    }
+  ]
+}
