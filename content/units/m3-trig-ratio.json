@@ -1,0 +1,1376 @@
+{
+  "id": "m3-trig-ratio",
+  "course": "중3",
+  "unit": "도형과 측정",
+  "title": "삼각비",
+  "prereq": [
+    "m2-pythagoras",
+    "m3-radical-ops"
+  ],
+  "suneung": [],
+  "hours": 3,
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "bigH": {
+        "value": "6",
+        "check": "(14-6)*Rational(3,4)"
+      },
+      "small": {
+        "value": "3/4",
+        "check": "(3-0)*Rational(1,4-0)"
+      },
+      "area45": {
+        "value": "12",
+        "check": "Rational(1,2)*6*sqrt(4**2+4**2)*sin(rad(45))"
+      },
+      "h45": {
+        "value": "4",
+        "check": "sqrt(4**2+4**2)*sin(rad(45))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중3 · 도형과 측정",
+        "title": "기울어진 정도를\n수 하나로 말하기",
+        "lead": "직각삼각형은 크기가 달라도 각이 같으면 변끼리의 비가 같아요. 그 비에 이름을 붙이면 재지 못하는 높이와 넓이도 계산할 수 있어요.",
+        "meta": [
+          "sin · cos · tan"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "같은 기울기의\n큰 미끄럼틀은 얼마나 높을까요?",
+        "lead": "왼쪽 작은 미끄럼틀과 오른쪽 큰 미끄럼틀은 기울어진 각이 같아요. 큰 것의 밑변은 작은 것의 두 배예요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 14,
+              "h": 7
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 0,
+                "y": 0
+              },
+              {
+                "id": "B",
+                "x": 4,
+                "y": 0
+              },
+              {
+                "id": "C",
+                "x": 4,
+                "y": 3
+              },
+              {
+                "id": "D",
+                "x": 6,
+                "y": 0
+              },
+              {
+                "id": "E",
+                "x": 14,
+                "y": 0
+              },
+              {
+                "id": "F",
+                "x": 14,
+                "y": 6
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ],
+              [
+                "D",
+                "E",
+                "F"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "B",
+                  "C"
+                ]
+              },
+              {
+                "angle": [
+                  "B",
+                  "A",
+                  "C"
+                ]
+              },
+              {
+                "len": [
+                  "D",
+                  "E"
+                ]
+              },
+              {
+                "angle": [
+                  "E",
+                  "D",
+                  "F"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "높이 EF 는 몇 칸일까요?"
+          }
+        },
+        "choices": [
+          {
+            "value": "7",
+            "check": "3+(14-6)-(4-0)",
+            "feedback": "밑변이 4 늘었다고 높이도 4 늘리면, 높이 ÷ 밑변이 바뀌어 더 가팔라져요."
+          },
+          {
+            "value": "6",
+            "check": "(14-6)*Rational(3,4)"
+          },
+          {
+            "value": "8",
+            "check": "14-6",
+            "feedback": "높이가 밑변과 같으면 45°로 기울어요. 지금 각은 그보다 완만해요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "(14-6)*Rational(3,4)",
+        "reveal": "**맞아요!** 밑변이 두 배면 높이도 두 배, {{bigH}}칸이에요.",
+        "thoughts": [
+          "각이 같은 두 직각삼각형은 닮음이에요. 모든 변이 같은 배수로 커져요.",
+          "그래서 (높이) ÷ (밑변) 은 두 삼각형에서 똑같이 ${{small}}$ 이에요."
+        ],
+        "conclude": "정말 각만 같으면 비가 그대로일까요? 직접 끌어 봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "same",
+        "chip": "손으로 해 보기",
+        "title": "크기를 바꿔도\n비는 그대로예요",
+        "lead": "O 에서 뻗은 비탈 위의 점 P 를 끌어 보세요. P 에서 바닥에 수선을 내리면 직각삼각형이 생겨요. 밑변·높이와 그 비를 지켜보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 12,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 9,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "s",
+                "curve": "3*x/4",
+                "label": "비탈"
+              },
+              {
+                "id": "O",
+                "point": {
+                  "on": "s",
+                  "x": 0
+                },
+                "name": "O"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "s",
+                  "x": 4,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "밑변 (P 의 $x$좌표)",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "높이 (P 의 $y$좌표)",
+                "digits": 2
+              },
+              {
+                "readout": "slope(O,P)",
+                "label": "높이 ÷ 밑변",
+                "digits": 2
+              }
+            ],
+            "intro": "P 를 멀리, 또 가까이 옮겨 보세요.",
+            "done": "삼각형이 커지든 작아지든 높이 ÷ 밑변은 그대로예요."
+          }
+        },
+        "after": "밑변과 높이는 계속 바뀌는데 ==높이 ÷ 밑변은 늘 같아요==. 비탈의 각이 그대로이기 때문이에요. 이 비는 크기가 아니라 **각**이 정해요."
+      },
+      {
+        "kind": "explore",
+        "id": "circle",
+        "chip": "두 번째 해 보기",
+        "title": "빗변을 1로 두고\n각을 바꿔 보세요",
+        "lead": "반지름이 1인 원이에요. 점을 원을 따라 끌면 빗변이 1인 직각삼각형이 생겨요. 빗변이 1이라 높이와 밑변이 곧 빗변에 대한 비예요.",
+        "widget": {
+          "type": "unitCircle",
+          "params": {
+            "unit": "deg",
+            "start": 30,
+            "snap": 15,
+            "show": [
+              "sin",
+              "cos",
+              "tan"
+            ]
+          }
+        },
+        "after": "각이 커질수록 높이(sin)는 커지고 밑변(cos)은 작아져요. 같은 각이면 언제나 같은 값이 나와요. 그래서 각 하나에 **비 세 개**가 정해져요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "각이 정하는 세 비에\n이름이 있어요",
+        "terms": [
+          {
+            "term": "사인 $\\sin A$",
+            "body": "∠C 가 직각인 삼각형 ABC 에서 $\\dfrac{\\text{높이}}{\\text{빗변}}=\\dfrac{\\overline{\\mathrm{BC}}}{\\overline{\\mathrm{AB}}}$ 예요. 높이는 ∠A 의 맞은편 변이에요."
+          },
+          {
+            "term": "코사인 $\\cos A$",
+            "body": "$\\dfrac{\\text{밑변}}{\\text{빗변}}=\\dfrac{\\overline{\\mathrm{AC}}}{\\overline{\\mathrm{AB}}}$ 예요. 밑변은 ∠A 에 붙은 변이에요."
+          },
+          {
+            "term": "탄젠트 $\\tan A$",
+            "body": "$\\dfrac{\\text{높이}}{\\text{밑변}}=\\dfrac{\\overline{\\mathrm{BC}}}{\\overline{\\mathrm{AC}}}$ 예요. 비탈의 기울기와 같아요."
+          },
+          {
+            "term": "삼각비",
+            "body": "sin, cos, tan 를 묶어 부르는 이름이에요. 직각삼각형의 크기와 상관없이 각 하나로 정해져요."
+          }
+        ],
+        "aside": "**두 비 사이의 관계** · 높이² + 밑변² = 빗변² 을 빗변²으로 나누면 $\\sin^2A+\\cos^2A=1$ 이에요. 하나를 알면 나머지를 구할 수 있어요."
+      },
+      {
+        "kind": "explore",
+        "id": "special",
+        "chip": "특별한 각",
+        "title": "높이가 꼭 절반이 되는\n각을 찾아보세요",
+        "lead": "0° 와 90° 사이에서 점을 끌어 $\\sin\\theta=\\frac12$ 이 되는 각을 찾고 '확인'을 누르세요.",
+        "widget": {
+          "type": "unitCircle",
+          "params": {
+            "unit": "deg",
+            "start": 0,
+            "snap": "special",
+            "show": [
+              "sin",
+              "cos"
+            ],
+            "task": {
+              "answer": 30,
+              "check": "deg(asin(Rational(1,2)))"
+            }
+          }
+        },
+        "gate": true,
+        "after": "30° 는 정삼각형을 반으로 자른 삼각형의 각이에요. 빗변 2, 높이 1, 밑변 $\\sqrt3$ 이라 $\\sin30^\\circ=\\frac12$, $\\cos30^\\circ=\\frac{\\sqrt3}{2}$ 예요. 45° 는 직각이등변삼각형(1 : 1 : $\\sqrt2$)에서 $\\sin45^\\circ=\\cos45^\\circ=\\frac{\\sqrt2}{2}$, $\\tan45^\\circ=1$ 이에요."
+      },
+      {
+        "kind": "question",
+        "id": "area",
+        "chip": "지름길",
+        "title": "높이를 모르는 삼각형의\n넓이는?",
+        "lead": "$\\overline{\\mathrm{AB}}=6$, ∠A 는 45° 예요. 꼭짓점 C 의 높이는 $\\overline{\\mathrm{AC}}\\times\\sin A$ 로 구할 수 있어요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 8,
+              "h": 6
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 1,
+                "y": 1
+              },
+              {
+                "id": "B",
+                "x": 7,
+                "y": 1
+              },
+              {
+                "id": "C",
+                "x": 5,
+                "y": 5
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "C"
+                ]
+              },
+              {
+                "angle": [
+                  "B",
+                  "A",
+                  "C"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "AC 는 $4\\sqrt2$ 예요."
+          }
+        },
+        "choices": [
+          {
+            "value": "12",
+            "check": "Rational(1,2)*6*sqrt(4**2+4**2)*sin(rad(45))"
+          },
+          {
+            "value": "24",
+            "check": "6*sqrt(4**2+4**2)*sin(rad(45))",
+            "feedback": "밑변 × 높이에서 멈췄어요. 삼각형은 2로 나눠야 해요."
+          },
+          {
+            "value": "8",
+            "check": "Rational(1,2)*4*4",
+            "feedback": "높이 4 는 맞지만 밑변을 AC 의 가로 칸 수 4 로 썼어요. 밑변은 AB 예요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "Rational(1,2)*6*sqrt(4**2+4**2)*sin(rad(45))",
+        "reveal": "**맞아요!** 높이가 $4\\sqrt2\\times\\frac{\\sqrt2}{2}={{h45}}$ 이라 넓이는 {{area45}}이에요.",
+        "thoughts": [
+          "C 에서 AB 에 내린 높이는 빗변 AC 에 sin A 를 곱한 길이예요.",
+          "그래서 두 변 $a$, $b$ 와 그 사이의 각 $C$ 를 알면 넓이는 $\\frac12ab\\sin C$ 예요."
+        ],
+        "conclude": "끼인각이 둔각이면 $\\sin(180^\\circ-C)$ 를 써요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 빗변이 10, $\\sin A=\\frac35$ 일 때 높이 $x$ 를 구하고 있어요.",
+            "mode": "equivalent",
+            "from": "x/10=3/5",
+            "tokens": [
+              {
+                "sym": "x"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "10*(5/3)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "10*(3/5)",
+              "body": "높이 ÷ 빗변 = sin 이니 높이 = 빗변 × sin 이에요. 뒤집어 곱하면 높이가 빗변보다 길어져요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $\\sin A=\\frac35$ 일 때 $\\cos A$ 를 구하고 있어요. 왼쪽은 바르게 쓴 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt(1-(3/5)**2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "1-3/5",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "4/5",
+              "body": "$\\sin A+\\cos A=1$ 이 아니라 **제곱끼리** 더해 1 이에요. $\\cos^2A=1-\\frac{9}{25}=\\frac{16}{25}$ 이라 $\\cos A=\\frac45$ 예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "kite",
+            "q": "연줄을 $50$ m 풀었더니 줄이 땅과 이루는 각 $A$ 가 $\\sin A=\\frac35$ 이었어요. 줄이 곧게 뻗었다면 연은 손보다 몇 m 높이 있을까요?",
+            "hint": "연줄이 빗변이고, 구하는 높이는 각의 맞은편 변이에요.",
+            "placeholder": "m",
+            "steps": [
+              {
+                "title": "식 세우기",
+                "body": "$$\\frac{\\text{높이}}{50}=\\frac35$$"
+              },
+              {
+                "title": "빗변 곱하기",
+                "body": "$$50\\times\\frac35={{answer}}$$"
+              }
+            ],
+            "answer": "30",
+            "answerType": "int",
+            "check": "50*Rational(3,5)"
+          },
+          {
+            "id": "tree",
+            "q": "나무 그림자의 길이가 $12$ m 예요. 그림자 끝에서 나무 꼭대기를 올려다본 각 $A$ 가 $\\tan A=\\frac34$ 일 때 나무의 높이는 몇 m 일까요?",
+            "hint": "그림자가 밑변, 나무가 높이예요. 빗변이 없으니 tan 을 써요.",
+            "placeholder": "m",
+            "steps": [
+              {
+                "title": "식 세우기",
+                "body": "$$\\frac{\\text{높이}}{12}=\\frac34$$"
+              },
+              {
+                "title": "밑변 곱하기",
+                "body": "$$12\\times\\frac34={{answer}}$$"
+              }
+            ],
+            "answer": "9",
+            "answerType": "int",
+            "check": "12*Rational(3,4)"
+          },
+          {
+            "id": "plot",
+            "q": "두 변의 길이가 $8$ m, $10$ m 이고 그 끼인각이 $30^\\circ$ 인 삼각형 모양 텃밭의 넓이는 몇 m² 일까요?",
+            "hint": "$\\frac12ab\\sin C$ 에 넣어요.",
+            "placeholder": "m²",
+            "steps": [
+              {
+                "title": "sin 30°",
+                "body": "$$\\sin30^\\circ=\\frac12$$"
+              },
+              {
+                "title": "넓이",
+                "body": "$$\\frac12\\times8\\times10\\times\\frac12={{answer}}$$"
+              }
+            ],
+            "answer": "20",
+            "answerType": "int",
+            "check": "Rational(1,2)*8*10*sin(rad(30))"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "직각삼각형의 변의 비는 크기가 아니라 **각**이 정해요.",
+          "$\\sin A=\\frac{\\text{높이}}{\\text{빗변}}$, $\\cos A=\\frac{\\text{밑변}}{\\text{빗변}}$, $\\tan A=\\frac{\\text{높이}}{\\text{밑변}}$ 이고 $\\sin^2A+\\cos^2A=1$ 이에요.",
+          "30°·60°는 1 : $\\sqrt3$ : 2, 45°는 1 : 1 : $\\sqrt2$ 삼각형에서 읽어요.",
+          "두 변과 끼인각을 알면 넓이는 $\\frac12ab\\sin C$ 예요."
+        ],
+        "done": "삼각비 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$\\sin A=\\dfrac{\\overline{\\mathrm{BC}}}{\\overline{\\mathrm{AB}}},\\ \\cos A=\\dfrac{\\overline{\\mathrm{AC}}}{\\overline{\\mathrm{AB}}},\\ \\tan A=\\dfrac{\\overline{\\mathrm{BC}}}{\\overline{\\mathrm{AC}}}\\quad(\\angle C=90^\\circ)$",
+    "$\\sin^2A+\\cos^2A=1,\\quad \\tan A=\\dfrac{\\sin A}{\\cos A}$",
+    "$\\sin30^\\circ=\\tfrac12,\\ \\sin45^\\circ=\\tfrac{\\sqrt2}{2},\\ \\sin60^\\circ=\\tfrac{\\sqrt3}{2},\\ \\tan45^\\circ=1,\\ \\tan60^\\circ=\\sqrt3$",
+    "$S=\\dfrac12ab\\sin C$",
+    "$S=\\dfrac12ab\\sin(180^\\circ-C)\\quad(C\\text{가 둔각})$"
+  ],
+  "generators": [
+    "trig-ratio-sides",
+    "trig-length",
+    "trig-special",
+    "trig-area"
+  ],
+  "problems": [
+    {
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{AB}}=75$, $\\overline{\\mathrm{AC}}=21$ 일 때 $\\tan A$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "24/7",
+      "answerTex": "$\\frac{24}{7}$",
+      "answerType": "fraction",
+      "check": "sqrt(75**2-21**2)/21",
+      "concepts": [
+        "∠A 를 기준으로 맞은편 변이 높이, A 에 붙은 변이 밑변, 직각의 맞은편이 빗변이에요.",
+        "$\\tan A$ = (높이) ÷ (밑변)"
+      ],
+      "steps": [
+        {
+          "title": "높이 구하기",
+          "body": "$$\\overline{\\mathrm{BC}}=\\sqrt{75^2-21^2}=72$$"
+        },
+        {
+          "title": "비 세우기",
+          "body": "$$\\tan A=\\frac{72}{21}=\\frac{24}{7}$$"
+        }
+      ],
+      "tip": "어느 각을 기준으로 보느냐에 따라 높이와 밑변이 바뀌어요. ∠A 의 맞은편부터 찾으세요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "trig-ratio-sides",
+      "seed": 1000
+    },
+    {
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{AB}}=10$, $\\sin A=\\frac{3}{5}$ 일 때 $\\overline{\\mathrm{BC}}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerTex": "$6$",
+      "answerType": "int",
+      "check": "10*Rational(3, 5)",
+      "concepts": [
+        "$\\sin A=\\dfrac{\\overline{\\mathrm{BC}}}{\\overline{\\mathrm{AB}}}$ 이므로 $\\overline{\\mathrm{BC}}=\\overline{\\mathrm{AB}}\\sin A$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{\\overline{\\mathrm{BC}}}{10}=\\frac{3}{5}$$"
+        },
+        {
+          "title": "빗변 곱하기",
+          "body": "$$\\overline{\\mathrm{BC}}=10\\times\\frac{3}{5}=6$$"
+        }
+      ],
+      "tip": "높이 = 빗변 × sin 이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "trig-length",
+      "seed": 1001
+    },
+    {
+      "q": "$\\sin 60^\\circ\\times\\cos 30^\\circ+\\sin 45^\\circ\\times\\cos 45^\\circ$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/4",
+      "answerTex": "$\\frac{5}{4}$",
+      "answerType": "fraction",
+      "check": "sin(rad(60))*cos(rad(30)) + (sin(rad(45))*cos(rad(45)))",
+      "concepts": [
+        "$\\sin 30^\\circ=\\cos 60^\\circ=\\frac12$, $\\sin 60^\\circ=\\cos 30^\\circ=\\frac{\\sqrt3}{2}$, $\\sin 45^\\circ=\\cos 45^\\circ=\\frac{\\sqrt2}{2}$",
+        "$\\tan 30^\\circ=\\frac{\\sqrt3}{3}$, $\\tan 45^\\circ=1$, $\\tan 60^\\circ=\\sqrt3$"
+      ],
+      "steps": [
+        {
+          "title": "앞부분",
+          "body": "$$\\sin 60^\\circ\\times\\cos 30^\\circ=\\frac{3}{4}$$"
+        },
+        {
+          "title": "뒷부분",
+          "body": "$$\\sin 45^\\circ\\times\\cos 45^\\circ=\\frac{1}{2}$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac{3}{4}+\\frac{1}{2}=\\frac{5}{4}$$"
+        }
+      ],
+      "tip": "30°·60°는 정삼각형을 반으로 자른 삼각형(변 1 : √3 : 2), 45°는 직각이등변삼각형(1 : 1 : √2)에서 읽어요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "trig-special",
+      "seed": 1002
+    },
+    {
+      "q": "삼각형 ABC 에서 $\\overline{\\mathrm{BC}}=15$, $\\overline{\\mathrm{CA}}=16$, $\\angle \\mathrm{C}=150^\\circ$ 일 때 넓이를 구하세요.",
+      "choices": null,
+      "answer": "60",
+      "answerTex": "$60$",
+      "answerType": "int",
+      "check": "Rational(1, 2)*15*16*sin(rad(180-150))",
+      "concepts": [
+        "두 변 $a$, $b$ 와 끼인각이 둔각 $C$ 이면 넓이는 $\\frac12ab\\sin(180^\\circ-C)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "높이에 쓰는 각",
+          "body": "$$180^\\circ-150^\\circ=30^\\circ$$"
+        },
+        {
+          "title": "높이",
+          "body": "$$16\\times\\sin 30^\\circ=8$$"
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac12\\times15\\times8=60$$"
+        }
+      ],
+      "tip": "높이를 빗변 × sin 으로 구한 뒤 밑변 × 높이 ÷ 2 를 한 것과 같아요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "trig-area",
+      "seed": 1003
+    },
+    {
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{AB}}=10$, $\\overline{\\mathrm{BC}}=6$ 일 때 $\\cos A$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4/5",
+      "answerTex": "$\\frac{4}{5}$",
+      "answerType": "fraction",
+      "check": "sqrt(10**2-6**2)/10",
+      "concepts": [
+        "∠A 를 기준으로 맞은편 변이 높이, A 에 붙은 변이 밑변, 직각의 맞은편이 빗변이에요.",
+        "$\\cos A$ = (밑변) ÷ (빗변)"
+      ],
+      "steps": [
+        {
+          "title": "밑변 구하기",
+          "body": "$$\\overline{\\mathrm{AC}}=\\sqrt{10^2-6^2}=8$$"
+        },
+        {
+          "title": "비 세우기",
+          "body": "$$\\cos A=\\frac{8}{10}=\\frac{4}{5}$$"
+        }
+      ],
+      "tip": "어느 각을 기준으로 보느냐에 따라 높이와 밑변이 바뀌어요. ∠A 의 맞은편부터 찾으세요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "trig-ratio-sides",
+      "seed": 1004
+    },
+    {
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{AB}}=51$, $\\cos A=\\frac{8}{17}$ 일 때 $\\overline{\\mathrm{AC}}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "24",
+      "answerTex": "$24$",
+      "answerType": "int",
+      "check": "51*Rational(8, 17)",
+      "concepts": [
+        "$\\cos A=\\dfrac{\\overline{\\mathrm{AC}}}{\\overline{\\mathrm{AB}}}$ 이므로 $\\overline{\\mathrm{AC}}=\\overline{\\mathrm{AB}}\\cos A$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{\\overline{\\mathrm{AC}}}{51}=\\frac{8}{17}$$"
+        },
+        {
+          "title": "빗변 곱하기",
+          "body": "$$\\overline{\\mathrm{AC}}=51\\times\\frac{8}{17}=24$$"
+        }
+      ],
+      "tip": "밑변 = 빗변 × cos 이에요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "trig-length",
+      "seed": 1005
+    },
+    {
+      "q": "$\\sin 60^\\circ\\times\\cos 30^\\circ-\\cos 60^\\circ$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/4",
+      "answerTex": "$\\frac{1}{4}$",
+      "answerType": "fraction",
+      "check": "sin(rad(60))*cos(rad(30)) - (cos(rad(60)))",
+      "concepts": [
+        "$\\sin 30^\\circ=\\cos 60^\\circ=\\frac12$, $\\sin 60^\\circ=\\cos 30^\\circ=\\frac{\\sqrt3}{2}$, $\\sin 45^\\circ=\\cos 45^\\circ=\\frac{\\sqrt2}{2}$",
+        "$\\tan 30^\\circ=\\frac{\\sqrt3}{3}$, $\\tan 45^\\circ=1$, $\\tan 60^\\circ=\\sqrt3$"
+      ],
+      "steps": [
+        {
+          "title": "앞부분",
+          "body": "$$\\sin 60^\\circ\\times\\cos 30^\\circ=\\frac{3}{4}$$"
+        },
+        {
+          "title": "뒷부분",
+          "body": "$$\\cos 60^\\circ=\\frac{1}{2}$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac{3}{4}-\\frac{1}{2}=\\frac{1}{4}$$"
+        }
+      ],
+      "tip": "30°·60°는 정삼각형을 반으로 자른 삼각형(변 1 : √3 : 2), 45°는 직각이등변삼각형(1 : 1 : √2)에서 읽어요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "trig-special",
+      "seed": 1006
+    },
+    {
+      "q": "삼각형 ABC 에서 $\\overline{\\mathrm{BC}}=4$, $\\overline{\\mathrm{CA}}=8$, $\\angle \\mathrm{C}=30^\\circ$ 일 때 넓이를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerTex": "$8$",
+      "answerType": "int",
+      "check": "Rational(1, 2)*4*8*sin(rad(30))",
+      "concepts": [
+        "두 변 $a$, $b$ 와 끼인각 $C$ 를 알면 넓이는 $\\frac12ab\\sin C$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "높이",
+          "body": "$$8\\times\\sin 30^\\circ=4$$"
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac12\\times4\\times4=8$$"
+        }
+      ],
+      "tip": "높이를 빗변 × sin 으로 구한 뒤 밑변 × 높이 ÷ 2 를 한 것과 같아요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "trig-area",
+      "seed": 1007
+    },
+    {
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{AB}}=50$, $\\overline{\\mathrm{BC}}=48$ 일 때 $\\tan A$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "24/7",
+      "answerTex": "$\\frac{24}{7}$",
+      "answerType": "fraction",
+      "check": "Rational(48, 1)/sqrt(50**2-48**2)",
+      "concepts": [
+        "∠A 를 기준으로 맞은편 변이 높이, A 에 붙은 변이 밑변, 직각의 맞은편이 빗변이에요.",
+        "$\\tan A$ = (높이) ÷ (밑변)"
+      ],
+      "steps": [
+        {
+          "title": "밑변 구하기",
+          "body": "$$\\overline{\\mathrm{AC}}=\\sqrt{50^2-48^2}=14$$"
+        },
+        {
+          "title": "비 세우기",
+          "body": "$$\\tan A=\\frac{48}{14}=\\frac{24}{7}$$"
+        }
+      ],
+      "tip": "어느 각을 기준으로 보느냐에 따라 높이와 밑변이 바뀌어요. ∠A 의 맞은편부터 찾으세요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "trig-ratio-sides",
+      "seed": 1008
+    },
+    {
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{AB}}=75$, $\\cos A=\\frac{7}{25}$ 일 때 $\\overline{\\mathrm{AC}}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "21",
+      "answerTex": "$21$",
+      "answerType": "int",
+      "check": "75*Rational(7, 25)",
+      "concepts": [
+        "$\\cos A=\\dfrac{\\overline{\\mathrm{AC}}}{\\overline{\\mathrm{AB}}}$ 이므로 $\\overline{\\mathrm{AC}}=\\overline{\\mathrm{AB}}\\cos A$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{\\overline{\\mathrm{AC}}}{75}=\\frac{7}{25}$$"
+        },
+        {
+          "title": "빗변 곱하기",
+          "body": "$$\\overline{\\mathrm{AC}}=75\\times\\frac{7}{25}=21$$"
+        }
+      ],
+      "tip": "밑변 = 빗변 × cos 이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "trig-length",
+      "seed": 1009
+    },
+    {
+      "q": "$\\sin 60^\\circ\\times\\cos 30^\\circ+\\cos 60^\\circ$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/4",
+      "answerTex": "$\\frac{5}{4}$",
+      "answerType": "fraction",
+      "check": "sin(rad(60))*cos(rad(30)) + (cos(rad(60)))",
+      "concepts": [
+        "$\\sin 30^\\circ=\\cos 60^\\circ=\\frac12$, $\\sin 60^\\circ=\\cos 30^\\circ=\\frac{\\sqrt3}{2}$, $\\sin 45^\\circ=\\cos 45^\\circ=\\frac{\\sqrt2}{2}$",
+        "$\\tan 30^\\circ=\\frac{\\sqrt3}{3}$, $\\tan 45^\\circ=1$, $\\tan 60^\\circ=\\sqrt3$"
+      ],
+      "steps": [
+        {
+          "title": "앞부분",
+          "body": "$$\\sin 60^\\circ\\times\\cos 30^\\circ=\\frac{3}{4}$$"
+        },
+        {
+          "title": "뒷부분",
+          "body": "$$\\cos 60^\\circ=\\frac{1}{2}$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac{3}{4}+\\frac{1}{2}=\\frac{5}{4}$$"
+        }
+      ],
+      "tip": "30°·60°는 정삼각형을 반으로 자른 삼각형(변 1 : √3 : 2), 45°는 직각이등변삼각형(1 : 1 : √2)에서 읽어요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "trig-special",
+      "seed": 1010
+    },
+    {
+      "q": "삼각형 ABC 에서 $\\overline{\\mathrm{BC}}=16$, $\\overline{\\mathrm{CA}}=12$, $\\angle \\mathrm{C}=150^\\circ$ 일 때 넓이를 구하세요.",
+      "choices": null,
+      "answer": "48",
+      "answerTex": "$48$",
+      "answerType": "int",
+      "check": "Rational(1, 2)*16*12*sin(rad(180-150))",
+      "concepts": [
+        "두 변 $a$, $b$ 와 끼인각이 둔각 $C$ 이면 넓이는 $\\frac12ab\\sin(180^\\circ-C)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "높이에 쓰는 각",
+          "body": "$$180^\\circ-150^\\circ=30^\\circ$$"
+        },
+        {
+          "title": "높이",
+          "body": "$$12\\times\\sin 30^\\circ=6$$"
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac12\\times16\\times6=48$$"
+        }
+      ],
+      "tip": "높이를 빗변 × sin 으로 구한 뒤 밑변 × 높이 ÷ 2 를 한 것과 같아요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "trig-area",
+      "seed": 1011
+    },
+    {
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{BC}}=24$, $\\overline{\\mathrm{AC}}=10$ 일 때 $\\tan A$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12/5",
+      "answerTex": "$\\frac{12}{5}$",
+      "answerType": "fraction",
+      "check": "24*Rational(1, 10)",
+      "concepts": [
+        "∠A 를 기준으로 맞은편 변이 높이, A 에 붙은 변이 밑변, 직각의 맞은편이 빗변이에요.",
+        "$\\tan A$ = (높이) ÷ (밑변)"
+      ],
+      "steps": [
+        {
+          "title": "빗변 구하기",
+          "body": "$$\\overline{\\mathrm{AB}}=\\sqrt{24^2+10^2}=26$$"
+        },
+        {
+          "title": "비 세우기",
+          "body": "$$\\tan A=\\frac{24}{10}=\\frac{12}{5}$$"
+        }
+      ],
+      "tip": "어느 각을 기준으로 보느냐에 따라 높이와 밑변이 바뀌어요. ∠A 의 맞은편부터 찾으세요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "trig-ratio-sides",
+      "seed": 1012
+    },
+    {
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{AC}}=16$, $\\tan A=\\frac{3}{4}$ 일 때 $\\overline{\\mathrm{BC}}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$",
+      "answerType": "int",
+      "check": "16*Rational(3, 4)",
+      "concepts": [
+        "$\\tan A=\\dfrac{\\overline{\\mathrm{BC}}}{\\overline{\\mathrm{AC}}}$ 이므로 $\\overline{\\mathrm{BC}}=\\overline{\\mathrm{AC}}\\tan A$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{\\overline{\\mathrm{BC}}}{16}=\\frac{3}{4}$$"
+        },
+        {
+          "title": "밑변 곱하기",
+          "body": "$$\\overline{\\mathrm{BC}}=16\\times\\frac{3}{4}=12$$"
+        }
+      ],
+      "tip": "높이 = 밑변 × tan 이에요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "trig-length",
+      "seed": 1013
+    },
+    {
+      "q": "$\\cos 60^\\circ-\\cos^2 30^\\circ$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1/4",
+      "answerTex": "$-\\frac{1}{4}$",
+      "answerType": "fraction",
+      "check": "cos(rad(60)) - (cos(rad(30))**2)",
+      "concepts": [
+        "$\\sin 30^\\circ=\\cos 60^\\circ=\\frac12$, $\\sin 60^\\circ=\\cos 30^\\circ=\\frac{\\sqrt3}{2}$, $\\sin 45^\\circ=\\cos 45^\\circ=\\frac{\\sqrt2}{2}$",
+        "$\\tan 30^\\circ=\\frac{\\sqrt3}{3}$, $\\tan 45^\\circ=1$, $\\tan 60^\\circ=\\sqrt3$"
+      ],
+      "steps": [
+        {
+          "title": "앞부분",
+          "body": "$$\\cos 60^\\circ=\\frac{1}{2}$$"
+        },
+        {
+          "title": "뒷부분",
+          "body": "$$\\cos^2 30^\\circ=\\frac{3}{4}$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac{1}{2}-\\frac{3}{4}=-\\frac{1}{4}$$"
+        }
+      ],
+      "tip": "30°·60°는 정삼각형을 반으로 자른 삼각형(변 1 : √3 : 2), 45°는 직각이등변삼각형(1 : 1 : √2)에서 읽어요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "trig-special",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\overline{\\mathrm{AB}}=26$, $\\sin A=\\frac{5}{13}$ 일 때 $\\overline{\\mathrm{AC}}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "24",
+      "answerTex": "$24$",
+      "answerType": "int",
+      "check": "sqrt(26**2-(26*Rational(5,13))**2)",
+      "concepts": [
+        "높이 = 빗변 × sin 으로 높이를 구한 뒤, 피타고라스 정리로 나머지 변을 구해요."
+      ],
+      "steps": [
+        {
+          "title": "높이 BC",
+          "body": "$$26\\times\\frac{5}{13}=10$$"
+        },
+        {
+          "title": "밑변 AC",
+          "body": "$$\\sqrt{26^2-10^2}=\\sqrt{576}=24$$"
+        }
+      ],
+      "tip": "$\\cos A=\\frac{12}{13}$ 을 먼저 구해 $26\\times\\frac{12}{13}$ 으로 해도 같아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$0^\\circ<A<90^\\circ$ 이고 $\\sin A=\\frac45$ 일 때 $\\cos A\\times\\tan A$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4/5",
+      "answerTex": "$\\frac45$",
+      "answerType": "fraction",
+      "check": "sa = Rational(4,5)\nca = sqrt(1-sa**2)\nans = ca*(sa/ca)",
+      "concepts": [
+        "$\\sin^2A+\\cos^2A=1$ 로 $\\cos A$ 를 구해요.",
+        "$\\tan A=\\dfrac{\\sin A}{\\cos A}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "cos A",
+          "body": "$$\\cos^2A=1-\\frac{16}{25}=\\frac{9}{25}\\text{ 이므로 }\\cos A=\\frac35$$"
+        },
+        {
+          "title": "tan A",
+          "body": "$$\\tan A=\\frac45\\div\\frac35=\\frac43$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$\\frac35\\times\\frac43=\\frac45$$"
+        }
+      ],
+      "tip": "$\\cos A\\times\\dfrac{\\sin A}{\\cos A}=\\sin A$ 라서 계산 없이도 $\\frac45$ 예요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\tan A=2$ 일 때 $\\sin A\\times\\cos A$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/5",
+      "answerTex": "$\\frac25$",
+      "answerType": "fraction",
+      "check": "h = 2\nb = 1\nc = sqrt(h**2+b**2)\nans = (h/c)*(b/c)",
+      "concepts": [
+        "$\\tan A=2=\\frac21$ 이니 높이 2, 밑변 1 인 직각삼각형을 그려요."
+      ],
+      "steps": [
+        {
+          "title": "빗변",
+          "body": "$$\\sqrt{2^2+1^2}=\\sqrt5$$"
+        },
+        {
+          "title": "sin, cos",
+          "body": "$$\\sin A=\\frac{2}{\\sqrt5},\\quad \\cos A=\\frac{1}{\\sqrt5}$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$\\frac{2}{\\sqrt5}\\times\\frac{1}{\\sqrt5}=\\frac25$$"
+        }
+      ],
+      "tip": "삼각비는 크기와 상관없으니 가장 간단한 삼각형을 그려도 돼요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\sin 60^\\circ$ 의 값은?",
+      "choices": [
+        "$\\frac12$",
+        "$\\frac{\\sqrt2}{2}$",
+        "$\\frac{\\sqrt3}{2}$",
+        "$\\sqrt3$",
+        "$\\frac{\\sqrt3}{3}$"
+      ],
+      "answer": "3",
+      "answerTex": "③ $\\frac{\\sqrt3}{2}$",
+      "answerType": "choice",
+      "check": "sin(rad(60))",
+      "choiceChecks": [
+        "Rational(1,2)",
+        "sqrt(2)/2",
+        "sqrt(3)/2",
+        "sqrt(3)",
+        "sqrt(3)/3"
+      ],
+      "concepts": [
+        "정삼각형을 반으로 자르면 세 변이 1 : $\\sqrt3$ : 2 이고, 60° 의 맞은편 변이 $\\sqrt3$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "삼각형",
+          "body": "빗변 2, 60° 의 맞은편 변 $\\sqrt3$, 붙은 변 1 이에요."
+        },
+        {
+          "title": "sin",
+          "body": "$$\\sin60^\\circ=\\frac{\\sqrt3}{2}$$"
+        }
+      ],
+      "tip": "①은 $\\sin30^\\circ$, ④는 $\\tan60^\\circ$, ⑤는 $\\tan30^\\circ$ 예요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\angle \\mathrm{B}=90^\\circ$, $\\angle \\mathrm{A}=30^\\circ$ 인 직각삼각형 ABC 에서 빗변 $\\overline{\\mathrm{AC}}=12$ 일 때 $\\overline{\\mathrm{BC}}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerTex": "$6$",
+      "answerType": "int",
+      "check": "12*sin(rad(30))",
+      "concepts": [
+        "BC 는 ∠A 의 맞은편 변이니 빗변 × sin A 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\overline{\\mathrm{BC}}=12\\sin30^\\circ$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$12\\times\\frac12=6$$"
+        }
+      ],
+      "tip": "직각이 B 에 있어요. 빗변은 직각의 맞은편 AC 예요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "빗변의 길이가 $8\\sqrt2$ 인 직각이등변삼각형에서 빗변이 아닌 한 변의 길이를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerTex": "$8$",
+      "answerType": "int",
+      "check": "8*sqrt(2)*cos(rad(45))",
+      "concepts": [
+        "직각이등변삼각형의 두 예각은 45° 예요.",
+        "$\\cos45^\\circ=\\frac{\\sqrt2}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$8\\sqrt2\\times\\cos45^\\circ$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$8\\sqrt2\\times\\frac{\\sqrt2}{2}=8$$"
+        }
+      ],
+      "tip": "세 변의 비 1 : 1 : $\\sqrt2$ 로 바로 읽어도 돼요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "삼각형 ABC 에서 $\\overline{\\mathrm{AB}}=6$, $\\overline{\\mathrm{AC}}=10$, $\\angle \\mathrm{A}=150^\\circ$ 일 때 넓이를 구하세요.",
+      "choices": null,
+      "answer": "15",
+      "answerTex": "$15$",
+      "answerType": "int",
+      "check": "Rational(1,2)*6*10*sin(rad(180-150))",
+      "concepts": [
+        "끼인각이 둔각이면 넓이는 $\\frac12ab\\sin(180^\\circ-A)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "쓰는 각",
+          "body": "$$180^\\circ-150^\\circ=30^\\circ$$"
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac12\\times6\\times10\\times\\frac12=15$$"
+        }
+      ],
+      "tip": "둔각의 바깥쪽에 생기는 30° 로 높이를 구하는 것과 같아요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "이웃한 두 변의 길이가 $4$, $6$ 이고 그 끼인각이 $60^\\circ$ 인 평행사변형의 넓이는?",
+      "choices": [
+        "$12$",
+        "$6\\sqrt3$",
+        "$12\\sqrt3$",
+        "$24$",
+        "$24\\sqrt3$"
+      ],
+      "answer": "3",
+      "answerTex": "③ $12\\sqrt3$",
+      "answerType": "choice",
+      "check": "4*6*sin(rad(60))",
+      "choiceChecks": [
+        "4*6*sin(rad(30))",
+        "Rational(1,2)*4*6*sin(rad(60))",
+        "12*sqrt(3)",
+        "4*6",
+        "24*sqrt(3)"
+      ],
+      "concepts": [
+        "평행사변형은 대각선으로 넓이가 같은 삼각형 두 개로 나뉘어요.",
+        "그래서 넓이는 $ab\\sin C$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "삼각형 하나",
+          "body": "$$\\frac12\\times4\\times6\\times\\frac{\\sqrt3}{2}=6\\sqrt3$$"
+        },
+        {
+          "title": "두 배",
+          "body": "$$6\\sqrt3\\times2=12\\sqrt3$$"
+        }
+      ],
+      "tip": "②는 삼각형 하나의 넓이예요. 평행사변형은 $\\frac12$ 이 없어요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\angle \\mathrm{A}=60^\\circ$, $\\overline{\\mathrm{AB}}=10$ 일 때 $\\overline{\\mathrm{AC}}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerTex": "$5$",
+      "answerType": "int",
+      "check": "10*cos(rad(60))",
+      "concepts": [
+        "AC 는 ∠A 에 붙은 변이니 빗변 × cos A 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\overline{\\mathrm{AC}}=10\\cos60^\\circ$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$10\\times\\frac12=5$$"
+        }
+      ],
+      "tip": "붙은 변은 cos, 맞은편 변은 sin 이에요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "길이가 $200$ m 인 곧은 비탈길이 땅과 이루는 각을 $A$ 라 할 때 $\\sin A=\\frac{3}{50}$ 이에요. 비탈길 끝까지 오르면 몇 m 높아질까요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$ m",
+      "answerType": "int",
+      "check": "200*Rational(3,50)",
+      "concepts": [
+        "비탈길이 빗변, 올라간 높이가 각의 맞은편 변이에요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{\\text{높이}}{200}=\\frac{3}{50}$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$200\\times\\frac{3}{50}=12$$"
+        }
+      ],
+      "tip": "걸은 거리(빗변)와 땅 위 거리(밑변)를 헷갈리지 마세요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "건물에서 $20$ m 떨어진 곳에 서서 건물 꼭대기를 올려다본 각이 $45^\\circ$ 였어요. 눈높이가 땅에서 $1.5$ m 라면 건물의 높이는 몇 m 일까요?",
+      "choices": null,
+      "answer": "43/2",
+      "answerTex": "$21.5$ m",
+      "answerType": "fraction",
+      "check": "20*tan(rad(45))+Rational(3,2)",
+      "concepts": [
+        "눈높이에서 수평선을 그으면 직각삼각형이 생겨요.",
+        "건물 높이 = 삼각형의 높이 + 눈높이"
+      ],
+      "steps": [
+        {
+          "title": "눈높이 위 부분",
+          "body": "$$20\\times\\tan45^\\circ=20$$"
+        },
+        {
+          "title": "눈높이 더하기",
+          "body": "$$20+1.5=21.5$$"
+        }
+      ],
+      "tip": "눈높이를 더하지 않으면 20 m 가 나와요. 각은 눈에서 재었어요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "$\\angle \\mathrm{B}=90^\\circ$ 인 직각삼각형 ABC 의 변 BC 위에 점 D 가 있어요. $\\angle \\mathrm{ACB}=30^\\circ$, $\\angle \\mathrm{ADB}=60^\\circ$, $\\overline{\\mathrm{AB}}=3\\sqrt3$ 일 때 $\\overline{\\mathrm{DC}}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerTex": "$6$",
+      "answerType": "int",
+      "check": "3*sqrt(3)/tan(rad(30)) - 3*sqrt(3)/tan(rad(60))",
+      "concepts": [
+        "높이 AB 를 함께 쓰는 직각삼각형 두 개에서 밑변을 각각 구해 빼요.",
+        "밑변 = 높이 ÷ tan"
+      ],
+      "steps": [
+        {
+          "title": "BC",
+          "body": "$$3\\sqrt3\\div\\tan30^\\circ=3\\sqrt3\\times\\sqrt3=9$$"
+        },
+        {
+          "title": "BD",
+          "body": "$$3\\sqrt3\\div\\tan60^\\circ=3\\sqrt3\\div\\sqrt3=3$$"
+        },
+        {
+          "title": "DC",
+          "body": "$$9-3=6$$"
+        }
+      ],
+      "tip": "∠DAC 가 $60^\\circ-30^\\circ=30^\\circ$ 라 삼각형 ADC 가 이등변삼각형이에요. $\\overline{\\mathrm{DC}}=\\overline{\\mathrm{AD}}$ 로 확인해 보세요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "두 대각선의 길이가 $8$, $10$ 이고 두 대각선이 이루는 각이 $30^\\circ$ 인 사각형의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "20",
+      "answerTex": "$20$",
+      "answerType": "int",
+      "check": "Rational(1,2)*8*10*sin(rad(30))",
+      "concepts": [
+        "대각선 길이가 $p$, $q$ 이고 끼인각이 $\\theta$ 인 사각형의 넓이는 $\\frac12pq\\sin\\theta$ 예요.",
+        "대각선이 나눈 삼각형 네 개의 넓이를 더하면 이 식이 나와요."
+      ],
+      "steps": [
+        {
+          "title": "식",
+          "body": "$$\\frac12\\times8\\times10\\times\\sin30^\\circ$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$40\\times\\frac12=20$$"
+        }
+      ],
+      "tip": "평행사변형(두 변)은 $ab\\sin C$, 대각선으로 구하는 사각형은 $\\frac12pq\\sin\\theta$ 예요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "한 변의 길이가 $6$ 인 정삼각형의 넓이는?",
+      "choices": [
+        "$9$",
+        "$6\\sqrt3$",
+        "$9\\sqrt3$",
+        "$18\\sqrt3$",
+        "$36$"
+      ],
+      "answer": "3",
+      "answerTex": "③ $9\\sqrt3$",
+      "answerType": "choice",
+      "check": "Rational(1,2)*6*6*sin(rad(60))",
+      "choiceChecks": [
+        "Rational(1,2)*6*6*sin(rad(30))",
+        "6*sqrt(3)",
+        "9*sqrt(3)",
+        "6*6*sin(rad(60))",
+        "6*6"
+      ],
+      "concepts": [
+        "정삼각형의 한 각은 $60^\\circ$ 예요.",
+        "두 변과 끼인각으로 $\\frac12ab\\sin C$"
+      ],
+      "steps": [
+        {
+          "title": "식",
+          "body": "$$\\frac12\\times6\\times6\\times\\sin60^\\circ$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$18\\times\\frac{\\sqrt3}{2}=9\\sqrt3$$"
+        }
+      ],
+      "tip": "한 변이 $a$ 인 정삼각형의 넓이는 $\\frac{\\sqrt3}{4}a^2$ 이에요. ①은 $\\sin30^\\circ$ 를 쓴 값이에요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "$\\angle \\mathrm{C}=90^\\circ$ 인 직각삼각형 ABC 에서 $\\tan A=\\frac34$ 일 때 $\\dfrac{\\sin A-\\cos A}{\\sin A+\\cos A}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1/7",
+      "answerTex": "$-\\frac17$",
+      "answerType": "fraction",
+      "check": "h = 3\nb = 4\nc = sqrt(h**2+b**2)\nans = (h/c - b/c)/(h/c + b/c)",
+      "concepts": [
+        "$\\tan A=\\frac34$ 이니 높이 3, 밑변 4 인 직각삼각형을 그려요."
+      ],
+      "steps": [
+        {
+          "title": "빗변",
+          "body": "$$\\sqrt{3^2+4^2}=5$$"
+        },
+        {
+          "title": "sin, cos",
+          "body": "$$\\sin A=\\frac35,\\quad\\cos A=\\frac45$$"
+        },
+        {
+          "title": "대입",
+          "body": "$$\\frac{\\frac35-\\frac45}{\\frac35+\\frac45}=\\frac{-\\frac15}{\\frac75}=-\\frac17$$"
+        }
+      ],
+      "tip": "분자·분모를 $\\cos A$ 로 나누면 $\\dfrac{\\tan A-1}{\\tan A+1}$ 이라 바로 $\\dfrac{-\\frac14}{\\frac74}$ 로도 풀려요."
+    }
+  ]
+}

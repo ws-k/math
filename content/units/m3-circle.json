@@ -1,0 +1,1418 @@
+{
+  "id": "m3-circle",
+  "course": "중3",
+  "unit": "도형과 측정",
+  "title": "원의 성질",
+  "prereq": [
+    "m2-triangle-quad",
+    "m2-pythagoras"
+  ],
+  "suneung": [],
+  "hours": 3,
+  "lesson": {
+    "minutes": 20,
+    "values": {
+      "cen": {
+        "value": "120",
+        "check": "330-210"
+      },
+      "ins": {
+        "value": "60",
+        "check": "Rational(330-210, 2)"
+      },
+      "far": {
+        "value": "120",
+        "check": "180-Rational(330-210, 2)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중3 · 도형과 측정",
+        "title": "원 위 어디서 봐도\n같은 각",
+        "lead": "원 위의 두 점을 원 위 다른 점에서 바라보면 벌어진 각이 생겨요. 보는 점을 원을 따라 옮기면서 그 각이 어떻게 되는지 직접 확인해요.",
+        "meta": [
+          "원주각과 중심각"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "원 위의 점 P 에서 보면\n몇 도로 벌어질까요?",
+        "lead": "원의 중심 O 에서 A, B 를 보면 {{cen}}° 로 벌어져요. 원 위의 점 P 에서 A, B 를 보면 $\\angle\\mathrm{APB}$ 는 몇 도일까요?",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 10
+            },
+            "points": [
+              {
+                "id": "O",
+                "x": 5,
+                "y": 5
+              },
+              {
+                "id": "A",
+                "deg": 210,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "B",
+                "deg": 330,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "P",
+                "deg": 90,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              }
+            ],
+            "circles": [
+              {
+                "c": "O",
+                "r": 5
+              }
+            ],
+            "segments": [
+              [
+                "O",
+                "A"
+              ],
+              [
+                "O",
+                "B"
+              ],
+              [
+                "P",
+                "A"
+              ],
+              [
+                "P",
+                "B"
+              ]
+            ],
+            "measures": [
+              {
+                "angle": [
+                  "A",
+                  "O",
+                  "B"
+                ]
+              }
+            ],
+            "digits": 0,
+            "note": "P 는 중심 O 보다 A, B 에서 더 멀리 있어요."
+          }
+        },
+        "format": {
+          "unit": "°"
+        },
+        "choices": [
+          {
+            "value": "120",
+            "check": "330-210",
+            "feedback": "중심 O 에서 본 각을 그대로 옮겼어요. P 는 더 멀리서 보니 덜 벌어져요."
+          },
+          {
+            "value": "60",
+            "check": "Rational(330-210, 2)"
+          },
+          {
+            "value": "90",
+            "check": "180*Rational(1, 2)",
+            "feedback": "A, B 가 지름의 양 끝이면 그래요. 지금 A, B 는 지름의 양 끝이 아니에요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "Rational(330-210, 2)",
+        "reveal": "**맞아요!** $\\angle\\mathrm{APB}={{ins}}^\\circ$, 중심에서 본 {{cen}}° 의 절반이에요.",
+        "thoughts": [
+          "같은 두 점이라도 멀리서 볼수록 좁게 벌어져 보여요.",
+          "그런데 P 를 원을 따라 옮기면 P 와 A, B 사이 거리가 바뀌어요. 그래도 각은 그대로일까요?"
+        ],
+        "conclude": "P 를 직접 끌어 확인해 봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "slide",
+        "chip": "손으로 해 보기",
+        "title": "P 를 원 위에서\n끌어 보세요",
+        "lead": "A, B 는 고정이에요. P 를 원을 따라 위쪽 호 위에서 이리저리 옮기며 $\\angle\\mathrm{APB}$ 를 지켜보세요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 10
+            },
+            "points": [
+              {
+                "id": "O",
+                "x": 5,
+                "y": 5
+              },
+              {
+                "id": "A",
+                "deg": 210,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "B",
+                "deg": 330,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "P",
+                "deg": 90,
+                "drag": true,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              }
+            ],
+            "circles": [
+              {
+                "c": "O",
+                "r": 5
+              }
+            ],
+            "segments": [
+              [
+                "O",
+                "A"
+              ],
+              [
+                "O",
+                "B"
+              ],
+              [
+                "P",
+                "A"
+              ],
+              [
+                "P",
+                "B"
+              ]
+            ],
+            "measures": [
+              {
+                "angle": [
+                  "A",
+                  "P",
+                  "B"
+                ]
+              },
+              {
+                "angle": [
+                  "A",
+                  "O",
+                  "B"
+                ]
+              }
+            ],
+            "digits": 0,
+            "note": "P 를 A 쪽, B 쪽 끝까지 옮겨 보세요."
+          }
+        },
+        "after": "P 가 위쪽 호 어디에 있든 $\\angle\\mathrm{APB}$ 는 {{ins}}° 그대로예요. 변의 길이는 바뀌어도 ==각은 늘 중심각의 절반==이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "diameter",
+        "chip": "손으로 해 보기",
+        "title": "A, B 가 지름의\n양 끝이라면",
+        "lead": "이번에는 A, B 가 지름의 양 끝이에요. 중심각이 180° 인 셈이에요. P 를 끌어 $\\angle\\mathrm{APB}$ 를 보세요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 10
+            },
+            "points": [
+              {
+                "id": "O",
+                "x": 5,
+                "y": 5
+              },
+              {
+                "id": "A",
+                "deg": 180,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "B",
+                "deg": 0,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "P",
+                "deg": 60,
+                "drag": true,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "P",
+                "B"
+              ]
+            ],
+            "circles": [
+              {
+                "c": "O",
+                "r": 5
+              }
+            ],
+            "measures": [
+              {
+                "angle": [
+                  "A",
+                  "P",
+                  "B"
+                ]
+              },
+              {
+                "angle": [
+                  "A",
+                  "O",
+                  "B"
+                ]
+              }
+            ],
+            "digits": 0,
+            "note": "P 를 아래쪽 호로 넘겨 봐도 좋아요."
+          }
+        },
+        "after": "P 가 어디에 있어도 ==지름 위의 원주각은 90°== 예요. 180° 의 절반이니까요. 원 안에 지름을 빗변으로 하는 직각삼각형이 늘 생겨요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 본 각들에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "호와 현",
+            "body": "원 위의 두 점 A, B 사이 원의 일부가 호 AB, 두 점을 잇는 선분이 현 AB 예요."
+          },
+          {
+            "term": "중심각",
+            "body": "중심 O 에서 호의 양 끝을 본 각 $\\angle\\mathrm{AOB}$ 예요."
+          },
+          {
+            "term": "원주각",
+            "body": "원 위의 점 P 에서 호의 양 끝을 본 각 $\\angle\\mathrm{APB}$ 예요. 한 호에 대한 원주각은 모두 같고, 중심각의 절반이에요."
+          },
+          {
+            "term": "현의 수직이등분선",
+            "body": "원의 중심에서 현에 내린 수선은 현을 이등분해요. 거꾸로 현의 수직이등분선은 원의 중심을 지나요."
+          },
+          {
+            "term": "접선의 길이",
+            "body": "원 밖의 점 P 에서 원에 그은 접선 위, P 에서 접점까지의 거리예요. 접선은 접점을 지나는 반지름과 수직이고, 두 접선의 길이는 같아요."
+          }
+        ],
+        "aside": "**왜 절반일까** · P 와 O 를 잇고 지름을 그으면 이등변삼각형 두 개가 생겨요. 이등변삼각형의 밑각을 $a$ 라 하면 바깥쪽 중심각은 $2a$ 가 돼요. 원주각 쪽은 $a$ 뿐이라 늘 절반이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "cyclic",
+        "chip": "두 번째 해 보기",
+        "title": "P 가 아래쪽 호로\n넘어가면",
+        "lead": "Q 는 위쪽 호에, P 는 아래쪽 호에 있어요. 네 점 A, P, B, Q 는 원에 내접하는 사각형을 이뤄요. P 를 아래쪽 호에서 끌며 마주 보는 각끼리 더해 보세요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 10
+            },
+            "points": [
+              {
+                "id": "O",
+                "x": 5,
+                "y": 5
+              },
+              {
+                "id": "A",
+                "deg": 210,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "B",
+                "deg": 330,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "Q",
+                "deg": 90,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              },
+              {
+                "id": "P",
+                "deg": 270,
+                "drag": true,
+                "on": {
+                  "circle": [
+                    "O",
+                    5
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "P",
+                "B",
+                "Q"
+              ]
+            ],
+            "circles": [
+              {
+                "c": "O",
+                "r": 5
+              }
+            ],
+            "measures": [
+              {
+                "angle": [
+                  "A",
+                  "Q",
+                  "B"
+                ]
+              },
+              {
+                "angle": [
+                  "A",
+                  "P",
+                  "B"
+                ]
+              },
+              {
+                "angle": [
+                  "Q",
+                  "A",
+                  "P"
+                ]
+              },
+              {
+                "angle": [
+                  "P",
+                  "B",
+                  "Q"
+                ]
+              }
+            ],
+            "digits": 0,
+            "note": "P 는 A 와 B 사이 아래쪽 호에서 움직여 보세요."
+          }
+        },
+        "after": "아래쪽 호의 원주각은 {{far}}°, 위쪽은 {{ins}}° 로 합이 180° 예요. 두 원주각의 중심각을 합하면 원 한 바퀴 360° 라서 그래요. ==원에 내접하는 사각형의 마주 보는 두 각의 합은 180°== 예요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 중심각이 $140^\\circ$ 인 호에 대한 원주각을 구하고 있어요. 오른쪽은 원주각이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "140*2",
+                "bad": true
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "70"
+              }
+            ],
+            "fix": {
+              "sym": "140/2",
+              "body": "원주각은 중심각의 **절반**이에요. 두 배를 하면 중심각을 원주각에서 구할 때의 계산이에요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 원에 내접하는 사각형 ABCD 에서 $\\angle\\mathrm{A}=70^\\circ$ 일 때 $\\angle\\mathrm{C}$ 를 구하고 있어요. 왼쪽은 $\\angle\\mathrm{C}$ 의 크기예요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "110"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "70",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "180-70",
+              "body": "마주 보는 각이 같은 건 평행사변형이에요. 원에 내접하는 사각형은 마주 보는 각의 **합이 180°** 예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "angle",
+            "q": "원 O 에서 호 AB 에 대한 중심각이 $140^\\circ$ 예요. 원 위의 점 P 가 호 AB 의 반대편에 있을 때 $\\angle\\mathrm{APB}$ 는 몇 도일까요?",
+            "hint": "원주각은 중심각의 절반이에요.",
+            "placeholder": "°",
+            "steps": [
+              {
+                "title": "절반",
+                "body": "$$140^\\circ\\div2={{answer}}^\\circ$$"
+              }
+            ],
+            "answer": "70",
+            "answerType": "int",
+            "check": "140*Rational(1, 2)"
+          },
+          {
+            "id": "chord",
+            "q": "반지름이 $13$ cm 인 둥근 피자 위에 칼로 곧게 한 번 그었어요. 그은 자리가 중심에서 $5$ cm 떨어져 있다면 칼자국(현)의 길이는 몇 cm 일까요?",
+            "hint": "중심에서 현에 내린 수선은 현을 반으로 나눠요.",
+            "placeholder": "cm",
+            "steps": [
+              {
+                "title": "직각삼각형",
+                "body": "반지름 $13$ 이 빗변, 거리 $5$ 와 현의 절반이 두 변이에요."
+              },
+              {
+                "title": "현의 절반",
+                "body": "$$13^2-5^2=144\\text{ 이므로 절반}=12$$"
+              },
+              {
+                "title": "두 배",
+                "body": "$$12\\times2={{answer}}$$"
+              }
+            ],
+            "answer": "24",
+            "answerType": "int",
+            "check": "2*sqrt(13**2-5**2)"
+          },
+          {
+            "id": "tangent",
+            "q": "반지름이 $6$ m 인 원형 화단의 중심에서 $10$ m 떨어진 곳에 서 있어요. 이곳에서 화단 가장자리에 닿도록 똑바로 걸어가는 접선의 길이는 몇 m 일까요?",
+            "hint": "접선과 접점을 지나는 반지름은 수직이에요.",
+            "placeholder": "m",
+            "steps": [
+              {
+                "title": "직각삼각형",
+                "body": "중심까지 거리 $10$ 이 빗변, 반지름 $6$ 과 접선이 두 변이에요."
+              },
+              {
+                "title": "피타고라스 정리",
+                "body": "$$10^2-6^2=64\\text{ 이므로 접선}={{answer}}$$"
+              }
+            ],
+            "answer": "8",
+            "answerType": "int",
+            "check": "sqrt(10**2-6**2)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "한 호에 대한 **원주각**은 모두 같고, **중심각의 절반**이에요.",
+          "지름에 대한 원주각은 $90^\\circ$ 예요.",
+          "원에 내접하는 사각형의 마주 보는 두 각의 합은 $180^\\circ$ 예요.",
+          "중심에서 현에 내린 수선은 현을 이등분하고, 접선은 반지름과 수직이에요. 둘 다 직각삼각형으로 길이를 구해요."
+        ],
+        "done": "원의 성질 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$(\\text{원주각})=\\frac12\\times(\\text{중심각})$",
+    "$(\\text{지름에 대한 원주각})=90^\\circ$",
+    "$\\angle\\mathrm{A}+\\angle\\mathrm{C}=180^\\circ\\quad(\\text{원에 내접하는 사각형})$",
+    "$\\left(\\frac{\\text{현}}{2}\\right)^2+d^2=r^2$",
+    "$(\\text{접선의 길이})^2+r^2=\\overline{\\mathrm{OP}}^2$"
+  ],
+  "generators": [
+    "cprop-inscribed",
+    "cprop-diameter",
+    "cprop-cyclic",
+    "cprop-chord",
+    "cprop-tangent"
+  ],
+  "problems": [
+    {
+      "q": "원 O 에서 호 AB 에 대한 원주각 $\\angle\\mathrm{APB}$ 의 크기가 $73^\\circ$ 예요. 호 AB 에 대한 중심각 $\\angle\\mathrm{AOB}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "146",
+      "answerTex": "$146^\\circ$",
+      "answerType": "int",
+      "check": "2*73",
+      "concepts": [
+        "한 호에 대한 원주각의 크기는 그 호에 대한 중심각의 크기의 절반이에요."
+      ],
+      "steps": [
+        {
+          "title": "같은 호 확인",
+          "body": "두 각이 모두 호 AB 에 대한 각이에요."
+        },
+        {
+          "title": "두 배",
+          "body": "$$73^\\circ\\times2=146^\\circ$$"
+        }
+      ],
+      "tip": "중심각은 원주각의 두 배예요. 중심에서 보면 같은 호가 더 크게 벌어져 보여요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "cprop-inscribed",
+      "seed": 1000
+    },
+    {
+      "q": "선분 AB 가 원 O 의 지름이고 점 C 는 원 위의 점이에요. $\\angle\\mathrm{CAB}=23^\\circ$ 일 때 $\\angle\\mathrm{ABC}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "67",
+      "answerTex": "$67^\\circ$",
+      "answerType": "int",
+      "check": "180 - 90 - 23",
+      "concepts": [
+        "지름에 대한 원주각은 $90^\\circ$ 예요. 중심각이 $180^\\circ$ 이고 그 절반이니까요."
+      ],
+      "steps": [
+        {
+          "title": "직각 찾기",
+          "body": "지름 AB 에 대한 원주각이라 $\\angle\\mathrm{ACB}=90^\\circ$ 예요."
+        },
+        {
+          "title": "삼각형 내각의 합",
+          "body": "$$180^\\circ-90^\\circ-23^\\circ=67^\\circ$$"
+        }
+      ],
+      "tip": "지름이 보이면 그 맞은편 꼭짓점에 직각을 먼저 표시해요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "cprop-diameter",
+      "seed": 1001
+    },
+    {
+      "q": "사각형 ABCD 가 원에 내접해요. $\\angle\\mathrm{A}=87^\\circ$ 이고, 변 BC 의 연장선 위에 점 E 를 잡았어요. 외각 $\\angle\\mathrm{DCE}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "87",
+      "answerTex": "$87^\\circ$",
+      "answerType": "int",
+      "check": "180 - (180 - 87)",
+      "concepts": [
+        "원에 내접하는 사각형에서 마주 보는 두 각의 크기의 합은 $180^\\circ$ 예요.",
+        "그래서 한 외각의 크기는 그와 마주 보는 내각의 크기와 같아요."
+      ],
+      "steps": [
+        {
+          "title": "마주 보는 각",
+          "body": "$$\\angle\\mathrm{BCD}=180^\\circ-87^\\circ=93^\\circ$$"
+        },
+        {
+          "title": "외각",
+          "body": "$$\\angle\\mathrm{DCE}=180^\\circ-93^\\circ=87^\\circ$$"
+        }
+      ],
+      "tip": "내접사각형의 외각은 마주 보는 내각과 같아요. 두 번 빼면 처음 각으로 돌아와요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "cprop-cyclic",
+      "seed": 1002
+    },
+    {
+      "q": "반지름이 $13$ cm 인 원 O 에 길이가 $10$ cm 인 현 AB 가 있어요. 원의 중심 O 에서 현 AB 까지의 거리는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$ cm",
+      "answerType": "int",
+      "check": "sqrt(13**2 - (10*Rational(1, 2))**2)",
+      "concepts": [
+        "원의 중심에서 현에 내린 수선은 그 현을 이등분해요.",
+        "반지름, 중심까지의 거리, 현의 절반이 직각삼각형을 이뤄요."
+      ],
+      "steps": [
+        {
+          "title": "현의 절반",
+          "body": "$$10\\div2=5$$"
+        },
+        {
+          "title": "피타고라스 정리",
+          "body": "$$13^2-5^2=144\\text{ 이므로 거리}=12$$"
+        }
+      ],
+      "tip": "현 전체 길이를 그대로 넣으면 빗변보다 긴 변이 생겨 계산이 안 맞아요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "cprop-chord",
+      "seed": 1003
+    },
+    {
+      "q": "원 밖의 점 P 에서 반지름이 $3$ cm 인 원 O 에 그은 접선의 길이가 $4$ cm 예요. 점 P 에서 원의 중심 O 까지의 거리는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "5",
+      "answerTex": "$5$ cm",
+      "answerType": "int",
+      "check": "sqrt(3**2 + 4**2)",
+      "concepts": [
+        "원의 접선은 접점을 지나는 반지름과 수직이에요.",
+        "그래서 중심, 접점, 원 밖의 점이 직각삼각형을 이뤄요."
+      ],
+      "steps": [
+        {
+          "title": "직각 찾기",
+          "body": "반지름과 접선이 접점에서 직각을 이뤄요."
+        },
+        {
+          "title": "피타고라스 정리",
+          "body": "$$3^2+4^2=25\\text{ 이므로 }\\overline{\\mathrm{OP}}=5$$"
+        }
+      ],
+      "tip": "구하는 OP 가 빗변이라 이번에는 더해요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "cprop-tangent",
+      "seed": 1004
+    },
+    {
+      "q": "원 O 에서 호 AB 에 대한 중심각 $\\angle\\mathrm{AOB}$ 의 크기가 $120^\\circ$ 예요. 호 AB 에 대한 원주각 $\\angle\\mathrm{APB}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "60",
+      "answerTex": "$60^\\circ$",
+      "answerType": "int",
+      "check": "120*Rational(1, 2)",
+      "concepts": [
+        "한 호에 대한 원주각의 크기는 그 호에 대한 중심각의 크기의 절반이에요."
+      ],
+      "steps": [
+        {
+          "title": "같은 호 확인",
+          "body": "두 각이 모두 호 AB 에 대한 각이에요."
+        },
+        {
+          "title": "절반",
+          "body": "$$120^\\circ\\div2=60^\\circ$$"
+        }
+      ],
+      "tip": "원주각이 중심각보다 커지는 일은 없어요. 답이 더 크면 곱하고 나누는 걸 바꿨는지 봐요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "cprop-inscribed",
+      "seed": 1005
+    },
+    {
+      "q": "선분 AB 가 원 O 의 지름이고 점 C 는 원 위의 점이에요. $\\angle\\mathrm{CAB}=36^\\circ$ 일 때 $\\angle\\mathrm{ABC}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "54",
+      "answerTex": "$54^\\circ$",
+      "answerType": "int",
+      "check": "180 - 90 - 36",
+      "concepts": [
+        "지름에 대한 원주각은 $90^\\circ$ 예요. 중심각이 $180^\\circ$ 이고 그 절반이니까요."
+      ],
+      "steps": [
+        {
+          "title": "직각 찾기",
+          "body": "지름 AB 에 대한 원주각이라 $\\angle\\mathrm{ACB}=90^\\circ$ 예요."
+        },
+        {
+          "title": "삼각형 내각의 합",
+          "body": "$$180^\\circ-90^\\circ-36^\\circ=54^\\circ$$"
+        }
+      ],
+      "tip": "지름이 보이면 그 맞은편 꼭짓점에 직각을 먼저 표시해요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "cprop-diameter",
+      "seed": 1006
+    },
+    {
+      "q": "사각형 ABCD 가 원에 내접해요. $\\angle\\mathrm{A}=121^\\circ$ 일 때 $\\angle\\mathrm{C}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "59",
+      "answerTex": "$59^\\circ$",
+      "answerType": "int",
+      "check": "180 - 121",
+      "concepts": [
+        "원에 내접하는 사각형에서 마주 보는 두 각의 크기의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "마주 보는 각",
+          "body": "$\\angle\\mathrm{A}$ 와 $\\angle\\mathrm{C}$ 는 마주 보는 각이에요."
+        },
+        {
+          "title": "180° 에서 빼기",
+          "body": "$$180^\\circ-121^\\circ=59^\\circ$$"
+        }
+      ],
+      "tip": "평행사변형처럼 마주 보는 각이 같다고 착각하기 쉬워요. 원에 내접하면 합이 180° 예요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "cprop-cyclic",
+      "seed": 1007
+    },
+    {
+      "q": "반지름이 $26$ cm 인 원 O 의 중심에서 현 AB 까지의 거리가 $10$ cm 예요. 현 AB 의 길이는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "48",
+      "answerTex": "$48$ cm",
+      "answerType": "int",
+      "check": "2*sqrt(26**2 - 10**2)",
+      "concepts": [
+        "원의 중심에서 현에 내린 수선은 그 현을 이등분해요.",
+        "반지름, 중심까지의 거리, 현의 절반이 직각삼각형을 이뤄요."
+      ],
+      "steps": [
+        {
+          "title": "현의 절반",
+          "body": "$$26^2-10^2=576\\text{ 이므로 절반}=24$$"
+        },
+        {
+          "title": "두 배",
+          "body": "$$24\\times2=48$$"
+        }
+      ],
+      "tip": "피타고라스 정리로 구한 값은 현의 절반이에요. 두 배 하는 걸 잊지 마세요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "cprop-chord",
+      "seed": 1008
+    },
+    {
+      "q": "원 밖의 점 P 에서 반지름이 $24$ cm 인 원 O 에 접선을 그어 접점을 T 라 했어요. $\\overline{\\mathrm{OP}}=26$ cm 일 때 접선의 길이 $\\overline{\\mathrm{PT}}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "10",
+      "answerTex": "$10$ cm",
+      "answerType": "int",
+      "check": "sqrt(26**2 - 24**2)",
+      "concepts": [
+        "원의 접선은 접점을 지나는 반지름과 수직이에요.",
+        "그래서 중심, 접점, 원 밖의 점이 직각삼각형을 이뤄요."
+      ],
+      "steps": [
+        {
+          "title": "직각 찾기",
+          "body": "$\\angle\\mathrm{OTP}=90^\\circ$ 이고 빗변은 $\\overline{\\mathrm{OP}}$ 예요."
+        },
+        {
+          "title": "피타고라스 정리",
+          "body": "$$26^2-24^2=100\\text{ 이므로 }\\overline{\\mathrm{PT}}=10$$"
+        }
+      ],
+      "tip": "빗변은 직각과 마주 보는 OP 예요. 반지름과 접선이 직각을 껴요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "cprop-tangent",
+      "seed": 1009
+    },
+    {
+      "q": "원 O 에서 호 AB 에 대한 중심각 $\\angle\\mathrm{AOB}$ 의 크기가 $134^\\circ$ 예요. 호 AB 에 대한 원주각 $\\angle\\mathrm{APB}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "67",
+      "answerTex": "$67^\\circ$",
+      "answerType": "int",
+      "check": "134*Rational(1, 2)",
+      "concepts": [
+        "한 호에 대한 원주각의 크기는 그 호에 대한 중심각의 크기의 절반이에요."
+      ],
+      "steps": [
+        {
+          "title": "같은 호 확인",
+          "body": "두 각이 모두 호 AB 에 대한 각이에요."
+        },
+        {
+          "title": "절반",
+          "body": "$$134^\\circ\\div2=67^\\circ$$"
+        }
+      ],
+      "tip": "원주각이 중심각보다 커지는 일은 없어요. 답이 더 크면 곱하고 나누는 걸 바꿨는지 봐요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "cprop-inscribed",
+      "seed": 1010
+    },
+    {
+      "q": "선분 AB 가 원 O 의 지름이고 점 C 는 원 위의 점이에요. $\\angle\\mathrm{CAB}=75^\\circ$ 일 때 $\\angle\\mathrm{ABC}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "15",
+      "answerTex": "$15^\\circ$",
+      "answerType": "int",
+      "check": "180 - 90 - 75",
+      "concepts": [
+        "지름에 대한 원주각은 $90^\\circ$ 예요. 중심각이 $180^\\circ$ 이고 그 절반이니까요."
+      ],
+      "steps": [
+        {
+          "title": "직각 찾기",
+          "body": "지름 AB 에 대한 원주각이라 $\\angle\\mathrm{ACB}=90^\\circ$ 예요."
+        },
+        {
+          "title": "삼각형 내각의 합",
+          "body": "$$180^\\circ-90^\\circ-75^\\circ=15^\\circ$$"
+        }
+      ],
+      "tip": "지름이 보이면 그 맞은편 꼭짓점에 직각을 먼저 표시해요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "cprop-diameter",
+      "seed": 1011
+    },
+    {
+      "q": "사각형 ABCD 가 원에 내접해요. $\\angle\\mathrm{A}=77^\\circ$ 이고, 변 BC 의 연장선 위에 점 E 를 잡았어요. 외각 $\\angle\\mathrm{DCE}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "77",
+      "answerTex": "$77^\\circ$",
+      "answerType": "int",
+      "check": "180 - (180 - 77)",
+      "concepts": [
+        "원에 내접하는 사각형에서 마주 보는 두 각의 크기의 합은 $180^\\circ$ 예요.",
+        "그래서 한 외각의 크기는 그와 마주 보는 내각의 크기와 같아요."
+      ],
+      "steps": [
+        {
+          "title": "마주 보는 각",
+          "body": "$$\\angle\\mathrm{BCD}=180^\\circ-77^\\circ=103^\\circ$$"
+        },
+        {
+          "title": "외각",
+          "body": "$$\\angle\\mathrm{DCE}=180^\\circ-103^\\circ=77^\\circ$$"
+        }
+      ],
+      "tip": "내접사각형의 외각은 마주 보는 내각과 같아요. 두 번 빼면 처음 각으로 돌아와요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "cprop-cyclic",
+      "seed": 1012
+    },
+    {
+      "q": "반지름이 $5$ cm 인 원 O 에 길이가 $6$ cm 인 현 AB 가 있어요. 원의 중심 O 에서 현 AB 까지의 거리는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "4",
+      "answerTex": "$4$ cm",
+      "answerType": "int",
+      "check": "sqrt(5**2 - (6*Rational(1, 2))**2)",
+      "concepts": [
+        "원의 중심에서 현에 내린 수선은 그 현을 이등분해요.",
+        "반지름, 중심까지의 거리, 현의 절반이 직각삼각형을 이뤄요."
+      ],
+      "steps": [
+        {
+          "title": "현의 절반",
+          "body": "$$6\\div2=3$$"
+        },
+        {
+          "title": "피타고라스 정리",
+          "body": "$$5^2-3^2=16\\text{ 이므로 거리}=4$$"
+        }
+      ],
+      "tip": "현 전체 길이를 그대로 넣으면 빗변보다 긴 변이 생겨 계산이 안 맞아요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "cprop-chord",
+      "seed": 1013
+    },
+    {
+      "q": "원 밖의 점 P 에서 반지름이 $12$ cm 인 원 O 에 그은 접선의 길이가 $9$ cm 예요. 점 P 에서 원의 중심 O 까지의 거리는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "15",
+      "answerTex": "$15$ cm",
+      "answerType": "int",
+      "check": "sqrt(12**2 + 9**2)",
+      "concepts": [
+        "원의 접선은 접점을 지나는 반지름과 수직이에요.",
+        "그래서 중심, 접점, 원 밖의 점이 직각삼각형을 이뤄요."
+      ],
+      "steps": [
+        {
+          "title": "직각 찾기",
+          "body": "반지름과 접선이 접점에서 직각을 이뤄요."
+        },
+        {
+          "title": "피타고라스 정리",
+          "body": "$$12^2+9^2=225\\text{ 이므로 }\\overline{\\mathrm{OP}}=15$$"
+        }
+      ],
+      "tip": "구하는 OP 가 빗변이라 이번에는 더해요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "cprop-tangent",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "원 위의 네 점 A, B, C, D 에서 C 와 D 는 호 AB 의 같은 쪽에 있어요. $\\angle\\mathrm{ACB}=35^\\circ$ 일 때 $\\angle\\mathrm{ADB}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "35",
+      "answerTex": "$35^\\circ$",
+      "answerType": "int",
+      "check": "(2*35)*Rational(1, 2)",
+      "concepts": [
+        "한 호에 대한 원주각의 크기는 모두 같아요."
+      ],
+      "steps": [
+        {
+          "title": "중심각",
+          "body": "호 AB 에 대한 중심각은 $35^\\circ\\times2=70^\\circ$ 예요."
+        },
+        {
+          "title": "다른 원주각",
+          "body": "$\\angle\\mathrm{ADB}$ 도 같은 호 AB 에 대한 원주각이라 $70^\\circ\\div2=35^\\circ$ 예요."
+        }
+      ],
+      "tip": "보는 점이 바뀌어도 같은 호를 보면 원주각은 같아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "원 O 위의 세 점 A, B, P 에서 $\\angle\\mathrm{APB}=50^\\circ$ 예요(P 는 큰 쪽 호 위). 삼각형 OAB 에서 $\\angle\\mathrm{OAB}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "40",
+      "answerTex": "$40^\\circ$",
+      "answerType": "int",
+      "check": "Rational(180-2*50, 2)",
+      "concepts": [
+        "중심각은 원주각의 두 배예요.",
+        "$\\overline{\\mathrm{OA}}=\\overline{\\mathrm{OB}}$ (반지름)라 삼각형 OAB 는 이등변삼각형이에요."
+      ],
+      "steps": [
+        {
+          "title": "중심각",
+          "body": "$$\\angle\\mathrm{AOB}=50^\\circ\\times2=100^\\circ$$"
+        },
+        {
+          "title": "밑각",
+          "body": "$$(180^\\circ-100^\\circ)\\div2=40^\\circ$$"
+        }
+      ],
+      "tip": "반지름 두 개가 보이면 이등변삼각형이에요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "선분 AB 는 원 O 의 지름이고 C 는 원 위의 점이에요. $\\overline{\\mathrm{AB}}=10$ cm, $\\overline{\\mathrm{AC}}=6$ cm 일 때 $\\overline{\\mathrm{BC}}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "8",
+      "answerTex": "$8$ cm",
+      "answerType": "int",
+      "check": "sqrt(10**2-6**2)",
+      "concepts": [
+        "지름에 대한 원주각은 $90^\\circ$ 라서 $\\angle\\mathrm{ACB}=90^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "직각 찾기",
+          "body": "지름 AB 가 빗변인 직각삼각형이에요."
+        },
+        {
+          "title": "피타고라스 정리",
+          "body": "$$10^2-6^2=64\\text{ 이므로 }\\overline{\\mathrm{BC}}=8$$"
+        }
+      ],
+      "tip": "지름이 보이면 직각삼각형을 찾아요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "원에 내접하는 사각형 ABCD 에서 $\\angle\\mathrm{A}=80^\\circ$, $\\angle\\mathrm{B}=95^\\circ$ 예요. $\\angle\\mathrm{C}+\\angle\\mathrm{D}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "185",
+      "answerTex": "$185^\\circ$",
+      "answerType": "int",
+      "check": "(180-80)+(180-95)",
+      "concepts": [
+        "원에 내접하는 사각형의 마주 보는 두 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "∠C",
+          "body": "$$180^\\circ-80^\\circ=100^\\circ$$"
+        },
+        {
+          "title": "∠D",
+          "body": "$$180^\\circ-95^\\circ=85^\\circ$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$100^\\circ+85^\\circ=185^\\circ$$"
+        }
+      ],
+      "tip": "검산: 사각형 네 각의 합 $80+95+185=360$ 이 맞아요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "반지름이 $10$ cm 인 원 O 에 길이가 $16$ cm 인 현 AB 가 있어요. 중심 O 에서 현 AB 까지의 거리는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "6",
+      "answerTex": "$6$ cm",
+      "answerType": "int",
+      "check": "sqrt(10**2-(16*Rational(1, 2))**2)",
+      "concepts": [
+        "중심에서 현에 내린 수선은 현을 이등분해요."
+      ],
+      "steps": [
+        {
+          "title": "현의 절반",
+          "body": "$$16\\div2=8$$"
+        },
+        {
+          "title": "피타고라스 정리",
+          "body": "$$10^2-8^2=36\\text{ 이므로 거리}=6$$"
+        }
+      ],
+      "tip": "현 전체 16 이 아니라 절반 8 을 써요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "원 밖의 점 P 에서 원 O 에 두 접선 PA, PB 를 그었어요(A, B 는 접점). $\\angle\\mathrm{APB}=50^\\circ$ 일 때 $\\angle\\mathrm{AOB}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "130",
+      "answerTex": "$130^\\circ$",
+      "answerType": "int",
+      "check": "360-90-90-50",
+      "concepts": [
+        "접선은 접점을 지나는 반지름과 수직이라 $\\angle\\mathrm{OAP}=\\angle\\mathrm{OBP}=90^\\circ$ 예요.",
+        "사각형의 네 각의 합은 $360^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "직각 두 개",
+          "body": "사각형 OAPB 에서 A, B 의 각이 $90^\\circ$ 예요."
+        },
+        {
+          "title": "남은 각",
+          "body": "$$360^\\circ-90^\\circ-90^\\circ-50^\\circ=130^\\circ$$"
+        }
+      ],
+      "tip": "$\\angle\\mathrm{P}+\\angle\\mathrm{O}=180^\\circ$ 로 기억해도 돼요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "원 밖의 점 P 에서 원 O 에 그은 두 접선의 접점을 A, B 라 했어요. $\\overline{\\mathrm{PA}}=9$ cm 이고, 호 위의 한 점에서 원에 접하는 직선이 $\\overline{\\mathrm{PA}}$, $\\overline{\\mathrm{PB}}$ 와 만나는 점을 C, D 라 할 때 삼각형 PCD 의 둘레는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "18",
+      "answerTex": "$18$ cm",
+      "answerType": "int",
+      "check": "2*9",
+      "concepts": [
+        "원 밖의 한 점에서 그은 두 접선의 길이는 같아요."
+      ],
+      "steps": [
+        {
+          "title": "접선 길이 옮기기",
+          "body": "CD 가 원에 닿는 점을 E 라 하면 $\\overline{\\mathrm{CE}}=\\overline{\\mathrm{CA}}$, $\\overline{\\mathrm{DE}}=\\overline{\\mathrm{DB}}$ 예요."
+        },
+        {
+          "title": "둘레",
+          "body": "둘레 $=\\overline{\\mathrm{PA}}+\\overline{\\mathrm{PB}}$ 이고 $\\overline{\\mathrm{PB}}=\\overline{\\mathrm{PA}}$ 예요."
+        },
+        {
+          "title": "계산",
+          "body": "$$9+9=18$$"
+        }
+      ],
+      "tip": "CD 의 길이를 몰라도 접선 길이를 옮기면 둘레가 나와요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "한 원에서 호 AB 에 대한 원주각이 $20^\\circ$, 호 CD 에 대한 원주각이 $60^\\circ$ 예요. 호 AB 의 길이가 $4$ cm 이면 호 CD 의 길이는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$ cm",
+      "answerType": "int",
+      "check": "4*Rational(60, 20)",
+      "concepts": [
+        "한 원에서 호의 길이는 그 호에 대한 원주각의 크기에 정비례해요."
+      ],
+      "steps": [
+        {
+          "title": "각의 배수",
+          "body": "$$60\\div20=3$$"
+        },
+        {
+          "title": "호의 길이",
+          "body": "$$4\\times3=12$$"
+        }
+      ],
+      "tip": "정비례하는 건 호의 길이예요. 현의 길이는 정비례하지 않아요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "원 O 에 내접하는 삼각형 ABC 에서 $\\angle\\mathrm{A}=40^\\circ$, $\\angle\\mathrm{B}=75^\\circ$ 예요. 중심각 $\\angle\\mathrm{AOB}$ 의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "130",
+      "answerTex": "$130^\\circ$",
+      "answerType": "int",
+      "check": "2*(180-40-75)",
+      "concepts": [
+        "$\\angle\\mathrm{AOB}$ 는 호 AB 에 대한 중심각, $\\angle\\mathrm{C}$ 는 같은 호에 대한 원주각이에요."
+      ],
+      "steps": [
+        {
+          "title": "∠C",
+          "body": "$$180^\\circ-40^\\circ-75^\\circ=65^\\circ$$"
+        },
+        {
+          "title": "중심각",
+          "body": "$$65^\\circ\\times2=130^\\circ$$"
+        }
+      ],
+      "tip": "호 AB 와 마주 보는 꼭짓점 C 의 각이 원주각이에요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "원 밖의 점 P 에서 반지름이 $5$ cm 인 원 O 에 그은 접선의 길이가 $12$ cm 예요. 점 P 에서 원 위의 점까지 가장 가까운 거리는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "8",
+      "answerTex": "$8$ cm",
+      "answerType": "int",
+      "check": "sqrt(5**2+12**2)-5",
+      "concepts": [
+        "접선은 반지름과 수직이에요.",
+        "P 에서 원까지 가장 가까운 점은 선분 OP 가 원과 만나는 점이에요."
+      ],
+      "steps": [
+        {
+          "title": "OP",
+          "body": "$$5^2+12^2=169\\text{ 이므로 }\\overline{\\mathrm{OP}}=13$$"
+        },
+        {
+          "title": "반지름 빼기",
+          "body": "$$13-5=8$$"
+        }
+      ],
+      "tip": "접선의 길이 12 가 가장 가까운 거리는 아니에요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "선분 AB 가 지름인 반원 모양 텃밭이 있어요. $\\overline{\\mathrm{AB}}=10$ m 이고, 호 위의 점 C 에 대하여 $\\overline{\\mathrm{AC}}=6$ m 예요. 삼각형 ABC 모양 구역의 넓이는 몇 m² 인가요?",
+      "choices": null,
+      "answer": "24",
+      "answerTex": "$24$ m²",
+      "answerType": "int",
+      "check": "6*sqrt(10**2-6**2)*Rational(1, 2)",
+      "concepts": [
+        "지름에 대한 원주각은 $90^\\circ$ 예요.",
+        "직각삼각형의 넓이 = 직각을 낀 두 변의 곱 ÷ 2"
+      ],
+      "steps": [
+        {
+          "title": "직각",
+          "body": "$\\angle\\mathrm{ACB}=90^\\circ$ 예요."
+        },
+        {
+          "title": "BC",
+          "body": "$$10^2-6^2=64\\text{ 이므로 }\\overline{\\mathrm{BC}}=8$$"
+        },
+        {
+          "title": "넓이",
+          "body": "$$6\\times8\\div2=24$$"
+        }
+      ],
+      "tip": "지름 10 을 밑변으로 쓰려면 높이가 필요해요. 직각을 낀 두 변을 쓰는 게 빨라요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "원에 내접하는 사각형 ABCD 에서 $\\angle\\mathrm{A}=(x+20)^\\circ$, $\\angle\\mathrm{C}=(2x+10)^\\circ$ 예요. $x$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "50",
+      "answerTex": "$x=50$",
+      "answerType": "int",
+      "check": "solve(Eq((x+20)+(2*x+10), 180), x)[0]",
+      "concepts": [
+        "원에 내접하는 사각형의 마주 보는 두 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$(x+20)+(2x+10)=180$$"
+        },
+        {
+          "title": "정리",
+          "body": "$$3x+30=180,\\quad 3x=150$$"
+        },
+        {
+          "title": "x",
+          "body": "$$x=50$$"
+        }
+      ],
+      "tip": "검산: $\\angle\\mathrm{A}=70^\\circ$, $\\angle\\mathrm{C}=110^\\circ$ 로 합이 180° 예요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "직각을 낀 두 변이 $6$ cm, $8$ cm 인 직각삼각형의 세 꼭짓점을 모두 지나는 원을 그렸어요. 이 원의 반지름은 몇 cm 인가요?",
+      "choices": null,
+      "answer": "5",
+      "answerTex": "$5$ cm",
+      "answerType": "int",
+      "check": "sqrt(6**2+8**2)*Rational(1, 2)",
+      "concepts": [
+        "원주각이 $90^\\circ$ 이면 그 호의 현은 지름이에요. 그래서 직각삼각형의 빗변이 원의 지름이에요."
+      ],
+      "steps": [
+        {
+          "title": "빗변 = 지름",
+          "body": "$$6^2+8^2=100\\text{ 이므로 빗변}=10$$"
+        },
+        {
+          "title": "반지름",
+          "body": "$$10\\div2=5$$"
+        }
+      ],
+      "tip": "지름에 대한 원주각이 90° 라는 사실을 거꾸로 쓴 문제예요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "삼각형 ABC 의 세 변에 모두 접하는 원(내접원)이 있어요. $\\overline{\\mathrm{AB}}=9$ cm, $\\overline{\\mathrm{BC}}=8$ cm, $\\overline{\\mathrm{CA}}=7$ cm 일 때, 꼭짓점 A 에서 변 AB 위의 접점까지의 거리는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "4",
+      "answerTex": "$4$ cm",
+      "answerType": "int",
+      "check": "Rational(9+7-8, 2)",
+      "concepts": [
+        "한 꼭짓점에서 내접원에 그은 두 접선의 길이는 같아요."
+      ],
+      "steps": [
+        {
+          "title": "접선 길이 이름 붙이기",
+          "body": "A, B, C 에서의 접선 길이를 $x$, $y$, $z$ 라 하면 $x+y=9$, $y+z=8$, $z+x=7$ 이에요."
+        },
+        {
+          "title": "세 식 더하기",
+          "body": "$$2(x+y+z)=24,\\quad x+y+z=12$$"
+        },
+        {
+          "title": "x",
+          "body": "$$x=12-(y+z)=12-8=4$$"
+        }
+      ],
+      "tip": "A 와 마주 보는 변 BC 를 빼면 A 의 접선 길이가 남아요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "원 위의 다섯 점 A, B, C, D, E 가 원주를 다섯 등분해요. $\\angle\\mathrm{ACB}$ 의 크기는?",
+      "choices": [
+        "$18^\\circ$",
+        "$36^\\circ$",
+        "$54^\\circ$",
+        "$72^\\circ$",
+        "$108^\\circ$"
+      ],
+      "answer": "2",
+      "answerTex": "② $36^\\circ$",
+      "answerType": "choice",
+      "check": "360*Rational(1, 5)*Rational(1, 2)",
+      "choiceChecks": [
+        "18",
+        "36",
+        "54",
+        "72",
+        "108"
+      ],
+      "concepts": [
+        "다섯 등분한 호 하나의 중심각은 $360^\\circ\\div5$ 예요.",
+        "원주각은 중심각의 절반이에요."
+      ],
+      "steps": [
+        {
+          "title": "호 AB 의 중심각",
+          "body": "$$360^\\circ\\div5=72^\\circ$$"
+        },
+        {
+          "title": "원주각",
+          "body": "$$72^\\circ\\div2=36^\\circ$$"
+        }
+      ],
+      "tip": "④는 중심각, ⑤는 정오각형의 한 내각이에요."
+    }
+  ]
+}
