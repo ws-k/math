@@ -267,6 +267,8 @@ export function validateLesson(
             };
             oneOf(e.answerType, `${ia} answerType`, ['int', 'fraction'] as const);
             checkAnswerShape(ia, e, errors);
+            // 문제 글은 레슨에서 강조 표기(**)를 살려 그리므로 강조 짝도 검사한다
+            text(`${ia} 문제`, e.q);
             text(`${ia} hint`, optStr(e.hint, `${ia} hint`));
             optStr(e.placeholder, `${ia} placeholder`);
             items.push(answerItem(ref(id, String(ii + 1)), unitId, e));
