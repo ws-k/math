@@ -1,5 +1,7 @@
-// 단원·문제 화면 = 책. 펼친 책이면 왼쪽 교재 + 오른쪽 공책, 아니면 한 쪽씩.
-// 손가락 가로 쓸기로 쪽을 넘긴다(필기는 펜 전용이라 손가락 쓸기와 부딪히지 않는다).
+// 문제 화면 #/unit/<단원>/<문제>. 넓은 화면은 왼쪽 문제 카드 | 오른쪽 풀이 노트, 좁은 화면은 탭으로 하나씩.
+// 필기는 풀이 노트에만 한다 — 문제 글 위 필기는 화면 폭마다 글자 줄바꿈이 달라 글자와 어긋나서 없앴다.
+// 손가락 가로 쓸기로 이전·다음 문제(필기는 펜 전용이라 손가락 쓸기와 부딪히지 않는다).
+// (파일 이름은 예전 "책 화면"에서 이어 왔다)
 import { useMemo, useRef, useState } from 'react';
 import type { Unit } from '../content/types.ts';
 import { PALM_MS } from '../ink/surface.ts';
@@ -8,24 +10,16 @@ import type { CardState, Grade } from '../lib/srs.ts';
 import { Confirm } from './Confirm.tsx';
 import { type InkControl, InkPage } from './InkPage.tsx';
 import type { LayoutMode } from './layout.ts';
-import { ConceptPage, ExamplesPage, ProblemPage } from './Pages.tsx';
-import {
-  cardKey,
-  flip,
-  inkKey,
-  isGenPid,
-  pageNumber,
-  problemIndex,
-  resolveProblem,
-} from './pages.ts';
+import { ProblemCard } from './Pages.tsx';
+import { cardKey, isGenPid, noteKey, problemIndex, resolveProblem, step } from './pages.ts';
 import { type Route, routeHash, type Side } from './route.ts';
 import { classifySwipe } from './swipe.ts';
 import { Toolbar } from './Toolbar.tsx';
 import type { Cards } from './today.ts';
 
-export interface BookProps {
+export interface ProblemScreenProps {
   unit: Unit;
-  route: Extract<Route, { name: 'unit' }>;
+  route: Extract<Route, { name: 'unit' }> & { pid: string };
   mode: LayoutMode;
   cards: Cards;
   tool: Tool;
@@ -35,28 +29,26 @@ export interface BookProps {
   onGrade(key: string, r: Grade, before: CardState | undefined): void;
 }
 
-export function Book(p: BookProps) {
+export function ProblemScreen(p: ProblemScreenProps) {
   const { unit, route, mode } = p;
-  const problem = route.pid === null ? null : resolveProblem(unit, route.pid);
+  const pid = route.pid;
+  const problem = resolveProblem(unit, pid);
   const flipDir = useRef<1 | -1>(1);
-  const surfaces = useRef(new Map<string, InkSurface>());
-  const active = useRef<string | null>(null);
+  const surface = useRef<InkSurface | null>(null);
   const penAt = useRef(0);
 
-  // 쪽 컴포넌트가 이 객체를 효과 의존성으로 쓰므로, 매 렌더 새로 만들면 엔진이 다시 만들어진다.
+  // 노트 컴포넌트가 이 객체를 효과 의존성으로 쓰므로, 매 렌더 새로 만들면 엔진이 다시 만들어진다.
   const ctl = useMemo<InkControl>(
     () => ({
-      register: (k, s) => surfaces.current.set(k, s),
-      unregister: (k) => {
-        surfaces.current.delete(k);
-        // 펜이 닿은 채 쪽이 사라지면 penAt 이 무한대로 남아 쓸기가 영영 막힌다
-        if (active.current === k) {
-          active.current = null;
-          penAt.current = 0;
-        }
+      register: (_k, s) => {
+        surface.current = s;
       },
-      penActive: (k, a) => {
-        active.current = k;
+      unregister: () => {
+        surface.current = null;
+        // 펜이 닿은 채 노트가 사라지면 penAt 이 무한대로 남아 쓸기가 영영 막힌다
+        penAt.current = 0;
+      },
+      penActive: (_k, a) => {
         penAt.current = a ? Number.POSITIVE_INFINITY : performance.now();
       },
     }),
@@ -64,48 +56,28 @@ export function Book(p: BookProps) {
   );
 
   const go = (dir: 1 | -1) => {
-    const to = flip(unit, route.pid, route.side, dir, mode);
-    if (!to) return;
+    const to = step(unit, pid, dir);
+    if (to === null) return;
     flipDir.current = dir;
-    location.hash = routeHash({ name: 'unit', unitId: unit.id, ...to });
+    // 좁은 화면에서 노트를 보던 중이면 다음 문제도 노트 쪽으로(옛 ?side=note 주소와 같은 뜻)
+    location.hash = routeHash({ ...route, pid: to });
   };
   const goSide = (side: Side) => {
-    if (side === route.side) return;
-    flipDir.current = side === 'note' ? 1 : -1;
-    location.hash = routeHash({ ...route, side });
+    if (side !== route.side) location.hash = routeHash({ ...route, side });
   };
 
-  const spread = mode === 'spread';
-  // 실행 취소 등은 펼친 책이면 마지막으로 펜을 댄 쪽(아직 안 댔으면 공책 쪽)에,
-  // 한 쪽 보기면 보이는 쪽에 — 숨긴 반대쪽도 마운트돼 있어 "마지막 쪽"이 안 보이는 쪽일 수 있다.
-  const targetSide = (): Side => {
-    if (!spread) return route.side;
-    const a = active.current;
-    return a && a === inkKey(unit.id, route.pid, 'text') ? 'text' : 'note';
-  };
-  const target = () => surfaces.current.get(inkKey(unit.id, route.pid, targetSide()));
+  const split = mode === 'spread';
+  const [asking, setAsking] = useState(false);
 
-  // 전체 지우기는 되돌릴 수 있어도 한 번에 많이 사라져 놀라므로 먼저 묻는다
-  const [asking, setAsking] = useState<Side | null>(null);
-  const sideName = (side: Side) =>
-    route.pid === null
-      ? side === 'text'
-        ? '개념 쪽'
-        : '예제 쪽'
-      : side === 'text'
-        ? '교재 쪽'
-        : '공책 쪽';
-
-  // 손바닥 판정: 어느 쪽이든 펜이 닿아 있거나 막 뗐으면 손가락을 쓸기로 보지 않는다.
-  // penAt 은 쪽이 사라진 직후(엔진이 없어진 뒤)에도 잠깐 막기 위한 보조 기록이다.
+  // 손바닥 판정: 펜이 닿아 있거나 막 뗐으면 손가락을 쓸기로 보지 않는다.
   const palm = () =>
-    performance.now() - penAt.current < PALM_MS ||
-    [...surfaces.current.values()].some((s) => s.palmBlocked());
+    performance.now() - penAt.current < PALM_MS || !!surface.current?.palmBlocked();
 
   // 쓸기 판정: 손가락 하나일 때만. 캡처 단계에서 지켜보기만 하고 이벤트를 막지 않는다.
   const touch = useRef<{ id: number; x: number; y: number; t: number } | null>(null);
   const fingers = useRef(0);
   const onDown = (e: React.PointerEvent) => {
+    lastPointer.current = e.pointerType;
     if (e.pointerType !== 'touch') return;
     // 첫 손가락(isPrimary)에서 다시 센다. 바깥에서 떼어 up 을 못 받은 손가락이 쌓이지 않게.
     fingers.current = e.isPrimary ? 1 : fingers.current + 1;
@@ -126,13 +98,9 @@ export function Book(p: BookProps) {
     if (dir !== 0) go(dir);
   };
 
-  // 펜은 쓰기 전용 — 교재 버튼·도구 막대를 펜으로 눌러도 반응하지 않게 한다(설계 10장).
+  // 펜은 쓰기 전용 — 버튼·도구 막대를 펜으로 눌러도 반응하지 않게 한다(설계 10장).
   // Safari 는 click 에 pointerType 을 안 실어 줄 때가 있어 직전 pointerdown 의 종류도 본다.
   const lastPointer = useRef('');
-  const onAnyDown = (e: React.PointerEvent) => {
-    lastPointer.current = e.pointerType;
-    onDown(e);
-  };
   const onClickCapture = (e: React.MouseEvent) => {
     const t = (e.nativeEvent as Partial<PointerEvent>).pointerType || lastPointer.current;
     if (t === 'pen') {
@@ -141,85 +109,33 @@ export function Book(p: BookProps) {
     }
   };
 
-  const ink = (side: Side, grow: boolean) => ({
-    inkKey: inkKey(unit.id, route.pid, side),
-    grow,
-    tool: p.tool,
-    // 교재 쪽은 글자 위에 줄·모눈이 겹치면 읽기 어려워 배경은 공책 쪽에만 깐다.
-    background: side === 'note' ? p.background : ('none' as Background),
-    ctl,
-  });
-
-  const card: CardState | undefined = route.pid ? p.cards[cardKey(unit.id, route.pid)] : undefined;
+  const card: CardState | undefined = p.cards[cardKey(unit.id, pid)];
   const turn = `turn-${flipDir.current === 1 ? 'next' : 'prev'}`;
-  // 한 쪽 보기에서도 교재·공책을 둘 다 마운트하고 안 보이는 쪽만 숨긴다 — 탭을 오가도
-  // 입력한 답·펼친 풀이가 남는다. 넘김 효과는 숨김이 풀릴 때 다시 도는 CSS 애니메이션으로 낸다.
-  const shownAttr = (side: Side) =>
-    spread ? {} : { hidden: route.side !== side, className: turn };
-  const textPage = (
-    <Page n={pageNumber(unit, route.pid, 'text')} side="text" {...shownAttr('text')}>
-      <InkPage {...ink('text', false)} fit>
-        {route.pid === null ? (
-          <ConceptPage unit={unit} />
-        ) : problem ? (
-          <ProblemPage
-            key={problem.id}
-            unit={unit}
-            problem={problem}
-            index={problemIndex(unit, problem.id)}
-            card={card}
-            onGrade={
-              // 생성 문제는 매번 새로 만드는 연습이라 복습 카드에 넣지 않는다(필기만 저장)
-              isGenPid(problem.id)
-                ? undefined
-                : (r, before) => p.onGrade(cardKey(unit.id, problem.id), r, before)
-            }
-          />
-        ) : (
-          <p className="text">이 문제를 찾을 수 없습니다.</p>
-        )}
-      </InkPage>
-    </Page>
-  );
-  const notePage = (
-    <Page n={pageNumber(unit, route.pid, 'note')} side="note" {...shownAttr('note')}>
-      {route.pid === null ? (
-        // 단원 첫 펼침의 오른쪽 쪽은 예제·목차. 내용이 정해진 쪽이라 공책처럼 늘리지 않는다.
-        <InkPage {...ink('note', false)} fit>
-          <ExamplesPage unit={unit} cards={p.cards} />
-        </InkPage>
-      ) : (
-        <InkPage {...ink('note', true)} className="notebook" />
-      )}
-    </Page>
-  );
-
-  const pageKey = `${route.pid}`;
   const total = unit.problems.length;
-  const idx = route.pid === null ? -1 : problemIndex(unit, route.pid);
+  const idx = problemIndex(unit, pid);
+  // 좁은 화면에서도 문제 카드·노트를 둘 다 그려 두고 안 보이는 쪽만 숨긴다 — 탭을 오가도
+  // 입력한 답·펼친 풀이·필기 엔진이 남는다.
+  const hide = (side: Side) => !split && route.side !== side;
 
   return (
-    <div className="book-screen" onClickCapture={onClickCapture}>
-      <header className="book-head">
-        <a className="btn" href="#/map" aria-label="지도로">
-          ‹ 지도
-        </a>
+    <div className="pscreen" onClickCapture={onClickCapture}>
+      <header className="pbar">
         <a
-          className="crumb"
+          className="back"
           href={routeHash({ name: 'unit', unitId: unit.id, pid: null, side: 'text' })}
         >
-          {unit.title}
-          {idx >= 0 && ` · ${idx + 1}/${total}`}
+          <small>‹ {unit.title}</small>
+          <b className="num">{idx >= 0 ? `문제 ${idx + 1}/${total}` : '같은 유형 연습'}</b>
         </a>
-        {!spread && (
-          <div className="tabs">
+        {!split && (
+          <div className="seg">
             <button
               type="button"
               className="btn"
               aria-pressed={route.side === 'text'}
               onClick={() => goSide('text')}
             >
-              {route.pid === null ? '개념' : '교재'}
+              문제
             </button>
             <button
               type="button"
@@ -227,65 +143,87 @@ export function Book(p: BookProps) {
               aria-pressed={route.side === 'note'}
               onClick={() => goSide('note')}
             >
-              {route.pid === null ? '예제' : '공책'}
+              풀이 노트
             </button>
           </div>
         )}
-        <button type="button" className="btn" aria-label="이전 쪽" onClick={() => go(-1)}>
+        <button
+          type="button"
+          className="btn"
+          aria-label="이전 문제"
+          disabled={step(unit, pid, -1) === null}
+          onClick={() => go(-1)}
+        >
           ‹
         </button>
-        <button type="button" className="btn" aria-label="다음 쪽" onClick={() => go(1)}>
+        <button
+          type="button"
+          className="btn"
+          aria-label="다음 문제"
+          disabled={step(unit, pid, 1) === null}
+          onClick={() => go(1)}
+        >
           ›
         </button>
       </header>
-      <Toolbar
-        tool={p.tool}
-        background={p.background}
-        onTool={p.onTool}
-        onBackground={p.onBackground}
-        onUndo={() => target()?.undo()}
-        onRedo={() => target()?.redo()}
-        onClear={() => setAsking(targetSide())}
-      />
       <div
-        className={`book ${spread ? 'spread' : 'single'}`}
-        onPointerDownCapture={onAnyDown}
+        key={pid}
+        className={`pbody ${split ? 'split' : 'tabs'} ${turn}`}
+        onPointerDownCapture={onDown}
         onPointerUpCapture={onUp}
         onPointerCancelCapture={onUp}
       >
-        <div key={pageKey} className={`pages ${spread ? turn : ''}`}>
-          {textPage}
-          {spread && <div className="fold" aria-hidden />}
-          {notePage}
+        <div className="pcol" hidden={hide('text')}>
+          {problem ? (
+            <ProblemCard
+              unit={unit}
+              problem={problem}
+              index={idx}
+              card={card}
+              onGrade={
+                // 생성 문제는 매번 새로 만드는 연습이라 복습 카드에 넣지 않는다(필기만 저장)
+                isGenPid(problem.id)
+                  ? undefined
+                  : (r, before) => p.onGrade(cardKey(unit.id, problem.id), r, before)
+              }
+            />
+          ) : (
+            <p className="card">이 문제를 찾을 수 없어요.</p>
+          )}
         </div>
+        <section className="notepanel" hidden={hide('note')} aria-label="풀이 노트">
+          <Toolbar
+            tool={p.tool}
+            background={p.background}
+            onTool={p.onTool}
+            onBackground={p.onBackground}
+            onUndo={() => surface.current?.undo()}
+            onRedo={() => surface.current?.redo()}
+            onClear={() => setAsking(true)}
+          />
+          <div className="notebox">
+            <InkPage
+              inkKey={noteKey(unit.id, pid)}
+              grow
+              tool={p.tool}
+              background={p.background}
+              ctl={ctl}
+              className="notebook"
+            />
+          </div>
+        </section>
       </div>
       {asking && (
         <Confirm
-          message={`${sideName(asking)}(${pageNumber(unit, route.pid, asking)}쪽) 필기를 모두 지울까요?`}
+          message="이 문제의 풀이 노트 필기를 모두 지울까요?"
           okLabel="모두 지우기"
-          onCancel={() => setAsking(null)}
+          onCancel={() => setAsking(false)}
           onOk={() => {
-            surfaces.current.get(inkKey(unit.id, route.pid, asking))?.clear();
-            setAsking(null);
+            surface.current?.clear();
+            setAsking(false);
           }}
         />
       )}
     </div>
-  );
-}
-
-function Page(p: {
-  n: number;
-  side: Side;
-  hidden?: boolean;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const { n, side, children } = p;
-  return (
-    <section className={`page page-${side} ${p.className ?? ''}`} hidden={p.hidden}>
-      {children}
-      <footer className="page-no">{n}</footer>
-    </section>
   );
 }

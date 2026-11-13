@@ -1,200 +1,507 @@
-/* 책 모양(설계 10장): 종이색, 명조 계열, 쪽 번호, 가운데 접힌 자국.
-   명조 글꼴은 아직 앱에 넣지 않았다(제작사 확인 대기) — 기기에 있는 글꼴만 쓴다. */
+/* 앱 전체 디자인. 승인된 레슨 미리보기(docs/mockups/linear-eq-lesson.html)의 토큰·글꼴·카드·버튼 체계를
+   앱 전체로 올렸다(종이색·명조·쪽 번호·접힌 자국은 없앴다). 레슨 화면(lesson.css)도 이 토큰을 그대로 쓴다.
+   글꼴은 시스템 고딕만(오프라인 앱이라 웹폰트를 넣지 않는다). 라이트/다크는 기기 설정만 따른다.
+   글자 색은 라이트 모드에서 바탕(흰색·회색 면·옅은 색 면) 위 대비 4.5:1 이상이 되게 미리보기보다 조금 진하게 잡았다. */
 :root {
-  --desk: #d8cdb4;
-  --paper: #f6efdc;
-  --paper-edge: #ebe0c4;
-  --ink: #2a2620;
-  --muted: #7b6f5a;
-  --line: #cdbf9f;
-  --accent: #1f4fbf;
-  --good: #2e7d4f;
-  --bad: #c0392b;
-  --serif: "AppleMyungjo", "Nanum Myeongjo", "Noto Serif KR", serif;
+  --bg: #ffffff;
+  --surface: #f3f5f8;
+  --surface-2: #e9edf3;
+  --ink: #161b26;
+  --sub: #5d6879;
+  /* 장식 선 전용(글자에 쓰지 않는다 — 대비가 모자라다) */
+  --faint: #a9b1bf;
+  --primary: #2559e6;
+  --primary-ink: #ffffff;
+  --primary-soft: #eaf0ff;
+  --good: #087a53;
+  --good-soft: #e3f7ef;
+  --bad: #c81e3a;
+  --bad-soft: #feecee;
+  --coin: #ffc53d;
+  --coin-ink: #4a3500;
+  --shadow: 0 1px 2px rgba(22, 27, 38, 0.06), 0 8px 24px rgba(22, 27, 38, 0.06);
+  --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  --radius: 20px;
   color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1117;
+    --surface: #181c25;
+    --surface-2: #222836;
+    --ink: #eef1f6;
+    --sub: #98a2b3;
+    --faint: #5b6476;
+    --primary: #5b8cff;
+    --primary-ink: #0b1020;
+    --primary-soft: #1a2442;
+    --good: #34d399;
+    --good-soft: #10291f;
+    --bad: #ff6b7d;
+    --bad-soft: #321a1f;
+    --coin: #f5b82e;
+    --coin-ink: #3a2900;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+  }
 }
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
-
 html,
 body {
   margin: 0;
-  height: 100%;
-  background: var(--desk);
+  min-height: 100%;
+  background: var(--bg);
   color: var(--ink);
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 17px;
-  line-height: 1.7;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
   -webkit-text-size-adjust: 100%;
 }
-
 #root {
   min-height: 100%;
 }
-
 a {
   color: inherit;
 }
+p {
+  margin: 0;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  letter-spacing: -0.03em;
+  line-height: 1.3;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 2px;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
 
-/* ---------- 버튼: 손가락용이라 44px 이상 ---------- */
+/* ---------- 버튼: 손가락용이라 48px 이상 ---------- */
 .btn {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0 14px;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fbf6ea;
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface-2);
   color: var(--ink);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.95rem;
+  font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   /* 두 번 탭 확대를 꺼서 누르자마자 반응하게 */
   touch-action: manipulation;
+  transition:
+    transform 0.12s,
+    background 0.2s,
+    opacity 0.2s;
 }
-.btn[aria-pressed="true"] {
-  background: #e6d7b3;
-  border-color: var(--ink);
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: default;
+}
+.btn[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.btn.primary {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.btn.soft {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.btn.quiet {
+  background: transparent;
+  color: var(--sub);
 }
 .btn.danger {
   background: var(--bad);
-  border-color: var(--bad);
   color: #fff;
 }
-.btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+.btn.block {
+  display: flex;
+  width: 100%;
+}
+.btn.big {
+  min-height: 56px;
+  font-size: 1.05rem;
+  border-radius: 16px;
 }
 .row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  margin: 12px 0;
 }
 
-/* ---------- 책 밖 화면 ---------- */
-.screen {
+/* ---------- 앱 틀: 위 막대 + 본문. 좁은 화면은 아래 탭 막대 ---------- */
+.app {
   min-height: 100dvh;
-  max-width: 820px;
-  margin: 0 auto;
-  padding: calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 16px)
-    calc(env(safe-area-inset-bottom) + 24px) calc(env(safe-area-inset-left) + 16px);
-}
-.paper {
-  background: var(--paper);
-}
-.nav {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-}
-.title {
-  font-size: 26px;
-  margin: 20px 0 12px;
-}
-.card-box {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin: 12px 0;
-  background: #fbf6ea;
-}
-.card-box h2 {
-  margin: 0 0 6px;
-  font-size: 18px;
-}
-.big {
-  font-size: 20px;
-}
-.course h2 {
-  font-size: 19px;
-  margin: 22px 0 8px;
-  border-bottom: 1px solid var(--line);
-}
-.unit-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 8px;
-}
-.unit-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-height: 72px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fbf6ea;
+}
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top) + 8px) max(16px, env(safe-area-inset-right)) 8px
+    max(16px, env(safe-area-inset-left));
+  background: var(--bg);
+  border-bottom: 1px solid var(--surface-2);
+}
+.brand {
+  font-weight: 900;
+  font-size: 1.05rem;
+  letter-spacing: -0.03em;
   text-decoration: none;
+  white-space: nowrap;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
 }
-.unit-card.locked {
-  opacity: 0.45;
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
 }
-.unit-name {
-  font-size: 15px;
-  line-height: 1.4;
+.tab {
+  min-height: 48px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--sub);
+  white-space: nowrap;
 }
-.unit-meta {
-  font-size: 13px;
-  color: var(--muted);
+.tab[aria-current="page"] {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.who {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.page {
+  flex: 1;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px max(16px, env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 40px)
+    max(16px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+}
+.lead {
+  color: var(--sub);
+}
+@media (max-width: 699px) {
+  .appbar .tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    z-index: 20;
+    justify-content: space-around;
+    padding: 6px max(8px, env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 6px)
+      max(8px, env(safe-area-inset-left));
+    background: var(--bg);
+    border-top: 1px solid var(--surface-2);
+  }
+  .appbar .tab {
+    flex: 1;
+    padding: 0 4px;
+  }
+  .appbar .who {
+    margin-left: auto;
+  }
+  .page {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 96px);
+  }
+  .page-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* ---------- 카드 ---------- */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.card h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+.card.hero {
+  background: var(--primary-soft);
+}
+.card.hero .btn.soft {
+  background: var(--bg);
+}
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+.stat {
+  font-size: 1.05rem;
+}
+.stat b {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin: 0 2px;
+}
+.muted {
+  color: var(--sub);
+  font-size: 0.92rem;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
 }
 .bar {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--paper-edge);
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
   overflow: hidden;
 }
 .bar > span {
   display: block;
   height: 100%;
-  background: var(--accent);
+  border-radius: 4px;
+  background: var(--primary);
 }
-.wrong-list {
-  list-style: none;
-  padding: 0;
+.badge {
+  align-self: flex-start;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--sub);
+  white-space: nowrap;
 }
-.wrong-item {
-  display: block;
-  padding: 12px 14px;
-  margin: 8px 0;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fbf6ea;
-  text-decoration: none;
+.badge.good {
+  background: var(--good-soft);
+  color: var(--good);
 }
-.pendiag-pad {
-  display: block;
-  width: 100%;
-  height: 240px;
-  border: 1px dashed var(--line);
-  border-radius: 10px;
-  background: #fff;
-  /* 펜·손가락 입력을 브라우저 스크롤에 뺏기지 않게 */
-  touch-action: none;
+.badge.blue {
+  background: var(--primary-soft);
+  color: var(--primary);
 }
-.pendiag-out {
-  font-size: 13px;
-  white-space: pre-wrap;
-  background: #fbf6ea;
-  padding: 8px 10px;
-  border-radius: 8px;
+.badge.bad {
+  background: var(--bad-soft);
+  color: var(--bad);
 }
 
-/* ---------- 책 화면 ---------- */
-.book-screen {
+/* ---------- 지도 ---------- */
+.course {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.course h2 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--sub);
+}
+.unit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 10px;
+}
+.unit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 96px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--surface);
+  text-decoration: none;
+}
+.unit-card .unit-name {
+  font-weight: 800;
+  line-height: 1.35;
+}
+.unit-card .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+.unit-card.locked {
+  min-height: 0;
+  background: transparent;
+  border: 1.5px dashed var(--surface-2);
+}
+.unit-card.locked .unit-name {
+  color: var(--sub);
+}
+
+/* ---------- 단원 홈 ---------- */
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sub);
+  font-size: 0.92rem;
+}
+.crumbs a {
+  text-decoration: none;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+}
+.formula {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+.levels {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.level-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 800;
+}
+.plist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.plink {
+  min-height: 56px;
+  border-radius: 14px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 800;
+  line-height: 1.1;
+  border: 2px solid transparent;
+}
+.plink small {
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-top: 3px;
+}
+.plink.right {
+  border-color: var(--good);
+  color: var(--good);
+}
+.plink.unsure {
+  border-color: var(--coin);
+}
+.plink.wrong {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.concept-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 풀이 단계(문제 카드·옛 예제 카드 공용) */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.step {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.step-title {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--primary);
+}
+.tip {
+  background: var(--primary-soft);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.tip b {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--primary);
+}
+
+/* ---------- 문제 화면: 넓으면 문제 카드 | 풀이 노트, 좁으면 탭 ---------- */
+.pscreen {
   height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -206,73 +513,80 @@ a {
   user-select: none;
   -webkit-touch-callout: none;
 }
-.book-head,
-.toolbar {
+.pbar {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  flex: none;
+  gap: 6px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--surface-2);
 }
-/* 좁은 화면(382px 언저리)에서는 옆으로 밀어 숨기지 않고 두 줄로 — 숨은 버튼은 있는 줄 모른다 */
-.toolbar {
-  flex-wrap: wrap;
-  overflow-x: visible;
-}
-.book-head::-webkit-scrollbar,
-.toolbar::-webkit-scrollbar {
-  display: none;
-}
-.crumb {
-  flex: 1;
+.pbar .back {
   min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 48px;
+  text-decoration: none;
+  line-height: 1.25;
+}
+.pbar .back b {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-decoration: none;
-  font-size: 15px;
-  padding: 0 6px;
 }
-.tabs {
+.pbar .back small {
+  color: var(--sub);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seg {
   display: flex;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 3px;
   gap: 2px;
 }
-.tool {
-  padding: 0 10px;
+.seg .btn {
+  min-height: 48px;
+  background: transparent;
+  color: var(--sub);
+  border-radius: 11px;
+  padding: 0 12px;
 }
-.swatch {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: inline-block;
+.seg .btn[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: var(--shadow);
 }
-.swatch.hl {
-  opacity: 0.6;
-  border-radius: 4px;
-}
-.dot {
-  display: inline-block;
-  border-radius: 50%;
-  background: var(--ink);
-}
-.sep {
-  width: 1px;
-  align-self: stretch;
-  margin: 6px 4px;
-  background: var(--line);
-  flex: none;
-}
-
-.book {
+.pbody {
   flex: 1;
   min-height: 0;
-  padding: 6px 8px 8px;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
 }
-.pages {
-  height: 100%;
-  display: flex;
+.pbody.split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+}
+.pbody.tabs {
+  grid-template-columns: minmax(0, 1fr);
+}
+.pbody > [hidden] {
+  display: none;
+}
+.pcol {
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+.pcard {
+  user-select: text;
+  -webkit-user-select: text;
 }
 .turn-next {
   animation: turn-next 220ms ease-out;
@@ -292,184 +606,78 @@ a {
     opacity: 0.35;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .turn-next,
-  .turn-prev {
-    animation: none;
-  }
-}
-
-.page {
-  position: relative;
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  background: var(--paper);
-  border-radius: 6px;
-  box-shadow:
-    0 1px 2px rgba(60, 45, 20, 0.18),
-    0 6px 18px rgba(60, 45, 20, 0.12);
-}
-/* .page 의 display:flex 가 hidden 속성을 이기지 않게 (한 쪽 보기에서 반대쪽 숨김) */
-.page[hidden] {
-  display: none;
-}
-.spread .page-text {
-  border-radius: 6px 0 0 6px;
-}
-.spread .page-note {
-  border-radius: 0 6px 6px 0;
-}
-/* 가운데 접힌 자국: 두 쪽 사이의 그림자. 필기를 막지 않게 입력은 통과시킨다. */
-.fold {
-  position: relative;
-  width: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-.fold::before {
-  content: "";
-  position: absolute;
-  inset: 0 -22px;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(70, 50, 20, 0.1) 40%,
-    rgba(70, 50, 20, 0.22) 50%,
-    rgba(70, 50, 20, 0.1) 60%,
-    rgba(0, 0, 0, 0) 100%
-  );
-}
-.page-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  /* 손가락 세로 스크롤만 브라우저에 맡긴다. 가로 쓸기(쪽 넘김)·확대가 스크롤과 다투지 않게 */
-  touch-action: pan-y;
-}
-/* 교재 쪽: 고정 폭(InkPage FIT_WIDTH)으로 배치해 쪽 폭에 맞게 줄인다. 높이는 스크립트가 맞춘다. */
-.page-fit {
-  overflow: hidden;
-}
-.page-host.fit {
-  width: 460px;
-  min-height: 0;
-  transform-origin: 0 0;
-}
-.page-host {
-  position: relative;
-  min-height: 100%;
-  padding: 20px 24px 28px;
-}
-.page-no {
-  flex: none;
-  text-align: center;
-  font-size: 12px;
-  color: var(--muted);
-  padding: 2px 0 6px;
-}
-
-/* ---------- 교재 쪽 내용 ---------- */
-.text h1,
-.text h2,
-.text h3 {
-  line-height: 1.35;
-}
-.unit-title {
-  font-size: 24px;
-  margin: 0 0 12px;
-}
-.text h2 {
-  font-size: 19px;
-  margin: 22px 0 8px;
-}
-.text h3 {
-  font-size: 16px;
-  margin: 16px 0 6px;
-}
-.formula {
-  margin: 6px 0;
-}
 .problem-head {
   display: flex;
-  justify-content: space-between;
-  color: var(--muted);
-  font-size: 14px;
-}
-.level {
-  font-size: 12px;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0 6px;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--sub);
+  font-size: 0.9rem;
 }
 .question {
-  font-size: 18px;
-  margin: 10px 0 14px;
+  font-size: 1.1rem;
+  line-height: 1.7;
 }
 .choices {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .choice {
   justify-content: flex-start;
+  background: var(--bg);
   white-space: normal;
   text-align: left;
-  min-height: 48px;
-  padding: 6px 12px;
+  min-height: 52px;
+  padding: 8px 14px;
+  font-weight: 600;
 }
 .circled {
-  font-size: 18px;
-}
-.answer-box {
-  margin: 8px 0;
+  font-weight: 800;
+  color: var(--primary);
 }
 .answer-row {
   display: flex;
   gap: 8px;
   align-items: center;
 }
-.answer-label {
-  font-size: 15px;
-}
 .answer-input {
   flex: 1;
-  min-height: 44px;
+  min-width: 0;
+  min-height: 56px;
   display: flex;
   align-items: center;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
-  font-size: 20px;
-  font-variant-numeric: tabular-nums;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: var(--bg);
+  border: 2px solid var(--primary);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.answer-input .ph {
+  color: var(--sub);
+  font-size: 1rem;
+  font-weight: 600;
 }
 .numpad {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 8px;
-  max-width: 360px;
 }
 .numpad-row {
   display: flex;
   gap: 6px;
 }
-.pad-key {
+.numpad .btn {
   flex: 1;
-  min-height: 48px;
-  font-size: 19px;
-  padding: 0;
+  background: var(--bg);
+  font-size: 1.05rem;
 }
-.pad-wide {
+.numpad .pad-wide {
   flex: 2;
-  min-height: 48px;
 }
 .verdict {
-  font-weight: bold;
+  font-weight: 800;
 }
 .verdict.correct {
   color: var(--good);
@@ -478,73 +686,274 @@ a {
 .verdict.invalid {
   color: var(--bad);
 }
+.verdict.unknown {
+  color: var(--sub);
+}
 .hints {
-  padding-left: 20px;
+  margin: 0;
+  padding: 12px 14px 12px 32px;
+  background: var(--bg);
+  border-radius: 14px;
 }
-.steps {
-  margin: 12px 0;
-}
-.step {
-  border-left: 3px solid var(--line);
-  padding: 2px 0 2px 12px;
-  margin: 10px 0;
-}
-.step-title {
-  font-weight: bold;
-  font-size: 15px;
-}
-.tip {
-  background: #fbf6ea;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 12px;
+.answer-reveal {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 700;
 }
 .grade {
-  margin-top: 18px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--line);
-}
-.grade-label,
-.due {
-  font-size: 14px;
-  color: var(--muted);
-}
-.grade-right[aria-pressed="true"] {
-  border-color: var(--good);
-}
-.grade-wrong[aria-pressed="true"] {
-  border-color: var(--bad);
-}
-.more {
-  margin-top: 8px;
-}
-.toc {
-  list-style: none;
-  padding: 0;
-}
-.toc-link {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--surface-2);
+  padding-top: 12px;
+}
+.grade-label {
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.grade-btns .btn {
+  flex: 1;
+}
+.btn.grade-right[aria-pressed="true"] {
+  background: var(--good);
+  color: #fff;
+}
+.btn.grade-wrong[aria-pressed="true"] {
+  background: var(--bad);
+  color: #fff;
+}
+.btn.grade-unsure[aria-pressed="true"] {
+  background: var(--coin);
+  color: var(--coin-ink);
+}
+.due {
+  color: var(--sub);
+  font-size: 0.9rem;
+}
+
+/* 필기 엔진의 스크롤 상자(InkPage). 엔진 코드는 그대로 쓰고 모양만 여기서 */
+.page-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* 손가락 세로 스크롤만 브라우저에 맡긴다. 가로 쓸기(문제 넘김)·확대가 스크롤과 다투지 않게 */
+  touch-action: pan-y;
+}
+
+/* 풀이 노트: 도구 막대 + 필기 칸. 필기 칸은 높이를 확실히 정해 둔다 —
+   엔진의 종이(.page-host)가 min-height:100% 로 높이를 잡는데, 부모 높이가 정해지지 않으면 0 이 되어
+   펜 획이 그려지지 않는다. 그래서 스크롤 상자를 칸 안에 꽉 차게(absolute, inset 0) 놓는다. */
+.notepanel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 8px;
+}
+.notebox {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  /* 다크 모드에서도 쓰는 칸은 밝게 둔다 — 펜 색(검정·파랑·빨강)이 고정이라 어두운 바탕에서는 안 보인다 */
+  background: #ffffff;
+}
+.notebox > .page-scroll {
+  position: absolute;
+  inset: 0;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
+  flex: none;
+}
+.toolbar .btn {
   min-height: 44px;
-  text-decoration: none;
-  border-bottom: 1px dotted var(--line);
+  min-width: 44px;
+  padding: 0 10px;
+  background: var(--bg);
+  font-size: 0.85rem;
 }
-.toc-n {
-  min-width: 2em;
+.toolbar .btn[aria-pressed="true"] {
+  background: var(--primary-soft);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 2px var(--primary);
 }
-.toc-mark {
-  margin-left: auto;
-  font-size: 13px;
-  color: var(--muted);
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.4);
 }
-/* 공책 쪽: 엔진이 종이를 아래로 늘리므로 처음엔 쪽 높이만큼만 */
+.swatch.hl {
+  opacity: 0.6;
+  border-radius: 4px;
+}
+.dot {
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 6px 2px;
+  background: var(--surface-2);
+  flex: none;
+}
+
+.page-host {
+  position: relative;
+  min-height: 100%;
+}
 .notebook {
   padding: 0;
 }
-.katex-display {
-  overflow-x: auto;
-  overflow-y: hidden;
+
+/* ---------- 오답 노트 ---------- */
+.wrong-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wrong-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--surface);
+  text-decoration: none;
+}
+.wrong-item .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ---------- 설정 ---------- */
+.stepper-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stepper-row .value {
+  min-width: 96px;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+.plist-profiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.prow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 6px 6px 6px 14px;
+  flex-wrap: wrap;
+}
+.prow .name {
+  flex: 1;
+  min-width: 120px;
+  font-weight: 700;
+}
+.field {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 2px solid var(--surface-2);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+}
+.field:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+.pendiag {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pendiag-pad {
+  display: block;
+  width: 100%;
+  height: 220px;
+  border-radius: 14px;
+  background: var(--bg);
+  /* 펜·손가락 입력을 브라우저 스크롤에 뺏기지 않게 */
+  touch-action: none;
+}
+.pendiag-out {
+  margin: 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+  background: var(--bg);
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+/* ---------- 누가 공부하나요 ---------- */
+.picker {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
+}
+.picker h1 {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+.picker-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  width: min(560px, 100%);
+}
+.picker-list .btn {
+  min-height: 88px;
+  flex-direction: column;
+  background: var(--surface);
+  font-size: 1.15rem;
+  border-radius: 20px;
+}
+.picker-list .btn small {
+  font-size: 0.8rem;
+  color: var(--sub);
+  font-weight: 700;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 900;
 }
 
 /* ---------- 확인 창·저장 경고 ---------- */
@@ -556,17 +965,20 @@ a {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(40, 30, 10, 0.35);
+  background: rgba(10, 14, 22, 0.45);
 }
 .confirm {
-  width: min(360px, 100%);
-  padding: 16px 18px 8px;
-  border-radius: 12px;
-  background: var(--paper);
-  box-shadow: 0 8px 28px rgba(40, 30, 10, 0.3);
+  width: min(380px, 100%);
+  padding: 22px 20px 16px;
+  border-radius: 22px;
+  background: var(--bg);
+  box-shadow: 0 12px 40px rgba(10, 14, 22, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .confirm-msg {
-  margin: 0 0 4px;
+  font-weight: 700;
 }
 .confirm-row {
   justify-content: flex-end;
@@ -577,12 +989,24 @@ a {
   left: 0;
   right: 0;
   z-index: 60;
-  padding: calc(env(safe-area-inset-top) + 4px) 12px 4px;
+  padding: calc(env(safe-area-inset-top) + 6px) 12px 6px;
   background: var(--bad);
   color: #fff;
   font-size: 14px;
+  font-weight: 700;
   text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+@media (prefers-color-scheme: dark) {
+  .save-warn {
+    color: #1a0006;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn-next,
+  .turn-prev {
+    animation: none;
+  }
+  .btn {
+    transition: none;
+  }
 }

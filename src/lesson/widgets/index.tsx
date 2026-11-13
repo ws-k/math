@@ -11,6 +11,8 @@ export interface WidgetProps<P = unknown> {
   params: P;
   /** 부품 목표를 이뤘을 때(gate 장면이 열린다) */
   onDone(): void;
+  /** 틀린 시도(한쪽만 덜기·놓친 끌기). 두 번이면 재생기가 '넘어가기'를 보인다 */
+  onMiss(): void;
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: 부품마다 매개변수 타입이 달라 등록부는 any 로 모은다.
@@ -20,11 +22,19 @@ export const widgetViews: Record<string, ComponentType<WidgetProps<any>>> = {
   table: Table,
 };
 
-export function Widget({ spec, onDone }: { spec: WidgetSpec; onDone(): void }) {
+export function Widget({
+  spec,
+  onDone,
+  onMiss,
+}: {
+  spec: WidgetSpec;
+  onDone(): void;
+  onMiss(): void;
+}) {
   const def = widgetDefs[spec.type];
   const View = widgetViews[spec.type];
   const params = useMemo(() => def?.parse(spec.params), [def, spec.params]);
   // 검사기가 모르는 부품을 막으므로 여기 오면 등록 누락이다. 렌더 스모크 테스트가 잡는다.
   if (!def || !View) throw new Error(`화면 부품 없음: ${spec.type}`);
-  return <View params={params} onDone={onDone} />;
+  return <View params={params} onDone={onDone} onMiss={onMiss} />;
 }

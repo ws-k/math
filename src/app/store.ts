@@ -104,3 +104,10 @@ export async function requestPersist(): Promise<boolean> {
     return false;
   }
 }
+
+/** 프로필 하나의 기록(진행·필기·설정)을 모두 지운다. 첫 프로필은 접두어가 없어 지우지 않는다 */
+export async function deleteProfileData(id: string): Promise<void> {
+  if (id === FIRST) return;
+  const keys = await raw.keys(scopedKey(id, ''));
+  for (const k of keys) await raw.del(k);
+}

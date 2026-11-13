@@ -15,6 +15,8 @@ export type { CheckItem };
 
 export interface CheckResult {
   errors: string[];
+  /** 막지는 않지만 사람이 볼 것(레슨 수식 속 손으로 적은 숫자 등) */
+  warnings: string[];
   items: CheckItem[];
   units: Unit[];
 }
@@ -23,6 +25,7 @@ const LEVEL_MIN: Record<string, number> = { 기초: 15, 표준: 10 };
 
 export function checkContent(root = '.', samples = 200, onlyUnit?: string): CheckResult {
   const errors: string[] = [];
+  const warnings: string[] = [];
   const items: CheckItem[] = [];
   const cur: Curriculum = JSON.parse(readFileSync(join(root, 'content/curriculum.json'), 'utf8'));
   const curById = new Map(cur.units.map((u) => [u.id, u]));
@@ -40,20 +43,22 @@ export function checkContent(root = '.', samples = 200, onlyUnit?: string): Chec
     const cu = curById.get(u.id);
     if (!cu) errors.push(`${W}: 커리큘럼에 없는 단원`);
     else if (cu.prereq.join() !== u.prereq.join()) errors.push(`${W}: prereq 가 커리큘럼과 다름`);
-    // 설명은 레슨이거나(새 방식) 개념+예제(옛 방식). 레슨이 생긴 단원도 옛 글은 7단계 정리 전까지
-    // JSON 에 남아 있으므로, 있으면 똑같이 검사·검산한다.
+    // 설명은 레슨(새 방식) 또는 개념+예제(옛 방식) 중 하나. 레슨이 생긴 단원은 레슨이 개념을 대신하므로
+    // 옛 글을 남겨 두면 두 설명이 따로 놀게 된다 — 함께 있으면 오류.
     if (u.lesson === undefined && !u.concept?.length) errors.push(`${W}: 레슨도 개념도 없음`);
+    if (u.lesson !== undefined && (u.concept !== undefined || u.examples !== undefined))
+      errors.push(`${W}: 레슨이 있는 단원에는 옛 concept·examples 를 두지 않음`);
     for (const c of u.concept ?? []) {
       texOk(`${W} 개념`, c.heading, errors);
       texOk(`${W} 개념`, c.body, errors);
     }
     for (const f2 of u.formulas ?? []) texOk(`${W} 공식`, f2, errors);
     const exN = u.examples?.length ?? 0;
-    if ((u.lesson === undefined || exN > 0) && (exN < 2 || exN > 3))
-      errors.push(`${W}: 예제는 2~3개`);
+    if (u.lesson === undefined && (exN < 2 || exN > 3)) errors.push(`${W}: 예제는 2~3개`);
     if (u.lesson !== undefined) {
       const r = validateLesson(u.id, u.lesson, { problems: u.problems?.length ?? 0 });
       errors.push(...r.errors);
+      warnings.push(...r.warnings);
       items.push(...r.items);
     }
     u.examples?.forEach((e, i) => {
@@ -98,5 +103,5 @@ export function checkContent(root = '.', samples = 200, onlyUnit?: string): Chec
       items.push(item(ref, g.unitId, p));
     }
   }
-  return { errors, items, units };
+  return { errors, warnings, items, units };
 }

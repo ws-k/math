@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   cardKey,
-  flip,
   genPid,
-  inkKey,
   isGenPid,
-  pageNumber,
+  levelGroups,
+  noteKey,
   parseCardKey,
   problemIndex,
   resolveProblem,
+  step,
 } from '../src/app/pages.ts';
 import { prob, unit } from './app-fixture.ts';
 
@@ -25,11 +25,8 @@ test('카드 키는 단원/문제, 되돌릴 수 있다(생성 문제의 콜론 
   assert.equal(parseCardKey('잘못된키'), null);
 });
 
-test('필기 키: 쪽마다 따로', () => {
-  assert.equal(inkKey('u', 'b01', 'text'), 'ink:u:b01:text');
-  assert.equal(inkKey('u', 'b01', 'note'), 'ink:u:b01:note');
-  assert.equal(inkKey('u', null, 'text'), 'ink:u:concept');
-  assert.equal(inkKey('u', null, 'note'), 'ink:u:examples');
+test('필기 키: 풀이 노트만(옛 공책 쪽 키를 그대로 써서 쌓인 필기가 이어진다)', () => {
+  assert.equal(noteKey('u', 'b01'), 'ink:u:b01:note');
 });
 
 test('문제 찾기: 단원 문제, 생성 문제, 없는 문제', () => {
@@ -49,34 +46,34 @@ test('문제 위치: 생성 문제는 같은 생성기의 첫 문제 자리', ()
   assert.equal(problemIndex(u, 'zzz'), -1);
 });
 
-test('펼친 책: 한 번 넘기면 다음 문제(양쪽이 함께)', () => {
-  assert.deepEqual(flip(u, null, 'text', 1, 'spread'), { pid: 'b01', side: 'text' });
-  assert.deepEqual(flip(u, 'b01', 'note', 1, 'spread'), { pid: 'b02', side: 'text' });
-  assert.deepEqual(flip(u, 'b01', 'text', -1, 'spread'), { pid: null, side: 'text' });
-  assert.equal(flip(u, null, 'text', -1, 'spread'), null);
-  assert.equal(flip(u, 's01', 'text', 1, 'spread'), null);
+test('이전·다음 문제: 끝에서는 null', () => {
+  assert.equal(step(u, 'b01', 1), 'b02');
+  assert.equal(step(u, 'b02', -1), 'b01');
+  assert.equal(step(u, 'b01', -1), null);
+  assert.equal(step(u, 's01', 1), null);
+  assert.equal(step(u, 'zzz', 1), null);
 });
 
-test('한 쪽씩: 교재 → 공책 → 다음 문제 교재', () => {
-  assert.deepEqual(flip(u, 'b01', 'text', 1, 'single'), { pid: 'b01', side: 'note' });
-  assert.deepEqual(flip(u, 'b01', 'note', 1, 'single'), { pid: 'b02', side: 'text' });
-  assert.deepEqual(flip(u, 'b02', 'text', -1, 'single'), { pid: 'b01', side: 'note' });
-  assert.deepEqual(flip(u, null, 'note', 1, 'single'), { pid: 'b01', side: 'text' });
-  assert.equal(flip(u, 's01', 'note', 1, 'single'), null);
+test('생성 문제에서 넘기면 원래 자리 앞뒤 문제로', () => {
+  assert.equal(step(u, genPid('lin-eq-basic', 3), 1), 'b02');
+  assert.equal(step(u, genPid('lin-eq-paren', 3), -1), 'b01');
 });
 
-test('생성 문제에서 넘기면 원래 자리 다음 문제로', () => {
-  assert.deepEqual(flip(u, genPid('lin-eq-basic', 3), 'text', 1, 'spread'), {
-    pid: 'b02',
-    side: 'text',
-  });
-});
-
-test('쪽 번호: 단원 첫 쪽이 1, 문제마다 두 쪽', () => {
-  assert.equal(pageNumber(u, null, 'text'), 1);
-  assert.equal(pageNumber(u, null, 'note'), 2);
-  assert.equal(pageNumber(u, 'b01', 'text'), 3);
-  assert.equal(pageNumber(u, 's01', 'note'), 8);
+test('수준별 묶음: 단원 문제 순서를 지키며 수준마다', () => {
+  const v = unit('v', [
+    prob('a', { level: '기초' }),
+    prob('b', { level: '표준' }),
+    prob('c', { level: '기초' }),
+    prob('d', { level: '응용' }),
+  ]);
+  assert.deepEqual(
+    levelGroups(v).map((g) => [g.level, g.items.map((x) => `${x.n}:${x.problem.id}`)]),
+    [
+      ['기초', ['1:a', '3:c']],
+      ['표준', ['2:b']],
+      ['응용', ['4:d']],
+    ],
+  );
 });
 
 test('생성 문제 판별: 복습 카드에 넣지 않으려고', () => {

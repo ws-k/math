@@ -1,9 +1,6 @@
-// 단원 안의 쪽 배치. 단원 = [개념 쪽, 예제 쪽] 다음에 문제마다 [교재 쪽, 공책 쪽] 두 쪽.
-// 펼친 책은 두 쪽을 한 번에 넘기고, 한 쪽씩 보는 화면은 한 쪽씩 넘긴다.
-import type { Problem, Unit } from '../content/types.ts';
+// 단원 안의 문제 순서와 키. 문제 화면 = 문제 카드 + 풀이 노트(필기는 노트에만).
+import type { Level, Problem, Unit } from '../content/types.ts';
 import { generate } from '../generators/index.ts';
-import type { LayoutMode } from './layout.ts';
-import type { Side } from './route.ts';
 
 /** 진행 카드 키. 생성 문제 id 에 콜론이 있어 구분자는 첫 '/' 하나만 쓴다. */
 export const cardKey = (unitId: string, pid: string) => `${unitId}/${pid}`;
@@ -14,11 +11,11 @@ export function parseCardKey(key: string): { unitId: string; pid: string } | nul
   return { unitId: key.slice(0, i), pid: key.slice(i + 1) };
 }
 
-/** 쪽마다 필기를 따로 저장한다. pid 가 null 이면 단원 첫 두 쪽(개념·예제). */
-export function inkKey(unitId: string, pid: string | null, side: Side): string {
-  if (pid === null) return `ink:${unitId}:${side === 'text' ? 'concept' : 'examples'}`;
-  return `ink:${unitId}:${pid}:${side}`;
-}
+/**
+ * 풀이 노트 필기 키. 예전 책 화면의 "공책 쪽" 키를 그대로 쓴다 — 이미 쓴 풀이가 새 화면에서도 이어진다.
+ * 문제 글 위 필기(…:text)는 없앴다: 화면 폭마다 글자 줄바꿈이 달라 필기가 글자와 어긋나서다.
+ */
+export const noteKey = (unitId: string, pid: string) => `ink:${unitId}:${pid}:note`;
 
 const GEN = /^gen:([^:]+):(\d+)$/;
 
@@ -45,31 +42,23 @@ export function problemIndex(unit: Unit, pid: string): number {
   return unit.problems.findIndex((p) => p.id === pid);
 }
 
-/** 펼침 번호: 0 = 단원 첫 펼침, 1.. = 문제 */
-function spreadIndex(unit: Unit, pid: string | null): number {
-  return pid === null ? 0 : problemIndex(unit, pid) + 1;
+/** 이전(-1)·다음(1) 문제 id. 끝이거나 모르는 문제면 null */
+export function step(unit: Unit, pid: string, dir: 1 | -1): string | null {
+  const i = problemIndex(unit, pid);
+  if (i < 0) return null;
+  return unit.problems[i + dir]?.id ?? null;
 }
 
-export function flip(
+const LEVELS: Level[] = ['기초', '표준', '수능형', '응용'];
+
+/** 단원 홈의 수준별 문제 목록. n 은 단원 안 문제 번호(1부터) */
+export function levelGroups(
   unit: Unit,
-  pid: string | null,
-  side: Side,
-  dir: 1 | -1,
-  mode: LayoutMode,
-): { pid: string | null; side: Side } | null {
-  const idx = spreadIndex(unit, pid);
-  if (idx < 0) return null;
-  const count = unit.problems.length + 1;
-  const at = (i: number) => (i === 0 ? null : (unit.problems[i - 1] as Problem).id);
-  if (mode === 'spread') {
-    const next = idx + dir;
-    return next < 0 || next >= count ? null : { pid: at(next), side: 'text' };
-  }
-  const pos = idx * 2 + (side === 'note' ? 1 : 0) + dir;
-  if (pos < 0 || pos >= count * 2) return null;
-  return { pid: at(Math.floor(pos / 2)), side: pos % 2 === 0 ? 'text' : 'note' };
-}
-
-export function pageNumber(unit: Unit, pid: string | null, side: Side): number {
-  return Math.max(0, spreadIndex(unit, pid)) * 2 + (side === 'note' ? 2 : 1);
+): { level: Level; items: { n: number; problem: Problem }[] }[] {
+  return LEVELS.map((level) => ({
+    level,
+    items: unit.problems
+      .map((problem, i) => ({ n: i + 1, problem }))
+      .filter((x) => x.problem.level === level),
+  })).filter((g) => g.items.length > 0);
 }

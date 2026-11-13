@@ -19,6 +19,12 @@ export function obj(v: unknown, at: string, req: string[], opt: string[] = []): 
   return o;
 }
 
+/** 이름 → 값 모음(칸 이름을 미리 정하지 않는 객체) */
+export function dict(v: unknown, at: string): Obj {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return fail(at, '객체가 아님');
+  return v as Obj;
+}
+
 /** 비어 있지 않은 글 */
 export function str(v: unknown, at: string): string {
   if (typeof v !== 'string' || !v.trim()) return fail(at, '빈 글이거나 글이 아님');
@@ -52,11 +58,19 @@ export function oneOf<T extends string>(v: unknown, at: string, options: readonl
   return v as T;
 }
 
-/** 정수 또는 기약분수 꼴 "a/b" 문자열 */
+const gcd = (a: bigint, b: bigint): bigint => (b === 0n ? a : gcd(b, a % b));
+
+/** 정수 또는 기약분수 꼴 "a/b" 문자열. 4/2·3/1·-0 처럼 약분되는 꼴은 같은 수를 두 모양으로 적게 되어 거부 */
 export function rationalStr(v: unknown, at: string): string {
-  if (typeof v !== 'string' || !/^-?\d+(\/[1-9]\d*)?$/.test(v))
-    return fail(at, `정수나 "a/b" 꼴이 아님 (${String(v)})`);
-  return v;
+  const m = typeof v === 'string' ? v.match(/^-?(\d+)(?:\/([1-9]\d*))?$/) : null;
+  if (!m) return fail(at, `정수나 "a/b" 꼴이 아님 (${String(v)})`);
+  if (v === '-0') fail(at, '−0 대신 0');
+  if (m[2] !== undefined) {
+    const n = BigInt(m[1] as string);
+    const d = BigInt(m[2]);
+    if (d === 1n || gcd(n, d) !== 1n) fail(at, `기약분수가 아님 (${String(v)})`);
+  }
+  return v as string;
 }
 
 export { fail };

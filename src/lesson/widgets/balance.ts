@@ -1,7 +1,7 @@
 // 저울 부품의 모델(순수). 화면(Balance.tsx)과 검산(checks)이 이 함수들을 같이 쓴다.
 // 식은 a·x + b = c (a: 컵 수, b: 왼쪽 동전, c: 오른쪽 동전). 저울 위 물건은 덜어 내거나 나눌 수 있는
 // 만큼만 다룬다 — 그래서 빼기는 덜어 낼 동전이 있을 때만, 나누기는 컵만 남고 나누어떨어질 때만 켠다.
-import { fill, formatValue } from '../format.ts';
+import { formatValue, symToTex } from '../format.ts';
 import { arr, fail, int, obj, oneOf, str } from '../parse.ts';
 import type { WidgetCheck, WidgetDef } from './specs.ts';
 
@@ -94,9 +94,10 @@ export const eqSym = (s: BalanceState) =>
 
 /** 화면에 그릴 것: 식(KaTeX)·안내 치환 값·목표 달성 */
 export function view(s: BalanceState) {
-  const left = `${s.a === 1 ? '' : s.a}x${s.b ? `+${s.b}` : ''}`;
+  // 화면 식도 검산 식(eqSym)에서 만든다 — 두 곳에서 따로 조립하면 한쪽만 고쳐질 수 있다
+  const [l, r] = eqSym(s).split('=').map(symToTex) as [string, string];
   return {
-    tex: `${left}${s.tilt ? '\\neq ' : '='}${s.c}`,
+    tex: `${l}${s.tilt ? '\\neq ' : '='}${r}`,
     vars: {
       a: formatValue(String(s.a), {}),
       b: formatValue(String(s.b), {}),
@@ -172,15 +173,12 @@ export const balanceDef: WidgetDef<BalanceParams> = {
       name: '해',
       answer: String(goal?.c),
       answerType: 'int',
-      check: `solve(Eq(${s0.a === 1 ? 'x' : `${s0.a}*x`}${s0.b ? `+${s0.b}` : ''}, ${s0.c}), x)[0]`,
+      check: `solve(Eq(${eqSym(s0).replace('=', ', ')}), x)[0]`,
     });
     return out;
   },
-  // 안내 글의 {{a}} 등은 저울 상태 값이라 여기서 채워 넘긴다(모르는 이름이면 fill 이 오류를 낸다)
-  texts: (p) => {
-    const vars = view(initial(p)).vars;
-    return [p.intro, ...p.ops.flatMap((o) => [o.say, ...(o.undo ? [o.undo] : [])])].map((t) =>
-      fill(t, vars),
-    );
-  },
+  texts: (p) => [p.intro, ...p.ops.flatMap((o) => [o.say, ...(o.undo ? [o.undo] : [])])],
+  // 안내 글의 {{a}} 등은 저울 상태 값이다. 검사기는 처음 상태 값으로 채워 모르는 이름을 잡는다
+  vars: (p) => view(initial(p)).vars,
+  equation: (p) => eqSym(initial(p)),
 };

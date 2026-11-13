@@ -10,13 +10,30 @@ import type { Example } from '../content/types.ts';
 export interface Lesson {
   /** 예상 소요 분. 도입 장면의 "약 N분"으로 보인다 */
   minutes: number;
+  /**
+   * 레슨 안에서 여러 장면이 함께 쓰는 방정식(sympy 등식 "왼쪽=오른쪽"). 부품·질문이 eq 로 가리키면
+   * 검사기가 부품이 그리는 식과 이 식이 같은 식인지, 질문의 정답이 이 식의 해인지 대조한다 —
+   * 영수증 합계만 14000 으로 바뀌는 식의 장면 간 어긋남을 잡으려고.
+   */
+  equations?: Record<string, string>;
+  /** 글 속 {{이름}} 으로 넣는 검산된 값. 글에 숫자를 손으로 적으면 검산을 벗어난다 */
+  values?: Record<string, LessonValue>;
   scenes: Scene[];
+}
+
+export interface LessonValue {
+  /** 정수·"a/b". 글에는 그대로(쉼표 없이) 들어간다 — 수식 안에도 쓰도록 */
+  value: string;
+  /** 이 값을 문제 조건으로 계산하는 sympy 식 */
+  check: string;
 }
 
 /** 부품 지정. type 으로 등록부(widgets/specs.ts)에서 형식 검사·검산 항목 생성을 찾는다 */
 export interface WidgetSpec {
   type: string;
   params: Record<string, unknown>;
+  /** 이 부품이 그리는 식이 레슨 equations 의 어느 식과 같아야 하는가 */
+  eq?: string;
 }
 
 interface Base {
@@ -51,13 +68,20 @@ export interface Choice {
 export interface NumFormat {
   digits?: number;
   unit?: string;
+  /**
+   * 무리수 근삿값 보기. 보기 value 는 digits 자리까지 적은 소수, check 는 정확한 값(sqrt(2) 등)이고
+   * 검산기가 check 를 그 자리에서 반올림한 값이 value 와 같은지 본다.
+   */
+  approx?: true;
 }
 
 export interface QuestionScene extends Base {
   kind: 'question';
   widget?: WidgetSpec;
-  /** 맞혀야 다음으로(두 번 틀리면 '답 보기'가 나온다) */
+  /** 맞혀야 다음으로(두 번 틀리면 재생기가 '넘어가기'를 보인다) */
   gate?: boolean;
+  /** 정답이 이 레슨 방정식의 해여야 한다(Lesson.equations 이름) */
+  eq?: string;
   choices: Choice[];
   format?: NumFormat;
   /** 정답 보기 번호(0부터) */
@@ -98,6 +122,10 @@ export interface SpotItem {
   /** equivalent 일 때 변형 전 방정식(누를 수 없음, 화살표 앞에 보인다) */
   from?: string;
   tokens: SpotToken[];
+  /**
+   * sym: bad 토큰 자리에 들어갈 올바른 조각. 고친 식은 토큰을 이렇게 바꿔 끼워 만든다 —
+   * 고친 식을 따로 적으면 bad 표시를 엉뚱한 토큰에 달아도 검산이 통과한다.
+   */
   fix: { sym: string; body: string };
 }
 
@@ -107,6 +135,8 @@ export interface SpotScene extends Base {
 }
 
 export type SolveItem = Example & {
+  /** 필기 저장 키(ink:<단원>:lesson:<장면>:<id>)와 화면 key. 장면 안에서 겹치면 안 된다 */
+  id: string;
   /** 힌트 버튼을 누르면 보이는 한 줄 */
   hint?: string;
   /** 답 칸이 비었을 때 보이는 글자(단위 등) */

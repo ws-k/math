@@ -1,13 +1,13 @@
-// 레슨 장면들. 장면은 데이터만 그리고, 진행(다음 장면·완료)은 LessonPlayer 가 쥔다.
-// 화면 글자 가운데 값에서 나오는 것(보기 글자·식·연습문제 수)은 format.ts 로 데이터에서 만든다.
+// 레슨 장면들. 장면은 데이터만 그리고, 진행(다음 장면·완료·넘어가기)은 LessonPlayer 가 쥔다.
+// 화면 글자 가운데 값에서 나오는 것(보기 글자·식·{{값}})은 format.ts·LRich 로 데이터에서 만든다.
+// React key 는 데이터의 id 나 자리 번호로 — 글 내용을 key 로 쓰면 같은 글이 둘일 때 화면이 섞인다.
 import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
 import type { InkControl } from '../app/InkPage.tsx';
 import { InkPage } from '../app/InkPage.tsx';
 import { NumPad } from '../app/NumPad.tsx';
-import { Rich } from '../app/Rich.tsx';
 import type { Background, Tool } from '../ink/types.ts';
 import { compareAnswer } from '../lib/answer.ts';
-import { fill, formatValue, handsOnCount, symToTex } from './format.ts';
+import { formatValue, handsOnCount, spotEquation, spotFixed, symToTex } from './format.ts';
 import type {
   ExploreScene,
   IntroScene,
@@ -21,17 +21,19 @@ import type {
   SummaryScene,
   TermsScene,
 } from './types.ts';
-import { reducedMotion, Tex } from './ui.tsx';
+import { LRich, reducedMotion, Tex } from './ui.tsx';
 import { Widget } from './widgets/index.tsx';
 
 export interface SceneEnv {
   lesson: Lesson;
   unitId: string;
-  /** 단원 연습문제 수({{problems}}) */
-  problems: number;
   tool: Tool;
   background: Background;
+  /** 끝낸 장면 id(넘어가기로 끝낸 질문도 답이 펼쳐진다) */
+  done: readonly string[];
   onDone(id: string): void;
+  /** 틀린 시도. gate 장면에서 두 번이면 재생기가 '넘어가기'를 보인다 */
+  onMiss(id: string): void;
 }
 
 /** 등식 sym("왼쪽=오른쪽") → TeX */
@@ -40,22 +42,22 @@ const eqTex = (sym: string) => sym.split('=').map(symToTex).join('=');
 function Head({ s, big }: { s: Scene; big?: boolean }) {
   return (
     <>
-      {s.chip && <Rich inline emph src={s.chip} className="chip" />}
+      {s.chip && <LRich inline src={s.chip} className="chip" />}
       {big ? (
         <h1>
-          <Rich inline emph src={s.title} />
+          <LRich inline src={s.title} />
         </h1>
       ) : (
         <h2>
-          <Rich inline emph src={s.title} />
+          <LRich inline src={s.title} />
         </h2>
       )}
-      {s.lead && <Rich emph src={s.lead} className="lead" />}
+      {s.lead && <LRich src={s.lead} className="lead" />}
     </>
   );
 }
 
-const After = ({ s }: { s: Scene }) => (s.after ? <Rich emph src={s.after} /> : null);
+const After = ({ s }: { s: Scene }) => (s.after ? <LRich src={s.after} /> : null);
 
 export function SceneView({ s, env }: { s: Scene; env: SceneEnv }) {
   switch (s.kind) {
@@ -72,7 +74,7 @@ export function SceneView({ s, env }: { s: Scene; env: SceneEnv }) {
     case 'solve':
       return <Solve s={s} env={env} />;
     case 'summary':
-      return <Summary s={s} env={env} />;
+      return <Summary s={s} />;
   }
 }
 
@@ -86,8 +88,9 @@ function Intro({ s, env }: { s: IntroScene; env: SceneEnv }) {
     <>
       <Head s={s} big />
       <div className="meta">
-        {meta.map((m) => (
-          <Rich inline emph key={m} src={m} />
+        {meta.map((m, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: 꼬리표 순서는 고정
+          <LRich inline key={i} src={m} />
         ))}
       </div>
       <After s={s} />
@@ -96,20 +99,21 @@ function Intro({ s, env }: { s: IntroScene; env: SceneEnv }) {
 }
 
 function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
-  const [right, setRight] = useState(false);
+  const [picked, setPicked] = useState(false);
   const [wrong, setWrong] = useState<{ i: number; n: number } | null>(null);
-  const [misses, setMisses] = useState(0);
+  // 넘어가기로 끝낸 장면(또는 이어 보기에서 이미 끝낸 장면)도 답과 풀이를 펼쳐 둔다
+  const right = picked || env.done.includes(s.id);
   const labels = s.choices.map((c) => formatValue(c.value, s.format ?? {}));
   const pick = (i: number) => {
     if (right) return;
     if (i === s.answer) {
-      setRight(true);
+      setPicked(true);
       setWrong(null);
       env.onDone(s.id);
     } else {
       // n 을 바꿔 같은 보기를 다시 눌러도 흔들림 애니메이션이 다시 돈다
       setWrong({ i, n: (wrong?.n ?? 0) + 1 });
-      setMisses(misses + 1);
+      env.onMiss(s.id);
     }
   };
   const fb = wrong ? s.choices[wrong.i]?.feedback : undefined;
@@ -117,12 +121,13 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
     <>
       <Head s={s} />
       <div className="card">
-        {s.widget && <Widget spec={s.widget} onDone={() => {}} />}
+        {s.widget && <Widget spec={s.widget} onDone={() => {}} onMiss={() => {}} />}
         <div className="opts" style={{ '--n': s.choices.length } as CSSProperties}>
-          {s.choices.map((c, i) => (
+          {s.choices.map((_, i) => (
             <button
               type="button"
-              key={`${c.value}-${i === wrong?.i ? wrong.n : 0}`}
+              // biome-ignore lint/suspicious/noArrayIndexKey: 자리 번호 + 흔들림을 다시 돌리려는 횟수
+              key={`${i}-${i === wrong?.i ? wrong.n : 0}`}
               className={`opt num${right && i === s.answer ? ' right' : ''}${
                 i === wrong?.i ? ' wrong' : ''
               }`}
@@ -135,22 +140,18 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
         </div>
         {right && (
           <div className="reveal">
-            <Rich emph src={s.reveal} />
+            <LRich src={s.reveal} />
             {s.thoughts?.map((t, i) => (
-              <div className="thought" key={t}>
+              // biome-ignore lint/suspicious/noArrayIndexKey: 생각 순서는 고정
+              <div className="thought" key={i}>
                 <b>{i + 1}</b>
-                <Rich emph src={t} />
+                <LRich src={t} />
               </div>
             ))}
-            {s.conclude && <Rich emph src={s.conclude} />}
+            {s.conclude && <LRich src={s.conclude} />}
           </div>
         )}
-        <div aria-live="polite">{!right && fb && <Rich emph src={fb} className="fb bad" />}</div>
-        {s.gate && !right && misses >= 2 && (
-          <button type="button" className="lbtn quiet" onClick={() => pick(s.answer)}>
-            답 보기
-          </button>
-        )}
+        <div aria-live="polite">{!right && fb && <LRich src={fb} className="fb bad" />}</div>
       </div>
       <After s={s} />
     </>
@@ -162,7 +163,7 @@ function Explore({ s, env }: { s: ExploreScene; env: SceneEnv }) {
     <>
       <Head s={s} />
       <div className="card">
-        <Widget spec={s.widget} onDone={() => env.onDone(s.id)} />
+        <Widget spec={s.widget} onDone={() => env.onDone(s.id)} onMiss={() => env.onMiss(s.id)} />
       </div>
       <After s={s} />
     </>
@@ -174,16 +175,17 @@ function Terms({ s }: { s: TermsScene }) {
     <>
       <Head s={s} />
       <div className="terms">
-        {s.terms.map((t) => (
-          <div className="term" key={t.term}>
+        {s.terms.map((t, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: 용어 순서는 고정
+          <div className="term" key={i}>
             <b>
-              <Rich inline emph src={t.term} />
+              <LRich inline src={t.term} />
             </b>
-            <Rich emph src={t.body} />
+            <LRich src={t.body} />
           </div>
         ))}
       </div>
-      {s.aside && <Rich emph src={s.aside} className="aside" />}
+      {s.aside && <LRich src={s.aside} className="aside" />}
       <After s={s} />
     </>
   );
@@ -196,7 +198,8 @@ function Spot({ s, env }: { s: SpotScene; env: SceneEnv }) {
       <Head s={s} />
       {s.items.map((it, i) => (
         <SpotCard
-          key={it.prompt}
+          // biome-ignore lint/suspicious/noArrayIndexKey: 함정 순서는 고정
+          key={i}
           it={it}
           onFound={() => {
             found.current.add(i);
@@ -222,7 +225,7 @@ function SpotCard({ it, onFound }: { it: SpotItem; onFound(): void }) {
   };
   return (
     <div className="card">
-      <Rich emph src={it.prompt} />
+      <LRich src={it.prompt} />
       <div className="spot">
         {it.from && (
           <>
@@ -253,8 +256,9 @@ function SpotCard({ it, onFound }: { it: SpotItem; onFound(): void }) {
       {found && (
         <div className="fix">
           <span className="lbl">이렇게 고쳐요</span>
-          <Tex tex={eqTex(it.fix.sym)} className="m" />
-          <Rich emph src={it.fix.body} />
+          {/* 검산한 바로 그 식: bad 토큰 자리에 fix 조각을 끼운 것 */}
+          <Tex tex={eqTex(spotEquation(spotFixed(it.tokens, it.fix.sym)))} className="m" />
+          <LRich src={it.fix.body} />
         </div>
       )}
     </div>
@@ -262,19 +266,19 @@ function SpotCard({ it, onFound }: { it: SpotItem; onFound(): void }) {
 }
 
 function Solve({ s, env }: { s: SolveScene; env: SceneEnv }) {
-  const solved = useRef(new Set<number>());
+  const solved = useRef(new Set<string>());
   return (
     <>
       <Head s={s} />
       {s.items.map((it, i) => (
         <SolveCard
-          key={it.q}
+          key={it.id}
           it={it}
           n={i + 1}
-          inkKey={`ink:${env.unitId}:lesson:${s.id}:${i + 1}`}
+          inkKey={`ink:${env.unitId}:lesson:${s.id}:${it.id}`}
           env={env}
           onSolved={() => {
-            solved.current.add(i);
+            solved.current.add(it.id);
             if (solved.current.size === s.items.length) env.onDone(s.id);
           }}
         />
@@ -296,6 +300,8 @@ function SolveCard(p: {
   onSolved(): void;
 }) {
   const { it } = p;
+  /** 이 문제 글에서만 쓰는 값: 검산된 답 */
+  const own = { answer: it.answer };
   const [input, setInput] = useState('');
   const [pad, setPad] = useState(false);
   const [fb, setFb] = useState<{ text: string; cls: '' | 'ok' | 'bad' } | null>(null);
@@ -317,13 +323,16 @@ function SolveCard(p: {
     const n = tries + 1;
     setTries(n);
     if (v === 'correct') {
-      setFb({ text: '정답이에요! 풀이와 비교해 보세요.', cls: 'ok' });
+      setFb({ text: '정답이에요. 풀이와 비교해 보세요.', cls: 'ok' });
       setPad(false);
       p.onSolved();
       if (!reducedMotion()) burst();
     } else {
       setFb({
-        text: n < 2 ? '아쉬워요. 힌트를 보고 한 번 더!' : '괜찮아요. 풀이를 한 단계씩 따라가 봐요.',
+        text:
+          n < 2
+            ? '아쉬워요. 힌트를 보고 한 번 더 해 봐요.'
+            : '괜찮아요. 풀이를 한 단계씩 따라가 봐요.',
         cls: 'bad',
       });
       if (n >= 2 && shown === 0) setShown(1);
@@ -357,7 +366,7 @@ function SolveCard(p: {
   const shownInput = input.replace(/-/g, '−');
   return (
     <div className="card burst" ref={cardRef}>
-      <Rich emph src={it.q} className="prob" />
+      <LRich src={it.q} vars={own} className="prob" />
       <div className="ansrow">
         <button
           type="button"
@@ -386,14 +395,15 @@ function SolveCard(p: {
       <p className={`fb${fb?.cls ? ` ${fb.cls}` : ''}`} aria-live="polite">
         {fb?.text}
       </p>
-      {hint && it.hint && <Rich emph src={it.hint} className="hintbox" />}
+      {hint && it.hint && <LRich src={it.hint} vars={own} className="hintbox" />}
       <div className="stepper">
-        {it.steps.slice(0, shown).map((st) => (
-          <div className="lstep" key={st.title}>
+        {it.steps.slice(0, shown).map((st, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: 풀이 단계 순서는 고정
+          <div className="lstep" key={i}>
             <small>
-              <Rich inline src={st.title} />
+              <LRich inline src={st.title} vars={own} />
             </small>
-            <Rich src={st.body} />
+            <LRich src={st.body} vars={own} />
           </div>
         ))}
       </div>
@@ -442,16 +452,16 @@ function SolveCard(p: {
   );
 }
 
-function Summary({ s, env }: { s: SummaryScene; env: SceneEnv }) {
-  const vars = { problems: String(env.problems) };
+function Summary({ s }: { s: SummaryScene }) {
   return (
     <>
       <Head s={s} />
       <div className="sum">
         {s.points.map((pt, i) => (
-          <div className="it" key={pt}>
+          // biome-ignore lint/suspicious/noArrayIndexKey: 요약 순서는 고정
+          <div className="it" key={i}>
             <b>{i + 1}</b>
-            <Rich emph src={pt} />
+            <LRich src={pt} />
           </div>
         ))}
       </div>
@@ -462,10 +472,10 @@ function Summary({ s, env }: { s: SummaryScene; env: SceneEnv }) {
           </div>
           {s.done && (
             <b>
-              <Rich inline emph src={s.done} />
+              <LRich inline src={s.done} />
             </b>
           )}
-          {s.next && <Rich emph src={fill(s.next, vars)} className="lead" />}
+          {s.next && <LRich src={s.next} className="lead" />}
         </div>
       )}
       <After s={s} />

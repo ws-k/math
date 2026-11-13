@@ -12,6 +12,10 @@ const okAns = (n: number) => n !== 0 && Math.abs(n) <= MAX;
 /** "+3" / "-3" — 식 뒤에 상수를 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
 
+// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
+// (숫자는 일·삼·육·칠·팔·영/십이 받침, x 는 '엑스'라 받침 없음).
+const ieyo = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이에요' : '예요');
+
 const PRODUCT = "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$";
 const PRODUCT_HINT = '"앞 미분 × 뒤 그대로 + 앞 그대로 × 뒤 미분"';
 const POWER = "$(x^n)'=nx^{n-1}$";
@@ -30,7 +34,7 @@ function linQuad(
 }
 
 function expandTip(f: number[], k: number, ans: number): string {
-  return `전개해서 검산할 수 있습니다. $f(x)=${polyTex(f)}$, $f'(x)=${polyTex(polyDiff(f))}$ 이므로 $f'(${k})=${ans}$ 입니다.`;
+  return `전개해서 검산할 수 있어요. $f(x)=${polyTex(f)}$, $f'(x)=${polyTex(polyDiff(f))}$ 이므로 $f'(${k})=${ans}$ ${ieyo(ans)}.`;
 }
 
 export const generators: Generator[] = [
@@ -49,7 +53,7 @@ export const generators: Generator[] = [
         const H = polyTex(h);
         const Hd = polyTex(polyDiff(h));
         return {
-          q: `함수 $f(x)=(${G})(${H})$ 에 대하여 $f'(${k})$ 의 값을 구하시오.`,
+          q: `함수 $f(x)=(${G})(${H})$ 에 대하여 $f'(${k})$ 의 값을 구하세요.`,
           choices: null,
           answer: String(ans),
           answerType: 'int',
@@ -58,7 +62,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '두 부분으로 나누기',
-              body: `$g(x)=${G}$, $h(x)=${H}$ 라 하면 $g'(x)=${gdk}$, $h'(x)=${Hd}$ 입니다.`,
+              body: `$g(x)=${G}$, $h(x)=${H}$ 라 하면 $g'(x)=${gdk}$, $h'(x)=${Hd}$ ${ieyo(Hd)}.`,
             },
             {
               title: '곱의 미분법 적용',
@@ -66,11 +70,11 @@ export const generators: Generator[] = [
             },
             {
               title: `$x=${k}$ 일 때 각 부분의 값`,
-              body: `$h(${k})=${hk}$, $g(${k})=${gk}$, $h'(${k})=${hdk}$ 입니다.`,
+              body: `$h(${k})=${hk}$, $g(${k})=${gk}$, $h'(${k})=${hdk}$ ${ieyo(hdk)}.`,
             },
             {
               title: '대입해서 계산하기',
-              body: `전개하지 않고 바로 넣습니다.\n$$f'(${k})=${gdk}\\cdot ${paren(hk)}+${paren(gk)}\\cdot ${paren(hdk)}=${gdk * hk}${signed(gk * hdk)}=${ans}$$`,
+              body: `전개하지 않고 바로 넣어요.\n$$f'(${k})=${gdk}\\cdot ${paren(hk)}+${paren(gk)}\\cdot ${paren(hdk)}=${gdk * hk}${signed(gk * hdk)}=${ans}$$`,
             },
           ],
           tip: expandTip(polyMul(g, h), k, ans),
@@ -93,7 +97,7 @@ export const generators: Generator[] = [
         const H = polyTex(h);
         const Hd = polyTex(polyDiff(h));
         return {
-          q: `함수 $f(x)=(${G})(${H})$ 에 대하여 $f'(${k})$ 의 값을 구하시오.`,
+          q: `함수 $f(x)=(${G})(${H})$ 에 대하여 $f'(${k})$ 의 값을 구하세요.`,
           choices: null,
           answer: String(ans),
           answerType: 'int',
@@ -102,7 +106,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '두 부분으로 나누기',
-              body: `$g(x)=${G}$, $h(x)=${H}$ 라 하면 $g'(x)=2x$, $h'(x)=${Hd}$ 입니다.`,
+              body: `$g(x)=${G}$, $h(x)=${H}$ 라 하면 $g'(x)=2x$, $h'(x)=${Hd}$ ${ieyo(Hd)}.`,
             },
             {
               title: '곱의 미분법 적용',
@@ -110,7 +114,7 @@ export const generators: Generator[] = [
             },
             {
               title: `$x=${k}$ 일 때 각 부분의 값`,
-              body: `$g'(${k})=${gdk}$, $h(${k})=${hk}$, $g(${k})=${gk}$, $h'(${k})=${hdk}$ 입니다.`,
+              body: `$g'(${k})=${gdk}$, $h(${k})=${hk}$, $g(${k})=${gk}$, $h'(${k})=${hdk}$ ${ieyo(hdk)}.`,
             },
             {
               title: '대입해서 계산하기',
@@ -146,19 +150,19 @@ export const generators: Generator[] = [
             ? `2\\cdot ${paren(v)}\\cdot ${paren(a)}`
             : `3\\cdot ${paren(v)}^2\\cdot ${paren(a)}`;
         return {
-          q: `함수 $f(x)=(${G})^${n}$ 에 대하여 $f'(${k})$ 의 값을 구하시오.`,
+          q: `함수 $f(x)=(${G})^${n}$ 에 대하여 $f'(${k})$ 의 값을 구하세요.`,
           choices: null,
           answer: String(ans),
           answerType: 'int',
           check: `diff((${polySym(g)})**${n}, x).subs(x, ${k})`,
           concepts: [
             "$[\\{g(x)\\}^n]'=n\\{g(x)\\}^{n-1}g'(x)$",
-            '같은 함수를 $n$번 곱한 것에 곱의 미분법을 쓰면 같은 항이 $n$개 나옵니다.',
+            '같은 함수를 $n$번 곱한 것에 곱의 미분법을 쓰면 같은 항이 $n$개 나와요.',
           ],
           steps: [
             {
               title: '안쪽 함수 보기',
-              body: `$g(x)=${G}$ 라 하면 $f(x)=\\{g(x)\\}^${n}$ 이고 $g'(x)=${a}$ 입니다.`,
+              body: `$g(x)=${G}$ 라 하면 $f(x)=\\{g(x)\\}^${n}$ 이고 $g'(x)=${a}$ ${ieyo(a)}.`,
             },
             {
               title: '거듭제곱의 미분 공식 적용',
@@ -166,14 +170,14 @@ export const generators: Generator[] = [
             },
             {
               title: `안쪽에 $x=${k}$ 대입`,
-              body: `$g(${k})=${a}\\cdot ${paren(k)}${signed(b)}=${v}$ 입니다.`,
+              body: `$g(${k})=${a}\\cdot ${paren(k)}${signed(b)}=${v}$ ${ieyo(v)}.`,
             },
             {
               title: '계산하기',
               body: `$$f'(${k})=${calc}=${ans}$$`,
             },
           ],
-          tip: `${expandTip(f, k, ans)} 끝에 곱하는 $g'(x)=${a}$ 를 빠뜨리지 않도록 조심합니다.`,
+          tip: `${expandTip(f, k, ans)} 끝에 곱하는 $g'(x)=${a}$ 를 빠뜨리지 않도록 조심해요.`,
         };
       }
     },
@@ -197,7 +201,7 @@ export const generators: Generator[] = [
         const Pt = polyTex(P);
         const Pdt = polyTex(polyDiff(P));
         return {
-          q: `다항함수 $f(x)$ 가 $f(${t})=${F}$, $f'(${t})=${D}$ 를 만족시킨다. 함수 $h(x)=(${Pt})f(x)$ 에 대하여 $h'(${t})$ 의 값을 구하시오.`,
+          q: `다항함수 $f(x)$ 가 $f(${t})=${F}$, $f'(${t})=${D}$ 를 만족시켜요. 함수 $h(x)=(${Pt})f(x)$ 에 대하여 $h'(${t})$ 의 값을 구하세요.`,
           choices: null,
           answer: String(ans),
           answerType: 'int',
@@ -211,14 +215,14 @@ export const generators: Generator[] = [
             },
             {
               title: `$x=${t}$ 일 때 앞부분의 값`,
-              body: `$${Pdt}$ 의 값은 $${pdv}$, $${Pt}$ 의 값은 $${pv}$ 입니다.`,
+              body: `$${Pdt}$ 의 값은 $${pdv}$, $${Pt}$ 의 값은 $${pv}$ ${ieyo(pv)}.`,
             },
             {
               title: '주어진 값 대입하기',
               body: `$$h'(${t})=${paren(pdv)}\\cdot ${paren(F)}+${paren(pv)}\\cdot ${paren(D)}=${pdv * F}${signed(pv * D)}=${ans}$$`,
             },
           ],
-          tip: `$f(x)$ 의 식을 몰라도 됩니다. $h'(${t})$ 에는 $f(${t})$ 와 $f'(${t})$ 두 값만 쓰이기 때문입니다.`,
+          tip: `$f(x)$ 의 식을 몰라도 돼요. $h'(${t})$ 에는 $f(${t})$ 와 $f'(${t})$ 두 값만 쓰이기 때문이에요.`,
         };
       }
     },
@@ -240,27 +244,27 @@ export const generators: Generator[] = [
         const [A, B, C] = [a, b, c].map((n) => polyTex([1, n]));
         const f = polyMul(polyMul([1, a], [1, b]), [1, c]);
         return {
-          q: `함수 $f(x)=(${A})(${B})(${C})$ 에 대하여 $f'(${k})$ 의 값을 구하시오.`,
+          q: `함수 $f(x)=(${A})(${B})(${C})$ 에 대하여 $f'(${k})$ 의 값을 구하세요.`,
           choices: null,
           answer: String(ans),
           answerType: 'int',
           check: `diff((x + ${paren(a)})*(x + ${paren(b)})*(x + ${paren(c)}), x).subs(x, ${k})`,
           concepts: [
             "세 함수의 곱: $\\{fgh\\}'=f'gh+fg'h+fgh'$",
-            '한 번에 하나씩만 미분하고 나머지는 그대로 둡니다.',
+            '한 번에 하나씩만 미분하고 나머지는 그대로 둬요.',
           ],
           steps: [
             {
               title: '세 함수의 곱의 미분법',
-              body: `각 괄호를 미분하면 $1$ 이므로, 하나씩 지운 두 괄호의 곱 세 개를 더하면 됩니다.\n$$f'(x)=(${B})(${C})+(${A})(${C})+(${A})(${B})$$`,
+              body: `각 괄호를 미분하면 $1$ 이므로, 하나씩 지운 두 괄호의 곱 세 개를 더하면 돼요.\n$$f'(x)=(${B})(${C})+(${A})(${C})+(${A})(${B})$$`,
             },
             {
               title: `$x=${k}$ 일 때 각 괄호의 값`,
-              body: `$${A}$, $${B}$, $${C}$ 의 값은 차례로 $${u}$, $${v}$, $${w}$ 입니다.`,
+              body: `$${A}$, $${B}$, $${C}$ 의 값은 차례로 $${u}$, $${v}$, $${w}$ ${ieyo(w)}.`,
             },
             {
               title: '세 항 각각 계산하기',
-              body: `$${paren(v)}\\cdot ${paren(w)}=${v * w}$, $${paren(u)}\\cdot ${paren(w)}=${u * w}$, $${paren(u)}\\cdot ${paren(v)}=${u * v}$ 입니다.`,
+              body: `$${paren(v)}\\cdot ${paren(w)}=${v * w}$, $${paren(u)}\\cdot ${paren(w)}=${u * w}$, $${paren(u)}\\cdot ${paren(v)}=${u * v}$ ${ieyo(u * v)}.`,
             },
             {
               title: '더하기',

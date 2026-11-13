@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  createProfileSwitch,
   createScopedStore,
   FIRST,
   normalizeProfiles,
   type RawStore,
   scopedKey,
-  switchProfile,
 } from '../src/app/profile.ts';
 import { createSaver } from '../src/app/saver.ts';
 
@@ -121,46 +121,60 @@ test('idle: 쓰는 중이면 끝날 때까지 기다리고, 비었으면 바로'
   assert.equal(done, true);
 });
 
-test('전환 순서: 홈으로 → 저장 비우기 대기 → 프로필 변경. 대기 중 저장은 옛 프로필로', async () => {
+test('첫 프로필의 "모든 키" 조회에 기기 공통 키(profiles·profile)가 섞이지 않는다', async () => {
+  const raw = memStore();
+  raw.data.set('profiles', []);
+  raw.data.set('profile', 'kid');
+  raw.data.set('settings', 1);
+  const s = createScopedStore(raw, () => FIRST);
+  assert.deepEqual(await s.keys(), ['settings']);
+  assert.deepEqual(await s.entries('pro'), []);
+});
+
+/**
+ * 실제 React 정리 순서를 그대로 흉내 낸다:
+ *  1) request(id) → App 이 <Screen> 대신 빈 자리표시를 그린다(커밋)
+ *  2) 같은 커밋에서 사라지는 <Screen> 의 정리(cleanup)가 먼저 돈다 — InkPage 가 마지막 필기를 저장
+ *  3) 그다음 App 의 effect 가 commit() 을 부른다 — 모듈 변수와 React 상태를 한 번에 바꾼다
+ */
+test('전환: 사라지는 화면의 마지막 저장은 옛 프로필로, 그 뒤 저장은 새 프로필로', async () => {
   const raw = memStore();
   let cur = FIRST;
-  const queue: (() => void)[] = [];
-  const release = () => queue.shift()?.();
-  const saver = createSaver(
-    (k, v) =>
-      new Promise<void>((r) => {
-        queue.push(() => {
-          raw.data.set(k, v);
-          r();
-        });
-      }),
-    { retryMs: 1, later: () => {}, scope: (k) => scopedKey(cur, k) },
-  );
+  const saver = createSaver(async (k, v) => void raw.data.set(k, v), {
+    retryMs: 1,
+    later: () => {},
+    scope: (k) => scopedKey(cur, k),
+  });
   const log: string[] = [];
-  saver.save('ink:a', 1);
-  const p = switchProfile('kid', {
-    goHome: () => log.push('home'),
-    idle: () => saver.idle(),
-    setCurrent: (id) => {
-      log.push(`set:${id}`);
+  let state: { profile: string; leaving: string | null } = { profile: FIRST, leaving: null };
+  const sw = createProfileSwitch({
+    setModule: (id) => {
+      log.push(`module:${id}`);
       cur = id;
     },
+    setState: (u) => {
+      state = u(state);
+      log.push(`state:${state.profile}/${state.leaving}`);
+    },
+    persist: (id) => saver.save('profile', id),
   });
-  // 홈으로 가며 사라지는 화면이 마지막 필기를 저장한다 — 아직 옛 프로필
+  sw.request('kid');
+  assert.deepEqual(state, { profile: FIRST, leaving: 'kid' });
+  // 2) 사라지는 화면의 정리: 아직 모듈 변수는 옛 프로필
+  saver.save('ink:a', 1);
+  // 3) App effect
+  sw.commit('kid');
+  assert.equal(cur, 'kid');
+  assert.deepEqual(state, { profile: 'kid', leaving: null });
+  assert.deepEqual(log, ['state:first/kid', 'module:kid', 'state:kid/null']);
   saver.save('ink:b', 2);
   await tick();
-  assert.deepEqual(log, ['home']);
-  release();
-  await tick();
-  release();
-  await p;
-  assert.deepEqual(log, ['home', 'set:kid']);
-  assert.equal(raw.data.get('ink:b'), 2);
-  assert.equal(raw.data.has('@kid/ink:b'), false);
-  saver.save('ink:c', 3);
-  release();
-  await tick();
-  assert.equal(raw.data.get('@kid/ink:c'), 3);
+  assert.equal(raw.data.get('ink:a'), 1);
+  assert.equal(raw.data.get('@kid/ink:b'), 2);
+  assert.equal(raw.data.get('profile'), 'kid');
+  // 같은 프로필로의 요청은 아무것도 하지 않는다(화면을 괜히 내렸다 올리지 않게)
+  sw.request('kid');
+  assert.deepEqual(state, { profile: 'kid', leaving: null });
 });
 
 test('normalizeProfiles: 첫 프로필은 늘 있고, 깨진 항목은 버린다', () => {
@@ -173,4 +187,28 @@ test('normalizeProfiles: 첫 프로필은 늘 있고, 깨진 항목은 버린다
     ],
   );
   assert.deepEqual(normalizeProfiles([{ id: FIRST, name: '엄마' }]), [{ id: FIRST, name: '엄마' }]);
+});
+
+test('프로필 목록 바꾸기: 추가(새 id)·이름 바꾸기·삭제(첫 프로필은 못 지움)', async () => {
+  const { addProfile, renameProfile, removeProfile, cleanName } = await import(
+    '../src/app/profile.ts'
+  );
+  const base = [{ id: FIRST, name: '나' }];
+  const added = addProfile(base, '  아이  ', () => 'p-abc');
+  assert.deepEqual(added, [
+    { id: FIRST, name: '나' },
+    { id: 'p-abc', name: '아이' },
+  ]);
+  // 같은 id 가 나오면 다시 만든다
+  let n = 0;
+  const twice = addProfile(added, '둘째', () => (n++ === 0 ? 'p-abc' : 'p-def'));
+  assert.equal(twice[2]?.id, 'p-def');
+  assert.deepEqual(renameProfile(added, 'p-abc', '첫째'), [
+    { id: FIRST, name: '나' },
+    { id: 'p-abc', name: '첫째' },
+  ]);
+  assert.deepEqual(removeProfile(added, 'p-abc'), base);
+  assert.deepEqual(removeProfile(added, FIRST), added);
+  assert.equal(cleanName('   '), null);
+  assert.equal(cleanName('a'.repeat(30))?.length, 12);
 });

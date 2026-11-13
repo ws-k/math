@@ -102,3 +102,12 @@ test('parse: 형식 오류', () => {
   // 버튼으로 x 하나만 남길 수 없으면(목표에 닿지 못하면) 오류
   assert.throws(bad((p) => p.ops.splice(1, 1)));
 });
+
+test('화면 식과 검산 식이 같은 eqSym 에서 나온다', async () => {
+  const { eqSym } = await import('../src/lesson/widgets/balance.ts');
+  const s0 = initial(P);
+  assert.equal(eqSym(s0), '3*x+1000=13000');
+  assert.equal(view(s0).tex, '3x+1000=13000');
+  assert.equal(view(apply(s0, TRAP)).tex, '3x\\neq 13000');
+  assert.equal(balanceDef.equation?.(P), '3*x+1000=13000');
+});

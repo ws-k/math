@@ -1,14 +1,16 @@
 // 레슨 화면 글자를 데이터에서 만들어 내는 순수 함수들. 검사기와 화면이 같은 함수를 써야
 // "검산한 값 = 보이는 값"이 보장된다.
+import { reduce } from './sym.ts';
 import type { Lesson, NumFormat, SpotToken } from './types.ts';
 
 const MINUS = '−';
 
-/** "a/b"·정수 문자열 → [분자, 분모]. 형식이 다르면 예외 */
+/** "a/b"·정수·소수 문자열 → [분자, 분모]. 형식이 다르면 예외 */
 function rational(v: string): [bigint, bigint] {
-  const m = v.match(/^(-?\d+)(?:\/(\d+))?$/);
-  if (!m) throw new Error(`값은 정수나 "a/b" 꼴이어야 함: ${v}`);
-  const d = BigInt(m[2] ?? '1');
+  const m = v.match(/^(-?\d+)(?:\.(\d+)|\/(\d+))?$/);
+  if (!m) throw new Error(`값은 정수·소수나 "a/b" 꼴이어야 함: ${v}`);
+  if (m[2] !== undefined) return reduce(BigInt(`${m[1]}${m[2]}`), 10n ** BigInt(m[2].length));
+  const d = BigInt(m[3] ?? '1');
   if (d === 0n) throw new Error(`분모가 0: ${v}`);
   return [BigInt(m[1] as string), d];
 }
@@ -35,7 +37,9 @@ export function formatValue(value: string, f: NumFormat): string {
   } else {
     body = `${a}/${d}`;
   }
-  return (neg ? MINUS : '') + body + (f.unit ?? '');
+  // 반올림해서 0 이 되면(−0.3 → 0) 부호를 붙이지 않는다 — "−0" 은 다른 수처럼 보인다
+  const zero = !/[1-9]/.test(body);
+  return (neg && !zero ? MINUS : '') + body + (f.unit ?? '');
 }
 
 /** 글 속 {{이름}} 을 값으로. 모르는 이름은 오류(검사 단계에서 잡히게) */
@@ -47,27 +51,23 @@ export function fill(text: string, vars: Record<string, string>): string {
   });
 }
 
-/** sym 에 쓸 수 있는 글자. 숫자·소문자 변수·사칙·거듭제곱(**)·괄호만 — ^ 는 sympy 에서 XOR 이다 */
-const SYM_OK = /^[0-9a-z+\-*/(). ]+$/;
-
-/**
- * 계산식(sympy 문법)을 KaTeX 글자로. 곱셈 기호는 숫자·문자 사이면 숨기고 숫자끼리면 ×,
- * 거듭제곱은 위첨자. 화면 글자를 계산식에서 만들어야 검산한 식과 보이는 식이 어긋나지 않는다.
- */
-export function symToTex(sym: string): string {
-  const s = sym.replace(/\s+/g, '');
-  if (!s || !SYM_OK.test(s) || /[a-z]{2}/.test(s)) throw new Error(`식에 쓸 수 없는 글자: ${sym}`);
-  // 곱셈 기호를 빼먹은 꼴(3x, 2(x+1), (x)(x))은 sympy 가 못 읽는다 — 화면 글자만 맞고 검산이 깨지지 않게 거부
-  if (/(\d|\))[a-z(]|[a-z]\(/.test(s)) throw new Error(`곱셈은 * 로 적어야 함: ${sym}`);
-  return s
-    .replace(/\*\*(\d+|[a-z])/g, '^{$1}')
-    .replace(/(\d)\*(\d)/g, '$1\\times $2')
-    .replace(/\*/g, '');
-}
+/** 계산식 → KaTeX. 식 구조를 거쳐 만든다(sym.ts) */
+export { symToTex } from './sym.ts';
 
 /** 틀린 곳 찾기 토큰을 이어 붙인 등식(검산할 "틀린 식") */
 export function spotEquation(tokens: SpotToken[]): string {
   return tokens.map((t) => ('sep' in t ? '=' : t.sym.replace(/\s+/g, ''))).join('');
+}
+
+/** bad 토큰 자리에 fix 조각을 끼운 토큰들(고친 식). 화면도 검산도 이것으로 그린다 */
+export const spotFixed = (tokens: SpotToken[], fix: string): SpotToken[] =>
+  tokens.map((t) => ('bad' in t && t.bad ? { sym: fix } : t));
+
+/** 레슨 글의 {{이름}} 값: 연습문제 수 + 레슨 values(검산된 값). 화면과 검사기가 같이 쓴다 */
+export function lessonVars(l: Lesson, problems: number): Record<string, string> {
+  const out: Record<string, string> = { problems: String(problems) };
+  for (const [k, v] of Object.entries(l.values ?? {})) out[k] = v.value;
+  return out;
 }
 
 const HANDS_ON = new Set(['question', 'explore', 'spot', 'solve']);

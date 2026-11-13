@@ -34,7 +34,26 @@ export interface EquivCheck {
   expect: boolean;
 }
 
-export type CheckItem = AnswerCheck | SpotCheck | EquivCheck;
+/** 두 등식이 같은 식인가(왼쪽−오른쪽이 같다). 장면마다 따로 적은 같은 방정식이 어긋나지 않았나 */
+export interface SameEqCheck {
+  ref: string;
+  unit: string;
+  kind: 'sameeq';
+  a: string;
+  b: string;
+}
+
+/** 무리수 근삿값: expr 을 digits 자리에서 반올림(0.5 는 0 에서 먼 쪽)하면 value 인가 */
+export interface ApproxCheck {
+  ref: string;
+  unit: string;
+  kind: 'approx';
+  expr: string;
+  value: string;
+  digits: number;
+}
+
+export type CheckItem = AnswerCheck | SpotCheck | EquivCheck | SameEqCheck | ApproxCheck;
 
 const TYPES = new Set(['int', 'fraction', 'expr', 'choice']);
 /** 계산 없이 숫자만 적은 검산식 (예: "8", "5/3", "Rational(5,3)") */

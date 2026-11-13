@@ -57,6 +57,12 @@ test('부품 모델 결과 스냅샷(저울·항 끌기 검산 항목)', () => {
         check: 'solve(Eq(3*x+1000, 13000), x)[0]',
       },
       {
+        ref: 'm1-linear-eq/lesson:scale:같은 식',
+        kind: 'sameeq',
+        a: '3*x+1000=13000',
+        b: '3*x+1000=13000',
+      },
+      {
         ref: 'm1-linear-eq/lesson:move:옮기기',
         kind: 'equiv',
         before: '3*x+1000=13000',
@@ -69,6 +75,12 @@ test('부품 모델 결과 스냅샷(저울·항 끌기 검산 항목)', () => {
         before: '3*x+1000=13000',
         after: '3*x=13000+1000',
         expect: false,
+      },
+      {
+        ref: 'm1-linear-eq/lesson:move:같은 식',
+        kind: 'sameeq',
+        a: '3*x+1000=13000',
+        b: '3*x+1000=13000',
       },
     ].map((i) => ({ ...i, unit: undefined })),
   );
@@ -100,7 +112,7 @@ for (const [name, f] of [
     '틀린 곳 찾기의 고친 식이 틀림',
     (l: Lesson) => {
       const it = scene<'spot'>(l, 'traps').items[0] as { fix: { sym: string } };
-      it.fix.sym = '-(x-3)=-x-3+1';
+      it.fix.sym = '-3+1';
     },
   ],
   [
@@ -108,6 +120,42 @@ for (const [name, f] of [
     (l: Lesson) => {
       const it = scene<'spot'>(l, 'traps').items[1] as { tokens: unknown[] };
       it.tokens = [{ sym: '3*x' }, { sym: '+6', bad: true }, { sep: '=' }, { sym: '2*x' }];
+    },
+  ],
+  [
+    // bad 표시를 엉뚱한 토큰으로 옮기면 고친 식(그 토큰만 바꿔 끼운 식)이 성립하지 않는다
+    '틀린 곳 찾기의 bad 가 엉뚱한 토큰',
+    (l: Lesson) => {
+      const it = scene<'spot'>(l, 'traps').items[0] as { tokens: { bad?: true }[] };
+      delete it.tokens[3]?.bad;
+      (it.tokens[2] as { bad?: true }).bad = true;
+    },
+  ],
+  [
+    '저울 오른쪽만 다른 숫자(장면 간 어긋남)',
+    (l: Lesson) => {
+      const w = scene<'explore'>(l, 'scale').widget.params as { right: { c: number } };
+      w.right.c = 16000;
+    },
+  ],
+  [
+    '영수증 합계만 다른 숫자',
+    (l: Lesson) => {
+      const w = scene<'question'>(l, 'hook').widget?.params as { total: { value: string } };
+      w.total.value = '14000';
+    },
+  ],
+  [
+    '항 끌기 항만 다른 숫자',
+    (l: Lesson) => {
+      const w = scene<'explore'>(l, 'move').widget.params as { lhs: string[] };
+      w.lhs[1] = '+1001';
+    },
+  ],
+  [
+    '글에 넣는 값(해)이 틀림',
+    (l: Lesson) => {
+      (l.values?.coffee as { value: string }).value = '5000';
     },
   ],
   [
@@ -125,3 +173,10 @@ for (const [name, f] of [
     assert.equal(r.status, 1, r.stdout);
   });
 }
+
+test('수식 속 손으로 적은 숫자는 경고로 나오고, {{…}} 로 넣은 값은 경고가 없다', () => {
+  const r = validateLesson(unit.id, fresh(), { problems: unit.problems.length });
+  assert.ok(r.warnings.length > 0);
+  assert.ok(!r.warnings.some((w) => w.includes('{{')));
+  assert.ok(r.warnings.some((w) => w.includes('2x = 14')));
+});

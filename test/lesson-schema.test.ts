@@ -104,6 +104,30 @@ for (const [name, f] of [
   ],
   ['모르는 치환 이름', (l: Lesson) => (scene(l, 'summary').next = '{{nope}}')],
   [
+    '고친 조각에 등식 전체를 적음',
+    (l: Lesson) =>
+      ((scene(l, 'spot').items[0] as { fix: { sym: string } }).fix.sym = '-(x-3)=-x+3'),
+  ],
+  ['직접 풀기 id 중복', (l: Lesson) => ((scene(l, 'solve').items[1] as { id: string }).id = 'p1')],
+  [
+    '화면이 채우지 않는 칸에 {{…}}',
+    (l: Lesson) =>
+      ((scene(l, 'solve').items[0] as { placeholder?: string }).placeholder = '{{problems}}'),
+  ],
+  [
+    '약분되는 보기 값',
+    (l: Lesson) => ((scene(l, 'question').choices[0] as { value: string }).value = '6000/2'),
+  ],
+  ['없는 공유 식을 가리킴', (l: Lesson) => (scene(l, 'question').eq = 'nope')],
+  [
+    '근삿값인데 자리수와 다른 소수',
+    (l: Lesson) => {
+      const q = scene(l, 'question');
+      q.format = { digits: 2, approx: true };
+      for (const c of q.choices) c.value = '1.5';
+    },
+  ],
+  [
     '모르는 부품',
     (l: Lesson) =>
       l.scenes.push({ kind: 'explore', id: 'w', title: 't', widget: { type: 'nope', params: {} } }),
@@ -114,3 +138,55 @@ for (const [name, f] of [
     assert.ok(r.errors.length > 0, '오류가 없음');
   });
 }
+
+test('공유 식·값: 질문 정답이 식의 해인지, 부품이 같은 식인지 항목을 만든다', () => {
+  const l = good();
+  l.equations = { coffee: '3*x+1000=13000' };
+  l.values = { coffee: { value: '4000', check: 'solve(Eq(3*x+1000,13000),x)[0]' } };
+  const q = scene(l, 'question');
+  q.eq = 'coffee';
+  q.widget = {
+    type: 'table',
+    params: {
+      unit: '원',
+      rows: [
+        { label: '커피', value: '3*x' },
+        { label: '쿠키', value: '1000' },
+      ],
+      total: { label: '합계', value: '13000' },
+      sum: true,
+    },
+    eq: 'coffee',
+  };
+  scene(l, 'terms').terms[0] = { term: '해', body: '$x = {{coffee}}$' };
+  const r = run(l);
+  assert.deepEqual(r.errors, []);
+  const refs = r.items.map((i) => i.ref);
+  assert.ok(refs.includes('u/lesson:hook:식의 해'));
+  assert.ok(refs.includes('u/lesson:hook:같은 식'));
+  assert.ok(refs.includes('u/lesson:값:coffee'));
+  assert.ok(!r.warnings.some((w) => w.includes('terms')));
+});
+
+test('근삿값 보기: 보기마다 approx 항목', () => {
+  const l = good();
+  const q = scene(l, 'question');
+  q.format = { digits: 2, approx: true };
+  q.choices = [
+    { value: '1.41', check: 'sqrt(2)' },
+    { value: '1.73', check: 'sqrt(3)', feedback: '3의 제곱근이에요.' },
+  ];
+  q.answer = 0;
+  q.answerCheck = 'sqrt(8)/2';
+  const r = run(l);
+  assert.deepEqual(r.errors, []);
+  const a = r.items.filter((i) => 'kind' in i && i.kind === 'approx');
+  assert.deepEqual(a[0], {
+    ref: 'u/lesson:hook:보기1',
+    unit: 'u',
+    kind: 'approx',
+    expr: 'sqrt(2)',
+    value: '1.41',
+    digits: 2,
+  });
+});

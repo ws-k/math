@@ -1,9 +1,8 @@
 // 저울 화면. 상태 → 그릴 것은 balance.ts(view) 가 정하고, 여기서는 그리기만 한다.
 // 버튼으로만 바뀌는 부품이라 끌기가 없고, 상태가 바뀔 때만 다시 그린다.
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { Rich } from '../../app/Rich.tsx';
-import { fill, formatValue } from '../format.ts';
-import { Tex } from '../ui.tsx';
+import { formatValue } from '../format.ts';
+import { LRich, Tex } from '../ui.tsx';
 import {
   apply,
   type BalanceOp,
@@ -40,12 +39,14 @@ function Cup() {
   );
 }
 
-export function Balance({ params: p, onDone }: WidgetProps<BalanceParams>) {
+export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams>) {
   const [s, setS] = useState<BalanceState>(() => initial(p));
-  const [msg, setMsg] = useState<{ text: string; cls: '' | 'ok' | 'bad' }>({
-    text: p.intro,
-    cls: '',
-  });
+  /** 안내 글(원문)과 그때의 저울 값. 채우기는 LRich 가 한다(레슨 값 + 저울 값) */
+  const [msg, setMsg] = useState<{
+    text: string;
+    vars: Record<string, string>;
+    cls: '' | 'ok' | 'bad';
+  }>(() => ({ text: p.intro, vars: view(initial(p)).vars, cls: '' }));
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -53,21 +54,22 @@ export function Balance({ params: p, onDone }: WidgetProps<BalanceParams>) {
     const n = apply(s, o);
     const v = view(n);
     setS(n);
-    setMsg({ text: fill(o.say, v.vars), cls: o.side === 'both' ? 'ok' : 'bad' });
+    setMsg({ text: o.say, vars: v.vars, cls: o.side === 'both' ? 'ok' : 'bad' });
     if (v.solved) onDone();
+    if (o.side !== 'both') onMiss();
     if (o.side !== 'both' && o.undo) {
       const before = s;
       const undo = o.undo;
       timer.current = setTimeout(() => {
         setS(before);
-        setMsg({ text: fill(undo, view(before).vars), cls: '' });
+        setMsg({ text: undo, vars: view(before).vars, cls: '' });
       }, UNDO_MS);
     }
   };
   const reset = () => {
     clearTimeout(timer.current);
     setS(initial(p));
-    setMsg({ text: p.intro, cls: '' });
+    setMsg({ text: p.intro, vars: view(initial(p)).vars, cls: '' });
   };
 
   const v = view(s);
@@ -115,14 +117,15 @@ export function Balance({ params: p, onDone }: WidgetProps<BalanceParams>) {
         <Tex tex={v.tex} className={`scale-eq${s.tilt ? ' ne' : ''}`} />
       </div>
       <div className={`toast ${msg.cls}`} aria-live="polite">
-        <Rich inline emph src={msg.text} />
+        <LRich inline src={msg.text} vars={msg.vars} />
       </div>
       <div className="actions">
         <div className="row2" style={{ '--cols': both.length } as CSSProperties}>
-          {both.map((o) => (
+          {both.map((o, i) => (
             <button
               type="button"
-              key={opLabel(o)}
+              // biome-ignore lint/suspicious/noArrayIndexKey: 버튼 순서는 데이터에서 고정이고 글자가 같을 수 있다
+              key={i}
               className="lbtn blue"
               disabled={!enabled(s, o)}
               onClick={() => press(o)}
@@ -131,10 +134,11 @@ export function Balance({ params: p, onDone }: WidgetProps<BalanceParams>) {
             </button>
           ))}
         </div>
-        {one.map((o) => (
+        {one.map((o, i) => (
           <button
             type="button"
-            key={opLabel(o)}
+            // biome-ignore lint/suspicious/noArrayIndexKey: 위와 같음
+            key={i}
             className="lbtn redline"
             disabled={!enabled(s, o)}
             onClick={() => press(o)}

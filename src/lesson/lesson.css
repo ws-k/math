@@ -1,49 +1,7 @@
-/* 레슨 화면. 승인된 미리보기(docs/mockups/linear-eq-lesson.html)의 토큰·모양을 그대로 옮겼다.
-   새 디자인 토큰은 아직 .lesson 안에서만 쓴다 — 책 화면까지 바꾸는 것은 7단계(화면 구조 개편)에서.
+/* 레슨 화면. 승인된 미리보기(docs/mockups/linear-eq-lesson.html)의 모양을 옮겼다.
+   색·글꼴 토큰은 앱 전체(app.css 의 :root)와 같은 것을 쓴다.
    기존 app.css 와 이름이 겹치는 클래스(btn·bar·row·choices·step·dot·big)는 바꿔 달았다(전역 규칙이 새지 않게).
    글꼴은 시스템 고딕만 쓴다(오프라인 앱이라 웹폰트를 넣지 않는다). 수식은 KaTeX. */
-.lesson {
-  --bg: #ffffff;
-  --surface: #f3f5f8;
-  --surface-2: #e9edf3;
-  --ink: #161b26;
-  --sub: #687385;
-  --faint: #a9b1bf;
-  --primary: #2f6bff;
-  --primary-ink: #ffffff;
-  --primary-soft: #eaf0ff;
-  --good: #10b07a;
-  --good-soft: #e3f7ef;
-  --bad: #f0455a;
-  --bad-soft: #feecee;
-  --coin: #ffc53d;
-  --coin-ink: #4a3500;
-  --shadow: 0 1px 2px rgba(22, 27, 38, 0.06), 0 8px 24px rgba(22, 27, 38, 0.06);
-  --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  .lesson {
-    --bg: #0e1117;
-    --surface: #181c25;
-    --surface-2: #222836;
-    --ink: #eef1f6;
-    --sub: #98a2b3;
-    --faint: #5b6476;
-    --primary: #5b8cff;
-    --primary-ink: #0b1020;
-    --primary-soft: #1a2442;
-    --good: #34d399;
-    --good-soft: #10291f;
-    --bad: #ff6b7d;
-    --bad-soft: #321a1f;
-    --coin: #f5b82e;
-    --coin-ink: #3a2900;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-    color-scheme: dark;
-  }
-}
-
 .lesson {
   min-height: 100svh;
   background: var(--bg);
@@ -81,6 +39,9 @@
 }
 .lesson .katex {
   font-size: 1.12em;
+  /* 레슨의 짧은 식(x = 4000)이 좁은 화면(382px)에서 두 줄로 갈라지지 않게. 레슨 식은 짧게 쓴다 —
+     앱 전체에 걸면 미분 단원의 긴 식이 화면 밖으로 밀려 나간다 */
+  white-space: nowrap;
 }
 
 /* 상단 바 */
@@ -131,7 +92,8 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 64px);
+  /* 위에 붙는 진행 막대(높이 약 70px) 아래로 장면 제목이 보이게 */
+  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 84px);
 }
 .lesson .scene.enter {
   animation: l-rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -585,16 +547,16 @@
   background: var(--primary);
   color: var(--primary-ink);
 }
-.lesson .mover.dragging {
+.lesson .mover[data-dragging] {
   cursor: grabbing;
   box-shadow: 0 10px 24px rgba(22, 27, 38, 0.22);
   scale: 1.08;
 }
-.lesson .mover.ready {
+.lesson .mover[data-ready] {
   outline: 3px dashed var(--good);
   outline-offset: 3px;
 }
-.lesson .mover:not(.flipped):not(.dragging) {
+.lesson .mover:not(.flipped):not([data-dragging]) {
   animation: l-nudge 1.8s ease-in-out 1s 2;
 }
 @keyframes l-nudge {
@@ -645,7 +607,7 @@
   color: #fff;
 }
 .lesson .spot .arrow {
-  color: var(--faint);
+  color: var(--sub);
   padding: 0 0.3em;
 }
 .lesson .fix {
@@ -693,7 +655,7 @@
   border-color: var(--primary);
 }
 .lesson .ansrow .ans .ph {
-  color: var(--faint);
+  color: var(--sub);
 }
 .lesson .ansrow .ans.ok {
   border-color: var(--good);
@@ -791,16 +753,31 @@
     opacity: 0;
   }
 }
+/* 필기 칸 높이를 확실히 정한다. 엔진의 종이(.page-host)는 min-height:100% 로 높이를 잡는데
+   부모 높이가 정해지지 않으면 0 이 되어 펜 획이 안 그려진다(엔진 코드는 고치지 않고 감싸는 쪽에서 해결). */
 .lesson .note-drawer {
+  position: relative;
+  height: min(60svh, 420px);
   border-radius: 16px;
   overflow: hidden;
-  background: var(--bg);
-  min-height: 320px;
+  /* 다크 모드에서도 밝게: 펜 색이 고정이라 어두운 바탕에서는 획이 안 보인다 */
+  background: #ffffff;
+}
+.lesson .note-drawer > .page-scroll {
+  position: absolute;
+  inset: 0;
+}
+.lesson .fail-box {
+  padding-top: 80px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
 }
-.lesson .note-drawer > * {
-  flex: 1;
+.lesson a.lbtn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 /* 요약 */

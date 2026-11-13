@@ -73,7 +73,7 @@ export function wrongNote(cards: Cards, units: Unit[]): string[] {
  * 두 날짜의 0시끼리 뺀다(서머타임으로 하루가 23·25시간이어도 반올림이 흡수한다).
  */
 export function dueText(c: CardState, now: number): string {
-  if (c.due === null) return '이 문제는 졸업했습니다';
+  if (c.due === null) return '이 문제는 졸업했어요';
   const days = Math.round((startOfDay(c.due) - startOfDay(now)) / DAY);
-  return days <= 0 ? '오늘 다시 봅니다' : `${days}일 뒤 다시 봅니다`;
+  return days <= 0 ? '오늘 다시 봐요' : `${days}일 뒤에 다시 봐요`;
 }

@@ -2,12 +2,15 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   canNext,
+  canSkip,
   complete,
   dockLabel,
   initialState,
   lessonKey,
   next,
   restore,
+  SKIP_AFTER,
+  skip,
   toSaved,
 } from '../src/lesson/state.ts';
 import type { Lesson } from '../src/lesson/types.ts';
@@ -42,10 +45,10 @@ test('다음 장면을 하나씩 쌓고, 끝에서는 처음부터 다시 보기
   s = next(L, s);
   assert.equal(s.shown, 3);
   assert.equal(dockLabel(L, s), '처음부터 다시 보기');
-  // 끝에서 누르면 처음으로(완료 기록은 남긴다)
+  // 끝에서 누르면 처음으로. 다시 보기는 처음 배우는 것처럼 — gate 도 다시 걸리게 완료 기록을 비운다
   const r = next(L, s);
   assert.equal(r.shown, 1);
-  assert.deepEqual(r.done, ['b']);
+  assert.deepEqual(r.done, []);
 });
 
 test('gate 장면은 끝내기 전에는 넘어가지 않는다', () => {
@@ -70,4 +73,51 @@ test('저장은 장면 id 로, 되살릴 때 모르는 id 는 버린다', () => 
 
 test('저장 키', () => {
   assert.equal(lessonKey('m1-linear-eq'), 'lesson:m1-linear-eq');
+});
+
+test('restore: 저장된 자리 앞에 끝내지 않은 gate 가 있으면 그 gate 에서 멈춘다', () => {
+  const L2: Lesson = { ...L, scenes: [...L.scenes, { kind: 'intro', id: 'd', title: 't' }] };
+  assert.deepEqual(restore(L2, { at: 'd', done: [] }), { shown: 2, done: [] });
+  assert.deepEqual(restore(L2, { at: 'd', done: ['b'] }), { shown: 4, done: ['b'] });
+});
+
+test('넘어가기: gate 에서 두 번 실패하면 끝낸 것으로 치고 다음 장면으로', () => {
+  const s = next(L, initialState());
+  assert.equal(SKIP_AFTER, 2);
+  assert.equal(canSkip(L, s, 1), false);
+  assert.equal(canSkip(L, s, 2), true);
+  assert.deepEqual(skip(L, s), { shown: 3, done: ['b'], finished: true });
+  // gate 가 아니거나 이미 끝낸 장면은 넘어가기가 없다
+  assert.equal(canSkip(L, initialState(), 5), false);
+  assert.equal(canSkip(L, complete(s, 'b'), 5), false);
+});
+
+test('끝까지 본 적이 있으면 finished — 처음부터 다시 봐도 남고, 저장·복원된다', () => {
+  let s = complete(next(L, initialState()), 'b');
+  assert.equal(s.finished, undefined);
+  s = next(L, s);
+  assert.equal(s.finished, true);
+  const again = next(L, s);
+  assert.deepEqual(again, { shown: 1, done: [], finished: true });
+  assert.deepEqual(toSaved(L, again), { at: 'a', done: [], finished: true });
+  assert.deepEqual(restore(L, { at: 'a', done: [], finished: true }), {
+    shown: 1,
+    done: [],
+    finished: true,
+  });
+});
+
+test('lessonProgress: 지도·홈에 보일 레슨 상태', async () => {
+  const { lessonProgress } = await import('../src/lesson/state.ts');
+  assert.deepEqual(lessonProgress(L, undefined), { started: false, finished: false, at: 0 });
+  assert.deepEqual(lessonProgress(L, { at: 'b', done: [] }), {
+    started: true,
+    finished: false,
+    at: 2,
+  });
+  assert.deepEqual(lessonProgress(L, { at: 'a', done: [], finished: true }), {
+    started: true,
+    finished: true,
+    at: 1,
+  });
 });

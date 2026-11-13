@@ -91,7 +91,32 @@ def check_equiv(it):
     return None
 
 
-KINDS = {"spot": check_spot, "equiv": check_equiv}
+def check_sameeq(it):
+    """두 등식이 같은 식인가. 저울·영수증·항 끌기가 같은 방정식을 그리는지(장면 간 숫자 어긋남) 본다.
+    해만 같으면(3x+1001=13003) 통과하는 느슨한 비교가 되지 않게 '왼쪽−오른쪽'이 같은지 본다."""
+    (al, ar), (bl, br) = parse_eq(it["a"]), parse_eq(it["b"])
+    if not equal(al - ar, bl - br):
+        return f"{it['a']} 와 {it['b']} 가 같은 식이 아님"
+    return None
+
+
+def check_approx(it):
+    """무리수 근삿값 보기: 정확한 값을 digits 자리에서 반올림(0.5 는 0 에서 먼 쪽)한 값이 보기 글자와 같은가"""
+    val = evaluate(it["expr"])
+    if not val.is_real:
+        return f"실수가 아님: {val}"
+    d = int(it["digits"])
+    scaled = sympy.N(abs(val) * 10**d, 60)
+    r = sympy.floor(scaled + Rational(1, 2))
+    if val < 0:
+        r = -r
+    want = Rational(it["value"]) * 10**d
+    if r != want:
+        return f"{it['expr']} ≈ {sympy.N(val, 12)} 를 {d}자리로 반올림하면 {r / 10**d} ≠ {it['value']}"
+    return None
+
+
+KINDS = {"spot": check_spot, "equiv": check_equiv, "sameeq": check_sameeq, "approx": check_approx}
 
 
 def check_item(it):

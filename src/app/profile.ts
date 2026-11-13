@@ -27,11 +27,12 @@ export interface RawStore {
  * 첫 프로필의 접두어는 빈 문자열이라 "모든 키" 조회에 다른 프로필(@…) 키가 섞이므로 걸러 낸다.
  */
 export function createScopedStore(raw: RawStore, current: () => string): RawStore {
+  /** 이 프로필 것인가. 첫 프로필은 접두어가 없어 다른 프로필(@…) 키와 기기 공통 키를 걸러 낸다 */
+  const mine = (pre: string, k: string) =>
+    pre !== '' || (!k.startsWith('@') && !DEVICE_KEYS.has(k));
   const strip = (profile: string, keys: string[]) => {
     const pre = scopedKey(profile, '');
-    return keys
-      .filter((k) => pre !== '' || !k.startsWith('@'))
-      .map((k) => (pre ? k.slice(pre.length) : k));
+    return keys.filter((k) => mine(pre, k)).map((k) => (pre ? k.slice(pre.length) : k));
   };
   return {
     get: (k) => raw.get(scopedKey(current(), k)),
@@ -50,26 +51,41 @@ export function createScopedStore(raw: RawStore, current: () => string): RawStor
       );
       const pre = scopedKey(p, '');
       return list
-        .filter(([k]) => pre !== '' || !k.startsWith('@'))
+        .filter(([k]) => mine(pre, k))
         .map(([, v], i) => [keys[i] as string, v] as [string, T]);
     },
   };
 }
 
+/** App 이 들고 있는 프로필 상태. leaving 이면 화면(<Screen>)을 내리고 빈 자리표시만 그린다 */
+export interface ProfileState {
+  profile: string;
+  leaving: string | null;
+}
+
 /**
- * 프로필 바꾸기. 순서가 중요하다: 먼저 홈으로 가서 열린 화면(필기 등)이 사라지며 마지막 값을 저장하게
- * 하고, 그 저장이 끝날 때까지 기다린 뒤에 바꾼다. 그 사이 저장도 save() 순간의 프로필로 고정돼 섞이지 않는다.
- * 바꾼 뒤 화면은 <Screen key={프로필}> 로 새로 만들어 앞 사람의 상태가 남지 않게 한다.
+ * 프로필 바꾸기. 저장소 모듈 변수(키 접두어)와 React 상태를 이 한 곳에서만 바꾼다 — 따로 바꾸면 그 사이에
+ * 그려진 화면이 앞 사람 상태로 새 사람 키를 읽거나 쓴다.
+ * 순서: request → App 이 <Screen> 을 내린다 → 같은 커밋에서 사라지는 화면의 정리(InkPage 의 마지막 저장)가
+ * 먼저 돈다(옛 프로필 키로 고정) → App 의 effect 가 commit 을 불러 둘을 함께 바꾼다.
+ * 저장이 끝나기를 기다리지 않는다: saver 가 save() 순간의 프로필로 키를 고정하므로 섞이지 않고,
+ * 기다림을 두면 저장이 계속 실패할 때 전환이 영영 멈춘다.
  */
-export async function switchProfile(
-  id: string,
-  d: { goHome(): void; idle(): Promise<void>; setCurrent(id: string): void },
-): Promise<void> {
-  d.goHome();
-  // 홈으로 바뀐 화면이 그려지고 사라진 화면의 정리(저장)가 돈 다음에 기다린다
-  await new Promise((r) => setTimeout(r, 0));
-  await d.idle();
-  d.setCurrent(id);
+export function createProfileSwitch(d: {
+  setModule(id: string): void;
+  setState(u: (s: ProfileState) => ProfileState): void;
+  persist(id: string): void;
+}) {
+  return {
+    request(id: string) {
+      d.setState((s) => (s.profile === id && s.leaving === null ? s : { ...s, leaving: id }));
+    },
+    commit(id: string) {
+      d.setModule(id);
+      d.setState(() => ({ profile: id, leaving: null }));
+      d.persist(id);
+    },
+  };
 }
 
 export interface Profile {
@@ -95,3 +111,31 @@ export function normalizeProfiles(raw: unknown): Profile[] {
   else out.sort((a, b) => (a.id === FIRST ? -1 : b.id === FIRST ? 1 : 0));
   return out;
 }
+
+/** 이름 정리: 앞뒤 공백을 떼고 12자까지. 비면 null(저장하지 않는다) */
+export function cleanName(raw: string): string | null {
+  const n = raw.trim().slice(0, 12);
+  return n ? n : null;
+}
+
+/** 새 프로필을 뒤에 붙인다. id 는 newId 로 만들되 이미 있으면 다시 만든다 */
+export function addProfile(list: Profile[], name: string, newId: () => string): Profile[] {
+  const n = cleanName(name);
+  if (!n) return list;
+  let id = newId();
+  while (list.some((p) => p.id === id)) id = newId();
+  return [...list, { id, name: n }];
+}
+
+export function renameProfile(list: Profile[], id: string, name: string): Profile[] {
+  const n = cleanName(name);
+  return n ? list.map((p) => (p.id === id ? { ...p, name: n } : p)) : list;
+}
+
+/** 첫 프로필은 지우지 않는다(접두어 없는 기존 기록이 그 사람 것이라) */
+export function removeProfile(list: Profile[], id: string): Profile[] {
+  return id === FIRST ? list : list.filter((p) => p.id !== id);
+}
+
+/** 영문 소문자·숫자 id(저장 키 접두어로 쓴다) */
+export const randomProfileId = () => `p-${Math.random().toString(36).slice(2, 8)}`;

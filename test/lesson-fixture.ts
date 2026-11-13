@@ -2,6 +2,7 @@
 import type { Lesson, Scene } from '../src/lesson/types.ts';
 
 const solve = (n: number) => ({
+  id: `p${n}`,
   q: `방정식 $x+${n}=${n + 2}$`,
   steps: [{ title: '빼기', body: `$x=2$` }],
   answer: '2',
@@ -52,14 +53,14 @@ export function goodLesson(): Lesson {
             prompt: '**함정 1**',
             mode: 'identity',
             tokens: [{ sym: '-(x-3)' }, { sep: '=' }, { sym: '-x' }, { sym: '-3', bad: true }],
-            fix: { sym: '-(x-3)=-x+3', body: '모든 항' },
+            fix: { sym: '+3', body: '모든 항' },
           },
           {
             prompt: '함정 2',
             mode: 'equivalent',
             from: 'x/2+1=x/3',
             tokens: [{ sym: '3*x' }, { sym: '+1', bad: true }, { sep: '=' }, { sym: '2*x' }],
-            fix: { sym: '3*x+6=2*x', body: '1에도 6을' },
+            fix: { sym: '+6', body: '1에도 6을' },
           },
         ],
       },

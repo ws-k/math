@@ -12,7 +12,7 @@ import type { Lesson } from '../src/lesson/types.ts';
 import { unit } from './app-fixture.ts';
 import { goodLesson } from './lesson-fixture.ts';
 
-type Entry = { units: Unit[]; renderLesson(u: Unit): string };
+type Entry = { units: Unit[]; renderLesson(u: Unit): string; renderScreens(u: Unit): string[] };
 
 async function load(): Promise<Entry> {
   const r = await esbuild.build({
@@ -63,4 +63,27 @@ test('모르는 부품이면 실패한다', async () => {
   const l = goodLesson();
   l.scenes.push({ kind: 'explore', id: 'w', title: 't', widget: { type: 'nope', params: {} } });
   assert.throws(() => renderLesson(withLesson(l)));
+});
+
+test('레슨 글의 {{…}} 는 모두 채워져 그려진다(검산된 값)', async () => {
+  const { units, renderLesson } = await entry;
+  for (const u of units.filter((x) => x.lesson)) {
+    const html = renderLesson(u);
+    assert.ok(!html.includes('{{'), `${u.id}: 채우지 않은 {{`);
+  }
+  const m1 = units.find((u) => u.id === 'm1-linear-eq');
+  if (m1) assert.match(renderLesson(m1), /4000/);
+});
+
+test('모든 단원의 앱 화면(단원 홈·문제·홈·지도·오답·설정)이 예외 없이 그려진다', async () => {
+  const { units, renderScreens } = await entry;
+  for (const u of units) {
+    const pages = renderScreens(u);
+    assert.ok(
+      pages.every((h) => h.length > 0),
+      u.id,
+    );
+    // 레슨 단원은 단원 홈에서 레슨이 개념을 대신하고, 레슨 없는 단원은 옛 개념·예제 카드를 보인다
+    assert.match(pages[0] as string, u.lesson ? /레슨 시작하기/ : /예제 1/);
+  }
 });

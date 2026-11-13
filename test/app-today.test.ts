@@ -71,9 +71,9 @@ test('오답 노트: 콘텐츠(단원·문제)가 없는 카드는 뺀다', () =
 test('복습일 문구: 시각이 아니라 날짜(0시) 차이로 센다', () => {
   const late = new Date(2026, 10, 13, 23, 30).getTime();
   // 밤 11시 반에 채점해도 내일 복습이면 "1일 뒤" — 시간 차로 반올림하면 0일이 돼 버린다
-  assert.equal(dueText(card(today0 + DAY), late), '1일 뒤 다시 봅니다');
-  assert.equal(dueText(card(today0 + 3 * DAY), now), '3일 뒤 다시 봅니다');
-  assert.equal(dueText(card(today0), late), '오늘 다시 봅니다');
-  assert.equal(dueText(card(today0 - 2 * DAY), now), '오늘 다시 봅니다');
-  assert.equal(dueText(card(null), now), '이 문제는 졸업했습니다');
+  assert.equal(dueText(card(today0 + DAY), late), '1일 뒤에 다시 봐요');
+  assert.equal(dueText(card(today0 + 3 * DAY), now), '3일 뒤에 다시 봐요');
+  assert.equal(dueText(card(today0), late), '오늘 다시 봐요');
+  assert.equal(dueText(card(today0 - 2 * DAY), now), '오늘 다시 봐요');
+  assert.equal(dueText(card(null), now), '이 문제는 졸업했어요');
 });

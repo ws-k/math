@@ -45,3 +45,12 @@ test('레슨 형식 오류가 단원 검사 오류로 올라온다', () => {
   const r = checkContent(root({ lesson: l }), 1, ID);
   assert.ok(r.errors.length > 0);
 });
+
+test('레슨이 있는 단원에 옛 개념·예제가 남아 있으면 오류(설명은 둘 중 하나)', () => {
+  const r = checkContent(
+    root({ lesson: goodLesson(), concept: [{ heading: 'a', body: 'b' }] }),
+    1,
+    ID,
+  );
+  assert.ok(r.errors.some((e) => e.includes('옛 concept·examples')));
+});

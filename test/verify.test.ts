@@ -103,3 +103,21 @@ for (const [name, it] of [
     assert.equal(r.status, 1, r.stdout);
   });
 }
+
+test('같은 식 대조(sameeq)와 근삿값(approx)', () => {
+  const ok = runVerify([
+    { ...base, kind: 'sameeq', a: '3*x+1000=13000', b: '3*x=13000-1000' },
+    { ...base, kind: 'approx', expr: 'sqrt(2)', value: '1.41', digits: 2 },
+    { ...base, kind: 'approx', expr: '-sqrt(3)', value: '-1.7', digits: 1 },
+  ]);
+  assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+  for (const bad of [
+    { kind: 'sameeq', a: '3*x+1000=13000', b: '3*x+1000=14000' },
+    // 해는 같아도(x=4000) 숫자가 다른 식은 다른 식
+    { kind: 'sameeq', a: '3*x+1000=13000', b: '6*x+2000=26000' },
+    { kind: 'approx', expr: 'sqrt(2)', value: '1.42', digits: 2 },
+  ]) {
+    const r = runVerify([{ ...base, ...bad }]);
+    assert.equal(r.status, 1, JSON.stringify(bad) + r.stdout);
+  }
+});

@@ -54,7 +54,7 @@ export interface Unit {
   prereq: string[];
   suneung: string[];
   hours: number;
-  /** 옛 설명(레슨이 생긴 단원은 레슨이 대체하고 7단계에서 지운다) */
+  /** 옛 설명. 설명은 lesson 또는 concept+examples 중 하나만 둔다(검사기가 확인) — 레슨이 생기면 지운다 */
   concept?: { heading: string; body: string }[];
   formulas: string[];
   examples?: Example[];
