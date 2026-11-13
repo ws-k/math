@@ -1,0 +1,1267 @@
+{
+  "id": "m1-plane-figures",
+  "course": "중1",
+  "unit": "도형과 측정",
+  "title": "평면도형의 성질",
+  "prereq": [
+    "m1-basic-geometry",
+    "e-circle-area"
+  ],
+  "suneung": [],
+  "hours": 2,
+  "lesson": {
+    "minutes": 20,
+    "values": {
+      "pairs": {
+        "value": "15",
+        "check": "binomial(6,2)"
+      },
+      "hexSides": {
+        "value": "6",
+        "check": "binomial(6,2)-6*(6-3)*Rational(1,2)"
+      },
+      "hexDiag": {
+        "value": "9",
+        "check": "6*(6-3)*Rational(1,2)"
+      },
+      "hexSum": {
+        "value": "720",
+        "check": "180*(6-2)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중1 · 도형과 측정",
+        "title": "꼭짓점이 몇 개든\n각을 한 번에 더하기",
+        "lead": "다각형을 삼각형으로 쪼개면 각도의 합이 바로 보여요. 원을 피자처럼 자른 부채꼴도 같은 생각으로 풀어요.",
+        "meta": [
+          "평면도형의 성질"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "오각형의 다섯 각을\n모두 더하면 얼마일까요?",
+        "lead": "삼각형의 세 각을 더하면 180° 예요. 꼭짓점 A 에서 대각선 두 개를 그었어요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 8
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 5,
+                "y": 8
+              },
+              {
+                "id": "B",
+                "x": 10,
+                "y": 5
+              },
+              {
+                "id": "C",
+                "x": 8,
+                "y": 0
+              },
+              {
+                "id": "D",
+                "x": 2,
+                "y": 0
+              },
+              {
+                "id": "E",
+                "x": 0,
+                "y": 5
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E"
+              ]
+            ],
+            "segments": [
+              [
+                "A",
+                "C"
+              ],
+              [
+                "A",
+                "D"
+              ]
+            ]
+          }
+        },
+        "format": {
+          "unit": "°"
+        },
+        "choices": [
+          {
+            "value": "360",
+            "check": "180*(4-2)",
+            "feedback": "사각형의 네 각의 합이에요. 오각형은 삼각형이 하나 더 있어요."
+          },
+          {
+            "value": "540",
+            "check": "180*(5-2)"
+          },
+          {
+            "value": "900",
+            "check": "180*5",
+            "feedback": "꼭짓점 수만큼 180° 를 곱했네요. 그림 속 삼각형은 다섯 개가 아니에요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "180*(5-2)",
+        "reveal": "**맞아요!** 삼각형 세 개의 각이 오각형의 각을 빈틈없이 채워요.",
+        "thoughts": [
+          "대각선 두 개가 오각형을 삼각형 세 개로 나눠요.",
+          "삼각형 세 개의 각을 모두 모으면 오각형의 다섯 각과 꼭 같아요."
+        ],
+        "conclude": "꼭짓점이 늘면 삼각형은 몇 개가 될까요?"
+      },
+      {
+        "kind": "explore",
+        "id": "rule",
+        "chip": "손으로 해 보기",
+        "title": "육각형의 점을\n찍어 보세요",
+        "lead": "가로는 꼭짓점의 수, 세로는 내각의 합이에요. A·B·C 는 삼각형·사각형·오각형이에요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": 0,
+              "max": 12,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 1800,
+              "step": 180
+            },
+            "objects": [
+              {
+                "id": "A",
+                "point": {
+                  "x": 3,
+                  "y": 180
+                },
+                "name": "A"
+              },
+              {
+                "id": "B",
+                "point": {
+                  "x": 4,
+                  "y": 360
+                },
+                "name": "B"
+              },
+              {
+                "id": "C",
+                "point": {
+                  "x": 5,
+                  "y": 540
+                },
+                "name": "C"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "6",
+                  "check": "5+1"
+                },
+                "y": {
+                  "value": "720",
+                  "check": "180*(6-2)"
+                }
+              }
+            },
+            "intro": "빈 칸을 눌러 육각형의 점을 찍어요. 한 꼭짓점에서 대각선을 그으면 삼각형이 몇 개 생길까요?",
+            "done": "육각형은 삼각형 네 개로 나뉘어요. 꼭짓점이 하나 늘 때마다 삼각형도 하나씩 늘어요."
+          }
+        },
+        "gate": true,
+        "after": "꼭짓점이 $n$개면 한 꼭짓점에서 그은 대각선이 삼각형 $(n-2)$개를 만들어요. 그래서 ==n각형의 내각의 합 = 180° × (n − 2)== 예요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 쓴 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "내각",
+            "body": "다각형 안쪽에 있는 각. 오각형에는 내각이 다섯 개 있어요."
+          },
+          {
+            "term": "외각",
+            "body": "한 변과 이웃한 변의 연장선이 만드는 바깥쪽 각. 한 꼭짓점에서 내각과 외각을 더하면 $180^\\circ$ 예요."
+          },
+          {
+            "term": "대각선",
+            "body": "이웃하지 않는 두 꼭짓점을 이은 선분이에요."
+          },
+          {
+            "term": "정다각형",
+            "body": "변의 길이가 모두 같고 내각의 크기도 모두 같은 다각형이에요."
+          },
+          {
+            "term": "부채꼴",
+            "body": "원에서 두 반지름과 호로 둘러싸인 모양. 두 반지름이 만드는 각이 **중심각**이에요."
+          }
+        ],
+        "aside": "**외각의 합** · $n$각형의 꼭짓점마다 내각+외각 $=180^\\circ$ 이니 모두 더하면 $180^\\circ\\times n$ 이에요. 여기서 내각의 합 $180^\\circ\\times(n-2)$ 를 빼면 외각의 합은 꼭짓점 수와 상관없이 늘 $360^\\circ$ 예요."
+      },
+      {
+        "kind": "explore",
+        "id": "diag",
+        "chip": "한 번 더 해 보기",
+        "title": "육각형의 꼭짓점을\n둘씩 이어 보세요",
+        "lead": "육각형 ABCDEF 에서 꼭짓점 두 개를 골라 이어요. 이을 수 있는 쌍을 모두 찾아보세요.",
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "pick",
+            "items": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F"
+            ],
+            "k": 2
+          }
+        },
+        "after": "찾은 {{pairs}}쌍 가운데 이웃한 {{hexSides}}쌍은 변이라서, 대각선은 {{hexDiag}}개예요. 한 꼭짓점에서 대각선이 $(n-3)$개씩 나가는데 양 끝에서 두 번 세니 ==n각형의 대각선 = n(n − 3) ÷ 2== 예요."
+      },
+      {
+        "kind": "explore",
+        "id": "sector",
+        "chip": "부채꼴로 넓히기",
+        "title": "중심각 120° 부채꼴의\n호의 길이는?",
+        "lead": "반지름 6 cm 원이에요. 가로는 중심각, 세로는 호의 길이가 π 의 몇 배인지예요. F 는 원 한 바퀴예요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": 0,
+              "max": 360,
+              "step": 30
+            },
+            "y": {
+              "min": 0,
+              "max": 12,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "O",
+                "point": {
+                  "x": 0,
+                  "y": 0
+                },
+                "name": "O"
+              },
+              {
+                "id": "F",
+                "point": {
+                  "x": 360,
+                  "y": 12
+                },
+                "name": "F"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "120",
+                  "check": "360*Rational(1,3)"
+                },
+                "y": {
+                  "value": "4",
+                  "check": "2*6*Rational(120,360)"
+                }
+              }
+            },
+            "intro": "원 한 바퀴의 둘레는 $2\\pi\\times6=12\\pi$ cm 예요. 중심각 120° 부채꼴의 점을 찍어 보세요.",
+            "done": "120° 는 한 바퀴의 3분의 1이라서 호도 둘레의 3분의 1이에요."
+          }
+        },
+        "gate": true,
+        "after": "점들이 O 와 F 를 잇는 직선 위에 있어요. ==호의 길이와 넓이는 중심각에 정비례==해서, 반지름 $r$, 중심각 $x^\\circ$ 이면 호의 길이 $=2\\pi r\\times\\dfrac{x}{360}$, 넓이 $=\\pi r^2\\times\\dfrac{x}{360}$ 예요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 팔각형의 대각선 개수예요. 왼쪽은 꼭짓점 두 개를 고르는 방법에서 변을 뺀 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "8*7/2-8"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "8*(8-3)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "8*(8-3)/2",
+              "body": "대각선 하나를 양 끝 꼭짓점에서 한 번씩, **두 번** 셌어요. 2로 나눠야 해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 정육각형의 한 내각이에요. 왼쪽은 내각의 합을 6으로 나눈 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "180*(6-2)/6"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "360/6",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "180-360/6",
+              "body": "360° ÷ 6 은 한 **외각**이에요. 내각은 180° 에서 외각을 빼야 해요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "stop-sign",
+            "q": "정팔각형 모양 표지판이 있어요. 한 내각의 크기는 몇 도일까요?",
+            "hint": "내각의 합을 먼저 구한 뒤 똑같이 나눠요.",
+            "placeholder": "°",
+            "steps": [
+              {
+                "title": "내각의 합",
+                "body": "$$180\\times(8-2)=1080$$"
+              },
+              {
+                "title": "여덟 각으로 나누기",
+                "body": "$$1080\\div8=135$$"
+              }
+            ],
+            "answer": "135",
+            "answerType": "int",
+            "check": "Rational(180*(8-2),8)"
+          },
+          {
+            "id": "decagon",
+            "q": "십각형의 대각선은 모두 몇 개일까요?",
+            "hint": "한 꼭짓점에서 몇 개씩 나가는지부터 세요.",
+            "placeholder": "개",
+            "steps": [
+              {
+                "title": "한 꼭짓점에서",
+                "body": "$$10-3=7$$"
+              },
+              {
+                "title": "모든 꼭짓점에서",
+                "body": "$$10\\times7=70$$"
+              },
+              {
+                "title": "두 번 센 것 나누기",
+                "body": "$$70\\div2=35$$"
+              }
+            ],
+            "answer": "35",
+            "answerType": "int",
+            "check": "10*(10-3)*Rational(1,2)"
+          },
+          {
+            "id": "pizza",
+            "q": "반지름이 4 cm 인 원 모양 피자를 중심각 90° 로 한 조각 잘랐어요. 조각의 넓이가 $k\\pi$ cm² 일 때 $k$ 는 얼마일까요?",
+            "hint": "원 전체 넓이의 몇 분의 몇인지 생각해요.",
+            "placeholder": "k",
+            "steps": [
+              {
+                "title": "원 전체의 넓이",
+                "body": "$$\\pi\\times4^2=16\\pi$$"
+              },
+              {
+                "title": "중심각만큼",
+                "body": "90° 는 한 바퀴의 4분의 1이에요.\n$$16\\pi\\times\\frac{90}{360}=4\\pi$$"
+              }
+            ],
+            "answer": "4",
+            "answerType": "int",
+            "check": "4**2*Rational(90,360)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "$n$각형의 **내각의 합** $=180^\\circ\\times(n-2)$. 삼각형 $(n-2)$개로 쪼개서 구해요.",
+          "**외각의 합**은 어떤 다각형이든 $360^\\circ$ 예요.",
+          "$n$각형의 **대각선** $=\\dfrac{n(n-3)}{2}$개. 양 끝에서 두 번 세니 2로 나눠요.",
+          "부채꼴의 **호의 길이와 넓이는 중심각에 정비례**해요. 원 전체에 $\\dfrac{x}{360}$ 을 곱해요."
+        ],
+        "done": "평면도형의 성질 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$(n\\text{각형의 내각의 크기의 합})=180^\\circ\\times(n-2)$",
+    "$(\\text{정}n\\text{각형의 한 내각})=\\dfrac{180^\\circ\\times(n-2)}{n}$",
+    "$(n\\text{각형의 외각의 크기의 합})=360^\\circ$",
+    "$(n\\text{각형의 대각선의 개수})=\\dfrac{n(n-3)}{2}$",
+    "$(\\text{부채꼴의 호의 길이})=2\\pi r\\times\\dfrac{x}{360}$",
+    "$(\\text{부채꼴의 넓이})=\\pi r^2\\times\\dfrac{x}{360}=\\dfrac{1}{2}rl$"
+  ],
+  "generators": [
+    "polygon-interior",
+    "polygon-diagonals",
+    "polygon-exterior",
+    "sector-arc-area"
+  ],
+  "problems": [
+    {
+      "q": "정이십각형의 한 내각의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "162",
+      "answerTex": "$162^\\circ$",
+      "answerType": "int",
+      "check": "Rational(180*(20-2), 20)",
+      "concepts": [
+        "정다각형은 모든 내각의 크기가 같아요.",
+        "정$n$각형의 한 내각 $=\\dfrac{180^\\circ\\times(n-2)}{n}$"
+      ],
+      "steps": [
+        {
+          "title": "내각의 합",
+          "body": "$$180\\times(20-2)=3240$$"
+        },
+        {
+          "title": "똑같이 나누기",
+          "body": "내각이 $20$개이니 똑같이 나눠요.\n$$3240\\div20=162$$"
+        }
+      ],
+      "tip": "한 외각 $360^\\circ\\div20=18^\\circ$ 를 $180^\\circ$ 에서 빼도 같아요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "polygon-interior",
+      "seed": 1000
+    },
+    {
+      "q": "칠각형의 한 꼭짓점에서 그을 수 있는 대각선은 몇 개인가요?",
+      "choices": null,
+      "answer": "4",
+      "answerTex": "$4$개",
+      "answerType": "int",
+      "check": "7-3",
+      "concepts": [
+        "대각선은 이웃하지 않는 두 꼭짓점을 이은 선분이에요."
+      ],
+      "steps": [
+        {
+          "title": "이을 수 없는 꼭짓점",
+          "body": "자기 자신과 양옆의 이웃한 두 꼭짓점, 모두 $3$개는 대각선으로 이을 수 없어요."
+        },
+        {
+          "title": "나머지 세기",
+          "body": "$$7-3=4$$"
+        }
+      ],
+      "tip": "양옆 꼭짓점과 이으면 대각선이 아니라 변이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "polygon-diagonals",
+      "seed": 1001
+    },
+    {
+      "q": "한 외각의 크기가 $40^\\circ$인 정다각형의 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "$9$개 (정구각형)",
+      "answerType": "int",
+      "check": "solve(Eq(40*n, 360), n)[0]",
+      "concepts": [
+        "정$n$각형의 외각 $n$개를 모두 더하면 $360^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$40\\times n=360$$"
+        },
+        {
+          "title": "꼭짓점 수 구하기",
+          "body": "$$n=360\\div40=9$$"
+        }
+      ],
+      "tip": "확인: $40\\times9=360$ 이에요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "polygon-exterior",
+      "seed": 1002
+    },
+    {
+      "q": "반지름이 $5$ cm, 중심각이 $60^\\circ$인 부채꼴의 넓이는 $k\\pi$ cm²예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "25/6",
+      "answerTex": "$\\frac{25}{6}\\pi$ cm²",
+      "answerType": "fraction",
+      "check": "pi*5**2*Rational(60,360)/pi",
+      "concepts": [
+        "부채꼴의 넓이도 중심각에 정비례해요.",
+        "부채꼴의 넓이 $=\\pi r^2\\times\\dfrac{x}{360}$"
+      ],
+      "steps": [
+        {
+          "title": "원 전체의 넓이",
+          "body": "$$\\pi\\times5^2=25\\pi$$"
+        },
+        {
+          "title": "중심각만큼 떼어 내기",
+          "body": "$$25\\pi\\times\\frac{60}{360}=\\frac{25}{6}\\pi$$"
+        }
+      ],
+      "tip": "분수 $\\frac{x}{360}$ 을 먼저 약분하면 계산이 쉬워요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "sector-arc-area",
+      "seed": 1003
+    },
+    {
+      "q": "팔각형의 내각의 크기의 합은 몇 도인가요?",
+      "choices": null,
+      "answer": "1080",
+      "answerTex": "$1080^\\circ$",
+      "answerType": "int",
+      "check": "180*(8-2)",
+      "concepts": [
+        "한 꼭짓점에서 대각선을 모두 그으면 $n$각형은 삼각형 $(n-2)$개로 나뉘어요.",
+        "$n$각형의 내각의 크기의 합 $=180^\\circ\\times(n-2)$"
+      ],
+      "steps": [
+        {
+          "title": "삼각형 개수 세기",
+          "body": "꼭짓점이 $8$개이니 한 꼭짓점에서 대각선을 그으면 삼각형이 $8-2=6$개 생겨요."
+        },
+        {
+          "title": "삼각형의 각 모으기",
+          "body": "$$180\\times6=1080$$"
+        }
+      ],
+      "tip": "꼭짓점 수만큼 180° 를 곱하면 안 돼요. 삼각형은 꼭짓점보다 2개 적어요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "polygon-interior",
+      "seed": 1004
+    },
+    {
+      "q": "십일각형의 대각선은 모두 몇 개인가요?",
+      "choices": null,
+      "answer": "44",
+      "answerTex": "$44$개",
+      "answerType": "int",
+      "check": "Rational(11*(11-3), 2)",
+      "concepts": [
+        "한 꼭짓점에서 대각선을 $(n-3)$개 그을 수 있어요.",
+        "$n$각형의 대각선의 개수 $=\\dfrac{n(n-3)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "한 꼭짓점에서",
+          "body": "$$11-3=8$$"
+        },
+        {
+          "title": "꼭짓점 모두에서",
+          "body": "$$11\\times8=88$$"
+        },
+        {
+          "title": "두 번 센 것 나누기",
+          "body": "대각선 하나를 양 끝에서 한 번씩, 두 번 셌어요.\n$$88\\div2=44$$"
+        }
+      ],
+      "tip": "2로 나누는 것을 잊기 쉬워요. 대각선 AC 와 CA 는 같은 선분이에요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "polygon-diagonals",
+      "seed": 1005
+    },
+    {
+      "q": "정팔각형의 한 외각의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "45",
+      "answerTex": "$45^\\circ$",
+      "answerType": "int",
+      "check": "360*Rational(1, 8)",
+      "concepts": [
+        "다각형의 외각의 크기의 합은 꼭짓점 수와 상관없이 늘 $360^\\circ$ 예요.",
+        "정다각형은 외각의 크기도 모두 같아요."
+      ],
+      "steps": [
+        {
+          "title": "외각의 합",
+          "body": "어떤 다각형이든 외각을 모두 더하면 $360^\\circ$ 예요."
+        },
+        {
+          "title": "똑같이 나누기",
+          "body": "$$360\\div8=45$$"
+        }
+      ],
+      "tip": "한 바퀴 돌아 제자리로 오니 외각의 합은 360° 예요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "polygon-exterior",
+      "seed": 1006
+    },
+    {
+      "q": "반지름이 $11$ cm, 중심각이 $60^\\circ$인 부채꼴의 호의 길이는 $k\\pi$ cm예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "11/3",
+      "answerTex": "$\\frac{11}{3}\\pi$ cm",
+      "answerType": "fraction",
+      "check": "2*pi*11*Rational(60,360)/pi",
+      "concepts": [
+        "부채꼴의 호의 길이는 중심각에 정비례해요.",
+        "호의 길이 $=2\\pi r\\times\\dfrac{x}{360}$"
+      ],
+      "steps": [
+        {
+          "title": "원 전체의 둘레",
+          "body": "$$2\\pi\\times11=22\\pi$$"
+        },
+        {
+          "title": "중심각만큼 떼어 내기",
+          "body": "원 한 바퀴는 $360^\\circ$ 예요.\n$$22\\pi\\times\\frac{60}{360}=\\frac{11}{3}\\pi$$"
+        }
+      ],
+      "tip": "반지름을 두 번 곱하면 넓이예요. 둘레는 2πr 로 시작해요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "sector-arc-area",
+      "seed": 1007
+    },
+    {
+      "q": "정십팔각형의 한 내각의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "160",
+      "answerTex": "$160^\\circ$",
+      "answerType": "int",
+      "check": "Rational(180*(18-2), 18)",
+      "concepts": [
+        "정다각형은 모든 내각의 크기가 같아요.",
+        "정$n$각형의 한 내각 $=\\dfrac{180^\\circ\\times(n-2)}{n}$"
+      ],
+      "steps": [
+        {
+          "title": "내각의 합",
+          "body": "$$180\\times(18-2)=2880$$"
+        },
+        {
+          "title": "똑같이 나누기",
+          "body": "내각이 $18$개이니 똑같이 나눠요.\n$$2880\\div18=160$$"
+        }
+      ],
+      "tip": "한 외각 $360^\\circ\\div18=20^\\circ$ 를 $180^\\circ$ 에서 빼도 같아요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "polygon-interior",
+      "seed": 1008
+    },
+    {
+      "q": "십육각형의 대각선은 모두 몇 개인가요?",
+      "choices": null,
+      "answer": "104",
+      "answerTex": "$104$개",
+      "answerType": "int",
+      "check": "Rational(16*(16-3), 2)",
+      "concepts": [
+        "한 꼭짓점에서 대각선을 $(n-3)$개 그을 수 있어요.",
+        "$n$각형의 대각선의 개수 $=\\dfrac{n(n-3)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "한 꼭짓점에서",
+          "body": "$$16-3=13$$"
+        },
+        {
+          "title": "꼭짓점 모두에서",
+          "body": "$$16\\times13=208$$"
+        },
+        {
+          "title": "두 번 센 것 나누기",
+          "body": "대각선 하나를 양 끝에서 한 번씩, 두 번 셌어요.\n$$208\\div2=104$$"
+        }
+      ],
+      "tip": "2로 나누는 것을 잊기 쉬워요. 대각선 AC 와 CA 는 같은 선분이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "polygon-diagonals",
+      "seed": 1009
+    },
+    {
+      "q": "한 외각의 크기가 $40^\\circ$인 정다각형의 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "$9$개 (정구각형)",
+      "answerType": "int",
+      "check": "solve(Eq(40*n, 360), n)[0]",
+      "concepts": [
+        "정$n$각형의 외각 $n$개를 모두 더하면 $360^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$40\\times n=360$$"
+        },
+        {
+          "title": "꼭짓점 수 구하기",
+          "body": "$$n=360\\div40=9$$"
+        }
+      ],
+      "tip": "확인: $40\\times9=360$ 이에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "polygon-exterior",
+      "seed": 1010
+    },
+    {
+      "q": "반지름이 $12$ cm, 중심각이 $150^\\circ$인 부채꼴의 넓이는 $k\\pi$ cm²예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "60",
+      "answerTex": "$60\\pi$ cm²",
+      "answerType": "fraction",
+      "check": "pi*12**2*Rational(150,360)/pi",
+      "concepts": [
+        "부채꼴의 넓이도 중심각에 정비례해요.",
+        "부채꼴의 넓이 $=\\pi r^2\\times\\dfrac{x}{360}$"
+      ],
+      "steps": [
+        {
+          "title": "원 전체의 넓이",
+          "body": "$$\\pi\\times12^2=144\\pi$$"
+        },
+        {
+          "title": "중심각만큼 떼어 내기",
+          "body": "$$144\\pi\\times\\frac{150}{360}=60\\pi$$"
+        }
+      ],
+      "tip": "분수 $\\frac{x}{360}$ 을 먼저 약분하면 계산이 쉬워요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "sector-arc-area",
+      "seed": 1011
+    },
+    {
+      "q": "십일각형의 내각의 크기의 합은 몇 도인가요?",
+      "choices": null,
+      "answer": "1620",
+      "answerTex": "$1620^\\circ$",
+      "answerType": "int",
+      "check": "180*(11-2)",
+      "concepts": [
+        "한 꼭짓점에서 대각선을 모두 그으면 $n$각형은 삼각형 $(n-2)$개로 나뉘어요.",
+        "$n$각형의 내각의 크기의 합 $=180^\\circ\\times(n-2)$"
+      ],
+      "steps": [
+        {
+          "title": "삼각형 개수 세기",
+          "body": "꼭짓점이 $11$개이니 한 꼭짓점에서 대각선을 그으면 삼각형이 $11-2=9$개 생겨요."
+        },
+        {
+          "title": "삼각형의 각 모으기",
+          "body": "$$180\\times9=1620$$"
+        }
+      ],
+      "tip": "꼭짓점 수만큼 180° 를 곱하면 안 돼요. 삼각형은 꼭짓점보다 2개 적어요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "polygon-interior",
+      "seed": 1012
+    },
+    {
+      "q": "오각형의 한 꼭짓점에서 그을 수 있는 대각선은 몇 개인가요?",
+      "choices": null,
+      "answer": "2",
+      "answerTex": "$2$개",
+      "answerType": "int",
+      "check": "5-3",
+      "concepts": [
+        "대각선은 이웃하지 않는 두 꼭짓점을 이은 선분이에요."
+      ],
+      "steps": [
+        {
+          "title": "이을 수 없는 꼭짓점",
+          "body": "자기 자신과 양옆의 이웃한 두 꼭짓점, 모두 $3$개는 대각선으로 이을 수 없어요."
+        },
+        {
+          "title": "나머지 세기",
+          "body": "$$5-3=2$$"
+        }
+      ],
+      "tip": "양옆 꼭짓점과 이으면 대각선이 아니라 변이에요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "polygon-diagonals",
+      "seed": 1013
+    },
+    {
+      "q": "한 외각의 크기가 $90^\\circ$인 정다각형의 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "4",
+      "answerTex": "$4$개 (정사각형)",
+      "answerType": "int",
+      "check": "solve(Eq(90*n, 360), n)[0]",
+      "concepts": [
+        "정$n$각형의 외각 $n$개를 모두 더하면 $360^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$90\\times n=360$$"
+        },
+        {
+          "title": "꼭짓점 수 구하기",
+          "body": "$$n=360\\div90=4$$"
+        }
+      ],
+      "tip": "확인: $90\\times4=360$ 이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "polygon-exterior",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "내각의 크기의 합이 $1260^\\circ$인 다각형이 있어요. 이 다각형의 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "answerTex": "$9$개 (구각형)",
+      "check": "solve(Eq(180*(n-2), 1260), n)[0]",
+      "concepts": [
+        "$n$각형의 내각의 크기의 합 $=180^\\circ\\times(n-2)$"
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$180\\times(n-2)=1260$$"
+        },
+        {
+          "title": "삼각형 개수",
+          "body": "$$n-2=1260\\div180=7$$"
+        },
+        {
+          "title": "꼭짓점 수",
+          "body": "$$n=7+2=9$$"
+        }
+      ],
+      "tip": "확인: $180\\times7=1260$ 이에요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "대각선이 모두 $20$개인 다각형이 있어요. 이 다각형의 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "answerTex": "$8$개 (팔각형)",
+      "check": "max(solve(Eq(n*(n-3), 2*20), n))",
+      "concepts": [
+        "$n$각형의 대각선의 개수 $=\\dfrac{n(n-3)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{n(n-3)}{2}=20,\\quad n(n-3)=40$$"
+        },
+        {
+          "title": "곱이 40 인 두 수 찾기",
+          "body": "차가 $3$인 두 자연수를 곱해 $40$이 되는 것은 $8\\times5$ 예요."
+        },
+        {
+          "title": "꼭짓점 수",
+          "body": "$$n=8$$"
+        }
+      ],
+      "tip": "확인: $\\dfrac{8\\times5}{2}=20$ 이에요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "한 내각의 크기가 $140^\\circ$인 정다각형의 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "answerTex": "$9$개 (정구각형)",
+      "check": "solve(Eq((180-140)*n, 360), n)[0]",
+      "concepts": [
+        "한 꼭짓점에서 내각과 외각의 합은 $180^\\circ$ 예요.",
+        "외각의 크기의 합은 $360^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "한 외각 구하기",
+          "body": "$$180-140=40$$"
+        },
+        {
+          "title": "꼭짓점 수",
+          "body": "$$360\\div40=9$$"
+        }
+      ],
+      "tip": "내각으로 식을 세우는 것보다 외각으로 나누는 쪽이 훨씬 빨라요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "삼각형 ABC 에서 $\\angle A=50^\\circ$, $\\angle B=65^\\circ$예요. 꼭짓점 C 에서의 외각의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "115",
+      "answerType": "int",
+      "answerTex": "$115^\\circ$",
+      "check": "180-(180-50-65)",
+      "concepts": [
+        "삼각형의 한 외각은 이웃하지 않는 두 내각의 합과 같아요."
+      ],
+      "steps": [
+        {
+          "title": "∠C 구하기",
+          "body": "$$180-50-65=65$$"
+        },
+        {
+          "title": "외각 구하기",
+          "body": "$$180-65=115$$"
+        }
+      ],
+      "tip": "지름길: 외각 $=\\angle A+\\angle B=50^\\circ+65^\\circ=115^\\circ$."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "정십이각형의 한 내각과 한 외각의 크기의 차는 몇 도인가요?",
+      "choices": null,
+      "answer": "120",
+      "answerType": "int",
+      "answerTex": "$120^\\circ$",
+      "check": "Rational(180*(12-2),12) - Rational(360,12)",
+      "concepts": [
+        "정$n$각형의 한 외각 $=\\dfrac{360^\\circ}{n}$",
+        "한 내각 $=180^\\circ-(\\text{한 외각})$"
+      ],
+      "steps": [
+        {
+          "title": "한 외각",
+          "body": "$$360\\div12=30$$"
+        },
+        {
+          "title": "한 내각",
+          "body": "$$180-30=150$$"
+        },
+        {
+          "title": "차",
+          "body": "$$150-30=120$$"
+        }
+      ],
+      "tip": "외각부터 구하면 나눗셈 한 번으로 끝나요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "십일각형의 한 꼭짓점에서 대각선을 모두 그으면 삼각형이 몇 개 생기나요?",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "answerTex": "$9$개",
+      "check": "11-2",
+      "concepts": [
+        "$n$각형의 한 꼭짓점에서 대각선을 그으면 삼각형 $(n-2)$개로 나뉘어요."
+      ],
+      "steps": [
+        {
+          "title": "대각선 수",
+          "body": "한 꼭짓점에서 $11-3=8$개의 대각선을 그어요."
+        },
+        {
+          "title": "삼각형 수",
+          "body": "대각선 $8$개가 삼각형 $8+1=9$개를 만들어요."
+        }
+      ],
+      "tip": "대각선 수(n−3)와 삼각형 수(n−2)는 하나 차이예요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "반지름이 $6$ cm이고 호의 길이가 $2\\pi$ cm인 부채꼴의 중심각은 몇 도인가요?",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "answerTex": "$60^\\circ$",
+      "check": "solve(Eq(2*pi*6*x/360, 2*pi), x)[0]",
+      "concepts": [
+        "호의 길이 $=2\\pi r\\times\\dfrac{x}{360}$"
+      ],
+      "steps": [
+        {
+          "title": "원 전체의 둘레",
+          "body": "$$2\\pi\\times6=12\\pi$$"
+        },
+        {
+          "title": "둘레의 몇 분의 몇인지",
+          "body": "$$2\\pi\\div12\\pi=\\frac{1}{6}$$"
+        },
+        {
+          "title": "중심각",
+          "body": "$$360\\times\\frac{1}{6}=60$$"
+        }
+      ],
+      "tip": "호의 길이가 둘레의 6분의 1이면 중심각도 한 바퀴의 6분의 1이에요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "반지름이 $4$ cm이고 호의 길이가 $3\\pi$ cm인 부채꼴의 넓이는 $k\\pi$ cm²예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "answerTex": "$6\\pi$ cm²",
+      "check": "Rational(1,2)*4*3*pi/pi",
+      "concepts": [
+        "중심각을 몰라도 부채꼴의 넓이 $=\\dfrac{1}{2}rl$ 로 구할 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{1}{2}\\times4\\times3\\pi=6\\pi$$"
+        }
+      ],
+      "tip": "부채꼴을 잘게 잘라 엇갈려 붙이면 가로 $\\frac{l}{2}$, 세로 $r$ 인 직사각형에 가까워져요. 그래서 넓이가 $\\frac{1}{2}rl$ 이에요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "오각형의 네 내각이 $100^\\circ$, $110^\\circ$, $120^\\circ$, $95^\\circ$예요. 나머지 한 내각은 몇 도인가요?",
+      "choices": null,
+      "answer": "115",
+      "answerType": "int",
+      "answerTex": "$115^\\circ$",
+      "check": "180*(5-2) - (100+110+120+95)",
+      "concepts": [
+        "오각형의 내각의 합 $=180^\\circ\\times3=540^\\circ$"
+      ],
+      "steps": [
+        {
+          "title": "내각의 합",
+          "body": "$$180\\times(5-2)=540$$"
+        },
+        {
+          "title": "주어진 네 각의 합",
+          "body": "$$100+110+120+95=425$$"
+        },
+        {
+          "title": "나머지 각",
+          "body": "$$540-425=115$$"
+        }
+      ],
+      "tip": "합을 먼저 구하고 빼면 실수가 줄어요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "육각형의 외각 다섯 개가 $50^\\circ$, $60^\\circ$, $70^\\circ$, $55^\\circ$, $65^\\circ$예요. 나머지 한 외각은 몇 도인가요?",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "answerTex": "$60^\\circ$",
+      "check": "360 - (50+60+70+55+65)",
+      "concepts": [
+        "다각형의 외각의 크기의 합은 늘 $360^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "다섯 외각의 합",
+          "body": "$$50+60+70+55+65=300$$"
+        },
+        {
+          "title": "나머지 외각",
+          "body": "$$360-300=60$$"
+        }
+      ],
+      "tip": "외각의 합은 꼭짓점 수와 상관없어요. 육각형이라고 720° 를 쓰면 안 돼요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "정오각형의 대각선을 모두 그으면 가운데에 별 모양이 생겨요. 별의 뾰족한 꼭짓점 다섯 곳의 각을 모두 더하면 몇 도인가요?",
+      "choices": null,
+      "answer": "180",
+      "answerType": "int",
+      "answerTex": "$180^\\circ$",
+      "check": "5*(180 - 2*Rational(360,5))",
+      "concepts": [
+        "정오각형의 한 외각은 $360^\\circ\\div5=72^\\circ$ 예요.",
+        "삼각형의 세 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "뾰족한 삼각형 보기",
+          "body": "별의 꼭짓점마다 정오각형의 변 하나를 밑변으로 하는 작은 삼각형이 붙어 있어요."
+        },
+        {
+          "title": "밑각 구하기",
+          "body": "밑각은 정오각형의 한 외각과 같아요.\n$$360\\div5=72$$"
+        },
+        {
+          "title": "꼭짓점 하나의 각",
+          "body": "$$180-72\\times2=36$$"
+        },
+        {
+          "title": "다섯 곳 더하기",
+          "body": "$$36\\times5=180$$"
+        }
+      ],
+      "tip": "정오각형이 아닌 찌그러진 별이어도 다섯 각의 합은 늘 $180^\\circ$ 예요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "한 내각과 한 외각의 크기의 비가 $3:1$인 정다각형이 있어요. 이 정다각형의 대각선은 모두 몇 개인가요?",
+      "choices": null,
+      "answer": "20",
+      "answerType": "int",
+      "answerTex": "$20$개",
+      "check": "ans = Rational(360, 180*Rational(1,4))\nans = ans*(ans-3)*Rational(1,2)",
+      "concepts": [
+        "한 내각 + 한 외각 $=180^\\circ$",
+        "정$n$각형의 한 외각 $=\\dfrac{360^\\circ}{n}$"
+      ],
+      "steps": [
+        {
+          "title": "한 외각",
+          "body": "$180^\\circ$ 를 $3:1$ 로 나누면 외각은 $\\frac{1}{4}$ 몫이에요.\n$$180\\times\\frac{1}{4}=45$$"
+        },
+        {
+          "title": "꼭짓점 수",
+          "body": "$$360\\div45=8$$"
+        },
+        {
+          "title": "대각선 수",
+          "body": "$$\\frac{8\\times(8-3)}{2}=20$$"
+        }
+      ],
+      "tip": "비가 나오면 합이 $180^\\circ$ 인 두 각을 나누는 문제로 바꿔 생각해요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "반지름이 $9$ cm인 원에서 넓이가 $27\\pi$ cm²인 부채꼴을 잘라 냈어요. 이 부채꼴의 중심각은 몇 도인가요?",
+      "choices": null,
+      "answer": "120",
+      "answerType": "int",
+      "answerTex": "$120^\\circ$",
+      "check": "solve(Eq(pi*9**2*x/360, 27*pi), x)[0]",
+      "concepts": [
+        "부채꼴의 넓이는 중심각에 정비례해요."
+      ],
+      "steps": [
+        {
+          "title": "원 전체의 넓이",
+          "body": "$$\\pi\\times9^2=81\\pi$$"
+        },
+        {
+          "title": "몇 분의 몇인지",
+          "body": "$$27\\pi\\div81\\pi=\\frac{1}{3}$$"
+        },
+        {
+          "title": "중심각",
+          "body": "$$360\\times\\frac{1}{3}=120$$"
+        }
+      ],
+      "tip": "넓이 비 = 중심각 비. 원 전체와 비교하면 식이 간단해져요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "한 내각의 크기가 한 외각의 크기보다 $100^\\circ$ 큰 정다각형이 있어요. 이 정다각형의 한 꼭짓점에서 그을 수 있는 대각선은 몇 개인가요?",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "answerTex": "$6$개",
+      "check": "ans = solve(Eq(x + (x+100), 180), x)[0]\nans = Rational(360, ans) - 3",
+      "concepts": [
+        "한 내각 + 한 외각 $=180^\\circ$"
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "한 외각을 $x^\\circ$ 라 하면\n$$x+(x+100)=180$$"
+        },
+        {
+          "title": "한 외각",
+          "body": "$$2x=80,\\quad x=40$$"
+        },
+        {
+          "title": "꼭짓점 수",
+          "body": "$$360\\div40=9$$"
+        },
+        {
+          "title": "한 꼭짓점의 대각선",
+          "body": "$$9-3=6$$"
+        }
+      ],
+      "tip": "구하는 것이 대각선 전체(27개)가 아니라 한 꼭짓점에서의 개수인지 다시 읽어요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "한 원에서 중심각이 $40^\\circ$인 부채꼴의 넓이가 $8$ cm²예요. 같은 원에서 중심각이 $100^\\circ$인 부채꼴의 넓이는 몇 cm²인가요?",
+      "choices": null,
+      "answer": "20",
+      "answerType": "int",
+      "answerTex": "$20$ cm²",
+      "check": "8*Rational(100,40)",
+      "concepts": [
+        "한 원에서 부채꼴의 넓이는 중심각에 정비례해요."
+      ],
+      "steps": [
+        {
+          "title": "중심각이 몇 배인지",
+          "body": "$$100\\div40=\\frac{5}{2}$$"
+        },
+        {
+          "title": "넓이도 같은 배",
+          "body": "$$8\\times\\frac{5}{2}=20$$"
+        }
+      ],
+      "tip": "반지름을 몰라도 돼요. 같은 원이면 중심각의 비가 곧 넓이의 비예요."
+    }
+  ]
+}
