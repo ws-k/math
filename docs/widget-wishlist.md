@@ -49,3 +49,5 @@
 - lesson values: 소수 값 허용(1.4, 1.96) — m3-sqrt
 - coord: 슬라이더를 따라 움직이는 점(꼭짓점 (p,q)), 슬라이더 목표("중근이 되게"), 한 점에 여러 값 표시 — m3-quadratic-eq, m3-quadratic-func
 - areaModel tiles: 판 크기 확대(x²+7x+12) — m3-factoring
+- spot: 허수 I 허용((3+2i)(3−2i) 함정) — h1-complex
+- 조립제법·세로 나눗셈 부품 — h1-poly-ops, h1-remainder-factor
