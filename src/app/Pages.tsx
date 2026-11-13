@@ -16,7 +16,7 @@ export function ConceptPage({ unit }: { unit: Unit }) {
   return (
     <article className="text">
       <h1 className="unit-title">{unit.title}</h1>
-      {unit.concept.map((c) => (
+      {(unit.concept ?? []).map((c) => (
         <section key={c.heading}>
           <h2>{c.heading}</h2>
           <Rich src={c.body} />
@@ -38,7 +38,7 @@ export function ExamplesPage({ unit, cards }: { unit: Unit; cards: Cards }) {
   return (
     <article className="text">
       <h2>예제</h2>
-      {unit.examples.map((ex, i) => (
+      {(unit.examples ?? []).map((ex, i) => (
         <ExampleBlock key={ex.q} ex={ex} n={i + 1} />
       ))}
       <h2>연습문제</h2>

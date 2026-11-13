@@ -1,18 +1,17 @@
 // 단원 JSON 의 형식 검사 + 검산할 항목 모으기. dump-problems 와 테스트에서 함께 쓴다.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { Curriculum, Example, Problem, Unit } from '../src/content/types.ts';
+import {
+  type CheckItem,
+  checkAnswerShape,
+  answerItem as item,
+  texOk,
+} from '../src/content/check.ts';
+import type { Curriculum, Problem, Unit } from '../src/content/types.ts';
 import { allGenerators, generate } from '../src/generators/index.ts';
-import { renderRich } from '../src/lib/math.ts';
+import { validateLesson } from '../src/lesson/schema.ts';
 
-export interface CheckItem {
-  ref: string;
-  unit: string;
-  answer: string;
-  answerType: string;
-  check: string;
-  choiceChecks?: string[];
-}
+export type { CheckItem };
 
 export interface CheckResult {
   errors: string[];
@@ -21,56 +20,6 @@ export interface CheckResult {
 }
 
 const LEVEL_MIN: Record<string, number> = { 기초: 15, 표준: 10 };
-const TYPES = new Set(['int', 'fraction', 'expr', 'choice']);
-/** 계산 없이 숫자만 적은 검산식 (예: "8", "5/3", "Rational(5,3)") */
-const LITERAL =
-  /^\s*(-?\d+(\s*\/\s*\d+)?|Rational\(\s*-?\d+\s*,\s*\d+\s*\)|Integer\(\s*-?\d+\s*\))\s*$/;
-
-function texOk(where: string, s: string | undefined | null, errors: string[]) {
-  if (s == null) return;
-  try {
-    renderRich(s, true);
-  } catch (e) {
-    errors.push(`${where}: 수식 오류 — ${(e as Error).message.split('\n')[0]}`);
-  }
-}
-
-function checkAnswerShape(where: string, p: Problem | Example, errors: string[]) {
-  if (!TYPES.has(p.answerType)) errors.push(`${where}: answerType 이상 (${p.answerType})`);
-  if (!p.check?.trim()) errors.push(`${where}: check(검산식) 없음`);
-  else if (LITERAL.test(p.check))
-    errors.push(`${where}: check 가 답을 그대로 적은 값임 — 문제 조건으로 계산하는 식이어야 함`);
-  if (p.answerType === 'int' && !/^-?\d+$/.test(p.answer))
-    errors.push(`${where}: int 답 형식 (${p.answer})`);
-  if (p.answerType === 'fraction' && !/^-?\d+(\/\d+)?$/.test(p.answer))
-    errors.push(`${where}: fraction 답은 "a/b" 꼴 (${p.answer})`);
-  if (p.answerType === 'choice') {
-    if (!/^[1-5]$/.test(p.answer)) errors.push(`${where}: choice 답은 1~5 (${p.answer})`);
-    if (p.choices?.length !== 5) errors.push(`${where}: 보기 5개 필요`);
-    if (p.choiceChecks?.length !== 5) errors.push(`${where}: choiceChecks 5개 필요`);
-  }
-  if (!p.steps?.length) errors.push(`${where}: 풀이 단계 없음`);
-  for (const [i, st] of (p.steps ?? []).entries()) {
-    if (!st.title?.trim() || !st.body?.trim())
-      errors.push(`${where}: ${i + 1}단계 제목/본문 비어 있음`);
-    texOk(`${where} ${i + 1}단계`, st.title, errors);
-    texOk(`${where} ${i + 1}단계`, st.body, errors);
-  }
-  texOk(`${where} 문제`, p.q, errors);
-  texOk(`${where} 팁`, p.tip, errors);
-  for (const c of p.concepts ?? []) texOk(`${where} 개념`, c, errors);
-  for (const c of p.choices ?? []) texOk(`${where} 보기`, c, errors);
-  if ('answerTex' in p) texOk(`${where} 정답표기`, p.answerTex, errors);
-}
-
-const item = (ref: string, unit: string, p: Problem | Example): CheckItem => ({
-  ref,
-  unit,
-  answer: p.answer,
-  answerType: p.answerType,
-  check: p.check,
-  ...(p.choiceChecks ? { choiceChecks: p.choiceChecks } : {}),
-});
 
 export function checkContent(root = '.', samples = 200, onlyUnit?: string): CheckResult {
   const errors: string[] = [];
@@ -91,14 +40,22 @@ export function checkContent(root = '.', samples = 200, onlyUnit?: string): Chec
     const cu = curById.get(u.id);
     if (!cu) errors.push(`${W}: 커리큘럼에 없는 단원`);
     else if (cu.prereq.join() !== u.prereq.join()) errors.push(`${W}: prereq 가 커리큘럼과 다름`);
-    if (!u.concept?.length) errors.push(`${W}: 개념 없음`);
+    // 설명은 레슨이거나(새 방식) 개념+예제(옛 방식). 레슨이 생긴 단원도 옛 글은 7단계 정리 전까지
+    // JSON 에 남아 있으므로, 있으면 똑같이 검사·검산한다.
+    if (u.lesson === undefined && !u.concept?.length) errors.push(`${W}: 레슨도 개념도 없음`);
     for (const c of u.concept ?? []) {
       texOk(`${W} 개념`, c.heading, errors);
       texOk(`${W} 개념`, c.body, errors);
     }
     for (const f2 of u.formulas ?? []) texOk(`${W} 공식`, f2, errors);
-    if ((u.examples?.length ?? 0) < 2 || (u.examples?.length ?? 0) > 3)
+    const exN = u.examples?.length ?? 0;
+    if ((u.lesson === undefined || exN > 0) && (exN < 2 || exN > 3))
       errors.push(`${W}: 예제는 2~3개`);
+    if (u.lesson !== undefined) {
+      const r = validateLesson(u.id, u.lesson, { problems: u.problems?.length ?? 0 });
+      errors.push(...r.errors);
+      items.push(...r.items);
+    }
     u.examples?.forEach((e, i) => {
       checkAnswerShape(`${W} 예제${i + 1}`, e, errors);
       items.push(item(`${W}/예제${i + 1}`, W, e));

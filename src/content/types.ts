@@ -1,4 +1,5 @@
 // 콘텐츠 데이터 형식. content/units/<id>.json 과 content/curriculum.json 의 모양을 정의한다.
+import type { Lesson } from '../lesson/types.ts';
 
 export type Level = '기초' | '표준' | '수능형' | '응용';
 
@@ -53,9 +54,12 @@ export interface Unit {
   prereq: string[];
   suneung: string[];
   hours: number;
-  concept: { heading: string; body: string }[];
+  /** 옛 설명(레슨이 생긴 단원은 레슨이 대체하고 7단계에서 지운다) */
+  concept?: { heading: string; body: string }[];
   formulas: string[];
-  examples: Example[];
+  examples?: Example[];
+  /** 장면이 쌓이는 새 설명. src/lesson/types.ts */
+  lesson?: Lesson;
   generators: string[];
   problems: Problem[];
 }
