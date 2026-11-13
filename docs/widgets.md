@@ -98,7 +98,7 @@
 
 - 레슨에 `equations` 가 있고 부품이 방정식을 그리면(`table`·`balance`·`termDrag`) `eq` 가 필수입니다. 일부러 다른 식이면 `"eq": false`.
 - 끄는 동안 ‘계속하기’가 잠깁니다. 동작 줄이기면 움직임이 꺼집니다.
-- 펜·손가락·마우스 모두 끌 수 있습니다(Pointer Events). 손잡이는 HTML 요소이고, 끄는 터치는 스크롤을 막습니다(Chrome 은 SVG 안쪽의 `touch-action` 을 무시해서).
+- 펜·손가락·마우스 모두 끌 수 있습니다(Pointer Events). 좌표평면·넓이 모형의 손잡이는 HTML 요소(Handle.tsx), 부품 6종은 SVG 손잡이(SvgHandle.tsx)이고, 끄는 터치는 스크롤을 막습니다(Chrome 은 SVG 안쪽의 `touch-action` 을 무시해서).
 
 ---
 

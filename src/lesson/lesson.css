@@ -792,12 +792,18 @@
 }
 .lesson .sum .it {
   display: grid;
-  grid-template-columns: 32px 1fr;
+  grid-template-columns: 32px minmax(0, 1fr);
   gap: 12px;
   align-items: start;
   background: var(--surface);
   border-radius: 18px;
   padding: 16px 18px;
+}
+.lesson .sum .it > :last-child {
+  /* 긴 식(곱의 미분 공식 등)이 좁은 화면에서 카드 밖으로 나가지 않게, 넘치면 그 칸 안에서 옆으로 민다 */
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 .lesson .sum .it > b {
   width: 32px;
