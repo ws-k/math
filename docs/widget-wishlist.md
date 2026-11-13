@@ -47,3 +47,5 @@
 - numberLine: 분산·표준편차 값과 편차 막대 표시 — m3-statistics
 - 질문 보기: 글자 보기("양의 상관/음의 상관/없음") — m3-statistics
 - lesson values: 소수 값 허용(1.4, 1.96) — m3-sqrt
+- coord: 슬라이더를 따라 움직이는 점(꼭짓점 (p,q)), 슬라이더 목표("중근이 되게"), 한 점에 여러 값 표시 — m3-quadratic-eq, m3-quadratic-func
+- areaModel tiles: 판 크기 확대(x²+7x+12) — m3-factoring
