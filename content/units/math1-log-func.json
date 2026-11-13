@@ -1,0 +1,1421 @@
+{
+  "id": "math1-log-func",
+  "course": "수학Ⅰ",
+  "unit": "지수함수와 로그함수",
+  "title": "로그함수",
+  "prereq": [
+    "math1-log",
+    "math1-exp-func",
+    "h1-function"
+  ],
+  "suneung": [
+    "공통 22"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$y=\\log_ax \\Leftrightarrow x=a^y$",
+    "$y=a^x$ 와 $y=\\log_ax$ 의 그래프는 직선 $y=x$ 에 대하여 대칭",
+    "$y=\\log_ax$ 의 정의역은 $x>0$, 점근선은 $x=0$, 점 $(1,\\,0)$ 을 지나요",
+    "$a>1$ 이면 증가, $0<a<1$ 이면 감소",
+    "$\\log_af(x)<\\log_ag(x)$: $a>1$ 이면 $0<f(x)<g(x)$, $0<a<1$ 이면 $f(x)>g(x)>0$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "수학Ⅰ · 지수함수와 로그함수",
+        "title": "지수함수를 거울에 비추면\n어떤 곡선이 될까요?",
+        "lead": "직선 $y=x$ 를 거울로 삼아 $y=2^x$ 를 비춰 봐요. 점을 직접 찍어 새 곡선을 만들고, 이름은 마지막에 붙여요.",
+        "meta": [
+          "로그함수의 그래프",
+          "로그방정식·부등식"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$y=2^x$ 를 $y=x$ 에 비추면\n점 $(8,\\,\\square)$ 을 지나요",
+        "lead": "$y=2^x$ 의 그래프를 직선 $y=x$ 에 대하여 대칭이동한 곡선이 점 $(8,\\,\\square)$ 을 지나요. 빈칸은 얼마일까요?",
+        "choices": [
+          {
+            "value": "256",
+            "check": "2**8",
+            "feedback": "$2^8$ 은 $x=8$ 을 $y=2^x$ 에 넣은 값이에요. 비춘 곡선에서는 $x$ 와 $y$ 가 자리를 바꿔요."
+          },
+          {
+            "value": "3",
+            "check": "log(8, 2)"
+          },
+          {
+            "value": "4",
+            "check": "8*Rational(1, 2)",
+            "feedback": "8을 2로 나눈 값이에요. 나누기가 아니라 '2를 몇 번 곱하면 8이 되나'를 물어요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "log(8, 2)",
+        "reveal": "**맞아요.** $y=2^x$ 위의 점 $(3,\\,8)$ 이 비춰지면 $(8,\\,3)$ 이 돼요.",
+        "thoughts": [
+          "$2^3=8$ 이라 $y=2^x$ 는 점 $(3,\\,8)$ 을 지나요.",
+          "직선 $y=x$ 에 비추면 $x$좌표와 $y$좌표가 서로 바뀌어요."
+        ],
+        "conclude": "비춘 곡선은 \"2를 몇 번 곱해야 $x$ 가 되나\"를 알려 줘요. ==그 횟수가 바로 로그예요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "reflect",
+        "chip": "손으로 해 보기",
+        "title": "점 P 를 직선 $y=x$ 에\n비춘 자리를 찍어 보세요",
+        "lead": "곡선 $y=2^x$ 위의 점 $\\mathrm{P}(2,\\,4)$ 를 직선 $y=x$ 에 대하여 대칭이동한 점을 찍어요. 빈 칸을 누르면 점이 찍히고, 다시 누르면 지워져요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -1,
+              "max": 5,
+              "step": 1
+            },
+            "y": {
+              "min": -1,
+              "max": 5,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "e",
+                "curve": "2**x",
+                "label": "$y=2^x$"
+              },
+              {
+                "id": "d",
+                "curve": "x",
+                "label": "$y=x$",
+                "tone": "soft"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "e",
+                  "x": 2
+                },
+                "name": "P"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "4",
+                  "check": "(2**x).subs(x, 2)"
+                },
+                "y": {
+                  "value": "2",
+                  "check": "log((2**x).subs(x, 2), 2)"
+                }
+              }
+            },
+            "intro": "거울 $y=x$ 의 반대쪽, 같은 거리에 찍어요.",
+            "done": "맞아요. $(2,\\,4)$ 가 $(4,\\,2)$ 로, 두 좌표가 맞바뀌었어요."
+          }
+        }
+      },
+      {
+        "kind": "explore",
+        "id": "connect",
+        "chip": "곡선 만들기",
+        "title": "비춘 점을 여러 개 찍어\n곡선을 이어 보세요",
+        "lead": "$y=2^x$ 위의 네 점 $(-1,\\,\\frac12)$, $(0,\\,1)$, $(1,\\,2)$, $(2,\\,4)$ 를 직선 $y=x$ 에 비춘 자리를 모두 찍어요. 찍은 점은 $x$ 순서로 이어져요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "connect",
+            "x": {
+              "min": -2,
+              "max": 4,
+              "step": "1/2"
+            },
+            "y": {
+              "min": -2,
+              "max": 4,
+              "step": "1/2"
+            },
+            "objects": [
+              {
+                "id": "e",
+                "curve": "2**x",
+                "label": "$y=2^x$"
+              },
+              {
+                "id": "d",
+                "curve": "x",
+                "label": "$y=x$",
+                "tone": "soft"
+              },
+              {
+                "id": "L",
+                "curve": "log(x, 2)",
+                "label": "비춘 곡선",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "pointsOn": {
+                "curve": "L",
+                "count": 4
+              }
+            },
+            "intro": "네 점의 좌표를 맞바꾼 자리에 찍어요.",
+            "done": "찍은 점이 모두 비춘 곡선 위에 있어요. 이 곡선은 $x=2^y$, 곧 $y=\\log_2x$ 예요."
+          }
+        },
+        "after": "비춘 곡선은 $y$축 왼쪽으로 넘어가지 않아요. $2^y$ 는 언제나 양수라서 $x$ 는 ==양수만== 될 수 있어요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 만든 곡선에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "로그함수",
+            "body": "$y=\\log_ax$ ($a>0$, $a\\ne1$). $x=a^y$ 와 같은 뜻이에요. 정의역은 양수 전체예요."
+          },
+          {
+            "term": "역함수",
+            "body": "$y=a^x$ 와 $y=\\log_ax$ 처럼 $x$ 와 $y$ 를 맞바꾼 관계예요. 두 그래프는 직선 $y=x$ 에 대하여 대칭이에요."
+          },
+          {
+            "term": "점근선",
+            "body": "$y=\\log_ax$ 의 그래프는 $y$축에 한없이 가까워지지만 닿지 않아요. 그래서 $y$축(직선 $x=0$)이 점근선이에요."
+          }
+        ],
+        "aside": "**확인** · $2^2=4$ 라서 $\\log_24=2$ 예요. 찍었던 점 $(4,\\,2)$ 가 곡선 위에 있어요."
+      },
+      {
+        "kind": "explore",
+        "id": "base",
+        "chip": "밑 바꿔 보기",
+        "title": "밑을 바꿔도\n꼭 지나는 점이 있어요",
+        "lead": "밑 $a$ 를 바꾸며 곡선 $y=\\log_ax$ 를 보세요. 다른 색 곡선은 밑이 $\\frac12$ 인 $y=\\log_{\\frac12}x$ 예요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "y": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "sliders": [
+              {
+                "id": "a",
+                "min": 2,
+                "max": 6,
+                "step": 1,
+                "value": 2,
+                "label": "밑 $a$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "f",
+                "curve": "log(x)/log(a)",
+                "label": "$y=\\log_ax$"
+              },
+              {
+                "id": "h",
+                "curve": "-log(x)/log(2)",
+                "label": "$y=\\log_{\\frac12}x$",
+                "tone": "accent"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "on": "f",
+                  "x": 1
+                },
+                "name": "A"
+              },
+              {
+                "readout": "value(a)",
+                "label": "밑 $a$",
+                "digits": 0
+              },
+              {
+                "readout": "y(A)",
+                "label": "A 의 $y$좌표",
+                "digits": 0
+              }
+            ],
+            "intro": "$a$ 를 2부터 6까지 움직여 보세요.",
+            "done": "밑이 무엇이든 점 $(1,\\,0)$ 을 지나요. 밑이 클수록 완만해요."
+          }
+        },
+        "after": "$a>1$ 이면 $x$ 가 커질 때 $y$ 도 커지고(증가), $0<a<1$ 이면 $y$ 가 작아져요(감소). ==그래서 부등식을 풀 때 밑이 1보다 작으면 부등호 방향이 바뀌어요.=="
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 방정식 $\\log_3(x-1)=2$ 를 풀고 있어요. 틀린 부분은?",
+            "mode": "equivalent",
+            "from": "log(x-1,3)=2",
+            "tokens": [
+              {
+                "sym": "x-1"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "2**3",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "3**2",
+              "body": "$\\log_ax=c$ 는 $x=a^c$ 예요. **밑**을 지수만큼 곱해요. 밑과 지수를 바꿔 쓰는 실수가 많아요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $y=\\log_24x$ 의 그래프를 $y=\\log_2x$ 와 비교하려고 식을 바꿨어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "log(4*x,2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "4*log(x,2)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "log(x,2)+2",
+              "body": "진수의 곱은 로그의 **합**이에요. $\\log_24x=\\log_24+\\log_2x$ 라서, $y$축 방향으로 평행이동한 그래프예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "eq",
+            "q": "방정식 $\\log_2(x+1)+\\log_2(x-1)=3$ 의 해를 구하세요.",
+            "hint": "로그의 합은 진수의 곱이에요. 마지막에 진수 조건을 꼭 확인해요.",
+            "concepts": [
+              "$\\log_aM+\\log_aN=\\log_aMN$",
+              "진수 조건: 로그 안은 양수"
+            ],
+            "steps": [
+              {
+                "title": "진수 조건",
+                "body": "$x+1>0$, $x-1>0$ 이므로 $x>1$ 이어야 해요."
+              },
+              {
+                "title": "로그 하나로 합치기",
+                "body": "$$\\log_2(x+1)(x-1)=3$$"
+              },
+              {
+                "title": "정의로 로그 벗기기",
+                "body": "$$x^2-1=2^3=8$$"
+              },
+              {
+                "title": "이차방정식 풀기",
+                "body": "$x^2=9$ 이므로 $x=3$ 또는 $x=-3$ 이에요."
+              },
+              {
+                "title": "조건으로 고르기",
+                "body": "$x>1$ 이어야 하므로 $x={{answer}}$ 이에요."
+              }
+            ],
+            "tip": "$x=-3$ 을 넣으면 $\\log_2(-2)$ 가 나와요. 로그 안이 음수라 정의되지 않아요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "ans = [r for r in solve(Eq((x+1)*(x-1), 2**3), x) if r + 1 > 0 and r - 1 > 0][0]"
+          },
+          {
+            "id": "ineq",
+            "q": "부등식 $\\log_{\\frac12}(x-2)>-3$ 을 만족시키는 정수 $x$ 의 개수를 구하세요.",
+            "hint": "밑이 1보다 작아요. 로그를 벗길 때 부등호 방향을 확인해요.",
+            "concepts": [
+              "진수 조건: 로그 안은 양수",
+              "밑이 0과 1 사이면 부등호 방향이 바뀌어요."
+            ],
+            "steps": [
+              {
+                "title": "진수 조건",
+                "body": "$x-2>0$ 이므로 $x>2$ 예요."
+              },
+              {
+                "title": "오른쪽도 로그로",
+                "body": "$\\left(\\frac12\\right)^{-3}=8$ 이므로 $-3=\\log_{\\frac12}8$ 이에요."
+              },
+              {
+                "title": "부등호 뒤집기",
+                "body": "밑이 $\\frac12$ 이라 진수가 클수록 값이 작아요.\n$$x-2<8$$"
+              },
+              {
+                "title": "범위 합치기",
+                "body": "$$2<x<10$$"
+              },
+              {
+                "title": "정수 세기",
+                "body": "$3$ 부터 $9$ 까지 {{answer}}개예요."
+              }
+            ],
+            "tip": "부등호를 그대로 두면 $x-2>8$ 이 되어 정수가 끝없이 많아져요. 답이 '무수히 많다'면 방향을 의심해요.",
+            "answer": "7",
+            "answerType": "int",
+            "check": "len(Intersection(solveset(log(x-2, Rational(1,2)) > -3, x, Reals), Range(-10, 40)))"
+          },
+          {
+            "id": "range",
+            "q": "$1\\le x\\le7$ 에서 함수 $y=\\log_2(x+1)+1$ 의 최댓값과 최솟값의 합을 구하세요.",
+            "hint": "밑이 1보다 크면 증가해요. 양 끝 값만 보면 돼요.",
+            "concepts": [
+              "$a>1$ 이면 $y=\\log_ax$ 는 증가해요."
+            ],
+            "steps": [
+              {
+                "title": "증가인지 확인",
+                "body": "밑 $2>1$ 이므로 $x$ 가 클수록 $y$ 도 커져요."
+              },
+              {
+                "title": "최댓값",
+                "body": "$x=7$ 일 때 $\\log_28+1=3+1=4$ 예요."
+              },
+              {
+                "title": "최솟값",
+                "body": "$x=1$ 일 때 $\\log_22+1=1+1=2$ 예요."
+              },
+              {
+                "title": "더하기",
+                "body": "$$4+2={{answer}}$$"
+              }
+            ],
+            "tip": "밑이 1보다 작았다면 최댓값과 최솟값이 양 끝에서 자리를 바꿔요.",
+            "answer": "6",
+            "answerType": "int",
+            "check": "simplify(maximum(log(x+1, 2)+1, x, Interval(1, 7)) + minimum(log(x+1, 2)+1, x, Interval(1, 7)))"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$y=\\log_ax$ 는 $y=a^x$ 의 역함수예요. 두 그래프는 직선 $y=x$ 에 대하여 대칭이에요.",
+          "그래프는 늘 점 $(1,\\,0)$ 을 지나고, $y$축이 점근선이에요. 진수는 양수여야 해요.",
+          "밑이 1보다 크면 증가, 0과 1 사이면 감소. 밑이 1보다 작으면 부등호를 뒤집어요.",
+          "수능에서는 $y=x$ 에 대칭인 두 점을 이용해 지수·로그 그래프 위의 길이·넓이를 묻는 문제로 자주 나와요."
+        ],
+        "done": "로그함수 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "logfunc-eq",
+    "logfunc-inverse",
+    "logfunc-ineq-count"
+  ],
+  "problems": [
+    {
+      "q": "방정식 $\\log_{2}(x-5)=3$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "13",
+      "answerType": "int",
+      "check": "solve(Eq(log(1*x - 5, 2), 3), x)[0]",
+      "concepts": [
+        "$\\log_ax=c \\Leftrightarrow x=a^c$",
+        "진수는 항상 양수여야 해요."
+      ],
+      "steps": [
+        {
+          "title": "정의로 로그 벗기기",
+          "body": "$\\log_{2}(x-5)=3$ 은 \"$2$ 를 $3$ 번 곱하면 $x-5$\" 라는 뜻이에요.\n$$x-5=2^{3}=8$$"
+        },
+        {
+          "title": "일차방정식 풀기",
+          "body": "$$x=8+5=13$$"
+        },
+        {
+          "title": "진수 확인",
+          "body": "$x=13$ 일 때 진수 $x-5$ 의 값은 $2^{3}>0$ 이라 조건을 만족해요."
+        }
+      ],
+      "tip": "거꾸로 넣어 확인해요. $\\log_{2}8=3$ 이니 맞아요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "logfunc-eq",
+      "seed": 1000
+    },
+    {
+      "q": "함수 $f(x)=2^{x}-2$ 의 역함수를 $g(x)$ 라 할 때, $g(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "solve(Eq(2**x + (-2), 0), x)[0]",
+      "concepts": [
+        "$g$ 가 $f$ 의 역함수이면 $g(m)=k \\Leftrightarrow f(k)=m$",
+        "$y=a^x$ 와 $y=\\log_ax$ 는 서로 역함수예요."
+      ],
+      "steps": [
+        {
+          "title": "역함수 값을 방정식으로",
+          "body": "$g(0)=k$ 라 하면 $f(k)=0$ 이에요. 역함수식을 구하지 않아도 돼요."
+        },
+        {
+          "title": "지수 떼어 내기",
+          "body": "$$2^{k}-2=0,\\quad 2^{k}=2$$"
+        },
+        {
+          "title": "지수 읽기",
+          "body": "$2=2^{1}$ 이므로 $k=1$ 이에요."
+        }
+      ],
+      "tip": "역함수식으로도 확인돼요. $g(x)=\\log_{2}(x+2)$ 이고 $g(0)=\\log_{2}2=1$ 이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "logfunc-inverse",
+      "seed": 1001
+    },
+    {
+      "q": "부등식 $\\log_{\\frac{1}{2}}(x+1)\\ge-2$ 을 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "len(Intersection(solveset(log(1*x + 1, Rational(1, 2)) >= -2, x, Reals), Range(-6, 39)))",
+      "concepts": [
+        "진수 조건: 로그 안은 양수",
+        "밑이 1보다 크면 부등호 방향 그대로, 0과 1 사이면 반대로"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$x+1>0$ 이므로 $x>-1$ 이에요."
+        },
+        {
+          "title": "밑이 1보다 작아요 — 부등호를 뒤집기",
+          "body": "$-2=\\log_{\\frac{1}{2}}4$ 이고, 밑이 $\\frac{1}{2}$ 이면 진수가 클수록 값이 작아져요.\n$$x+1\\le4$$"
+        },
+        {
+          "title": "범위 합치기",
+          "body": "$$-1<x\\le3$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$0$ 부터 $3$ 까지 $4$ 개예요."
+        }
+      ],
+      "tip": "진수 조건을 빼먹으면 아래쪽 끝이 없어져 정수가 끝없이 많아져요. 범위의 양 끝을 꼭 둘 다 확인해요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "logfunc-ineq-count",
+      "seed": 1002
+    },
+    {
+      "q": "방정식 $\\log_{3}(3x+6)=1$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "solve(Eq(log(3*x + 6, 3), 1), x)[0]",
+      "concepts": [
+        "$\\log_ax=c \\Leftrightarrow x=a^c$",
+        "진수는 항상 양수여야 해요."
+      ],
+      "steps": [
+        {
+          "title": "정의로 로그 벗기기",
+          "body": "$\\log_{3}(3x+6)=1$ 은 \"$3$ 를 $1$ 번 곱하면 $3x+6$\" 라는 뜻이에요.\n$$3x+6=3^{1}=3$$"
+        },
+        {
+          "title": "일차방정식 풀기",
+          "body": "$$3x=-3,\\quad x=-1$$"
+        },
+        {
+          "title": "진수 확인",
+          "body": "$x=-1$ 일 때 진수 $3x+6$ 의 값은 $3^{1}>0$ 이라 조건을 만족해요."
+        }
+      ],
+      "tip": "거꾸로 넣어 확인해요. $\\log_{3}3=1$ 이니 맞아요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "logfunc-eq",
+      "seed": 1003
+    },
+    {
+      "q": "함수 $f(x)=2^{x}+1$ 의 역함수를 $g(x)$ 라 할 때, $g(5)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "solve(Eq(2**x + 1, 5), x)[0]",
+      "concepts": [
+        "$g$ 가 $f$ 의 역함수이면 $g(m)=k \\Leftrightarrow f(k)=m$",
+        "$y=a^x$ 와 $y=\\log_ax$ 는 서로 역함수예요."
+      ],
+      "steps": [
+        {
+          "title": "역함수 값을 방정식으로",
+          "body": "$g(5)=k$ 라 하면 $f(k)=5$ 이에요. 역함수식을 구하지 않아도 돼요."
+        },
+        {
+          "title": "지수 떼어 내기",
+          "body": "$$2^{k}+1=5,\\quad 2^{k}=4$$"
+        },
+        {
+          "title": "지수 읽기",
+          "body": "$4=2^{2}$ 이므로 $k=2$ 예요."
+        }
+      ],
+      "tip": "역함수식으로도 확인돼요. $g(x)=\\log_{2}(x-1)$ 이고 $g(5)=\\log_{2}4=2$ 예요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "logfunc-inverse",
+      "seed": 1004
+    },
+    {
+      "q": "부등식 $\\log_{\\frac{1}{2}}(x-1)>-3$ 을 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "len(Intersection(solveset(log(1*x - 1, Rational(1, 2)) > -3, x, Reals), Range(-4, 41)))",
+      "concepts": [
+        "진수 조건: 로그 안은 양수",
+        "밑이 1보다 크면 부등호 방향 그대로, 0과 1 사이면 반대로"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$x-1>0$ 이므로 $x>1$ 이에요."
+        },
+        {
+          "title": "밑이 1보다 작아요 — 부등호를 뒤집기",
+          "body": "$-3=\\log_{\\frac{1}{2}}8$ 이고, 밑이 $\\frac{1}{2}$ 이면 진수가 클수록 값이 작아져요.\n$$x-1<8$$"
+        },
+        {
+          "title": "범위 합치기",
+          "body": "$$1<x<9$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$2$ 부터 $8$ 까지 $7$ 개예요."
+        }
+      ],
+      "tip": "진수 조건을 빼먹으면 아래쪽 끝이 없어져 정수가 끝없이 많아져요. 범위의 양 끝을 꼭 둘 다 확인해요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "logfunc-ineq-count",
+      "seed": 1005
+    },
+    {
+      "q": "방정식 $\\log_{3}(3x+6)=1$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "solve(Eq(log(3*x + 6, 3), 1), x)[0]",
+      "concepts": [
+        "$\\log_ax=c \\Leftrightarrow x=a^c$",
+        "진수는 항상 양수여야 해요."
+      ],
+      "steps": [
+        {
+          "title": "정의로 로그 벗기기",
+          "body": "$\\log_{3}(3x+6)=1$ 은 \"$3$ 를 $1$ 번 곱하면 $3x+6$\" 라는 뜻이에요.\n$$3x+6=3^{1}=3$$"
+        },
+        {
+          "title": "일차방정식 풀기",
+          "body": "$$3x=-3,\\quad x=-1$$"
+        },
+        {
+          "title": "진수 확인",
+          "body": "$x=-1$ 일 때 진수 $3x+6$ 의 값은 $3^{1}>0$ 이라 조건을 만족해요."
+        }
+      ],
+      "tip": "거꾸로 넣어 확인해요. $\\log_{3}3=1$ 이니 맞아요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "logfunc-eq",
+      "seed": 1006
+    },
+    {
+      "q": "함수 $f(x)=3^{x}-1$ 의 역함수를 $g(x)$ 라 할 때, $g(2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "solve(Eq(3**x + (-1), 2), x)[0]",
+      "concepts": [
+        "$g$ 가 $f$ 의 역함수이면 $g(m)=k \\Leftrightarrow f(k)=m$",
+        "$y=a^x$ 와 $y=\\log_ax$ 는 서로 역함수예요."
+      ],
+      "steps": [
+        {
+          "title": "역함수 값을 방정식으로",
+          "body": "$g(2)=k$ 라 하면 $f(k)=2$ 이에요. 역함수식을 구하지 않아도 돼요."
+        },
+        {
+          "title": "지수 떼어 내기",
+          "body": "$$3^{k}-1=2,\\quad 3^{k}=3$$"
+        },
+        {
+          "title": "지수 읽기",
+          "body": "$3=3^{1}$ 이므로 $k=1$ 이에요."
+        }
+      ],
+      "tip": "역함수식으로도 확인돼요. $g(x)=\\log_{3}(x+1)$ 이고 $g(2)=\\log_{3}3=1$ 이에요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "logfunc-inverse",
+      "seed": 1007
+    },
+    {
+      "q": "부등식 $\\log_{\\frac{1}{3}}(x-4)\\ge-2$ 을 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "len(Intersection(solveset(log(1*x - 4, Rational(1, 3)) >= -2, x, Reals), Range(-1, 44)))",
+      "concepts": [
+        "진수 조건: 로그 안은 양수",
+        "밑이 1보다 크면 부등호 방향 그대로, 0과 1 사이면 반대로"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$x-4>0$ 이므로 $x>4$ 예요."
+        },
+        {
+          "title": "밑이 1보다 작아요 — 부등호를 뒤집기",
+          "body": "$-2=\\log_{\\frac{1}{3}}9$ 이고, 밑이 $\\frac{1}{3}$ 이면 진수가 클수록 값이 작아져요.\n$$x-4\\le9$$"
+        },
+        {
+          "title": "범위 합치기",
+          "body": "$$4<x\\le13$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$5$ 부터 $13$ 까지 $9$ 개예요."
+        }
+      ],
+      "tip": "진수 조건을 빼먹으면 아래쪽 끝이 없어져 정수가 끝없이 많아져요. 범위의 양 끝을 꼭 둘 다 확인해요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "logfunc-ineq-count",
+      "seed": 1008
+    },
+    {
+      "q": "방정식 $\\log_{5}(2x-1)=2$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "13",
+      "answerType": "int",
+      "check": "solve(Eq(log(2*x - 1, 5), 2), x)[0]",
+      "concepts": [
+        "$\\log_ax=c \\Leftrightarrow x=a^c$",
+        "진수는 항상 양수여야 해요."
+      ],
+      "steps": [
+        {
+          "title": "정의로 로그 벗기기",
+          "body": "$\\log_{5}(2x-1)=2$ 은 \"$5$ 를 $2$ 번 곱하면 $2x-1$\" 라는 뜻이에요.\n$$2x-1=5^{2}=25$$"
+        },
+        {
+          "title": "일차방정식 풀기",
+          "body": "$$2x=26,\\quad x=13$$"
+        },
+        {
+          "title": "진수 확인",
+          "body": "$x=13$ 일 때 진수 $2x-1$ 의 값은 $5^{2}>0$ 이라 조건을 만족해요."
+        }
+      ],
+      "tip": "거꾸로 넣어 확인해요. $\\log_{5}25=2$ 이니 맞아요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "logfunc-eq",
+      "seed": 1009
+    },
+    {
+      "q": "함수 $f(x)=\\log_{2}(x-1)$ 의 역함수를 $g(x)$ 라 할 때, $g(2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "fraction",
+      "check": "solve(Eq(log(1*x - 1, 2), 2), x)[0]",
+      "concepts": [
+        "$g$ 가 $f$ 의 역함수이면 $g(t)=k \\Leftrightarrow f(k)=t$",
+        "$\\log_ax=c \\Leftrightarrow x=a^c$"
+      ],
+      "steps": [
+        {
+          "title": "역함수 값을 방정식으로",
+          "body": "$g(2)=k$ 라 하면 $f(k)=2$, 곧 $\\log_{2}(k-1)=2$ 이에요."
+        },
+        {
+          "title": "정의로 로그 벗기기",
+          "body": "$$k-1=2^{2}=4$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$k=4+1=5$$"
+        }
+      ],
+      "tip": "역함수식은 $g(x)=2^{x}+1$ 이에요. $x=2$ 을 넣어도 같은 값이 나와요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "logfunc-inverse",
+      "seed": 1010
+    },
+    {
+      "q": "부등식 $\\log_{\\frac{1}{3}}(x-4)\\ge-3$ 을 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "27",
+      "answerType": "int",
+      "check": "len(Intersection(solveset(log(1*x - 4, Rational(1, 3)) >= -3, x, Reals), Range(-1, 44)))",
+      "concepts": [
+        "진수 조건: 로그 안은 양수",
+        "밑이 1보다 크면 부등호 방향 그대로, 0과 1 사이면 반대로"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$x-4>0$ 이므로 $x>4$ 예요."
+        },
+        {
+          "title": "밑이 1보다 작아요 — 부등호를 뒤집기",
+          "body": "$-3=\\log_{\\frac{1}{3}}27$ 이고, 밑이 $\\frac{1}{3}$ 이면 진수가 클수록 값이 작아져요.\n$$x-4\\le27$$"
+        },
+        {
+          "title": "범위 합치기",
+          "body": "$$4<x\\le31$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$5$ 부터 $31$ 까지 $27$ 개예요."
+        }
+      ],
+      "tip": "진수 조건을 빼먹으면 아래쪽 끝이 없어져 정수가 끝없이 많아져요. 범위의 양 끝을 꼭 둘 다 확인해요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "logfunc-ineq-count",
+      "seed": 1011
+    },
+    {
+      "q": "방정식 $\\log_{2}(2x+2)=3$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "solve(Eq(log(2*x + 2, 2), 3), x)[0]",
+      "concepts": [
+        "$\\log_ax=c \\Leftrightarrow x=a^c$",
+        "진수는 항상 양수여야 해요."
+      ],
+      "steps": [
+        {
+          "title": "정의로 로그 벗기기",
+          "body": "$\\log_{2}(2x+2)=3$ 은 \"$2$ 를 $3$ 번 곱하면 $2x+2$\" 라는 뜻이에요.\n$$2x+2=2^{3}=8$$"
+        },
+        {
+          "title": "일차방정식 풀기",
+          "body": "$$2x=6,\\quad x=3$$"
+        },
+        {
+          "title": "진수 확인",
+          "body": "$x=3$ 일 때 진수 $2x+2$ 의 값은 $2^{3}>0$ 이라 조건을 만족해요."
+        }
+      ],
+      "tip": "거꾸로 넣어 확인해요. $\\log_{2}8=3$ 이니 맞아요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "logfunc-eq",
+      "seed": 1012
+    },
+    {
+      "q": "함수 $f(x)=2^{x}+3$ 의 역함수를 $g(x)$ 라 할 때, $g(11)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "solve(Eq(2**x + 3, 11), x)[0]",
+      "concepts": [
+        "$g$ 가 $f$ 의 역함수이면 $g(m)=k \\Leftrightarrow f(k)=m$",
+        "$y=a^x$ 와 $y=\\log_ax$ 는 서로 역함수예요."
+      ],
+      "steps": [
+        {
+          "title": "역함수 값을 방정식으로",
+          "body": "$g(11)=k$ 라 하면 $f(k)=11$ 이에요. 역함수식을 구하지 않아도 돼요."
+        },
+        {
+          "title": "지수 떼어 내기",
+          "body": "$$2^{k}+3=11,\\quad 2^{k}=8$$"
+        },
+        {
+          "title": "지수 읽기",
+          "body": "$8=2^{3}$ 이므로 $k=3$ 이에요."
+        }
+      ],
+      "tip": "역함수식으로도 확인돼요. $g(x)=\\log_{2}(x-3)$ 이고 $g(11)=\\log_{2}8=3$ 이에요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "logfunc-inverse",
+      "seed": 1013
+    },
+    {
+      "q": "부등식 $\\log_{\\frac{1}{2}}(x-5)>-4$ 을 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "len(Intersection(solveset(log(1*x - 5, Rational(1, 2)) > -4, x, Reals), Range(0, 45)))",
+      "concepts": [
+        "진수 조건: 로그 안은 양수",
+        "밑이 1보다 크면 부등호 방향 그대로, 0과 1 사이면 반대로"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$x-5>0$ 이므로 $x>5$ 예요."
+        },
+        {
+          "title": "밑이 1보다 작아요 — 부등호를 뒤집기",
+          "body": "$-4=\\log_{\\frac{1}{2}}16$ 이고, 밑이 $\\frac{1}{2}$ 이면 진수가 클수록 값이 작아져요.\n$$x-5<16$$"
+        },
+        {
+          "title": "범위 합치기",
+          "body": "$$5<x<21$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$6$ 부터 $20$ 까지 $15$ 개예요."
+        }
+      ],
+      "tip": "진수 조건을 빼먹으면 아래쪽 끝이 없어져 정수가 끝없이 많아져요. 범위의 양 끝을 꼭 둘 다 확인해요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "logfunc-ineq-count",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "함수 $y=\\log_2(x-a)+b$ 의 그래프의 점근선이 직선 $x=3$ 이고, 이 그래프가 점 $(5,\\,4)$ 를 지날 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "a0 = solve(Eq(3 - a, 0), a)[0]\nb0 = 4 - log(5 - a0, 2)\nans = a0 + b0",
+      "concepts": [
+        "$y=\\log_a(x-p)+q$ 의 점근선은 $x=p$"
+      ],
+      "steps": [
+        {
+          "title": "점근선에서 a",
+          "body": "진수 $x-a$ 가 $0$ 이 되는 $x=a$ 가 점근선이므로 $a=3$ 이에요."
+        },
+        {
+          "title": "지나는 점 넣기",
+          "body": "$$4=\\log_2(5-3)+b=1+b$$"
+        },
+        {
+          "title": "b 구하기",
+          "body": "$b=3$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=3+3=6$$"
+        }
+      ],
+      "tip": "점근선은 진수가 $0$ 이 되는 자리예요. $y$축 방향 평행이동($b$)은 점근선을 바꾸지 않아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "함수 $f(x)=\\log_2(x+4)$ 의 역함수를 $g(x)$ 라 할 때, $g(3)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "solve(Eq(log(x+4, 2), 3), x)[0]",
+      "concepts": [
+        "$g(3)=k \\Leftrightarrow f(k)=3$"
+      ],
+      "steps": [
+        {
+          "title": "방정식으로 바꾸기",
+          "body": "$g(3)=k$ 라 하면 $\\log_2(k+4)=3$ 이에요."
+        },
+        {
+          "title": "정의로 벗기기",
+          "body": "$$k+4=2^3=8$$"
+        },
+        {
+          "title": "계산",
+          "body": "$k=4$ 예요."
+        }
+      ],
+      "tip": "역함수식 $g(x)=2^x-4$ 에 $x=3$ 을 넣어도 $8-4=4$ 예요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "함수 $y=\\log_2(-x^2+6x-5)$ 의 정의역에 속하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "len(Intersection(solveset(-x**2+6*x-5 > 0, x, Reals), Range(-10, 20)))",
+      "concepts": [
+        "진수 조건: 로그 안은 양수"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$$-x^2+6x-5>0$$"
+        },
+        {
+          "title": "양변에 -1 곱하기",
+          "body": "$$x^2-6x+5<0,\\quad (x-1)(x-5)<0$$"
+        },
+        {
+          "title": "범위",
+          "body": "$1<x<5$ 예요."
+        },
+        {
+          "title": "정수 세기",
+          "body": "$2,\\,3,\\,4$ 로 $3$ 개예요."
+        }
+      ],
+      "tip": "정의역은 '로그 안이 양수가 되는 $x$ 전체'예요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$-1\\le x\\le7$ 에서 함수 $y=\\log_3(x+2)-1$ 의 최댓값에서 최솟값을 뺀 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "simplify(maximum(log(x+2, 3)-1, x, Interval(-1, 7)) - minimum(log(x+2, 3)-1, x, Interval(-1, 7)))",
+      "concepts": [
+        "$a>1$ 이면 $y=\\log_ax$ 는 증가해요."
+      ],
+      "steps": [
+        {
+          "title": "증가 확인",
+          "body": "밑 $3>1$ 이라 오른쪽 끝에서 최대, 왼쪽 끝에서 최소예요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$x=7$: $\\log_39-1=2-1=1$"
+        },
+        {
+          "title": "최솟값",
+          "body": "$x=-1$: $\\log_31-1=0-1=-1$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$1-(-1)=2$$"
+        }
+      ],
+      "tip": "$\\log_a1=0$ 은 어떤 밑에서도 성립해요. 그래프가 늘 $(1,\\,0)$ 을 지나는 이유예요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$2\\le x\\le9$ 에서 함수 $y=\\log_{\\frac12}(x-1)$ 의 최댓값과 최솟값의 합을 구하세요.",
+      "choices": null,
+      "answer": "-3",
+      "answerType": "int",
+      "check": "simplify(maximum(log(x-1, Rational(1,2)), x, Interval(2, 9)) + minimum(log(x-1, Rational(1,2)), x, Interval(2, 9)))",
+      "concepts": [
+        "$0<a<1$ 이면 $y=\\log_ax$ 는 감소해요."
+      ],
+      "steps": [
+        {
+          "title": "감소 확인",
+          "body": "밑이 $\\frac12$ 이라 왼쪽 끝에서 최대, 오른쪽 끝에서 최소예요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$x=2$: $\\log_{\\frac12}1=0$"
+        },
+        {
+          "title": "최솟값",
+          "body": "$x=9$: $\\log_{\\frac12}8=-3$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$0+(-3)=-3$$"
+        }
+      ],
+      "tip": "$\\left(\\frac12\\right)^{-3}=8$ 이라 $\\log_{\\frac12}8=-3$ 이에요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "방정식 $\\log_2(x+2)+\\log_2(x-1)=2$ 의 해를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "ans = [r for r in solve(Eq((x+2)*(x-1), 2**2), x) if r + 2 > 0 and r - 1 > 0][0]",
+      "concepts": [
+        "$\\log_aM+\\log_aN=\\log_aMN$",
+        "진수 조건"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$x+2>0$, $x-1>0$ 이므로 $x>1$ 이에요."
+        },
+        {
+          "title": "합치고 벗기기",
+          "body": "$$(x+2)(x-1)=2^2=4$$"
+        },
+        {
+          "title": "정리",
+          "body": "$$x^2+x-6=0,\\quad (x+3)(x-2)=0$$"
+        },
+        {
+          "title": "고르기",
+          "body": "$x=-3$ 은 조건에 맞지 않아 $x=2$ 예요."
+        }
+      ],
+      "tip": "합치기 전에 진수 조건부터 적어 두면 가짜 근을 걸러 내기 쉬워요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "방정식 $(\\log_2x)^2-3\\log_2x+2=0$ 의 두 근의 곱을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "ans = Mul(*[2**s for s in solve(t**2-3*t+2, t)])",
+      "concepts": [
+        "$\\log_2x=t$ 로 바꿔 이차방정식으로"
+      ],
+      "steps": [
+        {
+          "title": "치환",
+          "body": "$\\log_2x=t$ 라 하면 $t^2-3t+2=0$ 이에요."
+        },
+        {
+          "title": "t 구하기",
+          "body": "$(t-1)(t-2)=0$ 이므로 $t=1$ 또는 $t=2$ 예요."
+        },
+        {
+          "title": "x 로 되돌리기",
+          "body": "$x=2^1=2$ 또는 $x=2^2=4$ 예요."
+        },
+        {
+          "title": "곱",
+          "body": "$$2\\times4=8$$"
+        }
+      ],
+      "tip": "두 근의 곱은 $2^{t_1+t_2}$ 이고, $t_1+t_2=3$ 이라 $2^3=8$ 로 바로 구할 수도 있어요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "부등식 $\\log_3(x-2)<2$ 를 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "len(Intersection(solveset(log(x-2, 3) < 2, x, Reals), Range(-10, 40)))",
+      "concepts": [
+        "진수 조건",
+        "밑이 1보다 크면 부등호 방향 그대로"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$x>2$ 예요."
+        },
+        {
+          "title": "로그 벗기기",
+          "body": "밑 $3>1$ 이라 방향 그대로예요.\n$$x-2<3^2=9$$"
+        },
+        {
+          "title": "범위",
+          "body": "$2<x<11$ 이에요."
+        },
+        {
+          "title": "정수 세기",
+          "body": "$3$ 부터 $10$ 까지 $8$ 개예요."
+        }
+      ],
+      "tip": "진수 조건이 아래쪽 끝, 부등식이 위쪽 끝을 정해요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "부등식 $\\log_{\\frac12}(x-3)\\ge\\log_{\\frac12}(9-x)$ 를 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "ans = len([n for n in range(-20, 30) if n-3 > 0 and 9-n > 0 and simplify(log(n-3, Rational(1,2)) - log(9-n, Rational(1,2))) >= 0])",
+      "concepts": [
+        "진수 조건",
+        "밑이 0과 1 사이면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$x-3>0$, $9-x>0$ 이므로 $3<x<9$ 예요."
+        },
+        {
+          "title": "부등호 뒤집기",
+          "body": "밑이 $\\frac12$ 이라 진수끼리는 반대 방향이에요.\n$$x-3\\le 9-x$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$2x\\le12$, $x\\le6$ 이에요."
+        },
+        {
+          "title": "합치고 세기",
+          "body": "$3<x\\le6$ 이라 $4,\\,5,\\,6$ 으로 $3$ 개예요."
+        }
+      ],
+      "tip": "등호가 있으면 $x=6$ 도 들어가요. 양 끝 포함 여부를 따로 확인해요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "함수 $y=\\log_2x$ 의 그래프를 $x$축 방향으로 $m$ 만큼, $y$축 방향으로 $n$ 만큼 평행이동했더니 함수 $y=\\log_2(4x-8)$ 의 그래프와 겹쳤어요. $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "m0 = solve(4*x-8, x)[0]\nn0 = log(4, 2)\nans = m0 + n0",
+      "concepts": [
+        "$\\log_aMN=\\log_aM+\\log_aN$",
+        "$y=\\log_a(x-m)+n$ 은 $m$, $n$ 만큼 평행이동"
+      ],
+      "steps": [
+        {
+          "title": "진수 묶기",
+          "body": "$4x-8=4(x-2)$ 예요."
+        },
+        {
+          "title": "로그 나누기",
+          "body": "$$\\log_2 4(x-2)=\\log_2(x-2)+\\log_24=\\log_2(x-2)+2$$"
+        },
+        {
+          "title": "읽기",
+          "body": "$x$축 방향 $2$, $y$축 방향 $2$ 이므로 $m=2$, $n=2$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$m+n=4$$"
+        }
+      ],
+      "tip": "진수에 곱해진 수는 $y$축 방향 평행이동으로 바뀌어요. 레슨의 함정 2와 같은 원리예요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "직선 $y=-x+k$ 가 두 곡선 $y=2^x$, $y=\\log_2x$ 와 만나는 점을 각각 $\\mathrm{A}$, $\\mathrm{B}$ 라 해요. 점 $\\mathrm{A}$ 의 $x$좌표가 $2$ 일 때, 선분 $\\mathrm{AB}$ 의 길이는?",
+      "choices": [
+        "$\\sqrt2$",
+        "$2$",
+        "$2\\sqrt2$",
+        "$4$",
+        "$4\\sqrt2$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "A = (2, 2**2)\nk0 = A[0] + A[1]\nB = (A[1], A[0])\nans = sqrt((A[0]-B[0])**2 + (A[1]-B[1])**2)",
+      "choiceChecks": [
+        "sqrt(2)",
+        "2",
+        "2*sqrt(2)",
+        "4",
+        "4*sqrt(2)"
+      ],
+      "concepts": [
+        "$y=2^x$ 와 $y=\\log_2x$ 는 $y=x$ 에 대하여 대칭",
+        "기울기 $-1$ 인 직선도 $y=x$ 에 대하여 대칭"
+      ],
+      "steps": [
+        {
+          "title": "점 A",
+          "body": "$x=2$ 일 때 $y=2^2=4$ 이므로 $\\mathrm{A}(2,\\,4)$, $k=2+4=6$ 이에요."
+        },
+        {
+          "title": "대칭 보기",
+          "body": "두 곡선도, 직선 $y=-x+6$ 도 $y=x$ 에 대하여 대칭이라 B 는 A 를 비춘 점이에요."
+        },
+        {
+          "title": "점 B",
+          "body": "$\\mathrm{B}(4,\\,2)$ 예요. $\\log_24=2$ 이고 $-4+6=2$ 라 확인돼요."
+        },
+        {
+          "title": "길이",
+          "body": "$$\\sqrt{(4-2)^2+(2-4)^2}=\\sqrt8=2\\sqrt2$$"
+        }
+      ],
+      "tip": "기울기가 $-1$ 인 직선이 나오면 $y=x$ 대칭을 먼저 떠올려요. B 를 방정식으로 구하지 않아도 돼요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "$0\\le x\\le6$ 에서 함수 $f(x)=\\log_{\\frac13}(x+a)$ 의 최솟값이 $-2$ 일 때, $f(x)$ 의 최댓값은? (단, $a$ 는 양수예요.)",
+      "choices": [
+        "$-3$",
+        "$-2$",
+        "$-1$",
+        "$0$",
+        "$1$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "a0 = solve(Eq(log(6+a, Rational(1,3)), -2), a)[0]\nans = log(0 + a0, Rational(1,3))",
+      "choiceChecks": [
+        "-3",
+        "-2",
+        "-1",
+        "0",
+        "1"
+      ],
+      "concepts": [
+        "$0<a<1$ 이면 감소: 오른쪽 끝에서 최소, 왼쪽 끝에서 최대"
+      ],
+      "steps": [
+        {
+          "title": "감소 확인",
+          "body": "밑이 $\\frac13$ 이라 $x=6$ 에서 최소예요."
+        },
+        {
+          "title": "a 구하기",
+          "body": "$\\log_{\\frac13}(6+a)=-2$ 이므로 $6+a=\\left(\\frac13\\right)^{-2}=9$, $a=3$ 이에요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$x=0$ 에서 $\\log_{\\frac13}3=-1$ 이에요."
+        }
+      ],
+      "tip": "밑이 1보다 작으면 최대·최소의 자리가 뒤바뀌어요. 끝점을 바꿔 넣는 실수에 조심해요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "부등식 $\\log_2(x-1)+\\log_2(9-x)\\ge3$ 을 만족시키는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "ans = len([n for n in range(-20, 30) if n-1 > 0 and 9-n > 0 and simplify(log(n-1, 2) + log(9-n, 2) - 3) >= 0])",
+      "concepts": [
+        "진수 조건",
+        "$\\log_aM+\\log_aN=\\log_aMN$",
+        "밑이 1보다 크면 방향 그대로"
+      ],
+      "steps": [
+        {
+          "title": "진수 조건",
+          "body": "$1<x<9$ 예요."
+        },
+        {
+          "title": "합치고 벗기기",
+          "body": "$$(x-1)(9-x)\\ge2^3=8$$"
+        },
+        {
+          "title": "정리",
+          "body": "$$x^2-10x+17\\le0$$"
+        },
+        {
+          "title": "근 어림",
+          "body": "$x=5\\pm2\\sqrt2$ 이고 $2\\sqrt2\\approx2.83$ 이라 약 $2.17\\le x\\le7.83$ 이에요."
+        },
+        {
+          "title": "정수 세기",
+          "body": "$3,\\,4,\\,5,\\,6,\\,7$ 로 $5$ 개예요."
+        }
+      ],
+      "tip": "정수만 세면 되니 경계 근처 정수를 직접 넣어 봐도 돼요. $x=3$ 이면 $2\\times6=12\\ge8$, $x=2$ 면 $1\\times7=7<8$ 이에요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "곡선 $y=\\log_2x$ 위의 점 $\\mathrm{A}$ 와 곡선 $y=2^x$ 위의 점 $\\mathrm{B}$ 가 직선 $y=x$ 에 대하여 대칭이에요. 점 $\\mathrm{A}$ 의 $x$좌표가 $8$ 일 때, 삼각형 $\\mathrm{OAB}$ 의 넓이는? (단, $\\mathrm{O}$ 는 원점이에요.)",
+      "choices": [
+        "$25$",
+        "$\\frac{55}{2}$",
+        "$30$",
+        "$\\frac{65}{2}$",
+        "$35$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "A = (8, log(8, 2))\nB = (A[1], A[0])\nans = Rational(1, 2)*Abs(A[0]*B[1] - A[1]*B[0])",
+      "choiceChecks": [
+        "25",
+        "Rational(55, 2)",
+        "30",
+        "Rational(65, 2)",
+        "35"
+      ],
+      "concepts": [
+        "$y=x$ 대칭: 좌표 맞바꾸기",
+        "세 점 $\\mathrm{O}$, $(x_1,y_1)$, $(x_2,y_2)$ 의 삼각형 넓이 $\\frac12|x_1y_2-x_2y_1|$"
+      ],
+      "steps": [
+        {
+          "title": "점 A",
+          "body": "$\\log_28=3$ 이므로 $\\mathrm{A}(8,\\,3)$ 이에요."
+        },
+        {
+          "title": "점 B",
+          "body": "좌표를 맞바꿔 $\\mathrm{B}(3,\\,8)$ 이에요. $2^3=8$ 이라 곡선 위에 있어요."
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac12|8\\cdot8-3\\cdot3|=\\frac12\\cdot55=\\frac{55}{2}$$"
+        }
+      ],
+      "tip": "넓이 공식이 낯설면, 꼭짓점 $(0,0)$, $(8,8)$ 을 지나는 큰 정사각형에서 바깥 삼각형 셋을 빼도 같은 값이 나와요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "함수 $y=\\log_3(x+a)+b$ 의 그래프의 점근선이 직선 $x=-2$ 이고 이 그래프가 점 $(7,\\,5)$ 를 지나요. 이 함수의 역함수의 그래프가 점 $(k,\\,1)$ 을 지날 때, $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "a0 = solve(Eq(-2 + a, 0), a)[0]\nb0 = 5 - log(7 + a0, 3)\nans = log(1 + a0, 3) + b0",
+      "concepts": [
+        "점근선은 진수가 $0$ 인 자리",
+        "역함수가 $(k,\\,1)$ 을 지나면 원래 함수는 $(1,\\,k)$ 를 지나요."
+      ],
+      "steps": [
+        {
+          "title": "점근선에서 a",
+          "body": "$x+a=0$ 인 $x=-a$ 가 $-2$ 이므로 $a=2$ 예요."
+        },
+        {
+          "title": "지나는 점에서 b",
+          "body": "$5=\\log_39+b=2+b$ 이므로 $b=3$ 이에요."
+        },
+        {
+          "title": "역함수 조건 바꾸기",
+          "body": "역함수가 $(k,\\,1)$ 을 지나면 원래 함수는 $(1,\\,k)$ 를 지나요."
+        },
+        {
+          "title": "k 구하기",
+          "body": "$$k=\\log_3(1+2)+3=1+3=4$$"
+        }
+      ],
+      "tip": "역함수식을 직접 구하지 않고 좌표만 맞바꾸면 계산이 짧아져요."
+    }
+  ]
+}
