@@ -34,3 +34,8 @@
 - 질문 보기: 식·구간을 보기로("x>−3") — m2-linear-ineq
 - 긴 나눗셈(세로셈) 부품 — m2-repeating-decimal (e-divisor-multiple 요청과 같은 계열)
 - **verify.py**: 검산식 안의 정수 나눗셈(2**5*2**3/2**4)이 파이썬 실수로 계산됨 — 전역 evaluate 를 유리수로 읽게 검토 — m2-exponent-poly
+- coord: 교점 목표 판정(x,y 둘 다), 기울기 목표("3으로 만들기"), 세로선 x=p 그리기 과제, 그림 객체 0개 허용 — m2-simul-eq, m2-linear-func(-eq)
+- 생성기에서 String.replace 로 `$$` 를 넣으면 `$` 하나가 됨(replace 특수 패턴) — 작성 주의 — m2-linear-func-eq
+- shape: 조각 여러 개 잘라 옮기기, 원의 중심을 끄는 점, 측정값 비율·넓이 이름표 — m2-pythagoras, m2-triangle-quad, m2-similarity
+- count tree: 단계마다 다른 물건 목록(모자 3 × 운동화 4) — m2-probability
+- simulate: 다시 넣지 않고 꺼내기, 이론값 감추기(맞힌 뒤 보임) — m2-probability
