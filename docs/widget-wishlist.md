@@ -39,3 +39,11 @@
 - shape: 조각 여러 개 잘라 옮기기, 원의 중심을 끄는 점, 측정값 비율·넓이 이름표 — m2-pythagoras, m2-triangle-quad, m2-similarity
 - count tree: 단계마다 다른 물건 목록(모자 3 × 운동화 4) — m2-probability
 - simulate: 다시 넣지 않고 꺼내기, 이론값 감추기(맞힌 뒤 보임) — m2-probability
+- numberLine·shape: 무리수 점(√2 를 컴퍼스로 옮기기), 원 반지름 정수 외 허용 — m3-sqrt
+- areaModel: grow 모드 읽는 값(띠÷Δx) 숨기기, split 결과 식 정리(xx → x², (x+3)²), 음수 칸 — m3-poly-mul
+- shape: 수선의 발이 따라오는 점, 측정값 비(높이÷빗변) 표시, 각 호·호 강조, 각도 합 표시 — m3-trig-ratio, m3-circle
+- unitCircle: 각 범위 제한(0°~90°) — m3-trig-ratio
+- spot: 도 단위 삼각함수(sin 30°) — m3-trig-ratio
+- numberLine: 분산·표준편차 값과 편차 막대 표시 — m3-statistics
+- 질문 보기: 글자 보기("양의 상관/음의 상관/없음") — m3-statistics
+- lesson values: 소수 값 허용(1.4, 1.96) — m3-sqrt
