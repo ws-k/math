@@ -908,3 +908,9 @@
     gap: 4px;
   }
 }
+.lesson .scale-eq.ne .mrel {
+  color: var(--bad);
+}
+.lesson .scale-eq {
+  display: block;
+}

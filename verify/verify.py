@@ -80,7 +80,18 @@ def check_spot(it):
     return f"알 수 없는 mode {it['mode']}"
 
 
-KINDS = {"spot": check_spot}
+def check_equiv(it):
+    """식 변형 전후의 해가 같은가. 저울 버튼·항 끌기 부품이 앱과 같은 TS 모델로 만든 전후 식을 넘긴다.
+    양쪽에 같은 일을 하면 해가 같아야(expect=True), 한쪽만 하면 해가 달라져야(expect=False) 한다."""
+    before, after = solutions(parse_eq(it["before"])), solutions(parse_eq(it["after"]))
+    same = before == after
+    if same != it["expect"]:
+        want = "같아야" if it["expect"] else "달라야"
+        return f"{it['before']} → {it['after']}: 해 {before} / {after} 가 {want} 함"
+    return None
+
+
+KINDS = {"spot": check_spot, "equiv": check_equiv}
 
 
 def check_item(it):

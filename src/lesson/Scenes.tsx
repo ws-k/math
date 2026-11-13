@@ -1,13 +1,12 @@
 // 레슨 장면들. 장면은 데이터만 그리고, 진행(다음 장면·완료)은 LessonPlayer 가 쥔다.
 // 화면 글자 가운데 값에서 나오는 것(보기 글자·식·연습문제 수)은 format.ts 로 데이터에서 만든다.
-import { type CSSProperties, type ReactNode, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
 import type { InkControl } from '../app/InkPage.tsx';
 import { InkPage } from '../app/InkPage.tsx';
 import { NumPad } from '../app/NumPad.tsx';
 import { Rich } from '../app/Rich.tsx';
 import type { Background, Tool } from '../ink/types.ts';
 import { compareAnswer } from '../lib/answer.ts';
-import { renderRich } from '../lib/math.ts';
 import { fill, formatValue, handsOnCount, symToTex } from './format.ts';
 import type {
   ExploreScene,
@@ -22,6 +21,7 @@ import type {
   SummaryScene,
   TermsScene,
 } from './types.ts';
+import { reducedMotion, Tex } from './ui.tsx';
 import { Widget } from './widgets/index.tsx';
 
 export interface SceneEnv {
@@ -34,24 +34,8 @@ export interface SceneEnv {
   onDone(id: string): void;
 }
 
-/** KaTeX 한 덩어리(글자 이스케이프는 renderRich 가 한다) */
-export function Tex({ tex, className }: { tex: string; className?: string }) {
-  const html = useMemo(() => renderRich(`$${tex}$`), [tex]);
-  return (
-    <span
-      className={className}
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: KaTeX 결과만 넣는다. 원문은 검산된 단원 JSON.
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  );
-}
-
 /** 등식 sym("왼쪽=오른쪽") → TeX */
 const eqTex = (sym: string) => sym.split('=').map(symToTex).join('=');
-
-/** 동작 줄이기가 켜져 있나. 렌더 중에는 읽지 않고(서버 렌더·스모크 테스트) 이벤트 처리 중에만 부른다 */
-export const reducedMotion = () =>
-  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function Head({ s, big }: { s: Scene; big?: boolean }) {
   return (

@@ -83,3 +83,23 @@ for (const [name, it] of [
     assert.equal(r.status, 1, r.stdout);
   });
 }
+
+const equiv = { unit: 'u', ref: 'u/lesson:scale:연산1', kind: 'equiv' };
+
+test('식 변형(equiv): 같은 해면 expect=true, 다른 해면 expect=false 가 통과', () => {
+  const r = runVerify([
+    { ...equiv, before: '3*x+1000=13000', after: '3*x=12000', expect: true },
+    { ...equiv, before: '3*x+1000=13000', after: '3*x=13000', expect: false },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+for (const [name, it] of [
+  ['양쪽 연산인데 해가 바뀜', { before: '3*x+1000=13000', after: '3*x=13000', expect: true }],
+  ['한쪽 연산인데 해가 그대로', { before: '3*x+1000=13000', after: '3*x=12000', expect: false }],
+] as const) {
+  test(`실패해야 함(equiv): ${name}`, () => {
+    const r = runVerify([{ ...equiv, ...it }]);
+    assert.equal(r.status, 1, r.stdout);
+  });
+}

@@ -5,7 +5,8 @@ import { routeHash } from '../app/route.ts';
 import { saver, store } from '../app/store.ts';
 import type { Unit } from '../content/types.ts';
 import type { Background, Tool } from '../ink/types.ts';
-import { reducedMotion, SceneFrame, SceneView } from './Scenes.tsx';
+import { DragGuard } from './dragGuard.ts';
+import { SceneFrame, SceneView } from './Scenes.tsx';
 import {
   canNext,
   complete,
@@ -17,7 +18,7 @@ import {
   toSaved,
 } from './state.ts';
 import type { Lesson } from './types.ts';
-import { DragGuard } from './widgets/index.tsx';
+import { reducedMotion } from './ui.tsx';
 
 export function LessonPlayer(p: {
   unit: Unit;

@@ -3,7 +3,7 @@
 // 부품이 그 안에서 DOM 속성을 직접 고친다. 상태는 손을 뗄 때(onEnd) 한 번만 바뀐다 —
 // 매 프레임 React 렌더가 끼면 느린 기기에서 칩이 손가락을 못 따라온다.
 import { type RefObject, useContext, useEffect, useRef } from 'react';
-import { DragGuard } from './widgets/index.tsx';
+import { DragGuard } from './dragGuard.ts';
 
 export interface DragHandlers {
   onStart?(): void;

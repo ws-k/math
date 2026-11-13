@@ -53,3 +53,10 @@ test('handsOnCount: 손 조작이 있는 장면 수', () => {
   };
   assert.equal(handsOnCount(l), 2);
 });
+
+test('symToTex: 곱셈 기호를 빼먹은 꼴은 거부(sympy 가 못 읽는다)', () => {
+  assert.throws(() => symToTex('3x'));
+  assert.throws(() => symToTex('2(x+1)'));
+  assert.throws(() => symToTex('(x)(x)'));
+  assert.doesNotThrow(() => symToTex('2*(x+1)'));
+});

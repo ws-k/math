@@ -2,6 +2,9 @@
 // 화면 쪽 등록부(widgets/index.tsx)와 나눈 이유: 검사기는 Node 로 .ts 만 읽을 수 있어서다.
 // checks 는 화면이 쓰는 바로 그 TS 모델을 돌린 결과를 sympy 에 넘긴다(두 벌 계산 금지).
 import type { CheckItem } from '../../content/check.ts';
+import { balanceDef } from './balance.ts';
+import { tableDef } from './table.ts';
+import { termDragDef } from './termDrag.ts';
 
 type Named<T> = T extends unknown ? Omit<T, 'ref' | 'unit'> & { name: string } : never;
 /** 부품이 만드는 검산 항목. ref 는 검사기가 "<단원>/lesson:<장면>:<name>"으로 붙인다 */
@@ -16,4 +19,8 @@ export interface WidgetDef<P> {
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: 부품마다 매개변수 타입이 달라 등록부는 any 로 모은다. 꺼낼 때 parse 가 타입을 다시 붙인다.
-export const widgetDefs: Record<string, WidgetDef<any>> = {};
+export const widgetDefs: Record<string, WidgetDef<any>> = {
+  balance: balanceDef,
+  termDrag: termDragDef,
+  table: tableDef,
+};

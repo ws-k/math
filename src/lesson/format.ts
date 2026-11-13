@@ -57,6 +57,8 @@ const SYM_OK = /^[0-9a-z+\-*/(). ]+$/;
 export function symToTex(sym: string): string {
   const s = sym.replace(/\s+/g, '');
   if (!s || !SYM_OK.test(s) || /[a-z]{2}/.test(s)) throw new Error(`식에 쓸 수 없는 글자: ${sym}`);
+  // 곱셈 기호를 빼먹은 꼴(3x, 2(x+1), (x)(x))은 sympy 가 못 읽는다 — 화면 글자만 맞고 검산이 깨지지 않게 거부
+  if (/(\d|\))[a-z(]|[a-z]\(/.test(s)) throw new Error(`곱셈은 * 로 적어야 함: ${sym}`);
   return s
     .replace(/\*\*(\d+|[a-z])/g, '^{$1}')
     .replace(/(\d)\*(\d)/g, '$1\\times $2')
