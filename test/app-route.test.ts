@@ -57,3 +57,10 @@ test('routeHash: 기본값은 생략', () => {
     '#/unit/u?side=note',
   );
 });
+
+test('레슨 주소 #/lesson/<단원>', () => {
+  assert.deepEqual(parseRoute('#/lesson/m1-linear-eq'), { name: 'lesson', unitId: 'm1-linear-eq' });
+  assert.equal(routeHash({ name: 'lesson', unitId: 'm1-linear-eq' }), '#/lesson/m1-linear-eq');
+  assert.deepEqual(parseRoute('#/lesson'), { name: 'home' });
+  assert.deepEqual(parseRoute('#/lesson/a/b'), { name: 'home' });
+});

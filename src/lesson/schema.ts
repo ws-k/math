@@ -38,9 +38,9 @@ const KIND_KEYS: Record<string, { req: string[]; opt: string[] }> = {
   intro: { req: [], opt: ['meta'] },
   question: {
     req: ['choices', 'answer', 'answerCheck', 'reveal'],
-    opt: ['widget', 'format', 'thoughts', 'conclude'],
+    opt: ['widget', 'format', 'thoughts', 'conclude', 'gate'],
   },
-  explore: { req: ['widget'], opt: [] },
+  explore: { req: ['widget'], opt: ['gate'] },
   terms: { req: ['terms'], opt: ['aside'] },
   spot: { req: ['items'], opt: [] },
   solve: { req: ['items'], opt: [] },
@@ -137,6 +137,7 @@ export function validateLesson(
         }
       };
 
+      if (s.gate !== undefined && s.gate !== true) fail(`${at} gate`, 'true 만');
       switch (kind) {
         case 'intro': {
           if (s.meta !== undefined)

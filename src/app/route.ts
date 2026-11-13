@@ -8,7 +8,8 @@ export type Route =
   | { name: 'map' }
   | { name: 'wrong' }
   | { name: 'settings' }
-  | { name: 'unit'; unitId: string; pid: string | null; side: Side };
+  | { name: 'unit'; unitId: string; pid: string | null; side: Side }
+  | { name: 'lesson'; unitId: string };
 
 const SIMPLE = new Set(['map', 'wrong', 'settings']);
 
@@ -19,6 +20,8 @@ export function parseRoute(hash: string): Route {
   const head = parts[0];
   if (!head) return { name: 'home' };
   if (parts.length === 1 && SIMPLE.has(head)) return { name: head as 'map' | 'wrong' | 'settings' };
+  if (head === 'lesson' && parts[1] && parts.length === 2)
+    return { name: 'lesson', unitId: parts[1] };
   if (head === 'unit' && parts[1] && parts.length <= 3) {
     // 한 쪽씩 보는 화면에서 앞 문제로 넘기면 공책 쪽에 내려앉아야 해서 쪽도 주소에 담는다.
     const side: Side = new URLSearchParams(query).get('side') === 'note' ? 'note' : 'text';
@@ -29,6 +32,7 @@ export function parseRoute(hash: string): Route {
 
 export function routeHash(r: Route): string {
   if (r.name === 'home') return '#/';
+  if (r.name === 'lesson') return `#/lesson/${encodeURIComponent(r.unitId)}`;
   if (r.name !== 'unit') return `#/${r.name}`;
   let h = `#/unit/${encodeURIComponent(r.unitId)}`;
   if (r.pid !== null) h += `/${encodeURIComponent(r.pid)}`;

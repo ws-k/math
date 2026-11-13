@@ -56,6 +56,8 @@ export interface NumFormat {
 export interface QuestionScene extends Base {
   kind: 'question';
   widget?: WidgetSpec;
+  /** 맞혀야 다음으로(두 번 틀리면 '답 보기'가 나온다) */
+  gate?: boolean;
   choices: Choice[];
   format?: NumFormat;
   /** 정답 보기 번호(0부터) */
@@ -73,6 +75,8 @@ export interface QuestionScene extends Base {
 export interface ExploreScene extends Base {
   kind: 'explore';
   widget: WidgetSpec;
+  /** 부품 목표를 이뤄야 다음으로 */
+  gate?: boolean;
 }
 
 export interface TermsScene extends Base {
