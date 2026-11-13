@@ -1,0 +1,1303 @@
+{
+  "id": "h1-rational-irrational",
+  "course": "고1 수학",
+  "unit": "함수",
+  "title": "유리함수와 무리함수",
+  "prereq": [
+    "h1-function",
+    "h1-transform"
+  ],
+  "suneung": [],
+  "hours": 2.5,
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "hole": {
+        "value": "2",
+        "check": "solve(denom(together(6/(x-2)+1)), x)[0]"
+      },
+      "flat": {
+        "value": "1",
+        "check": "limit(6/(x-2)+1, x, oo)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "고1 수학 · 함수",
+        "title": "다가가기만 하고\n닿지 않는 선이 있어요",
+        "lead": "케이크 한 판을 $x$ 명이 나누면 한 사람 몫은 $\\frac{1}{x}$ 판이에요. 사람이 늘수록 몫은 $0$ 에 다가가지만 $0$ 이 되지는 않아요. 이런 곡선을 옮겨 보고, 근호가 든 함수도 그려 봐요.",
+        "meta": [
+          "유리함수와 점근선",
+          "무리함수",
+          "평행이동"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$x$ 에 넣을 수 없는 수는\n무엇일까요?",
+        "lead": "함수 $y=\\dfrac{6}{x-2}+1$ 이 있어요. $x$ 에 어떤 수를 넣으면 계산이 안 될까요?",
+        "choices": [
+          {
+            "value": "-2",
+            "check": "-solve(denom(together(6/(x-2)+1)), x)[0]",
+            "feedback": "$x=-2$ 를 넣으면 분모는 $-4$ 라서 계산할 수 있어요. 분모가 $0$ 이 되는 수를 찾아요."
+          },
+          {
+            "value": "2",
+            "check": "solve(denom(together(6/(x-2)+1)), x)[0]"
+          },
+          {
+            "value": "1",
+            "check": "limit(6/(x-2)+1, x, oo)",
+            "feedback": "$1$ 은 식 끝에 더한 수예요. $x=1$ 을 넣어도 $\\frac{6}{-1}+1=-5$ 로 계산돼요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "solve(denom(together(6/(x-2)+1)), x)[0]",
+        "reveal": "**맞아요.** $x={{hole}}$ 이면 분모 $x-2$ 가 $0$ 이 돼요.",
+        "thoughts": [
+          "$x$ 가 ${{hole}}$ 에 가까워지면 $\\frac{6}{x-2}$ 는 한없이 커지거나 한없이 작아져요.",
+          "$x$ 가 아주 커지면 $\\frac{6}{x-2}$ 는 $0$ 에 다가가서 $y$ 는 ${{flat}}$ 에 다가가요."
+        ],
+        "conclude": "그래프는 두 직선 $x=2$, $y=1$ 에 ==한없이 다가가지만 닿지 않아요==. 이 두 직선을 손으로 옮겨 봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "slide",
+        "chip": "손으로 해 보기",
+        "title": "슬라이더로 곡선을 옮기면\n점근선은 어디로 갈까요?",
+        "lead": "$y=\\dfrac{k}{x-p}+q$ 예요. $p$ 와 $q$ 를 움직이면서 곡선이 다가가는 가로선과 세로선이 어디에 생기는지 보세요. $k$ 의 부호도 바꿔 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -6,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": -6,
+              "max": 6,
+              "step": 1
+            },
+            "sliders": [
+              {
+                "id": "p",
+                "min": -4,
+                "max": 4,
+                "step": 1,
+                "value": 0,
+                "label": "$p$ (좌우)"
+              },
+              {
+                "id": "q",
+                "min": -4,
+                "max": 4,
+                "step": 1,
+                "value": 0,
+                "label": "$q$ (위아래)"
+              },
+              {
+                "id": "k",
+                "min": -4,
+                "max": 4,
+                "step": 1,
+                "value": 2,
+                "label": "$k$ (휘는 정도)"
+              }
+            ],
+            "objects": [
+              {
+                "id": "b",
+                "curve": "2/x",
+                "label": "$y=\\frac{2}{x}$",
+                "tone": "soft"
+              },
+              {
+                "id": "h",
+                "curve": "q",
+                "label": "가로 점근선 $y=q$",
+                "tone": "accent"
+              },
+              {
+                "id": "f",
+                "curve": "k/(x-p)+q",
+                "label": "$y=\\frac{k}{x-p}+q$"
+              },
+              {
+                "readout": "value(p)",
+                "label": "세로 점근선 $x=p$ 의 $p$",
+                "digits": 0
+              },
+              {
+                "readout": "value(q)",
+                "label": "가로 점근선 $y=q$ 의 $q$",
+                "digits": 0
+              }
+            ],
+            "intro": "$p$ 는 곡선을 좌우로, $q$ 는 위아래로 옮겨요. 곡선이 끊기는 세로 자리를 눈여겨보세요."
+          }
+        },
+        "after": "곡선을 통째로 옮기면 다가가는 선도 같이 옮겨 가요. 세로선은 늘 $x=p$, 가로선은 늘 $y=q$ 예요. $k>0$ 이면 곡선이 오른쪽 위·왼쪽 아래에, $k<0$ 이면 왼쪽 위·오른쪽 아래에 놓여요. 곡선은 두 선의 교점 $(p,\\ q)$ 에 대해 ==점대칭==이에요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "유리함수",
+            "body": "$y=\\dfrac{2x+1}{x-1}$ 처럼 $y$ 가 $x$ 의 유리식(분수식 포함)인 함수예요. 따로 말이 없으면 정의역은 분모가 $0$ 이 아닌 실수 전체예요."
+          },
+          {
+            "term": "점근선",
+            "body": "곡선이 한없이 다가가는 직선이에요. $y=\\dfrac{k}{x-p}+q\\ (k\\neq0)$ 의 점근선은 $x=p$ 와 $y=q$ 예요."
+          },
+          {
+            "term": "무리함수",
+            "body": "$y=\\sqrt{x+2}$ 처럼 근호 안에 $x$ 가 든 함수예요. 근호 안이 $0$ 이상인 $x$ 에서만 정의돼요."
+          },
+          {
+            "term": "$y=\\sqrt{a(x-p)}+q$",
+            "body": "$y=\\sqrt{ax}$ 를 $x$축 방향으로 $p$, $y$축 방향으로 $q$ 만큼 옮긴 그래프예요. 시작점은 $(p,\\ q)$ 이고 $a>0$ 이면 오른쪽, $a<0$ 이면 왼쪽으로 뻗어요."
+          }
+        ],
+        "aside": "**평행이동** · $y=f(x)$ 를 $x$축 방향으로 $p$, $y$축 방향으로 $q$ 만큼 옮기면 $y=f(x-p)+q$ 예요. 도형의 이동 단원에서 배운 그대로예요."
+      },
+      {
+        "kind": "explore",
+        "id": "dots",
+        "chip": "점 찍기",
+        "title": "좌표가 모두 정수인 점을\n찍어 보세요",
+        "lead": "$y=\\dfrac{4}{x-2}+1$ 위에서 $x$, $y$ 가 모두 정수인 점을 4개 찍어 보세요. $x-2$ 가 $4$ 의 약수($\\pm1,\\ \\pm2,\\ \\pm4$)가 되면 $y$ 도 정수예요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -3,
+              "max": 7,
+              "step": 1
+            },
+            "y": {
+              "min": -4,
+              "max": 6,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "h",
+                "curve": "1",
+                "label": "가로 점근선 $y=1$",
+                "tone": "accent"
+              },
+              {
+                "id": "f",
+                "curve": "4/(x-2)+1",
+                "label": "$y=\\frac{4}{x-2}+1$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "pointsOn": {
+                "curve": "f",
+                "count": 4
+              }
+            },
+            "intro": "빈 칸을 눌러 점을 찍어요. 잘못 찍었으면 눌러서 지워요.",
+            "done": "점근선 $x=2$ 의 양쪽에 점이 나뉘어 있어요. 두 점근선의 교점 $(2,\\ 1)$ 을 중심으로 마주 보는 점끼리 짝이 맞아요."
+          }
+        },
+        "after": "예를 들어 $x=3$ 이면 $y=\\frac{4}{1}+1=5$, $x=1$ 이면 $y=\\frac{4}{-1}+1=-3$ 이에요. 두 점 $(3,\\ 5)$, $(1,\\ -3)$ 의 한가운데가 바로 $(2,\\ 1)$ 이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "sketch",
+        "chip": "곡선 긋기",
+        "title": "근호가 든 함수를\n손으로 그어 보세요",
+        "lead": "$y=\\sqrt{x+2}-1$ 은 $y=\\sqrt{x}$ 를 왼쪽으로 $2$, 아래로 $1$ 옮긴 곡선이에요. 시작점 $(-2,\\ -1)$ 에서 출발해 $(-1,\\ 0)$, $(2,\\ 1)$, $(7,\\ 2)$ 를 지나도록 그어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "sketch",
+            "x": {
+              "min": -2,
+              "max": 7,
+              "step": 1
+            },
+            "y": {
+              "min": -2,
+              "max": 4,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "g",
+                "curve": "sqrt(x+2)-1",
+                "label": "$y=\\sqrt{x+2}-1$",
+                "tone": "soft"
+              },
+              {
+                "id": "S",
+                "point": {
+                  "on": "g",
+                  "x": -2
+                },
+                "name": "S"
+              }
+            ],
+            "task": {
+              "sketch": {
+                "curve": "g",
+                "tol": "1/2"
+              }
+            },
+            "intro": "'그리기 시작'을 누르고 시작점 S 에서 오른쪽으로 그어요.",
+            "done": "처음엔 가파르게 오르다가 점점 완만해져요. 시작점 왼쪽은 근호 안이 음수라 그래프가 없어요."
+          }
+        },
+        "after": "정의역은 근호 안 $x+2\\ge0$ 인 $\\{x\\mid x\\ge-2\\}$, 치역은 $\\{y\\mid y\\ge-1\\}$ 이에요. ==시작점== 의 좌표가 정의역과 치역의 끝을 정해요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 점근선을 읽으려고 $\\dfrac{2x+1}{x-1}$ 을 $\\dfrac{k}{x-p}+q$ 꼴로 바꿨어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(2*x+1)/(x-1)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "2"
+              },
+              {
+                "sym": "+1/(x-1)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "+3/(x-1)",
+              "body": "분자를 $2(x-1)+3$ 으로 고쳐 써야 해요. $2(x-1)=2x-2$ 라서 $2x+1$ 이 되려면 $3$ 이 더 필요해요. 점근선은 $x=1$, $y=2$ 예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 시작점을 읽으려고 $\\sqrt{4-2x}$ 를 $\\sqrt{a(x-p)}$ 꼴로 묶었어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt(4-2*x)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sqrt(-2*(x+2))",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "sqrt(-2*(x-2))",
+              "body": "$-2$ 로 묶으면 $4$ 는 $-2\\times(-2)$ 라서 괄호 안은 $x-2$ 예요. 그래서 시작점은 $(2,\\ 0)$, 정의역은 $x\\le2$ 예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "asym",
+            "q": "유리함수 $y=\\dfrac{3x-1}{x-2}$ 의 그래프의 점근선이 두 직선 $x=a$, $y=b$ 일 때 $a+b$ 의 값을 구하세요.",
+            "hint": "분자를 $3(x-2)+5$ 로 고쳐 써요.",
+            "concepts": [
+              "$y=\\dfrac{k}{x-p}+q\\ (k\\neq0)$ 의 점근선은 두 직선 $x=p$, $y=q$ 예요."
+            ],
+            "steps": [
+              {
+                "title": "분자를 분모로 묶기",
+                "body": "$$3x-1=3(x-2)+5$$"
+              },
+              {
+                "title": "나눠 쓰기",
+                "body": "$$y=\\frac{5}{x-2}+3$$"
+              },
+              {
+                "title": "점근선 읽기",
+                "body": "$x=2$, $y=3$ 이라 $a+b=5$"
+              }
+            ],
+            "answer": "5",
+            "answerType": "int",
+            "check": "f = (3*x-1)/(x-2)\nans = solve(denom(f), x)[0] + limit(f, x, oo)"
+          },
+          {
+            "id": "dom",
+            "q": "함수 $y=\\sqrt{2x-4}+1$ 의 정의역이 $\\{x\\mid x\\ge a\\}$, 치역이 $\\{y\\mid y\\ge b\\}$ 일 때 $a+b$ 의 값을 구하세요.",
+            "hint": "근호 안이 $0$ 이 되는 $x$ 가 시작점이에요.",
+            "concepts": [
+              "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요."
+            ],
+            "steps": [
+              {
+                "title": "근호 안은 0 이상",
+                "body": "$$2x-4\\ge0,\\quad x\\ge2$$"
+              },
+              {
+                "title": "가장 작은 y",
+                "body": "$x=2$ 에서 근호가 $0$ 이라 $y\\ge1$ 이에요."
+              },
+              {
+                "title": "더하기",
+                "body": "$$a+b=2+1=3$$"
+              }
+            ],
+            "answer": "3",
+            "answerType": "int",
+            "check": "m0 = solve(Eq(2*x-4, 0), x)[0]\nans = m0 + (sqrt(2*x-4)+1).subs(x, m0)"
+          },
+          {
+            "id": "pass",
+            "q": "함수 $y=\\dfrac{k}{x+1}+2$ 의 그래프가 점 $(1,\\ 5)$ 를 지날 때 상수 $k$ 의 값을 구하세요.",
+            "hint": "$x=1$, $y=5$ 를 넣어요.",
+            "concepts": [
+              "그래프가 점을 지나면 그 좌표를 식에 넣었을 때 등식이 성립해요."
+            ],
+            "steps": [
+              {
+                "title": "점 넣기",
+                "body": "$$5=\\frac{k}{1+1}+2$$"
+              },
+              {
+                "title": "정리하기",
+                "body": "$$\\frac{k}{2}=3$$"
+              },
+              {
+                "title": "k 구하기",
+                "body": "$$k=6$$"
+              }
+            ],
+            "answer": "6",
+            "answerType": "int",
+            "check": "solve(Eq(k/(1+1)+2, 5), k)[0]"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$y=\\dfrac{k}{x-p}+q$: 점근선 $x=p$, $y=q$. 그래프는 $(p,\\ q)$ 에 대해 점대칭이에요.",
+          "분수식은 분자를 분모로 묶어 $\\dfrac{k}{x-p}+q$ 꼴로 바꾼 뒤 읽어요.",
+          "$y=\\sqrt{a(x-p)}+q$: 시작점 $(p,\\ q)$. $a>0$ 이면 오른쪽, $a<0$ 이면 왼쪽으로 뻗어요.",
+          "수학Ⅰ의 지수·로그함수에서 점근선을 다시 만나고, 수학Ⅱ의 극한은 '한없이 다가간다'를 식으로 다뤄요. 확률과 통계의 정규분포 곡선도 $x$축을 점근선으로 가져요."
+        ],
+        "done": "유리함수와 무리함수 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$y=\\dfrac{k}{x-p}+q$ 의 점근선: $x=p$, $y=q$",
+    "$y=\\dfrac{ax+b}{cx+d}$ 는 분자를 분모로 나눠 $\\dfrac{k}{x-p}+q$ 꼴로",
+    "$y=\\sqrt{a(x-p)}+q$ 의 시작점 $(p,\\ q)$"
+  ],
+  "generators": [
+    "rat-asymptote",
+    "rat-translate-point",
+    "irr-domain-range",
+    "irr-through-point"
+  ],
+  "problems": [
+    {
+      "q": "유리함수 $y=\\dfrac{3x-7}{x-3}$ 의 그래프의 점근선이 두 직선 $x=m$, $y=n$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "f = (3*x - 7)/(1*x - 3)\nans = solve(denom(f), x)[0] + limit(f, x, oo)",
+      "concepts": [
+        "$y=\\dfrac{k}{x-p}+q\\ (k\\neq0)$ 의 점근선은 두 직선 $x=p$, $y=q$ 예요.",
+        "분자를 분모로 나눠 $\\dfrac{k}{x-p}+q$ 꼴로 고쳐 써요."
+      ],
+      "steps": [
+        {
+          "title": "분자를 분모로 묶기",
+          "body": "$$3x-7=3(x-3)+2$$"
+        },
+        {
+          "title": "나눠 쓰기",
+          "body": "$$y=\\frac{2}{x-3}+3$$"
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$x=3$, $y=3$ 이라서 $m+n=3+3=6$"
+        }
+      ],
+      "tip": "세로 점근선은 분모가 $0$ 이 되는 $x$ 예요. $x-3=0$ 에서 $x=3$.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "rat-asymptote",
+      "seed": 1000
+    },
+    {
+      "q": "함수 $y=\\dfrac{3}{x}$ 의 그래프를 $x$축의 방향으로 $4$ 만큼, $y$축의 방향으로 $1$ 만큼 평행이동한 그래프가 점 $(1,\\ s)$ 를 지날 때 $s$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerType": "int",
+      "check": "(3/(x - (4)) + (1)).subs(x, 1)",
+      "concepts": [
+        "$y=f(x)$ 를 $x$축 방향으로 $m$, $y$축 방향으로 $n$ 만큼 평행이동하면 $y-n=f(x-m)$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "옮긴 식",
+          "body": "$$y=\\frac{3}{x-4}+1$$"
+        },
+        {
+          "title": "x=1 넣기",
+          "body": "$$s=\\frac{3}{1-4}+1=\\frac{3}{-3}+1$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$s=-1+1=0$$"
+        }
+      ],
+      "tip": "$x$축 방향으로 $4$ 만큼 옮기면 식에는 $x-4$ 로 들어가요. 부호를 조심해요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "rat-translate-point",
+      "seed": 1001
+    },
+    {
+      "q": "함수 $y=\\sqrt{-x-3}+4$ 의 정의역이 $\\{x\\mid x\\le m\\}$, 치역이 $\\{y\\mid y\\ge n\\}$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "m0 = solve(Eq(-1*x - 3, 0), x)[0]\nans = m0 + (sqrt(-1*x - 3) + (4)).subs(x, m0)",
+      "concepts": [
+        "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 안은 0 이상",
+          "body": "$$-x-3\\ge0,\\quad x\\le-3$$"
+        },
+        {
+          "title": "근호의 가장 작은 값",
+          "body": "$\\sqrt{\\ }$ 는 $0$ 이상이고 $x=-3$ 에서 $0$ 이라 $y\\ge4$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$m+n=-3+4=1$$"
+        }
+      ],
+      "tip": "$x$ 의 계수가 음수면 시작점에서 왼쪽으로 그려져서 정의역이 $x\\le-3$ 이에요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "irr-domain-range",
+      "seed": 1002
+    },
+    {
+      "q": "함수 $y=\\sqrt{ax}$ 의 그래프를 $x$축의 방향으로 $3$ 만큼, $y$축의 방향으로 $3$ 만큼 평행이동한 그래프가 점 $(2,\\ 5)$ 를 지날 때 상수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "solve(Eq(sqrt(a*(2 - (3))) + (3), 5), a)[0]",
+      "concepts": [
+        "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요.",
+        "$y=\\sqrt{ax}$ 를 $x$축 방향으로 $m$, $y$축 방향으로 $n$ 만큼 옮기면 $y=\\sqrt{a(x-m)}+n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "옮긴 식",
+          "body": "$$y=\\sqrt{a(x-3)}+3$$"
+        },
+        {
+          "title": "점 넣기",
+          "body": "$$5=\\sqrt{a(2-3)}+3,\\quad \\sqrt{-a}=2$$"
+        },
+        {
+          "title": "양변 제곱하기",
+          "body": "$$-a=4,\\quad a=-4$$"
+        }
+      ],
+      "tip": "$a$ 가 음수면 근호 안 $a(x-m)$ 이 $0$ 이상이 되도록 $x\\le m$ 쪽에 그래프가 있어요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "irr-through-point",
+      "seed": 1003
+    },
+    {
+      "q": "유리함수 $y=\\dfrac{-2x-4}{x+3}$ 의 그래프의 점근선이 두 직선 $x=m$, $y=n$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5",
+      "answerType": "int",
+      "check": "f = (-2*x - 4)/(1*x + 3)\nans = solve(denom(f), x)[0] + limit(f, x, oo)",
+      "concepts": [
+        "$y=\\dfrac{k}{x-p}+q\\ (k\\neq0)$ 의 점근선은 두 직선 $x=p$, $y=q$ 예요.",
+        "분자를 분모로 나눠 $\\dfrac{k}{x-p}+q$ 꼴로 고쳐 써요."
+      ],
+      "steps": [
+        {
+          "title": "분자를 분모로 묶기",
+          "body": "$$-2x-4=-2(x+3)+2$$"
+        },
+        {
+          "title": "나눠 쓰기",
+          "body": "$$y=\\frac{2}{x+3}-2$$"
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$x=-3$, $y=-2$ 라서 $m+n=-3+(-2)=-5$"
+        }
+      ],
+      "tip": "세로 점근선은 분모가 $0$ 이 되는 $x$ 예요. $x+3=0$ 에서 $x=-3$.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "rat-asymptote",
+      "seed": 1004
+    },
+    {
+      "q": "함수 $y=\\dfrac{-2}{x}$ 의 그래프를 $x$축의 방향으로 $2$ 만큼, $y$축의 방향으로 $0$ 만큼 평행이동한 그래프가 점 $(4,\\ s)$ 를 지날 때 $s$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "(-2/(x - (2)) + (0)).subs(x, 4)",
+      "concepts": [
+        "$y=f(x)$ 를 $x$축 방향으로 $m$, $y$축 방향으로 $n$ 만큼 평행이동하면 $y-n=f(x-m)$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "옮긴 식",
+          "body": "$$y=\\frac{-2}{x-2}$$"
+        },
+        {
+          "title": "x=4 넣기",
+          "body": "$$s=\\frac{-2}{4-2}=\\frac{-2}{2}$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$s=-1=-1$$"
+        }
+      ],
+      "tip": "$x$축 방향으로 $2$ 만큼 옮기면 식에는 $x-2$ 로 들어가요. 부호를 조심해요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "rat-translate-point",
+      "seed": 1005
+    },
+    {
+      "q": "함수 $y=\\sqrt{-x-3}+5$ 의 정의역이 $\\{x\\mid x\\le m\\}$, 치역이 $\\{y\\mid y\\ge n\\}$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "m0 = solve(Eq(-1*x - 3, 0), x)[0]\nans = m0 + (sqrt(-1*x - 3) + (5)).subs(x, m0)",
+      "concepts": [
+        "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 안은 0 이상",
+          "body": "$$-x-3\\ge0,\\quad x\\le-3$$"
+        },
+        {
+          "title": "근호의 가장 작은 값",
+          "body": "$\\sqrt{\\ }$ 는 $0$ 이상이고 $x=-3$ 에서 $0$ 이라 $y\\ge5$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$m+n=-3+5=2$$"
+        }
+      ],
+      "tip": "$x$ 의 계수가 음수면 시작점에서 왼쪽으로 그려져서 정의역이 $x\\le-3$ 이에요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "irr-domain-range",
+      "seed": 1006
+    },
+    {
+      "q": "함수 $y=\\sqrt{ax}$ 의 그래프를 $x$축의 방향으로 $-3$ 만큼, $y$축의 방향으로 $-1$ 만큼 평행이동한 그래프가 점 $(-1,\\ 3)$ 를 지날 때 상수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "solve(Eq(sqrt(a*(-1 - (-3))) + (-1), 3), a)[0]",
+      "concepts": [
+        "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요.",
+        "$y=\\sqrt{ax}$ 를 $x$축 방향으로 $m$, $y$축 방향으로 $n$ 만큼 옮기면 $y=\\sqrt{a(x-m)}+n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "옮긴 식",
+          "body": "$$y=\\sqrt{a(x+3)}-1$$"
+        },
+        {
+          "title": "점 넣기",
+          "body": "$$3=\\sqrt{a(-1-(-3))}-1,\\quad \\sqrt{2a}=4$$"
+        },
+        {
+          "title": "양변 제곱하기",
+          "body": "$$2a=16,\\quad a=8$$"
+        }
+      ],
+      "tip": "제곱하기 전에 $\\sqrt{\\ }$ 쪽 값이 $0$ 이상인지 확인해요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "irr-through-point",
+      "seed": 1007
+    },
+    {
+      "q": "유리함수 $y=\\dfrac{2x+1}{x-2}$ 의 그래프의 점근선이 두 직선 $x=m$, $y=n$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "f = (2*x + 1)/(1*x - 2)\nans = solve(denom(f), x)[0] + limit(f, x, oo)",
+      "concepts": [
+        "$y=\\dfrac{k}{x-p}+q\\ (k\\neq0)$ 의 점근선은 두 직선 $x=p$, $y=q$ 예요.",
+        "분자를 분모로 나눠 $\\dfrac{k}{x-p}+q$ 꼴로 고쳐 써요."
+      ],
+      "steps": [
+        {
+          "title": "분자를 분모로 묶기",
+          "body": "$$2x+1=2(x-2)+5$$"
+        },
+        {
+          "title": "나눠 쓰기",
+          "body": "$$y=\\frac{5}{x-2}+2$$"
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$x=2$, $y=2$ 라서 $m+n=2+2=4$"
+        }
+      ],
+      "tip": "세로 점근선은 분모가 $0$ 이 되는 $x$ 예요. $x-2=0$ 에서 $x=2$.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "rat-asymptote",
+      "seed": 1008
+    },
+    {
+      "q": "함수 $y=\\dfrac{4}{x}$ 의 그래프를 $x$축의 방향으로 $1$ 만큼, $y$축의 방향으로 $-1$ 만큼 평행이동한 그래프가 점 $(3,\\ s)$ 를 지날 때 $s$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "(4/(x - (1)) + (-1)).subs(x, 3)",
+      "concepts": [
+        "$y=f(x)$ 를 $x$축 방향으로 $m$, $y$축 방향으로 $n$ 만큼 평행이동하면 $y-n=f(x-m)$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "옮긴 식",
+          "body": "$$y=\\frac{4}{x-1}-1$$"
+        },
+        {
+          "title": "x=3 넣기",
+          "body": "$$s=\\frac{4}{3-1}-1=\\frac{4}{2}-1$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$s=2-1=1$$"
+        }
+      ],
+      "tip": "$x$축 방향으로 $1$ 만큼 옮기면 식에는 $x-1$ 로 들어가요. 부호를 조심해요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "rat-translate-point",
+      "seed": 1009
+    },
+    {
+      "q": "함수 $y=\\sqrt{-x+3}+4$ 의 정의역이 $\\{x\\mid x\\le m\\}$, 치역이 $\\{y\\mid y\\ge n\\}$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "m0 = solve(Eq(-1*x + 3, 0), x)[0]\nans = m0 + (sqrt(-1*x + 3) + (4)).subs(x, m0)",
+      "concepts": [
+        "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 안은 0 이상",
+          "body": "$$-x+3\\ge0,\\quad x\\le3$$"
+        },
+        {
+          "title": "근호의 가장 작은 값",
+          "body": "$\\sqrt{\\ }$ 는 $0$ 이상이고 $x=3$ 에서 $0$ 이라 $y\\ge4$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$m+n=3+4=7$$"
+        }
+      ],
+      "tip": "$x$ 의 계수가 음수면 시작점에서 왼쪽으로 그려져서 정의역이 $x\\le3$ 이에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "irr-domain-range",
+      "seed": 1010
+    },
+    {
+      "q": "함수 $y=\\sqrt{ax}$ 의 그래프를 $x$축의 방향으로 $3$ 만큼, $y$축의 방향으로 $2$ 만큼 평행이동한 그래프가 점 $(11,\\ 6)$ 를 지날 때 상수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "solve(Eq(sqrt(a*(11 - (3))) + (2), 6), a)[0]",
+      "concepts": [
+        "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요.",
+        "$y=\\sqrt{ax}$ 를 $x$축 방향으로 $m$, $y$축 방향으로 $n$ 만큼 옮기면 $y=\\sqrt{a(x-m)}+n$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "옮긴 식",
+          "body": "$$y=\\sqrt{a(x-3)}+2$$"
+        },
+        {
+          "title": "점 넣기",
+          "body": "$$6=\\sqrt{a(11-3)}+2,\\quad \\sqrt{8a}=4$$"
+        },
+        {
+          "title": "양변 제곱하기",
+          "body": "$$8a=16,\\quad a=2$$"
+        }
+      ],
+      "tip": "제곱하기 전에 $\\sqrt{\\ }$ 쪽 값이 $0$ 이상인지 확인해요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "irr-through-point",
+      "seed": 1011
+    },
+    {
+      "q": "유리함수 $y=\\dfrac{-2x-7}{x+1}$ 의 그래프의 점근선이 두 직선 $x=m$, $y=n$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3",
+      "answerType": "int",
+      "check": "f = (-2*x - 7)/(1*x + 1)\nans = solve(denom(f), x)[0] + limit(f, x, oo)",
+      "concepts": [
+        "$y=\\dfrac{k}{x-p}+q\\ (k\\neq0)$ 의 점근선은 두 직선 $x=p$, $y=q$ 예요.",
+        "분자를 분모로 나눠 $\\dfrac{k}{x-p}+q$ 꼴로 고쳐 써요."
+      ],
+      "steps": [
+        {
+          "title": "분자를 분모로 묶기",
+          "body": "$$-2x-7=-2(x+1)-5$$"
+        },
+        {
+          "title": "나눠 쓰기",
+          "body": "$$y=\\frac{-5}{x+1}-2$$"
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$x=-1$, $y=-2$ 라서 $m+n=-1+(-2)=-3$"
+        }
+      ],
+      "tip": "세로 점근선은 분모가 $0$ 이 되는 $x$ 예요. $x+1=0$ 에서 $x=-1$.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "rat-asymptote",
+      "seed": 1012
+    },
+    {
+      "q": "함수 $y=\\dfrac{-12}{x}$ 의 그래프를 $x$축의 방향으로 $-3$ 만큼, $y$축의 방향으로 $2$ 만큼 평행이동한 그래프가 점 $(-9,\\ s)$ 를 지날 때 $s$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "(-12/(x - (-3)) + (2)).subs(x, -9)",
+      "concepts": [
+        "$y=f(x)$ 를 $x$축 방향으로 $m$, $y$축 방향으로 $n$ 만큼 평행이동하면 $y-n=f(x-m)$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "옮긴 식",
+          "body": "$$y=\\frac{-12}{x+3}+2$$"
+        },
+        {
+          "title": "x=-9 넣기",
+          "body": "$$s=\\frac{-12}{-9-(-3)}+2=\\frac{-12}{-6}+2$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$s=2+2=4$$"
+        }
+      ],
+      "tip": "$x$축 방향으로 $-3$ 만큼 옮기면 식에는 $x-(-3)$ 로 들어가요. 부호를 조심해요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "rat-translate-point",
+      "seed": 1013
+    },
+    {
+      "q": "함수 $y=\\sqrt{-3x+9}+4$ 의 정의역이 $\\{x\\mid x\\le m\\}$, 치역이 $\\{y\\mid y\\ge n\\}$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "m0 = solve(Eq(-3*x + 9, 0), x)[0]\nans = m0 + (sqrt(-3*x + 9) + (4)).subs(x, m0)",
+      "concepts": [
+        "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 안은 0 이상",
+          "body": "$$-3x+9\\ge0,\\quad x\\le3$$"
+        },
+        {
+          "title": "근호의 가장 작은 값",
+          "body": "$\\sqrt{\\ }$ 는 $0$ 이상이고 $x=3$ 에서 $0$ 이라 $y\\ge4$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$m+n=3+4=7$$"
+        }
+      ],
+      "tip": "$x$ 의 계수가 음수면 시작점에서 왼쪽으로 그려져서 정의역이 $x\\le3$ 이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "irr-domain-range",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\dfrac{2}{x-1}-\\dfrac{2}{x+1}=\\dfrac{a}{x^2-1}$ 이 $x$ 에 대한 항등식일 때 상수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "simplify((2/(x-1) - 2/(x+1))*(x**2-1))",
+      "concepts": [
+        "분모가 다른 유리식은 통분해서 더하고 빼요. $x^2-1=(x-1)(x+1)$"
+      ],
+      "steps": [
+        {
+          "title": "통분하기",
+          "body": "$$\\frac{2(x+1)-2(x-1)}{(x-1)(x+1)}$$"
+        },
+        {
+          "title": "분자 정리",
+          "body": "$$2x+2-2x+2=4$$"
+        },
+        {
+          "title": "비교하기",
+          "body": "$$\\frac{4}{x^2-1},\\quad a=4$$"
+        }
+      ],
+      "tip": "뺄셈의 괄호 앞 $-2$ 는 $-1$ 에도 곱해져 $+2$ 가 돼요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "유리함수 $y=\\dfrac{2x+5}{x+1}$ 의 그래프의 점근선이 두 직선 $x=a$, $y=b$ 일 때 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "f = (2*x+5)/(x+1)\nans = solve(denom(f), x)[0] + limit(f, x, oo)",
+      "concepts": [
+        "$y=\\dfrac{k}{x-p}+q\\ (k\\neq0)$ 의 점근선은 두 직선 $x=p$, $y=q$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "분자를 분모로 묶기",
+          "body": "$$2x+5=2(x+1)+3$$"
+        },
+        {
+          "title": "나눠 쓰기",
+          "body": "$$y=\\frac{3}{x+1}+2$$"
+        },
+        {
+          "title": "점근선 읽기",
+          "body": "$x=-1$, $y=2$ 라서 $a+b=1$"
+        }
+      ],
+      "tip": "가로 점근선은 분자·분모의 $x$ 계수의 비 $\\frac{2}{1}$ 로도 바로 읽혀요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "유리함수 $y=\\dfrac{3}{x-2}+1$ 의 그래프가 직선 $y=x+k$ 에 대하여 대칭일 때 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "f = 3/(x-2)+1\np0 = solve(denom(together(f)), x)[0]\nq0 = limit(f, x, oo)\nans = solve(Eq(q0, p0 + k), k)[0]",
+      "concepts": [
+        "유리함수의 그래프는 두 점근선의 교점을 지나고 기울기가 $\\pm1$ 인 직선에 대해 대칭이에요."
+      ],
+      "steps": [
+        {
+          "title": "점근선의 교점",
+          "body": "점근선 $x=2$, $y=1$ 의 교점은 $(2,\\ 1)$ 이에요."
+        },
+        {
+          "title": "대칭축은 교점을 지나요",
+          "body": "$$1=2+k$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$k=-1$$"
+        }
+      ],
+      "tip": "$k>0$ 인 $y=\\frac{k}{x}$ 가 $y=x$ 에 대해 대칭인 것을 옮겨 생각하면 돼요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "유리함수 $y=\\dfrac{k}{x-1}+3$ 의 그래프가 점 $(3,\\ 7)$ 을 지날 때 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "solve(Eq(k/(3-1)+3, 7), k)[0]",
+      "concepts": [
+        "그래프가 점을 지나면 그 좌표를 식에 넣었을 때 등식이 성립해요."
+      ],
+      "steps": [
+        {
+          "title": "점 넣기",
+          "body": "$$7=\\frac{k}{3-1}+3$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$\\frac{k}{2}=4$$"
+        },
+        {
+          "title": "k 구하기",
+          "body": "$$k=8$$"
+        }
+      ],
+      "tip": "점근선은 $k$ 와 상관없이 $x=1$, $y=3$ 이에요. $k$ 는 휘는 정도만 정해요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$0\\le x\\le2$ 에서 함수 $y=\\dfrac{2}{x+1}+1$ 의 최댓값과 최솟값의 합을 구하세요.",
+      "choices": null,
+      "answer": "14/3",
+      "answerTex": "$\\dfrac{14}{3}$",
+      "answerType": "fraction",
+      "check": "f = 2/(x+1)+1\nans = maximum(f, x, Interval(0, 2)) + minimum(f, x, Interval(0, 2))",
+      "concepts": [
+        "$k>0$ 이면 $y=\\dfrac{k}{x-p}+q$ 는 $x>p$ 에서 $x$ 가 커질수록 $y$ 가 작아져요."
+      ],
+      "steps": [
+        {
+          "title": "그래프 모양",
+          "body": "점근선 $x=-1$ 의 오른쪽이고 $k=2>0$ 이라 $x$ 가 커질수록 $y$ 가 작아져요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$$x=0:\\ y=\\frac{2}{1}+1=3$$"
+        },
+        {
+          "title": "최솟값",
+          "body": "$$x=2:\\ y=\\frac{2}{3}+1=\\frac{5}{3}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$3+\\frac{5}{3}=\\frac{14}{3}$$"
+        }
+      ],
+      "tip": "구간이 점근선을 품지 않을 때만 양 끝에서 최대·최소가 나와요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "함수 $y=\\sqrt{3x-6}+2$ 의 정의역이 $\\{x\\mid x\\ge m\\}$, 치역이 $\\{y\\mid y\\ge n\\}$ 일 때 $m+n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "m0 = solve(Eq(3*x-6, 0), x)[0]\nans = m0 + (sqrt(3*x-6)+2).subs(x, m0)",
+      "concepts": [
+        "$y=\\sqrt{a(x-p)}+q$ 는 근호 안이 $0$ 이상인 곳에서만 정의되고, 시작점은 $(p,\\ q)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "근호 안은 0 이상",
+          "body": "$$3x-6\\ge0,\\quad x\\ge2$$"
+        },
+        {
+          "title": "가장 작은 y",
+          "body": "$x=2$ 에서 근호가 $0$ 이라 $y\\ge2$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$m+n=2+2=4$$"
+        }
+      ],
+      "tip": "치역의 끝은 근호 밖에 더한 수예요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "함수 $y=\\sqrt{-x}$ 의 그래프를 $x$축의 방향으로 $a$ 만큼, $y$축의 방향으로 $b$ 만큼 평행이동하면 $y=\\sqrt{-x+3}-1$ 의 그래프가 돼요. $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "f = sqrt(-x+3) - 1\nx0 = solve(Eq(-x+3, 0), x)[0]\nans = x0 + f.subs(x, x0)",
+      "concepts": [
+        "$y=\\sqrt{-x}$ 의 시작점 $(0,\\ 0)$ 이 옮겨 간 자리가 새 시작점이에요."
+      ],
+      "steps": [
+        {
+          "title": "괄호로 묶기",
+          "body": "$$\\sqrt{-x+3}=\\sqrt{-(x-3)}$$"
+        },
+        {
+          "title": "옮긴 양 읽기",
+          "body": "$y=\\sqrt{-(x-3)}-1$ 이라 $a=3$, $b=-1$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=3+(-1)=2$$"
+        }
+      ],
+      "tip": "$\\sqrt{-x+3}$ 을 $\\sqrt{-(x+3)}$ 으로 묶으면 부호가 틀려요. $-x+3=-(x-3)$."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "함수 $y=\\sqrt{x+a}+b$ 의 정의역이 $\\{x\\mid x\\ge-5\\}$ 이고 그래프가 점 $(-1,\\ 3)$ 을 지날 때 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "a0 = solve(Eq(-5 + a, 0), a)[0]\nb0 = solve(Eq(sqrt(-1 + a0) + b, 3), b)[0]\nans = a0 + b0",
+      "concepts": [
+        "정의역의 끝은 근호 안이 $0$ 이 되는 $x$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "정의역으로 a",
+          "body": "$x=-5$ 에서 $x+a=0$ 이라 $a=5$ 예요."
+        },
+        {
+          "title": "점 넣기",
+          "body": "$$3=\\sqrt{-1+5}+b=2+b$$"
+        },
+        {
+          "title": "b 와 더하기",
+          "body": "$b=1$ 이라 $a+b=6$ 이에요."
+        }
+      ],
+      "tip": "정의역 조건 하나, 지나는 점 하나로 모르는 수 두 개가 정해져요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "유리함수 $y=\\dfrac{ax+b}{x+c}$ 의 그래프의 점근선이 두 직선 $x=2$, $y=3$ 이고 그래프가 원점을 지날 때, 상수 $a$, $b$, $c$ 에 대하여 $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "sol = solve([Eq(2 + c, 0), Eq(limit((a*x + b)/(x + c), x, oo), 3), Eq(a*0 + b, 0)], [a, b, c], dict=True)[0]\nans = sol[a] + sol[b] + sol[c]",
+      "concepts": [
+        "세로 점근선은 분모가 $0$ 이 되는 $x$, 가로 점근선은 $x$ 계수의 비예요."
+      ],
+      "steps": [
+        {
+          "title": "세로 점근선",
+          "body": "$x=2$ 에서 분모 $x+c=0$ 이라 $c=-2$ 예요."
+        },
+        {
+          "title": "가로 점근선",
+          "body": "$x$ 계수의 비 $\\frac{a}{1}=3$ 이라 $a=3$ 이에요."
+        },
+        {
+          "title": "원점 지나기",
+          "body": "$x=0$ 이면 $y=\\frac{b}{c}=0$ 이라 $b=0$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b+c=3+0+(-2)=1$$"
+        }
+      ],
+      "tip": "$y=\\frac{3x}{x-2}=\\frac{6}{x-2}+3$ 으로 고쳐 확인해 봐요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "함수 $y=\\sqrt{2x+4}$ 의 그래프와 직선 $y=x+2$ 의 교점의 개수를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "len(solveset(Eq(sqrt(2*x+4), x+2), x, S.Reals))",
+      "concepts": [
+        "무리방정식은 양변을 제곱해서 풀고, 나온 해를 처음 식에 넣어 확인해요."
+      ],
+      "steps": [
+        {
+          "title": "제곱하기",
+          "body": "$$2x+4=x^2+4x+4$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$x^2+2x=0,\\quad x(x+2)=0$$"
+        },
+        {
+          "title": "확인하기",
+          "body": "$x=0$ 이면 $\\sqrt4=2$, $x=-2$ 이면 $\\sqrt0=0$ 으로 둘 다 맞아요. 교점은 $2$ 개예요."
+        }
+      ],
+      "tip": "제곱하면 가짜 해가 생길 수 있어요. 직선 쪽 값 $x+2$ 가 음수가 되는 해는 버려요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "유리함수 $f(x)=\\dfrac{2x+1}{x+c}$ 의 역함수가 $f$ 자신과 같을 때 상수 $c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "f = (2*x + 1)/(x + c)\ne = together(f.subs(x, f) - x)\nans = solve(Poly(numer(e), x).coeffs(), c, dict=True)[0][c]",
+      "concepts": [
+        "역함수가 자신과 같으면 그래프가 직선 $y=x$ 에 대해 대칭이에요.",
+        "유리함수 그래프는 점근선의 교점에 대해 대칭이에요."
+      ],
+      "steps": [
+        {
+          "title": "점근선의 교점",
+          "body": "점근선은 $x=-c$, $y=2$ 라서 교점은 $(-c,\\ 2)$ 예요."
+        },
+        {
+          "title": "y=x 위에 있어야 해요",
+          "body": "그래프가 $y=x$ 에 대해 대칭이면 점근선의 교점도 $y=x$ 위에 있어요.\n$$-c=2$$"
+        },
+        {
+          "title": "c 구하기",
+          "body": "$$c=-2$$"
+        }
+      ],
+      "tip": "확인: $f(x)=\\frac{2x+1}{x-2}$ 이면 $f(f(x))=x$ 가 돼요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "함수 $f(x)=\\sqrt{x-1}+1$ 의 그래프와 그 역함수의 그래프의 모든 교점의 $x$ 좌표의 합을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "sum(solveset(Eq(sqrt(x-1)+1, x), x, S.Reals))",
+      "concepts": [
+        "증가하는 함수와 그 역함수의 그래프는 직선 $y=x$ 위에서 만나요."
+      ],
+      "steps": [
+        {
+          "title": "y=x 와의 교점",
+          "body": "$$\\sqrt{x-1}+1=x$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$\\sqrt{x-1}=x-1$$"
+        },
+        {
+          "title": "제곱해서 풀기",
+          "body": "$x-1=t\\ (t\\ge0)$ 라 하면 $t=t^2$ 이라 $t=0$ 또는 $t=1$, 곧 $x=1$ 또는 $x=2$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$1+2=3$$"
+        }
+      ],
+      "tip": "증가함수일 때만 '역함수와의 교점 = $y=x$ 와의 교점' 으로 바꿀 수 있어요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "$a\\le x\\le4$ 에서 함수 $y=\\sqrt{5-x}+1$ 의 최댓값이 $4$, 최솟값이 $m$ 일 때 $a+m$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "a0 = solve(Eq(sqrt(5 - a) + 1, 4), a)[0]\nm0 = minimum(sqrt(5 - x) + 1, x, Interval(a0, 4))\nans = a0 + m0",
+      "concepts": [
+        "$y=\\sqrt{-(x-5)}+1$ 은 $x$ 가 커질수록 $y$ 가 작아져요."
+      ],
+      "steps": [
+        {
+          "title": "모양 보기",
+          "body": "$x$ 가 커질수록 작아지므로 $x=a$ 에서 최대, $x=4$ 에서 최소예요."
+        },
+        {
+          "title": "최댓값으로 a",
+          "body": "$$\\sqrt{5-a}+1=4,\\quad 5-a=9,\\quad a=-4$$"
+        },
+        {
+          "title": "최솟값",
+          "body": "$$m=\\sqrt{5-4}+1=2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+m=-4+2=-2$$"
+        }
+      ],
+      "tip": "$x$ 의 계수가 음수인 무리함수는 감소해요. 최대·최소가 구간의 어느 끝인지부터 정해요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "곡선 $y=\\dfrac{4}{x-2}+3\\ (x>2)$ 위의 점 P 에서 두 점근선에 각각 수선을 내렸어요. 두 수선의 길이의 합의 최솟값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "t = symbols('t', positive=True)\nans = minimum(t + 4/t, t, Interval.open(0, oo))",
+      "concepts": [
+        "점 P 의 $x$ 좌표를 $2+t\\ (t>0)$ 로 두면 두 수선의 길이는 $t$ 와 $\\dfrac{4}{t}$ 예요.",
+        "산술평균과 기하평균: $t>0$ 이면 $t+\\dfrac{4}{t}\\ge2\\sqrt{t\\cdot\\dfrac{4}{t}}$"
+      ],
+      "steps": [
+        {
+          "title": "점 P 두기",
+          "body": "$P\\left(2+t,\\ \\frac{4}{t}+3\\right)\\ (t>0)$"
+        },
+        {
+          "title": "두 거리",
+          "body": "점근선 $x=2$ 까지 $t$, 점근선 $y=3$ 까지 $\\frac{4}{t}$ 예요."
+        },
+        {
+          "title": "산술·기하 평균",
+          "body": "$$t+\\frac{4}{t}\\ge2\\sqrt{4}=4$$"
+        },
+        {
+          "title": "같아지는 때",
+          "body": "$t=\\frac{4}{t}$, 곧 $t=2$ 일 때 최솟값 $4$ 예요."
+        }
+      ],
+      "tip": "두 거리의 곱은 늘 $k=4$ 로 일정해요. 곱이 일정하면 합의 최솟값은 산술·기하 평균으로 구해요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "유리함수 $y=\\dfrac{x+5}{x+1}$ 의 그래프 위의 점 가운데 $x$ 좌표와 $y$ 좌표가 모두 정수인 점의 개수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "len([n for n in range(-20, 21) if n != -1 and (n + 5) % (n + 1) == 0])",
+      "concepts": [
+        "분자를 분모로 묶어 $1+\\dfrac{4}{x+1}$ 로 바꾸면 정수 조건이 약수 조건이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "나눠 쓰기",
+          "body": "$$y=\\frac{(x+1)+4}{x+1}=1+\\frac{4}{x+1}$$"
+        },
+        {
+          "title": "약수 조건",
+          "body": "$y$ 가 정수이려면 $x+1$ 이 $4$ 의 약수여야 해요: $\\pm1,\\ \\pm2,\\ \\pm4$"
+        },
+        {
+          "title": "세기",
+          "body": "약수가 $6$ 개라서 점도 $6$ 개예요."
+        }
+      ],
+      "tip": "음의 약수를 빠뜨리면 $3$ 개로 잘못 세요."
+    }
+  ]
+}
