@@ -12,7 +12,7 @@ const unitsDir = join(contentDir, 'units');
  * 단원 파일이 늘어도 import 목록을 손으로 고치지 않게 폴더를 읽어 만든다.
  * 앱을 처음 열 때 전체 단원이 함께 내려와 오프라인에서도 바로 보인다(설계 8장).
  */
-const contentPlugin = {
+export const contentPlugin = {
   name: 'content',
   setup(build) {
     build.onResolve({ filter: /^virtual:content$/ }, () => ({
