@@ -1,0 +1,1464 @@
+{
+  "id": "m2-similarity",
+  "course": "중2",
+  "unit": "도형과 측정",
+  "title": "도형의 닮음",
+  "prereq": [
+    "m2-triangle-quad",
+    "e-proportion"
+  ],
+  "suneung": [
+    "기하 28"
+  ],
+  "hours": 3,
+  "lesson": {
+    "minutes": 20,
+    "values": {
+      "midDE": {
+        "value": "6",
+        "check": "12*Rational(1,2)"
+      },
+      "areaRatio": {
+        "value": "4/9",
+        "check": "Rational(2,3)**2"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중2 · 도형과 측정",
+        "title": "모양은 같고\n크기만 다른 도형",
+        "lead": "사진을 키우거나 지도를 줄이면 모양은 그대로이고 크기만 바뀌어요. 길이는 몇 배, 넓이는 몇 배가 되는지 직접 끌어 보며 찾아요.",
+        "meta": [
+          "도형의 닮음"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "변을 두 배로 늘리면\n넓이는 몇 배일까요?",
+        "lead": "오른쪽 삼각형은 왼쪽 삼각형의 변을 모두 두 배로 늘린 거예요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 12,
+              "h": 5
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 0,
+                "y": 0
+              },
+              {
+                "id": "B",
+                "x": 3,
+                "y": 0
+              },
+              {
+                "id": "C",
+                "x": 0,
+                "y": 2
+              },
+              {
+                "id": "D",
+                "x": 5,
+                "y": 0
+              },
+              {
+                "id": "E",
+                "x": 11,
+                "y": 0
+              },
+              {
+                "id": "F",
+                "x": 5,
+                "y": 4
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ],
+              [
+                "D",
+                "E",
+                "F"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "C"
+                ]
+              },
+              {
+                "len": [
+                  "D",
+                  "E"
+                ]
+              },
+              {
+                "len": [
+                  "D",
+                  "F"
+                ]
+              }
+            ],
+            "digits": 0
+          }
+        },
+        "format": {
+          "unit": "배"
+        },
+        "choices": [
+          {
+            "value": "2",
+            "check": "Rational(11-5, 3-0)",
+            "feedback": "그건 변의 길이가 늘어난 배수예요. 가로도 세로도 함께 두 배가 됐어요."
+          },
+          {
+            "value": "4",
+            "check": "(6*4*Rational(1,2))/(3*2*Rational(1,2))"
+          },
+          {
+            "value": "8",
+            "check": "2**3",
+            "feedback": "세 번 곱하는 건 부피예요. 평면 도형은 가로와 세로, 두 방향만 늘어나요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "(6*4*Rational(1,2))/(3*2*Rational(1,2))",
+        "reveal": "**맞아요!** 가로도 2배, 세로도 2배라서 넓이는 $2\\times2=4$배예요.",
+        "thoughts": [
+          "작은 삼각형의 넓이는 $3\\times2\\div2=3$ 이에요.",
+          "큰 삼각형의 넓이는 $6\\times4\\div2=12$ 로, 작은 것의 4배예요."
+        ],
+        "conclude": "변의 비와 넓이의 비가 다르다는 것, 오늘 끝까지 기억해요."
+      },
+      {
+        "kind": "explore",
+        "id": "parallel",
+        "chip": "손으로 해 보기",
+        "title": "밑변과 나란한 선을\n찾아보세요",
+        "lead": "점 D 와 E 를 변을 따라 끌어 보세요. $\\angle ADE$ 가 $\\angle ABC$ 와 같아지면 $\\overline{DE}$ 는 $\\overline{BC}$ 와 평행해요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 12,
+              "h": 8
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 0,
+                "y": 8
+              },
+              {
+                "id": "B",
+                "x": 0,
+                "y": 0
+              },
+              {
+                "id": "C",
+                "x": 12,
+                "y": 0
+              },
+              {
+                "id": "D",
+                "x": 0,
+                "y": 6,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "A",
+                    "B"
+                  ]
+                }
+              },
+              {
+                "id": "E",
+                "x": 9,
+                "y": 2,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "A",
+                    "C"
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ]
+            ],
+            "segments": [
+              [
+                "D",
+                "E"
+              ]
+            ],
+            "measures": [
+              {
+                "angle": [
+                  "A",
+                  "D",
+                  "E"
+                ]
+              },
+              {
+                "angle": [
+                  "A",
+                  "B",
+                  "C"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "D"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "D",
+                  "E"
+                ]
+              },
+              {
+                "len": [
+                  "B",
+                  "C"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "두 각이 같아지는 자리를 여러 곳 찾아보세요."
+          }
+        },
+        "after": "평행이 되는 자리마다 $\\overline{AD}:\\overline{AB}=\\overline{DE}:\\overline{BC}$ 예요. 작은 삼각형 $ADE$ 는 큰 삼각형 $ABC$ 를 그대로 줄인 모양이에요. 특히 D 가 $\\overline{AB}$ 의 한가운데일 때 $\\overline{DE}={{midDE}}$, 밑변의 딱 절반이에요. 이것이 ==중점 연결 정리==예요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "닮음",
+            "body": "한 도형을 일정한 비율로 늘리거나 줄여서 다른 도형과 포갤 수 있으면 두 도형은 닮았다고 해요. 기호는 $\\triangle ADE\\sim\\triangle ABC$ 처럼 대응 순서대로 써요."
+          },
+          {
+            "term": "닮음비",
+            "body": "닮은 두 도형에서 대응변의 길이의 비. 모든 대응변에서 같아요."
+          },
+          {
+            "term": "삼각형의 닮음 조건",
+            "body": "세 변의 비가 같다(SSS), 두 변의 비와 끼인각이 같다(SAS), 두 각이 같다(AA) 중 하나면 닮음이에요."
+          },
+          {
+            "term": "중점 연결 정리",
+            "body": "삼각형의 두 변의 중점을 이은 선분은 나머지 변과 평행하고 길이는 그 절반이에요."
+          },
+          {
+            "term": "무게중심",
+            "body": "삼각형의 세 중선(꼭짓점과 마주 보는 변의 중점을 이은 선분)이 만나는 점이에요."
+          }
+        ],
+        "aside": "**왜 AA 만으로 될까요?** · 두 각이 같으면 나머지 한 각도 저절로 같아져요(세 각의 합이 $180^\\circ$). 각이 모두 같으면 모양이 같고 크기만 다를 수 있어요."
+      },
+      {
+        "kind": "explore",
+        "id": "area",
+        "chip": "두 번째 해 보기",
+        "title": "닮음비가 바뀌면\n넓이는 어떻게 될까요?",
+        "lead": "D 와 E 를 같은 높이로 맞춰 옮겨 보세요. $\\overline{AD}:\\overline{AB}$ 와 두 넓이를 비교해요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 6
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 0,
+                "y": 6
+              },
+              {
+                "id": "B",
+                "x": 0,
+                "y": 0
+              },
+              {
+                "id": "C",
+                "x": 9,
+                "y": 0
+              },
+              {
+                "id": "D",
+                "x": 0,
+                "y": 4,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "A",
+                    "B"
+                  ]
+                }
+              },
+              {
+                "id": "E",
+                "x": 3,
+                "y": 4,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "A",
+                    "C"
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ],
+              [
+                "A",
+                "D",
+                "E"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "D"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "area": 1
+              },
+              {
+                "area": 0
+              }
+            ],
+            "digits": 1,
+            "note": "넓이는 위가 작은 삼각형 ADE, 아래가 큰 삼각형 ABC 예요."
+          }
+        },
+        "after": "닮음비가 $1:3$ 이면 넓이는 $1:9$, 닮음비가 $2:3$ 이면 넓이는 ${{areaRatio}}$ 배예요. 그래서 ==닮음비가 m:n 이면 넓이의 비는 m²:n²== 이에요. 입체라면 높이까지 늘어나 부피의 비는 $m^3:n^3$ 이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "centroid",
+        "chip": "한 번 더 해 보기",
+        "title": "세 중선이 만나는 점을\n찾아보세요",
+        "lead": "M, N, L 은 세 변의 중점이에요. 점 G 를 중선 AM 을 따라 끌어서 다른 두 중선과 만나는 자리에 놓아 보세요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 12,
+              "h": 12
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 6,
+                "y": 12
+              },
+              {
+                "id": "B",
+                "x": 0,
+                "y": 0
+              },
+              {
+                "id": "C",
+                "x": 12,
+                "y": 0
+              },
+              {
+                "id": "M",
+                "x": 6,
+                "y": 0
+              },
+              {
+                "id": "N",
+                "x": 9,
+                "y": 6
+              },
+              {
+                "id": "L",
+                "x": 3,
+                "y": 6
+              },
+              {
+                "id": "G",
+                "x": 6,
+                "y": 8,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "A",
+                    "M"
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ]
+            ],
+            "segments": [
+              [
+                "A",
+                "M"
+              ],
+              [
+                "B",
+                "N"
+              ],
+              [
+                "C",
+                "L"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "G"
+                ]
+              },
+              {
+                "len": [
+                  "G",
+                  "M"
+                ]
+              },
+              {
+                "len": [
+                  "B",
+                  "G"
+                ]
+              },
+              {
+                "len": [
+                  "G",
+                  "N"
+                ]
+              }
+            ],
+            "digits": 1
+          }
+        },
+        "after": "세 중선은 한 점에서 만나요. 그 점 G 에서 $\\overline{AG}$ 는 $\\overline{GM}$ 의 두 배, $\\overline{BG}$ 도 $\\overline{GN}$ 의 두 배예요. ==무게중심은 중선을 꼭짓점 쪽에서부터 2:1 로 나눠요.=="
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 닮음비가 $2:3$ 인 두 삼각형에서 작은 쪽 넓이가 $12$ 일 때 큰 쪽 넓이예요. 왼쪽은 넓이의 비로 구한 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "12*3**2/2**2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "12*3/2",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "12*9/4",
+              "body": "닮음비를 그대로 곱했어요. 넓이는 닮음비를 **제곱**한 $4:9$ 로 늘어나요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $\\overline{DE}\\parallel\\overline{BC}$, $\\overline{AD}=4$, $\\overline{DB}=2$, $\\overline{BC}=9$ 일 때 $\\overline{DE}$ 예요. 왼쪽은 바르게 구한 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "9*4/(4+2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "9*4/2",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "9*4/6",
+              "body": "$\\overline{DE}$ 의 짝은 $\\overline{DB}$ 가 아니라 $\\overline{AB}$ **전체**예요. $\\overline{AB}=4+2=6$ 으로 나눠야 해요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "side",
+            "q": "$\\triangle ABC\\sim\\triangle DEF$ 이고 $\\overline{AB}=6$ cm, $\\overline{DE}=9$ cm, $\\overline{BC}=8$ cm 예요. $\\overline{EF}$ 는 몇 cm 일까요?",
+            "hint": "먼저 $\\overline{AB}$ 와 $\\overline{DE}$ 로 닮음비를 구해요.",
+            "placeholder": "cm",
+            "steps": [
+              {
+                "title": "닮음비",
+                "body": "$$6:9=2:3$$"
+              },
+              {
+                "title": "대응변 구하기",
+                "body": "$$\\overline{EF}=8\\times\\frac{3}{2}={{answer}}$$"
+              }
+            ],
+            "answer": "12",
+            "answerType": "int",
+            "check": "8*Rational(9,6)"
+          },
+          {
+            "id": "pizza",
+            "q": "닮음비가 $3:5$ 인 두 삼각형 모양 쿠키가 있어요. 작은 쿠키의 넓이가 $18$ cm² 이면 큰 쿠키의 넓이는 몇 cm² 일까요?",
+            "hint": "넓이의 비는 닮음비의 제곱이에요.",
+            "placeholder": "cm²",
+            "steps": [
+              {
+                "title": "넓이의 비",
+                "body": "$$3^2:5^2=9:25$$"
+              },
+              {
+                "title": "큰 넓이",
+                "body": "$$18\\times\\frac{25}{9}={{answer}}$$"
+              }
+            ],
+            "answer": "50",
+            "answerType": "int",
+            "check": "18*Rational(5,3)**2"
+          },
+          {
+            "id": "center",
+            "q": "$\\triangle ABC$ 의 무게중심이 $G$ 이고 $\\overline{BC}$ 의 중점이 $M$ 이에요. $\\overline{AM}=12$ cm 일 때 $\\overline{AG}$ 는 몇 cm 일까요?",
+            "hint": "무게중심은 중선을 꼭짓점 쪽에서부터 $2:1$ 로 나눠요.",
+            "placeholder": "cm",
+            "steps": [
+              {
+                "title": "비로 나누기",
+                "body": "$\\overline{AG}$ 는 중선의 $\\frac{2}{3}$ 예요."
+              },
+              {
+                "title": "길이",
+                "body": "$$12\\times\\frac{2}{3}={{answer}}$$"
+              }
+            ],
+            "answer": "8",
+            "answerType": "int",
+            "check": "12*Rational(2,3)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "닮은 도형은 대응변의 비(**닮음비**)가 모두 같고 대응각이 같아요. 삼각형은 SSS·SAS·AA 중 하나면 닮음이에요.",
+          "$\\overline{DE}\\parallel\\overline{BC}$ 이면 $\\overline{AD}:\\overline{AB}=\\overline{AE}:\\overline{AC}=\\overline{DE}:\\overline{BC}$. 두 변의 중점을 이으면 밑변의 절반이에요.",
+          "**무게중심**은 세 중선을 꼭짓점 쪽에서부터 $2:1$ 로 나눠요.",
+          "닮음비 $m:n$ 이면 넓이의 비는 $m^2:n^2$, 부피의 비는 $m^3:n^3$ 이에요."
+        ],
+        "done": "도형의 닮음 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$\\triangle ABC\\sim\\triangle DEF \\Rightarrow \\overline{AB}:\\overline{DE}=\\overline{BC}:\\overline{EF}=\\overline{CA}:\\overline{FD}$",
+    "$\\overline{DE}\\parallel\\overline{BC} \\Rightarrow \\overline{AD}:\\overline{AB}=\\overline{AE}:\\overline{AC}=\\overline{DE}:\\overline{BC}$",
+    "$\\overline{DE}\\parallel\\overline{BC} \\Rightarrow \\overline{AD}:\\overline{DB}=\\overline{AE}:\\overline{EC}$",
+    "$(\\text{중점 연결 정리})\\quad \\overline{MN}=\\dfrac{1}{2}\\overline{BC}$",
+    "$(\\text{무게중심})\\quad \\overline{AG}:\\overline{GM}=2:1$",
+    "$(\\text{닮음비 } m:n)\\quad \\text{넓이의 비 } m^2:n^2,\\ \\text{부피의 비 } m^3:n^3$"
+  ],
+  "generators": [
+    "sim-side",
+    "sim-area-volume",
+    "sim-parallel",
+    "sim-centroid"
+  ],
+  "problems": [
+    {
+      "q": "$\\triangle ABC\\sim\\triangle DEF$ 이고 $\\overline{AB}=16$ cm, $\\overline{DE}=20$ cm, $\\overline{BC}=20$ cm 예요. $\\overline{EF}$ 의 길이는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "25",
+      "answerTex": "$25$ cm",
+      "answerType": "int",
+      "check": "20*Rational(20, 16)",
+      "concepts": [
+        "닮은 도형에서 대응변의 길이의 비는 모두 같아요. 이 비가 닮음비예요.",
+        "기호 순서대로 $A$ 와 $D$, $B$ 와 $E$, $C$ 와 $F$ 가 대응해요."
+      ],
+      "steps": [
+        {
+          "title": "닮음비 구하기",
+          "body": "$$\\overline{AB}:\\overline{DE}=16:20=4:5$$"
+        },
+        {
+          "title": "비례식 세우기",
+          "body": "$$20:\\overline{EF}=4:5$$"
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$\\overline{EF}=20\\times\\frac{5}{4}=25$$"
+        }
+      ],
+      "tip": "대응변을 기호 순서로 짝지어야 해요. BC 의 짝은 EF 예요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "sim-side",
+      "seed": 1000
+    },
+    {
+      "q": "닮음비가 $1:3$ 인 두 삼각형이 있어요. 작은 삼각형의 넓이가 $1$ cm² 일 때, 큰 삼각형의 넓이는 몇 cm² 인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "$9$ cm²",
+      "answerType": "int",
+      "check": "1*Rational(3, 1)**2",
+      "concepts": [
+        "닮음비가 $m:n$ 이면 넓이의 비는 $m^2:n^2$ 이에요.",
+        "가로와 세로가 함께 늘어나니 넓이는 두 번 곱해져요."
+      ],
+      "steps": [
+        {
+          "title": "넓이의 비",
+          "body": "$$1^2:3^2=1:9$$"
+        },
+        {
+          "title": "큰 넓이 구하기",
+          "body": "$$1\\times\\frac{9}{1}=9$$"
+        }
+      ],
+      "tip": "닮음비를 그대로 곱하면 안 돼요. 넓이는 닮음비를 제곱해요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "sim-area-volume",
+      "seed": 1001
+    },
+    {
+      "q": "$\\triangle ABC$ 에서 $\\overline{DE}\\parallel\\overline{BC}$ 이고 점 $D$ 는 $\\overline{AB}$ 위, 점 $E$ 는 $\\overline{AC}$ 위에 있어요. $\\overline{AD}=6$ cm, $\\overline{DB}=8$ cm, $\\overline{BC}=14$ cm 일 때 $\\overline{DE}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "6",
+      "answerTex": "$6$ cm",
+      "answerType": "int",
+      "check": "14*Rational(6, 6+8)",
+      "concepts": [
+        "$\\overline{DE}\\parallel\\overline{BC}$ 이면 $\\triangle ADE\\sim\\triangle ABC$ (AA 닮음)예요.",
+        "$\\overline{AD}:\\overline{AB}=\\overline{DE}:\\overline{BC}$"
+      ],
+      "steps": [
+        {
+          "title": "전체 변 구하기",
+          "body": "$$\\overline{AB}=6+8=14$$"
+        },
+        {
+          "title": "비례식 세우기",
+          "body": "$$6:14=\\overline{DE}:14$$"
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$\\overline{DE}=14\\times\\frac{6}{14}=6$$"
+        }
+      ],
+      "tip": "DE 와 짝인 것은 AB 전체예요. DB 와 비교하면 틀려요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "sim-parallel",
+      "seed": 1002
+    },
+    {
+      "q": "$\\triangle ABC$ 의 무게중심을 $G$, $\\overline{BC}$ 의 중점을 $M$ 이라 해요. $\\overline{AM}=12$ cm 일 때 $\\overline{AG}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "8",
+      "answerTex": "$8$ cm",
+      "answerType": "int",
+      "check": "12*Rational(2, 3)",
+      "concepts": [
+        "무게중심은 중선을 꼭짓점 쪽에서부터 $2:1$ 로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "비 나누기",
+          "body": "$\\overline{AG}:\\overline{GM}=2:1$ 이니 $\\overline{AG}$ 는 중선의 $\\frac{2}{3}$ 예요."
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$12\\times\\frac{2}{3}=8$$"
+        }
+      ],
+      "tip": "꼭짓점 쪽이 긴 쪽(2)이에요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "sim-centroid",
+      "seed": 1003
+    },
+    {
+      "q": "$\\triangle ABC\\sim\\triangle DEF$ 이고 $\\overline{AB}=2$ cm, $\\overline{DE}=6$ cm, $\\overline{BC}=3$ cm 예요. $\\overline{EF}$ 의 길이는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "$9$ cm",
+      "answerType": "int",
+      "check": "3*Rational(6, 2)",
+      "concepts": [
+        "닮은 도형에서 대응변의 길이의 비는 모두 같아요. 이 비가 닮음비예요.",
+        "기호 순서대로 $A$ 와 $D$, $B$ 와 $E$, $C$ 와 $F$ 가 대응해요."
+      ],
+      "steps": [
+        {
+          "title": "닮음비 구하기",
+          "body": "$$\\overline{AB}:\\overline{DE}=2:6=1:3$$"
+        },
+        {
+          "title": "비례식 세우기",
+          "body": "$$3:\\overline{EF}=1:3$$"
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$\\overline{EF}=3\\times\\frac{3}{1}=9$$"
+        }
+      ],
+      "tip": "대응변을 기호 순서로 짝지어야 해요. BC 의 짝은 EF 예요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "sim-side",
+      "seed": 1004
+    },
+    {
+      "q": "닮음비가 $3:4$ 인 두 정육면체가 있어요. 작은 정육면체의 부피가 $81$ cm³ 일 때, 큰 정육면체의 부피는 몇 cm³ 인가요?",
+      "choices": null,
+      "answer": "192",
+      "answerTex": "$192$ cm³",
+      "answerType": "int",
+      "check": "81*Rational(4, 3)**3",
+      "concepts": [
+        "닮음비가 $m:n$ 이면 부피의 비는 $m^3:n^3$ 이에요.",
+        "가로·세로·높이가 모두 늘어나니 세 번 곱해져요."
+      ],
+      "steps": [
+        {
+          "title": "부피의 비",
+          "body": "$$3^3:4^3=27:64$$"
+        },
+        {
+          "title": "큰 부피 구하기",
+          "body": "$$81\\times\\frac{64}{27}=192$$"
+        }
+      ],
+      "tip": "부피는 닮음비를 세제곱해요. 넓이(제곱)와 헷갈리지 마세요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "sim-area-volume",
+      "seed": 1005
+    },
+    {
+      "q": "$\\triangle ABC$ 에서 $\\overline{DE}\\parallel\\overline{BC}$ 이고 점 $D$ 는 $\\overline{AB}$ 위, 점 $E$ 는 $\\overline{AC}$ 위에 있어요. $\\overline{AD}=6$ cm, $\\overline{DB}=9$ cm, $\\overline{AE}=8$ cm 일 때 $\\overline{EC}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$ cm",
+      "answerType": "int",
+      "check": "8*Rational(9, 6)",
+      "concepts": [
+        "$\\overline{DE}\\parallel\\overline{BC}$ 이면 $\\overline{AD}:\\overline{DB}=\\overline{AE}:\\overline{EC}$"
+      ],
+      "steps": [
+        {
+          "title": "비례식 세우기",
+          "body": "$$6:9=8:\\overline{EC}$$"
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$\\overline{EC}=8\\times\\frac{9}{6}=12$$"
+        }
+      ],
+      "tip": "평행선이 두 변을 같은 비로 나눠요. 위쪽끼리, 아래쪽끼리 짝지어요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "sim-parallel",
+      "seed": 1006
+    },
+    {
+      "q": "$\\triangle ABC$ 의 무게중심을 $G$, $\\overline{BC}$ 의 중점을 $M$ 이라 해요. $\\overline{AM}=24$ cm 일 때 $\\overline{AG}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "16",
+      "answerTex": "$16$ cm",
+      "answerType": "int",
+      "check": "24*Rational(2, 3)",
+      "concepts": [
+        "무게중심은 중선을 꼭짓점 쪽에서부터 $2:1$ 로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "비 나누기",
+          "body": "$\\overline{AG}:\\overline{GM}=2:1$ 이니 $\\overline{AG}$ 는 중선의 $\\frac{2}{3}$ 예요."
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$24\\times\\frac{2}{3}=16$$"
+        }
+      ],
+      "tip": "꼭짓점 쪽이 긴 쪽(2)이에요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "sim-centroid",
+      "seed": 1007
+    },
+    {
+      "q": "$\\triangle ABC\\sim\\triangle DEF$ 이고 $\\overline{AB}=12$ cm, $\\overline{DE}=15$ cm, $\\overline{BC}=16$ cm 예요. $\\overline{EF}$ 의 길이는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "20",
+      "answerTex": "$20$ cm",
+      "answerType": "int",
+      "check": "16*Rational(15, 12)",
+      "concepts": [
+        "닮은 도형에서 대응변의 길이의 비는 모두 같아요. 이 비가 닮음비예요.",
+        "기호 순서대로 $A$ 와 $D$, $B$ 와 $E$, $C$ 와 $F$ 가 대응해요."
+      ],
+      "steps": [
+        {
+          "title": "닮음비 구하기",
+          "body": "$$\\overline{AB}:\\overline{DE}=12:15=4:5$$"
+        },
+        {
+          "title": "비례식 세우기",
+          "body": "$$16:\\overline{EF}=4:5$$"
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$\\overline{EF}=16\\times\\frac{5}{4}=20$$"
+        }
+      ],
+      "tip": "대응변을 기호 순서로 짝지어야 해요. BC 의 짝은 EF 예요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "sim-side",
+      "seed": 1008
+    },
+    {
+      "q": "닮음비가 $3:5$ 인 두 삼각형이 있어요. 작은 삼각형의 넓이가 $18$ cm² 일 때, 큰 삼각형의 넓이는 몇 cm² 인가요?",
+      "choices": null,
+      "answer": "50",
+      "answerTex": "$50$ cm²",
+      "answerType": "int",
+      "check": "18*Rational(5, 3)**2",
+      "concepts": [
+        "닮음비가 $m:n$ 이면 넓이의 비는 $m^2:n^2$ 이에요.",
+        "가로와 세로가 함께 늘어나니 넓이는 두 번 곱해져요."
+      ],
+      "steps": [
+        {
+          "title": "넓이의 비",
+          "body": "$$3^2:5^2=9:25$$"
+        },
+        {
+          "title": "큰 넓이 구하기",
+          "body": "$$18\\times\\frac{25}{9}=50$$"
+        }
+      ],
+      "tip": "닮음비를 그대로 곱하면 안 돼요. 넓이는 닮음비를 제곱해요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "sim-area-volume",
+      "seed": 1009
+    },
+    {
+      "q": "$\\triangle ABC$ 에서 $\\overline{DE}\\parallel\\overline{BC}$ 이고 점 $D$ 는 $\\overline{AB}$ 위, 점 $E$ 는 $\\overline{AC}$ 위에 있어요. $\\overline{AD}=6$ cm, $\\overline{DB}=10$ cm, $\\overline{AE}=3$ cm 일 때 $\\overline{EC}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "5",
+      "answerTex": "$5$ cm",
+      "answerType": "int",
+      "check": "3*Rational(10, 6)",
+      "concepts": [
+        "$\\overline{DE}\\parallel\\overline{BC}$ 이면 $\\overline{AD}:\\overline{DB}=\\overline{AE}:\\overline{EC}$"
+      ],
+      "steps": [
+        {
+          "title": "비례식 세우기",
+          "body": "$$6:10=3:\\overline{EC}$$"
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$\\overline{EC}=3\\times\\frac{10}{6}=5$$"
+        }
+      ],
+      "tip": "평행선이 두 변을 같은 비로 나눠요. 위쪽끼리, 아래쪽끼리 짝지어요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "sim-parallel",
+      "seed": 1010
+    },
+    {
+      "q": "$\\triangle ABC$ 의 넓이가 $54$ cm² 예요. 무게중심 $G$ 와 $\\overline{BC}$ 의 중점 $M$ 에 대하여 $\\triangle GBM$ 의 넓이는 몇 cm² 인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "$9$ cm²",
+      "answerType": "int",
+      "check": "54*Rational(1, 6)",
+      "concepts": [
+        "세 중선은 삼각형을 넓이가 같은 조각 6개로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "조각 수",
+          "body": "$\\triangle GBM$ 은 넓이가 같은 6조각 중 하나예요."
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$54\\div6=9$$"
+        }
+      ],
+      "tip": "$\\triangle GBC$ 의 절반이 $\\triangle GBM$ 이에요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "sim-centroid",
+      "seed": 1011
+    },
+    {
+      "q": "$\\triangle ABC\\sim\\triangle DEF$ 이고 $\\overline{AB}=6$ cm, $\\overline{DE}=9$ cm, $\\overline{BC}=8$ cm 예요. $\\overline{EF}$ 의 길이는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$ cm",
+      "answerType": "int",
+      "check": "8*Rational(9, 6)",
+      "concepts": [
+        "닮은 도형에서 대응변의 길이의 비는 모두 같아요. 이 비가 닮음비예요.",
+        "기호 순서대로 $A$ 와 $D$, $B$ 와 $E$, $C$ 와 $F$ 가 대응해요."
+      ],
+      "steps": [
+        {
+          "title": "닮음비 구하기",
+          "body": "$$\\overline{AB}:\\overline{DE}=6:9=2:3$$"
+        },
+        {
+          "title": "비례식 세우기",
+          "body": "$$8:\\overline{EF}=2:3$$"
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$\\overline{EF}=8\\times\\frac{3}{2}=12$$"
+        }
+      ],
+      "tip": "대응변을 기호 순서로 짝지어야 해요. BC 의 짝은 EF 예요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "sim-side",
+      "seed": 1012
+    },
+    {
+      "q": "닮음비가 $1:2$ 인 두 정육면체가 있어요. 작은 정육면체의 부피가 $1$ cm³ 일 때, 큰 정육면체의 부피는 몇 cm³ 인가요?",
+      "choices": null,
+      "answer": "8",
+      "answerTex": "$8$ cm³",
+      "answerType": "int",
+      "check": "1*Rational(2, 1)**3",
+      "concepts": [
+        "닮음비가 $m:n$ 이면 부피의 비는 $m^3:n^3$ 이에요.",
+        "가로·세로·높이가 모두 늘어나니 세 번 곱해져요."
+      ],
+      "steps": [
+        {
+          "title": "부피의 비",
+          "body": "$$1^3:2^3=1:8$$"
+        },
+        {
+          "title": "큰 부피 구하기",
+          "body": "$$1\\times\\frac{8}{1}=8$$"
+        }
+      ],
+      "tip": "부피는 닮음비를 세제곱해요. 넓이(제곱)와 헷갈리지 마세요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "sim-area-volume",
+      "seed": 1013
+    },
+    {
+      "q": "$\\triangle ABC$ 에서 $\\overline{DE}\\parallel\\overline{BC}$ 이고 점 $D$ 는 $\\overline{AB}$ 위, 점 $E$ 는 $\\overline{AC}$ 위에 있어요. $\\overline{AD}=3$ cm, $\\overline{DB}=15$ cm, $\\overline{AE}=3$ cm 일 때 $\\overline{EC}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "15",
+      "answerTex": "$15$ cm",
+      "answerType": "int",
+      "check": "3*Rational(15, 3)",
+      "concepts": [
+        "$\\overline{DE}\\parallel\\overline{BC}$ 이면 $\\overline{AD}:\\overline{DB}=\\overline{AE}:\\overline{EC}$"
+      ],
+      "steps": [
+        {
+          "title": "비례식 세우기",
+          "body": "$$3:15=3:\\overline{EC}$$"
+        },
+        {
+          "title": "길이 구하기",
+          "body": "$$\\overline{EC}=3\\times\\frac{15}{3}=15$$"
+        }
+      ],
+      "tip": "평행선이 두 변을 같은 비로 나눠요. 위쪽끼리, 아래쪽끼리 짝지어요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "sim-parallel",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "닮은 두 사각형에서 대응변의 길이가 각각 $6$ cm, $15$ cm 예요. 작은 사각형의 둘레가 $20$ cm 이면 큰 사각형의 둘레는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "50",
+      "answerTex": "$50$ cm",
+      "answerType": "int",
+      "check": "20*Rational(15,6)",
+      "concepts": [
+        "닮은 도형의 둘레의 비는 닮음비와 같아요."
+      ],
+      "steps": [
+        {
+          "title": "닮음비",
+          "body": "$$6:15=2:5$$"
+        },
+        {
+          "title": "둘레 구하기",
+          "body": "$$20\\times\\frac{5}{2}=50$$"
+        }
+      ],
+      "tip": "둘레는 길이라서 닮음비 그대로예요. 제곱하는 건 넓이예요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\angle C=90^\\circ$ 인 직각삼각형 $ABC$ 에서 꼭짓점 $C$ 에서 빗변 $AB$ 에 내린 수선의 발을 $D$ 라 해요. $\\overline{AD}=4$ cm, $\\overline{DB}=9$ cm 일 때 $\\overline{CD}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "6",
+      "answerTex": "$6$ cm",
+      "answerType": "int",
+      "check": "sqrt(4*9)",
+      "concepts": [
+        "$\\triangle ACD\\sim\\triangle CBD$ (AA 닮음)",
+        "그래서 $\\overline{AD}:\\overline{CD}=\\overline{CD}:\\overline{DB}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "닮음 찾기",
+          "body": "$\\angle ADC=\\angle CDB=90^\\circ$ 이고 $\\angle ACD=\\angle CBD$ 라서 $\\triangle ACD\\sim\\triangle CBD$ 예요."
+        },
+        {
+          "title": "비례식",
+          "body": "$$4:\\overline{CD}=\\overline{CD}:9$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$\\overline{CD}^2=4\\times9=36$$"
+        },
+        {
+          "title": "길이",
+          "body": "$$\\overline{CD}=6$$"
+        }
+      ],
+      "tip": "길이는 양수라서 $-6$ 은 버려요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "평행한 세 직선 $l$, $m$, $n$ 이 두 직선과 만나요. 한 직선에서 $l$ 과 $m$ 사이는 $6$ cm, $m$ 과 $n$ 사이는 $9$ cm 예요. 다른 직선에서 $l$ 과 $m$ 사이가 $8$ cm 이면 $m$ 과 $n$ 사이는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$ cm",
+      "answerType": "int",
+      "check": "8*Rational(9,6)",
+      "concepts": [
+        "평행선 사이에 생기는 선분의 비는 어느 직선에서 재도 같아요."
+      ],
+      "steps": [
+        {
+          "title": "비례식",
+          "body": "$$6:9=8:x$$"
+        },
+        {
+          "title": "길이",
+          "body": "$$x=8\\times\\frac{9}{6}=12$$"
+        }
+      ],
+      "tip": "위쪽끼리, 아래쪽끼리 짝지어 비를 세워요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "세 변의 길이가 $8$ cm, $10$ cm, $12$ cm 인 삼각형이 있어요. 세 변의 중점을 이어 만든 삼각형의 둘레는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "15",
+      "answerTex": "$15$ cm",
+      "answerType": "int",
+      "check": "Rational(8+10+12, 2)",
+      "concepts": [
+        "중점 연결 정리: 두 변의 중점을 이은 선분은 나머지 변의 절반이에요."
+      ],
+      "steps": [
+        {
+          "title": "변마다 절반",
+          "body": "새 삼각형의 세 변은 $4$, $5$, $6$ cm 예요."
+        },
+        {
+          "title": "둘레",
+          "body": "$$4+5+6=15$$"
+        }
+      ],
+      "tip": "처음 둘레 $30$ cm 의 절반이라고 바로 구해도 돼요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\triangle ABC$ 의 넓이가 $36$ cm² 이고 점 $G$ 가 무게중심이에요. $\\triangle GAB$ 의 넓이는 몇 cm² 인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$ cm²",
+      "answerType": "int",
+      "check": "36*Rational(1,3)",
+      "concepts": [
+        "무게중심과 세 꼭짓점을 이으면 넓이가 같은 삼각형 3개가 생겨요."
+      ],
+      "steps": [
+        {
+          "title": "세 조각",
+          "body": "$\\triangle GAB$, $\\triangle GBC$, $\\triangle GCA$ 의 넓이가 같아요."
+        },
+        {
+          "title": "넓이",
+          "body": "$$36\\div3=12$$"
+        }
+      ],
+      "tip": "중선은 넓이를 반으로 나눠요. 그걸 겹쳐 쓰면 세 조각이 같다는 걸 보일 수 있어요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "닮은 두 원기둥의 겉넓이의 비가 $4:9$ 예요. 작은 원기둥의 부피가 $16$ cm³ 이면 큰 원기둥의 부피는 몇 cm³ 인가요?",
+      "choices": null,
+      "answer": "54",
+      "answerTex": "$54$ cm³",
+      "answerType": "int",
+      "check": "16*sqrt(Rational(9,4))**3",
+      "concepts": [
+        "겉넓이의 비 $m^2:n^2$, 부피의 비 $m^3:n^3$"
+      ],
+      "steps": [
+        {
+          "title": "닮음비 찾기",
+          "body": "$4:9=2^2:3^2$ 이니 닮음비는 $2:3$ 이에요."
+        },
+        {
+          "title": "부피의 비",
+          "body": "$$2^3:3^3=8:27$$"
+        },
+        {
+          "title": "큰 부피",
+          "body": "$$16\\times\\frac{27}{8}=54$$"
+        }
+      ],
+      "tip": "겉넓이의 비에서 바로 부피를 구하지 말고, 닮음비부터 되돌려 구해요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "길이 $1.5$ m 인 막대의 그림자가 $2$ m 일 때, 같은 시각 나무의 그림자는 $12$ m 였어요. 나무의 높이는 몇 m 인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "$9$ m",
+      "answerType": "int",
+      "check": "Rational(3,2)*12/2",
+      "concepts": [
+        "같은 시각 햇빛은 같은 각도로 비치니 막대와 나무가 만드는 두 직각삼각형은 AA 닮음이에요."
+      ],
+      "steps": [
+        {
+          "title": "비례식",
+          "body": "$$1.5:2=h:12$$"
+        },
+        {
+          "title": "높이",
+          "body": "$$h=1.5\\times\\frac{12}{2}=9$$"
+        }
+      ],
+      "tip": "높이끼리, 그림자끼리 짝을 맞춰요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$\\triangle ABC$ 에서 $\\overline{AB}=8$ cm, $\\overline{AC}=12$ cm 이고, 점 $D$ 는 $\\overline{AB}$ 위에, 점 $E$ 는 $\\overline{AC}$ 위에 있어요. $\\overline{AD}=6$ cm, $\\overline{AE}=4$ cm, $\\overline{DE}=5$ cm 일 때 $\\overline{BC}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "10",
+      "answerTex": "$10$ cm",
+      "answerType": "int",
+      "check": "5*Rational(12,6)",
+      "concepts": [
+        "두 변의 비가 같고 끼인각이 같으면 SAS 닮음이에요."
+      ],
+      "steps": [
+        {
+          "title": "짝 찾기",
+          "body": "$\\overline{AD}:\\overline{AC}=6:12=1:2$, $\\overline{AE}:\\overline{AB}=4:8=1:2$ 이고 $\\angle A$ 가 공통이에요."
+        },
+        {
+          "title": "닮음",
+          "body": "$\\triangle ADE\\sim\\triangle ACB$ (SAS 닮음), 닮음비 $1:2$ 예요."
+        },
+        {
+          "title": "길이",
+          "body": "$$\\overline{BC}=5\\times2=10$$"
+        }
+      ],
+      "tip": "AD 의 짝이 AB 가 아니라 AC 예요. 비가 같아지는 짝을 찾아요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "축척이 $1:50000$ 인 지도에서 두 마을 사이가 $3$ cm 예요. 실제 거리는 몇 km 인가요?",
+      "choices": null,
+      "answer": "3/2",
+      "answerTex": "$1.5$ km",
+      "answerType": "fraction",
+      "check": "Rational(3*50000, 100000)",
+      "concepts": [
+        "지도와 실제는 닮은 도형이고, 축척이 닮음비예요."
+      ],
+      "steps": [
+        {
+          "title": "실제 길이(cm)",
+          "body": "$$3\\times50000=150000$$"
+        },
+        {
+          "title": "km 로 바꾸기",
+          "body": "$1$ km $=100000$ cm 이니\n$$150000\\div100000=1.5$$"
+        }
+      ],
+      "tip": "답 칸에는 $\\frac{3}{2}$ 로 넣어도 돼요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$\\triangle ABC$ 에서 $\\overline{DE}\\parallel\\overline{BC}$ 이고 $\\overline{AD}:\\overline{DB}=2:1$ 이에요. $\\triangle ADE$ 의 넓이가 $8$ cm² 일 때 사각형 $DBCE$ 의 넓이는 몇 cm² 인가요?",
+      "choices": null,
+      "answer": "10",
+      "answerTex": "$10$ cm²",
+      "answerType": "int",
+      "check": "8*Rational(3,2)**2 - 8",
+      "concepts": [
+        "$\\triangle ADE\\sim\\triangle ABC$, 넓이의 비는 닮음비의 제곱이에요."
+      ],
+      "steps": [
+        {
+          "title": "닮음비",
+          "body": "$\\overline{AD}:\\overline{AB}=2:3$ 이에요."
+        },
+        {
+          "title": "큰 삼각형 넓이",
+          "body": "$$8\\times\\frac{9}{4}=18$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$18-8=10$$"
+        }
+      ],
+      "tip": "닮음비는 $2:1$ 이 아니라 $2:(2+1)$ 이에요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "닮음비가 $2:3$ 인 두 직육면체 모양 상자가 있어요. 큰 상자의 부피가 $81$ cm³ 일 때 작은 상자의 부피는?",
+      "choices": [
+        "$36$ cm³",
+        "$54$ cm³",
+        "$24$ cm³",
+        "$16$ cm³",
+        "$18$ cm³"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "81*Rational(2,3)**3",
+      "choiceChecks": [
+        "81*Rational(2,3)**2",
+        "81*Rational(2,3)",
+        "24",
+        "16",
+        "18"
+      ],
+      "concepts": [
+        "부피의 비는 닮음비의 세제곱이에요."
+      ],
+      "steps": [
+        {
+          "title": "부피의 비",
+          "body": "$$2^3:3^3=8:27$$"
+        },
+        {
+          "title": "작은 부피",
+          "body": "$$81\\times\\frac{8}{27}=24$$"
+        }
+      ],
+      "tip": "①은 제곱, ②는 닮음비를 그대로 쓴 값이에요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "두께가 같은 둥근 피자가 두 판 있어요. 지름이 $20$ cm 인 것과 $30$ cm 인 것이에요. 큰 피자의 양은 작은 피자의 몇 배인가요?",
+      "choices": null,
+      "answer": "9/4",
+      "answerTex": "$\\frac{9}{4}$배",
+      "answerType": "fraction",
+      "check": "Rational(30,20)**2",
+      "concepts": [
+        "원은 모두 닮은 도형이에요. 두께가 같으니 양은 넓이에 비례해요."
+      ],
+      "steps": [
+        {
+          "title": "닮음비",
+          "body": "$$20:30=2:3$$"
+        },
+        {
+          "title": "넓이의 비",
+          "body": "$$4:9 \\Rightarrow \\frac{9}{4}$$"
+        }
+      ],
+      "tip": "지름이 1.5배면 양은 1.5배가 아니라 2.25배예요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "$\\triangle ABC$ 의 넓이가 $54$ cm² 예요. 무게중심 $G$ 와 $\\overline{BC}$ 의 중점 $M$ 에 대하여 $\\triangle GBM$ 의 넓이는 몇 cm² 인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "$9$ cm²",
+      "answerType": "int",
+      "check": "54*Rational(1,6)",
+      "concepts": [
+        "세 중선은 삼각형을 넓이가 같은 6조각으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "중선 AM",
+          "body": "$\\triangle ABM$ 은 전체의 절반, $27$ cm² 예요."
+        },
+        {
+          "title": "2:1 로 나누기",
+          "body": "$\\overline{AG}:\\overline{GM}=2:1$ 이라 $\\triangle GBM$ 은 $\\triangle ABM$ 의 $\\frac{1}{3}$ 이에요."
+        },
+        {
+          "title": "넓이",
+          "body": "$$27\\times\\frac{1}{3}=9$$"
+        }
+      ],
+      "tip": "높이가 같은 삼각형의 넓이는 밑변의 비를 따라가요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "땅에 거울을 놓고 거울에 비친 건물 꼭대기를 봐요. 눈높이는 $1.6$ m, 사람과 거울 사이는 $2$ m, 거울과 건물 사이는 $15$ m 예요. 건물의 높이는 몇 m 인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$ m",
+      "answerType": "int",
+      "check": "Rational(16,10)*15/2",
+      "concepts": [
+        "빛이 들어오는 각과 나가는 각이 같으니 두 직각삼각형은 AA 닮음이에요."
+      ],
+      "steps": [
+        {
+          "title": "비례식",
+          "body": "$$1.6:2=h:15$$"
+        },
+        {
+          "title": "높이",
+          "body": "$$h=1.6\\times\\frac{15}{2}=12$$"
+        }
+      ],
+      "tip": "사람 쪽 삼각형과 건물 쪽 삼각형에서 높이끼리, 밑변끼리 짝지어요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "사다리꼴 $ABCD$ 에서 $\\overline{AD}\\parallel\\overline{BC}$, $\\overline{AD}=6$ cm, $\\overline{BC}=14$ cm 예요. $\\overline{AB}$ 위의 점 $E$ 와 $\\overline{DC}$ 위의 점 $F$ 를 $\\overline{AE}:\\overline{EB}=1:3$, $\\overline{EF}\\parallel\\overline{BC}$ 가 되게 잡을 때 $\\overline{EF}$ 는 몇 cm 인가요?",
+      "choices": null,
+      "answer": "8",
+      "answerTex": "$8$ cm",
+      "answerType": "int",
+      "check": "6 + (14-6)*Rational(1,4)",
+      "concepts": [
+        "점 $A$ 를 지나 $\\overline{DC}$ 와 평행한 선을 그으면 평행사변형과 삼각형으로 나뉘어요.",
+        "삼각형 부분에서 평행선과 선분의 비를 써요."
+      ],
+      "steps": [
+        {
+          "title": "평행사변형 떼어 내기",
+          "body": "$A$ 를 지나 $\\overline{DC}$ 와 평행한 선이 $\\overline{EF}$, $\\overline{BC}$ 와 만나는 점을 $P$, $Q$ 라 하면 $\\overline{PF}=\\overline{QC}=6$ 이에요."
+        },
+        {
+          "title": "삼각형의 밑변",
+          "body": "$$\\overline{BQ}=14-6=8$$"
+        },
+        {
+          "title": "비로 줄이기",
+          "body": "$\\overline{AE}:\\overline{AB}=1:4$ 이니\n$$\\overline{EP}=8\\times\\frac{1}{4}=2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\overline{EF}=2+6=8$$"
+        }
+      ],
+      "tip": "E 가 AB 의 중점이면 $\\frac{6+14}{2}=10$, 사다리꼴의 중점 연결이에요."
+    }
+  ]
+}

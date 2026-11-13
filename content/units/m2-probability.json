@@ -1,0 +1,1245 @@
+{
+  "id": "m2-probability",
+  "course": "중2",
+  "unit": "자료와 가능성",
+  "title": "경우의 수와 확률",
+  "prereq": [
+    "e-fraction-mul"
+  ],
+  "suneung": [],
+  "hours": 2.5,
+  "lesson": {
+    "minutes": 20,
+    "values": {
+      "coinAll": {
+        "value": "4",
+        "check": "2*2"
+      },
+      "coinOne": {
+        "value": "2",
+        "check": "len([1 for i in range(2) for j in range(2) if i + j == 1])"
+      },
+      "coinP": {
+        "value": "1/2",
+        "check": "Rational(len([1 for i in range(2) for j in range(2) if i + j == 1]), 2*2)"
+      },
+      "diceAll": {
+        "value": "36",
+        "check": "6*6"
+      },
+      "dice7": {
+        "value": "6",
+        "check": "len([1 for i in range(1, 7) for j in range(1, 7) if i + j == 7])"
+      },
+      "dice7P": {
+        "value": "1/6",
+        "check": "Rational(len([1 for i in range(1, 7) for j in range(1, 7) if i + j == 7]), 6*6)"
+      },
+      "dice2": {
+        "value": "1",
+        "check": "len([1 for i in range(1, 7) for j in range(1, 7) if i + j == 2])"
+      },
+      "bagAll": {
+        "value": "10",
+        "check": "2+3+5"
+      },
+      "redP": {
+        "value": "1/5",
+        "check": "Rational(2, 2 + 3 + 5)"
+      },
+      "notRedP": {
+        "value": "4/5",
+        "check": "1 - Rational(2, 2 + 3 + 5)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중2 · 자료와 가능성",
+        "title": "얼마나 자주 일어날지\n수로 말하기",
+        "lead": "동전을 던지거나 공을 뽑을 때, 결과는 매번 달라도 많이 해 보면 규칙이 보여요. 직접 수백 번 던져 보면서 그 규칙을 분수로 적어 봐요.",
+        "meta": [
+          "경우의 수와 확률"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "동전 두 개를 던지면\n앞면이 1개일 확률은?",
+        "lead": "결과는 앞면 0개, 1개, 2개 세 가지예요. 그럼 셋 중 하나라서 $\\frac13$ 일까요? 직접 100번 넘게 던져 보고 골라 보세요.",
+        "widget": {
+          "type": "simulate",
+          "params": {
+            "device": "coin",
+            "n": 2,
+            "seed": 7,
+            "goal": 100
+          }
+        },
+        "choices": [
+          {
+            "value": "1/3",
+            "check": "Rational(1, 2 + 1)",
+            "feedback": "앞면 개수가 세 가지인 건 맞지만, 세 가지가 똑같이 자주 나오지는 않아요. 막대 높이를 비교해 보세요."
+          },
+          {
+            "value": "1/2",
+            "check": "Rational(len([1 for i in range(2) for j in range(2) if i + j == 1]), 2*2)"
+          },
+          {
+            "value": "1/4",
+            "check": "Rational(1, 2*2)",
+            "feedback": "앞·뒤 한 가지만 셌어요. 첫째 동전이 뒷면이고 둘째가 앞면인 경우도 있어요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "Rational(len([1 for i in range(2) for j in range(2) if i + j == 1]), 2*2)",
+        "reveal": "**맞아요!** 많이 던질수록 '앞 1개' 막대가 절반 높이에 모여요.",
+        "thoughts": [
+          "두 동전을 구별하면 (앞,앞), (앞,뒤), (뒤,앞), (뒤,뒤) 네 가지가 똑같이 자주 나와요.",
+          "그중 앞면이 1개인 것은 (앞,뒤)와 (뒤,앞)이라서 {{coinAll}}가지 중 {{coinOne}}가지예요."
+        ],
+        "conclude": "그럼 똑같이 자주 나오는 경우를 빠짐없이 세는 방법이 필요해요."
+      },
+      {
+        "kind": "explore",
+        "id": "tree",
+        "chip": "손으로 해 보기",
+        "title": "동전 두 개의 경우를\n가지로 펼쳐 보세요",
+        "lead": "첫째 동전에서 두 갈래, 그 끝마다 둘째 동전에서 또 두 갈래로 나뉘어요. 한 단계씩 펼쳐 끝 가지를 세어 보세요.",
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "tree",
+            "items": [
+              "앞",
+              "뒤"
+            ],
+            "k": 2,
+            "repeat": true
+          }
+        },
+        "gate": true,
+        "after": "끝 가지는 모두 {{coinAll}}가지, 그중 앞면이 1개인 가지는 {{coinOne}}가지예요. 그래서 확률은 $\\frac{ {{coinOne}} }{ {{coinAll}} }={{coinP}}$ 예요. ==확률 = 그 사건이 일어나는 경우의 수 ÷ 모든 경우의 수== 예요. 가지마다 두 갈래씩 붙으니 모든 경우는 2 × 2 로 곱해서 구해요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 쓴 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "사건",
+            "body": "실험이나 관찰에서 나타나는 결과. '앞면이 1개 나온다'가 하나의 사건이에요."
+          },
+          {
+            "term": "경우의 수",
+            "body": "어떤 사건이 일어나는 가짓수예요."
+          },
+          {
+            "term": "합의 법칙",
+            "body": "두 사건이 동시에 일어나지 않을 때, 둘 중 하나가 일어나는 경우의 수는 **더해요**."
+          },
+          {
+            "term": "곱의 법칙",
+            "body": "두 사건이 잇달아(함께) 일어나는 경우의 수는 **곱해요**."
+          },
+          {
+            "term": "확률",
+            "body": "모든 경우가 똑같이 일어날 때, (그 사건의 경우의 수) ÷ (모든 경우의 수). $0$ 이상 $1$ 이하예요."
+          }
+        ],
+        "aside": "**일어나지 않을 확률** · 사건 $A$ 가 일어날 확률이 $p$ 이면, 일어나지 않을 확률은 $1-p$ 예요. 반드시 일어나는 사건의 확률은 $1$, 절대 일어나지 않는 사건의 확률은 $0$ 이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "dice",
+        "chip": "두 번째 해 보기",
+        "title": "주사위 두 개,\n어떤 합이 가장 자주 나올까요?",
+        "lead": "두 눈의 합은 2부터 12까지예요. 200번 넘게 던져 막대가 어디서 가장 높은지 보세요.",
+        "widget": {
+          "type": "simulate",
+          "params": {
+            "device": "die",
+            "n": 2,
+            "seed": 5,
+            "goal": 200
+          }
+        },
+        "gate": true,
+        "after": "곱의 법칙으로 모든 경우는 $6\\times6={{diceAll}}$가지예요. 합이 7인 경우는 (1,6)부터 (6,1)까지 {{dice7}}가지라 확률이 ${{dice7P}}$ 로 가장 커요. 합이 2인 경우는 (1,1) 하나뿐이에요. ==경우의 수가 많은 사건일수록 자주 나와요.=="
+      },
+      {
+        "kind": "question",
+        "id": "bag",
+        "chip": "반대쪽에서 세기",
+        "title": "빨간 공이 나오지 않을\n확률은?",
+        "lead": "주머니에 빨강 2개, 파랑 3개, 노랑 5개가 있어요. 하나 꺼내 확인하고 다시 넣기를 여러 번 해 보세요.",
+        "widget": {
+          "type": "simulate",
+          "params": {
+            "device": "bag",
+            "bag": [
+              {
+                "label": "빨강",
+                "count": 2
+              },
+              {
+                "label": "파랑",
+                "count": 3
+              },
+              {
+                "label": "노랑",
+                "count": 5
+              }
+            ],
+            "seed": 11,
+            "goal": 100
+          }
+        },
+        "choices": [
+          {
+            "value": "1/5",
+            "check": "Rational(2, 2 + 3 + 5)",
+            "feedback": "빨간 공이 **나올** 확률이에요. 나오지 않을 확률은 그 나머지예요."
+          },
+          {
+            "value": "3/10",
+            "check": "Rational(3, 2 + 3 + 5)",
+            "feedback": "파란 공만 셌어요. 노란 공도 빨간 공이 아니에요."
+          },
+          {
+            "value": "4/5",
+            "check": "1 - Rational(2, 2 + 3 + 5)"
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "1 - Rational(2, 2 + 3 + 5)",
+        "reveal": "**맞아요!** 빨강 막대를 뺀 나머지 막대를 모두 합한 만큼이에요.",
+        "thoughts": [
+          "빨간 공이 나올 확률은 {{bagAll}}개 중 2개라 ${{redP}}$ 예요.",
+          "공을 꺼내면 빨강이거나 아니거나 둘 중 하나라서 두 확률의 합은 $1$ 이에요. 그래서 $1-{{redP}}={{notRedP}}$ 예요."
+        ],
+        "conclude": "'적어도 하나', '~가 아닌' 문제는 반대쪽을 세어 1에서 빼면 빨라요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 주사위 두 개를 던져 합이 4일 확률이에요. 왼쪽은 (1,3), (2,2), (3,1) 세 가지를 36으로 나눈 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "3/36"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "2/36",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "1/12",
+              "body": "(1,3)과 (3,1)을 하나로 셌어요. 두 주사위를 구별하면 **다른 경우**예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 동전 3개를 던져 적어도 1개가 앞면일 확률이에요. 왼쪽은 모두 뒷면인 경우를 1에서 뺀 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "1-1/8"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "3/8",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "7/8",
+              "body": "앞면이 **딱 1개**인 경우만 셌어요. '적어도 1개'는 1개, 2개, 3개를 모두 포함해요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "outfit",
+            "q": "모자 3개와 운동화 4켤레가 있어요. 모자 하나와 운동화 한 켤레를 골라 함께 신고 쓰는 방법은 모두 몇 가지일까요?",
+            "hint": "모자 하나마다 운동화를 몇 가지로 고를 수 있는지 생각해요.",
+            "placeholder": "가지",
+            "steps": [
+              {
+                "title": "함께 고르니 곱의 법칙",
+                "body": "모자를 고른 뒤 이어서 운동화도 골라요."
+              },
+              {
+                "title": "곱하기",
+                "body": "$$3\\times4={{answer}}$$"
+              }
+            ],
+            "answer": "12",
+            "answerType": "int",
+            "check": "len([1 for i in range(3) for j in range(4)])"
+          },
+          {
+            "id": "snack",
+            "q": "간식으로 과자 4종류와 음료 3종류 중에서 **한 가지만** 고르려고 해요. 고르는 방법은 모두 몇 가지일까요?",
+            "hint": "과자와 음료를 동시에 고르지 않아요.",
+            "placeholder": "가지",
+            "steps": [
+              {
+                "title": "둘 중 하나만이니 합의 법칙",
+                "body": "과자를 고르면 음료는 고르지 않아요."
+              },
+              {
+                "title": "더하기",
+                "body": "$$4+3={{answer}}$$"
+              }
+            ],
+            "answer": "7",
+            "answerType": "int",
+            "check": "len(list(range(4)) + list(range(3)))"
+          },
+          {
+            "id": "same",
+            "q": "서로 다른 주사위 두 개를 던질 때, 두 눈이 같게 나올 확률을 구하세요.",
+            "hint": "(1,1)부터 같은 눈이 몇 가지인지 세요.",
+            "placeholder": "분수",
+            "steps": [
+              {
+                "title": "모든 경우",
+                "body": "$$6\\times6=36$$"
+              },
+              {
+                "title": "같은 눈",
+                "body": "(1,1), (2,2), …, (6,6) 으로 6가지예요."
+              },
+              {
+                "title": "확률",
+                "body": "$$\\frac{6}{36}={{answer}}$$"
+              }
+            ],
+            "answer": "1/6",
+            "answerType": "fraction",
+            "check": "Rational(len([1 for i in range(1, 7) for j in range(1, 7) if i == j]), 6*6)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "동시에 일어나지 않으면 **더하고**(합의 법칙), 잇달아 함께 일어나면 **곱해요**(곱의 법칙).",
+          "**확률** = 그 사건의 경우의 수 ÷ 모든 경우의 수. 동전·주사위는 서로 구별해서 세요.",
+          "확률은 $0$ 이상 $1$ 이하예요.",
+          "일어나지 않을 확률 = $1-$(일어날 확률). '적어도 하나'는 반대쪽을 빼요."
+        ],
+        "done": "경우의 수와 확률 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$(\\text{합의 법칙})\\ m+n$",
+    "$(\\text{곱의 법칙})\\ m\\times n$",
+    "$P=\\dfrac{\\text{해당 경우의 수}}{\\text{전체 경우의 수}}$",
+    "$0\\le P\\le1$",
+    "$(\\text{사건 }A\\text{가 일어나지 않을 확률})=1-P(A)$"
+  ],
+  "generators": [
+    "prob-count-rule",
+    "prob-dice",
+    "prob-bag",
+    "prob-coins"
+  ],
+  "problems": [
+    {
+      "q": "$8$명 가운데 회장 한 명과 부회장 한 명을 뽑는 방법은 모두 몇 가지인가요?",
+      "choices": null,
+      "answer": "56",
+      "answerTex": "$56$가지",
+      "answerType": "int",
+      "check": "len([1 for i in range(8) for j in range(8) if i != j])",
+      "concepts": [
+        "곱의 법칙: 회장을 뽑은 다음 남은 사람 중에서 부회장을 뽑아요."
+      ],
+      "steps": [
+        {
+          "title": "회장",
+          "body": "$8$명 중 한 명이라 $8$가지예요."
+        },
+        {
+          "title": "부회장",
+          "body": "회장을 뺀 $7$명 중 한 명이라 $7$가지예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$8\\times7=56$$"
+        }
+      ],
+      "tip": "같은 사람이 둘 다 맡을 수 없으니 두 번째는 한 명 줄어요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prob-count-rule",
+      "seed": 1000
+    },
+    {
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 두 눈의 합이 $5$일 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/9",
+      "answerTex": "$\\frac{1}{9}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for i in range(1, 7) for j in range(1, 7) if i + j == 5]), 36)",
+      "concepts": [
+        "확률 $=\\dfrac{\\text{그 사건이 일어나는 경우의 수}}{\\text{모든 경우의 수}}$",
+        "주사위 두 개의 모든 경우는 곱의 법칙으로 $6\\times6=36$가지예요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$6\\times6=36$$"
+        },
+        {
+          "title": "합이 맞는 경우 늘어놓기",
+          "body": "$(1,4)$, $(2,3)$, $(3,2)$, $(4,1)$ 로 $4$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{4}{36}=\\frac{1}{9}$$"
+        }
+      ],
+      "tip": "$(1,2)$ 와 $(2,1)$ 은 다른 경우예요. 두 주사위를 구별해서 세요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prob-dice",
+      "seed": 1001
+    },
+    {
+      "q": "주머니에 빨간 공 $4$개, 파란 공 $5$개, 노란 공 $3$개가 들어 있어요. 공 하나를 꺼낼 때 파란 공이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "5/12",
+      "answerTex": "$\\frac{5}{12}$",
+      "answerType": "fraction",
+      "check": "Rational(5, 4 + 5 + 3)",
+      "concepts": [
+        "확률 $=\\dfrac{\\text{그 사건이 일어나는 경우의 수}}{\\text{모든 경우의 수}}$"
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$4+5+3=12$$"
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{5}{12}=\\frac{5}{12}$$"
+        }
+      ],
+      "tip": "공 하나하나를 서로 다른 경우로 세요. 색깔 세 가지라서 $\\frac13$ 이 아니에요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prob-bag",
+      "seed": 1002
+    },
+    {
+      "q": "동전 $3$개를 동시에 던질 때, 적어도 한 개는 앞면이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "7/8",
+      "answerTex": "$\\frac{7}{8}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for v0 in range(2) for v1 in range(2) for v2 in range(2) if v0 + v1 + v2 >= 1]), 2**3)",
+      "concepts": [
+        "\"적어도 한 개\"는 \"하나도 없다\"의 반대(여사건)예요.",
+        "사건 $A$ 가 일어나지 않을 확률 $=1-(A\\text{가 일어날 확률})$"
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$2\\times2\\times2=8$$"
+        },
+        {
+          "title": "모두 뒷면인 경우",
+          "body": "모두 뒷면은 $1$가지라서 확률은 $\\frac{1}{8}$ 이에요."
+        },
+        {
+          "title": "1에서 빼기",
+          "body": "$$1-\\frac{1}{8}=\\frac{7}{8}$$"
+        }
+      ],
+      "tip": "앞면 1개, 2개, … 를 하나하나 더하는 것보다 반대쪽 하나를 빼는 게 빨라요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prob-coins",
+      "seed": 1003
+    },
+    {
+      "q": "티셔츠 $3$벌과 바지 $4$벌이 있어요. 티셔츠 한 벌과 바지 한 벌을 골라 입는 방법은 모두 몇 가지인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$가지",
+      "answerType": "int",
+      "check": "len([1 for i in range(3) for j in range(4)])",
+      "concepts": [
+        "곱의 법칙: 두 가지를 **잇달아 함께** 고르면 경우의 수를 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "티셔츠 하나마다",
+          "body": "바지를 $4$가지로 고를 수 있어요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3\\times4=12$$"
+        }
+      ],
+      "tip": "\"그리고\"로 이어지면 곱하고, \"또는\"으로 나뉘면 더해요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prob-count-rule",
+      "seed": 1004
+    },
+    {
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 두 눈의 차가 $3$일 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/6",
+      "answerTex": "$\\frac{1}{6}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for i in range(1, 7) for j in range(1, 7) if Abs(i - j) == 3]), 36)",
+      "concepts": [
+        "확률 $=\\dfrac{\\text{그 사건이 일어나는 경우의 수}}{\\text{모든 경우의 수}}$",
+        "주사위 두 개의 모든 경우는 $6\\times6=36$가지예요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$6\\times6=36$$"
+        },
+        {
+          "title": "차가 맞는 경우 늘어놓기",
+          "body": "$(1,4)$, $(2,5)$, $(3,6)$, $(4,1)$, $(5,2)$, $(6,3)$ 로 $6$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{6}{36}=\\frac{1}{6}$$"
+        }
+      ],
+      "tip": "큰 눈이 첫째 주사위일 때와 둘째 주사위일 때를 둘 다 세요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prob-dice",
+      "seed": 1005
+    },
+    {
+      "q": "주머니에 빨간 공 $4$개, 파란 공 $3$개, 노란 공 $6$개가 들어 있어요. 공 하나를 꺼낼 때 빨간 공이 나오지 않을 확률을 구하세요.",
+      "choices": null,
+      "answer": "9/13",
+      "answerTex": "$\\frac{9}{13}$",
+      "answerType": "fraction",
+      "check": "1 - Rational(4, 4 + 3 + 6)",
+      "concepts": [
+        "사건 $A$ 가 일어나지 않을 확률 $=1-(A\\text{가 일어날 확률})$"
+      ],
+      "steps": [
+        {
+          "title": "빨간 공이 나올 확률",
+          "body": "$$\\frac{4}{13}$$"
+        },
+        {
+          "title": "1에서 빼기",
+          "body": "$$1-\\frac{4}{13}=\\frac{9}{13}$$"
+        }
+      ],
+      "tip": "파란 공과 노란 공의 개수를 더해 $\\dfrac{9}{13}$ 로 구해도 같아요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prob-bag",
+      "seed": 1006
+    },
+    {
+      "q": "동전 $5$개를 동시에 던질 때, 적어도 한 개는 앞면이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "31/32",
+      "answerTex": "$\\frac{31}{32}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for v0 in range(2) for v1 in range(2) for v2 in range(2) for v3 in range(2) for v4 in range(2) if v0 + v1 + v2 + v3 + v4 >= 1]), 2**5)",
+      "concepts": [
+        "\"적어도 한 개\"는 \"하나도 없다\"의 반대(여사건)예요.",
+        "사건 $A$ 가 일어나지 않을 확률 $=1-(A\\text{가 일어날 확률})$"
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$2\\times2\\times2\\times2\\times2=32$$"
+        },
+        {
+          "title": "모두 뒷면인 경우",
+          "body": "모두 뒷면은 $1$가지라서 확률은 $\\frac{1}{32}$ 이에요."
+        },
+        {
+          "title": "1에서 빼기",
+          "body": "$$1-\\frac{1}{32}=\\frac{31}{32}$$"
+        }
+      ],
+      "tip": "앞면 1개, 2개, … 를 하나하나 더하는 것보다 반대쪽 하나를 빼는 게 빨라요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prob-coins",
+      "seed": 1007
+    },
+    {
+      "q": "$8$명 가운데 회장 한 명과 부회장 한 명을 뽑는 방법은 모두 몇 가지인가요?",
+      "choices": null,
+      "answer": "56",
+      "answerTex": "$56$가지",
+      "answerType": "int",
+      "check": "len([1 for i in range(8) for j in range(8) if i != j])",
+      "concepts": [
+        "곱의 법칙: 회장을 뽑은 다음 남은 사람 중에서 부회장을 뽑아요."
+      ],
+      "steps": [
+        {
+          "title": "회장",
+          "body": "$8$명 중 한 명이라 $8$가지예요."
+        },
+        {
+          "title": "부회장",
+          "body": "회장을 뺀 $7$명 중 한 명이라 $7$가지예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$8\\times7=56$$"
+        }
+      ],
+      "tip": "같은 사람이 둘 다 맡을 수 없으니 두 번째는 한 명 줄어요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prob-count-rule",
+      "seed": 1008
+    },
+    {
+      "q": "주사위 한 개를 던질 때, 3의 배수의 눈이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerTex": "$\\frac{1}{3}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for i in range(1, 7) if i % 3 == 0]), 6)",
+      "concepts": [
+        "확률 $=\\dfrac{\\text{그 사건이 일어나는 경우의 수}}{\\text{모든 경우의 수}}$"
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "눈은 $1$부터 $6$까지 $6$가지예요."
+        },
+        {
+          "title": "맞는 눈 고르기",
+          "body": "$3,6$ 로 $2$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{2}{6}=\\frac{1}{3}$$"
+        }
+      ],
+      "tip": "확률은 늘 $0$ 이상 $1$ 이하예요. 답이 1보다 크면 다시 세요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prob-dice",
+      "seed": 1009
+    },
+    {
+      "q": "주머니에 빨간 공 $4$개, 파란 공 $6$개, 노란 공 $6$개가 들어 있어요. 공 하나를 꺼낼 때 파란 공이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "3/8",
+      "answerTex": "$\\frac{3}{8}$",
+      "answerType": "fraction",
+      "check": "Rational(6, 4 + 6 + 6)",
+      "concepts": [
+        "확률 $=\\dfrac{\\text{그 사건이 일어나는 경우의 수}}{\\text{모든 경우의 수}}$"
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$4+6+6=16$$"
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{6}{16}=\\frac{3}{8}$$"
+        }
+      ],
+      "tip": "공 하나하나를 서로 다른 경우로 세요. 색깔 세 가지라서 $\\frac13$ 이 아니에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prob-bag",
+      "seed": 1010
+    },
+    {
+      "q": "동전 $5$개를 동시에 던질 때, 모두 앞면이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/32",
+      "answerTex": "$\\frac{1}{32}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for v0 in range(2) for v1 in range(2) for v2 in range(2) for v3 in range(2) for v4 in range(2) if v0 + v1 + v2 + v3 + v4 == 5]), 2**5)",
+      "concepts": [
+        "동전 한 개마다 2가지라서, 곱의 법칙으로 모든 경우를 세요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$2\\times2\\times2\\times2\\times2=32$$"
+        },
+        {
+          "title": "모두 앞면",
+          "body": "모두 앞면인 경우는 $1$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{1}{32}$$"
+        }
+      ],
+      "tip": "동전마다 앞면일 확률 $\\frac12$ 를 $5$번 곱해도 같아요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prob-coins",
+      "seed": 1011
+    },
+    {
+      "q": "티셔츠 $5$벌과 바지 $4$벌이 있어요. 티셔츠 한 벌과 바지 한 벌을 골라 입는 방법은 모두 몇 가지인가요?",
+      "choices": null,
+      "answer": "20",
+      "answerTex": "$20$가지",
+      "answerType": "int",
+      "check": "len([1 for i in range(5) for j in range(4)])",
+      "concepts": [
+        "곱의 법칙: 두 가지를 **잇달아 함께** 고르면 경우의 수를 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "티셔츠 하나마다",
+          "body": "바지를 $4$가지로 고를 수 있어요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$5\\times4=20$$"
+        }
+      ],
+      "tip": "\"그리고\"로 이어지면 곱하고, \"또는\"으로 나뉘면 더해요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prob-count-rule",
+      "seed": 1012
+    },
+    {
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 두 눈의 합이 $4$일 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/12",
+      "answerTex": "$\\frac{1}{12}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for i in range(1, 7) for j in range(1, 7) if i + j == 4]), 36)",
+      "concepts": [
+        "확률 $=\\dfrac{\\text{그 사건이 일어나는 경우의 수}}{\\text{모든 경우의 수}}$",
+        "주사위 두 개의 모든 경우는 곱의 법칙으로 $6\\times6=36$가지예요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$6\\times6=36$$"
+        },
+        {
+          "title": "합이 맞는 경우 늘어놓기",
+          "body": "$(1,3)$, $(2,2)$, $(3,1)$ 로 $3$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{3}{36}=\\frac{1}{12}$$"
+        }
+      ],
+      "tip": "$(1,2)$ 와 $(2,1)$ 은 다른 경우예요. 두 주사위를 구별해서 세요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prob-dice",
+      "seed": 1013
+    },
+    {
+      "q": "주머니에 빨간 공 $2$개, 파란 공 $6$개, 노란 공 $6$개가 들어 있어요. 공 하나를 꺼낼 때 빨간 공이 나오지 않을 확률을 구하세요.",
+      "choices": null,
+      "answer": "6/7",
+      "answerTex": "$\\frac{6}{7}$",
+      "answerType": "fraction",
+      "check": "1 - Rational(2, 2 + 6 + 6)",
+      "concepts": [
+        "사건 $A$ 가 일어나지 않을 확률 $=1-(A\\text{가 일어날 확률})$"
+      ],
+      "steps": [
+        {
+          "title": "빨간 공이 나올 확률",
+          "body": "$$\\frac{2}{14}$$"
+        },
+        {
+          "title": "1에서 빼기",
+          "body": "$$1-\\frac{2}{14}=\\frac{6}{7}$$"
+        }
+      ],
+      "tip": "파란 공과 노란 공의 개수를 더해 $\\dfrac{12}{14}$ 로 구해도 같아요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prob-bag",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "1부터 20까지의 수가 하나씩 적힌 카드 20장에서 한 장을 뽑을 때, 3의 배수 또는 7의 배수가 나오는 경우는 몇 가지인가요?",
+      "choices": null,
+      "answer": "8",
+      "answerTex": "$8$가지",
+      "answerType": "int",
+      "check": "len([i for i in range(1, 21) if i % 3 == 0 or i % 7 == 0])",
+      "concepts": [
+        "합의 법칙: 두 사건이 동시에 일어나지 않으면 경우의 수를 더해요."
+      ],
+      "steps": [
+        {
+          "title": "3의 배수",
+          "body": "$3,6,9,12,15,18$ 로 $6$가지예요."
+        },
+        {
+          "title": "7의 배수",
+          "body": "$7,14$ 로 $2$가지예요."
+        },
+        {
+          "title": "겹치는지 확인",
+          "body": "20 이하에서 3과 7의 공배수는 없어서 그냥 더해요.\n$$6+2=8$$"
+        }
+      ],
+      "tip": "겹치는 수(예: 21)가 있으면 두 번 세지 않게 한 번 빼야 해요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 두 눈의 합이 5 또는 10인 경우는 몇 가지인가요?",
+      "choices": null,
+      "answer": "7",
+      "answerTex": "$7$가지",
+      "answerType": "int",
+      "check": "len([1 for i in range(1, 7) for j in range(1, 7) if i + j == 5 or i + j == 10])",
+      "concepts": [
+        "합이 5인 것과 10인 것은 동시에 일어나지 않아요(합의 법칙)."
+      ],
+      "steps": [
+        {
+          "title": "합이 5",
+          "body": "$(1,4),(2,3),(3,2),(4,1)$ 로 $4$가지예요."
+        },
+        {
+          "title": "합이 10",
+          "body": "$(4,6),(5,5),(6,4)$ 로 $3$가지예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$4+3=7$$"
+        }
+      ],
+      "tip": "$(5,5)$ 는 순서를 바꿔도 같아서 한 번만 세요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "A, B, C, D, E 다섯 명 중에서 반장 한 명과 부반장 한 명을 뽑는 방법은 모두 몇 가지인가요?",
+      "choices": null,
+      "answer": "20",
+      "answerTex": "$20$가지",
+      "answerType": "int",
+      "check": "len([1 for i in range(5) for j in range(5) if i != j])",
+      "concepts": [
+        "곱의 법칙: 반장을 뽑고 이어서 부반장을 뽑아요."
+      ],
+      "steps": [
+        {
+          "title": "반장",
+          "body": "$5$명 중 한 명, $5$가지예요."
+        },
+        {
+          "title": "부반장",
+          "body": "반장을 뺀 $4$명 중 한 명, $4$가지예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$5\\times4=20$$"
+        }
+      ],
+      "tip": "대표 두 명을 뽑는 것처럼 역할이 같으면 2로 나눠야 해요. 여기서는 역할이 달라요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "동전 한 개와 주사위 한 개를 동시에 던질 때, 동전은 앞면이 나오고 주사위는 짝수의 눈이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/4",
+      "answerTex": "$\\frac14$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for c in range(2) for i in range(1, 7) if c == 1 and i % 2 == 0]), 2*6)",
+      "concepts": [
+        "모든 경우는 곱의 법칙으로 $2\\times6$ 가지예요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$2\\times6=12$$"
+        },
+        {
+          "title": "맞는 경우",
+          "body": "앞면 1가지, 짝수 눈 $2,4,6$ 의 3가지라서 $1\\times3=3$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{3}{12}=\\frac14$$"
+        }
+      ],
+      "tip": "$\\frac12\\times\\frac36=\\frac14$ 처럼 각각의 확률을 곱해도 같아요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "주머니에 흰 공 4개와 검은 공 6개가 들어 있어요. 공 하나를 꺼낼 때 흰 공이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "2/5",
+      "answerTex": "$\\frac25$",
+      "answerType": "fraction",
+      "check": "Rational(4, 4 + 6)",
+      "concepts": [
+        "확률 $=\\dfrac{\\text{그 사건의 경우의 수}}{\\text{모든 경우의 수}}$"
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$4+6=10$$"
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{4}{10}=\\frac25$$"
+        }
+      ],
+      "tip": "색깔이 두 가지라서 $\\frac12$ 이라고 하면 안 돼요. 공 개수로 세요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "주사위 한 개를 던질 때, 7 이상의 눈이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerTex": "$0$",
+      "answerType": "int",
+      "check": "Rational(len([i for i in range(1, 7) if i >= 7]), 6)",
+      "concepts": [
+        "절대 일어나지 않는 사건의 확률은 $0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "맞는 눈 찾기",
+          "body": "주사위 눈은 $6$ 까지라 7 이상인 눈은 없어요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{0}{6}=0$$"
+        }
+      ],
+      "tip": "반대로 6 이하의 눈이 나올 확률은 반드시 일어나서 $1$ 이에요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "내일 비가 올 확률이 $\\frac{3}{10}$ 이래요. 내일 비가 오지 않을 확률을 구하세요.",
+      "choices": null,
+      "answer": "7/10",
+      "answerTex": "$\\frac{7}{10}$",
+      "answerType": "fraction",
+      "check": "1 - Rational(3, 10)",
+      "concepts": [
+        "일어나지 않을 확률 $=1-$(일어날 확률)"
+      ],
+      "steps": [
+        {
+          "title": "1에서 빼기",
+          "body": "$$1-\\frac{3}{10}=\\frac{7}{10}$$"
+        }
+      ],
+      "tip": "비가 오거나 안 오거나 둘 중 하나라서 두 확률의 합은 $1$ 이에요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "동전 4개를 동시에 던질 때, 적어도 한 개는 뒷면이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "15/16",
+      "answerTex": "$\\frac{15}{16}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for a1 in range(2) for a2 in range(2) for a3 in range(2) for a4 in range(2) if a1 + a2 + a3 + a4 < 4]), 2**4)",
+      "concepts": [
+        "'적어도 한 개는 뒷면'의 반대는 '모두 앞면'이에요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$2\\times2\\times2\\times2=16$$"
+        },
+        {
+          "title": "모두 앞면",
+          "body": "$1$가지라서 확률은 $\\frac{1}{16}$ 이에요."
+        },
+        {
+          "title": "1에서 빼기",
+          "body": "$$1-\\frac{1}{16}=\\frac{15}{16}$$"
+        }
+      ],
+      "tip": "뒷면 1개, 2개, 3개, 4개를 하나씩 세는 것보다 훨씬 빨라요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "0, 1, 2, 3 이 하나씩 적힌 카드 네 장 중 두 장을 골라 두 자리 정수를 만들려고 해요. 만들 수 있는 두 자리 정수는 모두 몇 개인가요?",
+      "choices": null,
+      "answer": "9",
+      "answerTex": "$9$개",
+      "answerType": "int",
+      "check": "len([1 for i in range(0, 4) for j in range(0, 4) if i != 0 and i != j])",
+      "concepts": [
+        "십의 자리에는 0이 올 수 없어요.",
+        "곱의 법칙: 십의 자리를 정하고 이어서 일의 자리를 정해요."
+      ],
+      "steps": [
+        {
+          "title": "십의 자리",
+          "body": "0을 뺀 $1,2,3$ 중 하나라 $3$가지예요."
+        },
+        {
+          "title": "일의 자리",
+          "body": "십의 자리에 쓴 카드를 뺀 나머지 $3$장(0 포함) 중 하나라 $3$가지예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3\\times3=9$$"
+        }
+      ],
+      "tip": "$4\\times3=12$ 로 세면 01, 02, 03 처럼 두 자리가 아닌 수까지 세게 돼요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 두 눈의 차가 2일 확률은?",
+      "choices": [
+        "$\\frac19$",
+        "$\\frac16$",
+        "$\\frac29$",
+        "$\\frac{5}{18}$",
+        "$\\frac13$"
+      ],
+      "answer": "3",
+      "answerTex": "③ $\\frac29$",
+      "answerType": "choice",
+      "check": "Rational(len([1 for i in range(1, 7) for j in range(1, 7) if Abs(i - j) == 2]), 36)",
+      "choiceChecks": [
+        "Rational(1, 9)",
+        "Rational(1, 6)",
+        "Rational(2, 9)",
+        "Rational(5, 18)",
+        "Rational(1, 3)"
+      ],
+      "concepts": [
+        "주사위 두 개의 모든 경우는 $6\\times6=36$가지예요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$6\\times6=36$$"
+        },
+        {
+          "title": "차가 2인 경우",
+          "body": "$(1,3),(2,4),(3,5),(4,6)$ 과 순서를 바꾼 $(3,1),(4,2),(5,3),(6,4)$ 로 $8$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{8}{36}=\\frac29$$"
+        }
+      ],
+      "tip": "순서를 바꾼 경우를 빠뜨리면 $\\frac19$ 이 나와요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "민수와 지우가 농구공을 한 번씩 던져요. 골대에 넣을 확률이 민수는 $\\frac34$, 지우는 $\\frac23$ 이고 서로 영향을 주지 않아요. 두 사람 중 적어도 한 명이 공을 넣을 확률을 구하세요.",
+      "choices": null,
+      "answer": "11/12",
+      "answerTex": "$\\frac{11}{12}$",
+      "answerType": "fraction",
+      "check": "1 - (1 - Rational(3, 4))*(1 - Rational(2, 3))",
+      "concepts": [
+        "'적어도 한 명'의 반대는 '둘 다 못 넣음'이에요.",
+        "서로 영향을 주지 않는 두 사건이 함께 일어날 확률은 두 확률의 곱이에요."
+      ],
+      "steps": [
+        {
+          "title": "각자 못 넣을 확률",
+          "body": "민수 $1-\\frac34=\\frac14$, 지우 $1-\\frac23=\\frac13$ 이에요."
+        },
+        {
+          "title": "둘 다 못 넣을 확률",
+          "body": "$$\\frac14\\times\\frac13=\\frac{1}{12}$$"
+        },
+        {
+          "title": "1에서 빼기",
+          "body": "$$1-\\frac{1}{12}=\\frac{11}{12}$$"
+        }
+      ],
+      "tip": "$\\frac34+\\frac23$ 처럼 더하면 1을 넘어요. 두 사람이 모두 넣는 경우를 두 번 센 거예요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "주머니에 빨간 공 3개와 파란 공 2개가 있어요. 공 하나를 꺼내 색을 확인하고 다시 넣은 뒤 한 번 더 꺼낼 때, 두 번 같은 색이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "13/25",
+      "answerTex": "$\\frac{13}{25}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for i in range(5) for j in range(5) if (i < 3) == (j < 3)]), 5*5)",
+      "concepts": [
+        "다시 넣으니 두 번째에도 처음과 확률이 같아요.",
+        "'둘 다 빨강'과 '둘 다 파랑'은 동시에 일어나지 않으니 더해요."
+      ],
+      "steps": [
+        {
+          "title": "둘 다 빨강",
+          "body": "$$\\frac35\\times\\frac35=\\frac{9}{25}$$"
+        },
+        {
+          "title": "둘 다 파랑",
+          "body": "$$\\frac25\\times\\frac25=\\frac{4}{25}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{9}{25}+\\frac{4}{25}=\\frac{13}{25}$$"
+        }
+      ],
+      "tip": "곱하기(잇달아)와 더하기(둘 중 하나)를 한 문제 안에서 같이 써요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "주머니에 빨간 공 3개와 파란 공 2개가 있어요. 꺼낸 공을 다시 넣지 않고 두 번 연달아 꺼낼 때, 두 번 모두 빨간 공일 확률을 구하세요.",
+      "choices": null,
+      "answer": "3/10",
+      "answerTex": "$\\frac{3}{10}$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for i in range(5) for j in range(5) if i != j and i < 3 and j < 3]), 5*4)",
+      "concepts": [
+        "다시 넣지 않으면 두 번째에는 공이 하나 줄어 있어요."
+      ],
+      "steps": [
+        {
+          "title": "첫 번째 빨강",
+          "body": "$5$개 중 빨강 $3$개라 $\\frac35$ 예요."
+        },
+        {
+          "title": "두 번째 빨강",
+          "body": "남은 $4$개 중 빨강 $2$개라 $\\frac24$ 예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$\\frac35\\times\\frac24=\\frac{3}{10}$$"
+        }
+      ],
+      "tip": "다시 넣을 때와 비교해 보세요. 그때는 $\\frac35\\times\\frac35=\\frac{9}{25}$ 예요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "1, 2, 3, 4, 5 가 하나씩 적힌 카드 다섯 장 중 두 장을 골라 두 자리 정수를 만들 때, 그 수가 짝수일 확률은?",
+      "choices": [
+        "$\\frac15$",
+        "$\\frac14$",
+        "$\\frac25$",
+        "$\\frac12$",
+        "$\\frac35$"
+      ],
+      "answer": "3",
+      "answerTex": "③ $\\frac25$",
+      "answerType": "choice",
+      "check": "Rational(len([1 for i in range(1, 6) for j in range(1, 6) if i != j and j % 2 == 0]), len([1 for i in range(1, 6) for j in range(1, 6) if i != j]))",
+      "choiceChecks": [
+        "Rational(1, 5)",
+        "Rational(1, 4)",
+        "Rational(2, 5)",
+        "Rational(1, 2)",
+        "Rational(3, 5)"
+      ],
+      "concepts": [
+        "짝수는 일의 자리가 짝수인 수예요.",
+        "곱의 법칙으로 자리마다 고르는 가짓수를 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "모든 두 자리 수",
+          "body": "$$5\\times4=20$$"
+        },
+        {
+          "title": "일의 자리가 짝수",
+          "body": "일의 자리는 $2,4$ 중 하나($2$가지), 십의 자리는 남은 $4$장 중 하나라 $2\\times4=8$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{8}{20}=\\frac25$$"
+        }
+      ],
+      "tip": "조건이 걸린 자리(일의 자리)부터 정하면 세기 쉬워요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "세 사람이 가위바위보를 한 번 할 때, 승부가 나지 않고 비길 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerTex": "$\\frac13$",
+      "answerType": "fraction",
+      "check": "Rational(len([1 for i in range(3) for j in range(3) for l in range(3) if len({i, j, l}) != 2]), 3**3)",
+      "concepts": [
+        "세 사람이 모두 같은 것을 내거나, 셋 모두 다른 것을 내면 비겨요.",
+        "모든 경우는 곱의 법칙으로 $3\\times3\\times3$ 가지예요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "$$3\\times3\\times3=27$$"
+        },
+        {
+          "title": "모두 같은 것",
+          "body": "가위·바위·보 중 하나로 같으면 $3$가지예요."
+        },
+        {
+          "title": "모두 다른 것",
+          "body": "첫째 $3$가지, 둘째 $2$가지, 셋째 $1$가지라 $3\\times2\\times1=6$가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "$$\\frac{3+6}{27}=\\frac13$$"
+        }
+      ],
+      "tip": "'모두 다른 것'도 비기는 경우라는 것을 빠뜨리기 쉬워요."
+    }
+  ]
+}

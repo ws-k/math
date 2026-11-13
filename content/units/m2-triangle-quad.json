@@ -1,0 +1,1381 @@
+{
+  "id": "m2-triangle-quad",
+  "course": "중2",
+  "unit": "도형과 측정",
+  "title": "삼각형과 사각형의 성질",
+  "prereq": [
+    "m1-basic-geometry"
+  ],
+  "suneung": [],
+  "hours": 3,
+  "lesson": {
+    "minutes": 22,
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중2 · 도형과 측정",
+        "title": "꼭짓점을 끌어 보면\n늘 같은 것이 보여요",
+        "lead": "삼각형과 사각형의 꼭짓점을 이리저리 옮겨도 변하지 않는 길이와 각이 있어요. 직접 끌어 보면서 그 규칙을 찾아요.",
+        "meta": [
+          "삼각형과 사각형의 성질"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "두 변이 같은 삼각형,\n밑의 두 각은?",
+        "lead": "지붕처럼 $\\overline{AB}=\\overline{AC}$ 인 삼각형이에요. 꼭대기 각 $\\angle A$ 가 $40^\\circ$ 라면 $\\angle B$ 는 몇 도일까요?",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 8
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 5,
+                "y": 7
+              },
+              {
+                "id": "B",
+                "x": 1,
+                "y": 0
+              },
+              {
+                "id": "C",
+                "x": 9,
+                "y": 0
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "C"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "두 변 AB, AC 의 길이가 같아요."
+          }
+        },
+        "format": {
+          "unit": "°"
+        },
+        "choices": [
+          {
+            "value": "70",
+            "check": "Rational(180-40, 2)"
+          },
+          {
+            "value": "140",
+            "check": "180-40",
+            "feedback": "그건 $\\angle B$ 와 $\\angle C$ 를 합한 값이에요. 두 각으로 나눠야 해요."
+          },
+          {
+            "value": "40",
+            "check": "180-2*70",
+            "feedback": "꼭대기 각과 밑의 각은 서로 달라요. 세 각의 합이 $180^\\circ$ 인지 확인해 보세요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "Rational(180-40, 2)",
+        "reveal": "**맞아요!** 밑의 두 각은 크기가 같아서 남은 각을 반씩 나눠 가져요.",
+        "thoughts": [
+          "세 각의 합은 $180^\\circ$ 라서 $\\angle B+\\angle C=140^\\circ$ 예요.",
+          "그림을 $A$ 에서 수직으로 접으면 $B$ 와 $C$ 가 포개져서 두 각이 같아요."
+        ],
+        "conclude": "정말 늘 같을까요? 꼭짓점을 끌어 확인해요."
+      },
+      {
+        "kind": "explore",
+        "id": "iso",
+        "chip": "손으로 해 보기",
+        "title": "꼭짓점 A 를\n위아래로 끌어 보세요",
+        "lead": "점 $A$ 는 밑변 $BC$ 의 한가운데에서 수직으로 올린 선 위를 움직여요. 밑의 두 각을 비교해 보세요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 10
+            },
+            "points": [
+              {
+                "id": "B",
+                "x": 1,
+                "y": 0
+              },
+              {
+                "id": "C",
+                "x": 9,
+                "y": 0
+              },
+              {
+                "id": "M",
+                "x": 5,
+                "y": 0
+              },
+              {
+                "id": "T",
+                "x": 5,
+                "y": 10
+              },
+              {
+                "id": "A",
+                "x": 5,
+                "y": 7,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "M",
+                    "T"
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ]
+            ],
+            "segments": [
+              [
+                "A",
+                "M"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "C"
+                ]
+              },
+              {
+                "angle": [
+                  "A",
+                  "B",
+                  "C"
+                ]
+              },
+              {
+                "angle": [
+                  "A",
+                  "C",
+                  "B"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "A 는 선분 MT 위에서만 움직여요."
+          }
+        },
+        "after": "어디로 옮겨도 $\\overline{AB}=\\overline{AC}$ 이고 ==두 밑각은 늘 같아요==. 선분 $AM$ 은 꼭대기 각을 반으로 나누고, 밑변을 수직으로 반 나눠요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "이등변삼각형",
+            "body": "두 변의 길이가 같은 삼각형. 같은 두 변 사이의 각이 **꼭지각**, 나머지 두 각이 **밑각**이에요. 두 밑각은 크기가 같아요."
+          },
+          {
+            "term": "외심",
+            "body": "세 변의 수직이등분선이 만나는 점. 세 꼭짓점까지의 거리가 같아서 세 꼭짓점을 지나는 원(외접원)의 중심이에요."
+          },
+          {
+            "term": "내심",
+            "body": "세 내각의 이등분선이 만나는 점. 세 변까지의 거리가 같아서 세 변에 닿는 원(내접원)의 중심이에요."
+          },
+          {
+            "term": "평행사변형",
+            "body": "마주 보는 두 쌍의 변이 각각 평행한 사각형. 마주 보는 변과 각이 각각 같고, 두 대각선은 서로를 반으로 나눠요."
+          },
+          {
+            "term": "직사각형 · 마름모 · 정사각형",
+            "body": "네 각이 같으면 직사각형(대각선 길이가 같아요), 네 변이 같으면 마름모(대각선이 수직으로 만나요), 둘 다면 정사각형이에요."
+          }
+        ],
+        "aside": "**직각삼각형의 합동** · 빗변과 한 예각이 같으면(RHA), 빗변과 다른 한 변이 같으면(RHS) 두 직각삼각형은 합동이에요. 직각이 이미 같아서 조건이 하나 줄어요."
+      },
+      {
+        "kind": "explore",
+        "id": "circum",
+        "chip": "한 번 더 해 보기",
+        "title": "세 꼭짓점에서\n같은 거리인 점 찾기",
+        "lead": "점 $P$ 는 변 $AB$ 의 수직이등분선 위를 움직여요. $PA$ 와 $PB$ 는 늘 같아요. $PC$ 까지 같아지는 자리를 찾아 보세요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 10
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 1,
+                "y": 2
+              },
+              {
+                "id": "B",
+                "x": 9,
+                "y": 2
+              },
+              {
+                "id": "C",
+                "x": 3,
+                "y": 8
+              },
+              {
+                "id": "K",
+                "x": 5,
+                "y": 0
+              },
+              {
+                "id": "L",
+                "x": 5,
+                "y": 10
+              },
+              {
+                "id": "P",
+                "x": 5,
+                "y": 8,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "K",
+                    "L"
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C"
+              ]
+            ],
+            "segments": [
+              [
+                "K",
+                "L"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "P",
+                  "A"
+                ]
+              },
+              {
+                "len": [
+                  "P",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "P",
+                  "C"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "선 KL 이 AB 의 수직이등분선이에요."
+          }
+        },
+        "after": "세 길이가 모두 같아지는 점은 딱 하나예요. 그 점이 ==외심==이고, 다른 두 변의 수직이등분선도 이 점을 지나요. 외심을 중심으로 원을 그리면 세 꼭짓점을 모두 지나요."
+      },
+      {
+        "kind": "explore",
+        "id": "para",
+        "chip": "사각형으로 넓히기",
+        "title": "마주 보는 변이\n같아지게 만들어 보세요",
+        "lead": "점 $D$ 를 끌어 $\\overline{AB}=\\overline{DC}$, $\\overline{AD}=\\overline{BC}$ 가 되는 자리를 찾아요. 그때 마주 보는 두 각은 어떻게 되나요?",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 8
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 1,
+                "y": 1
+              },
+              {
+                "id": "B",
+                "x": 7,
+                "y": 1
+              },
+              {
+                "id": "C",
+                "x": 9,
+                "y": 5
+              },
+              {
+                "id": "D",
+                "x": 2,
+                "y": 7,
+                "drag": true
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C",
+                "D"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "len": [
+                  "D",
+                  "C"
+                ]
+              },
+              {
+                "len": [
+                  "A",
+                  "D"
+                ]
+              },
+              {
+                "len": [
+                  "B",
+                  "C"
+                ]
+              },
+              {
+                "angle": [
+                  "D",
+                  "A",
+                  "B"
+                ]
+              },
+              {
+                "angle": [
+                  "B",
+                  "C",
+                  "D"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "D 는 격자점을 따라 움직여요."
+          }
+        },
+        "after": "두 쌍의 대변이 같아지는 순간 사각형은 ==평행사변형==이 되고, 마주 보는 두 각도 같아져요. 거꾸로 두 쌍의 대변이나 대각이 같으면, 또는 두 대각선이 서로를 반으로 나누면 평행사변형이에요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 꼭지각이 $50^\\circ$ 인 이등변삼각형의 한 밑각이에요. 왼쪽은 남은 각을 둘로 나눈 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(180-50)/2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "180-50",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "130/2",
+              "body": "$180^\\circ$ 에서 꼭지각을 뺀 값은 **두 밑각의 합**이에요. 2로 나눠야 해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 평행사변형 $ABCD$ 에서 $\\angle A=70^\\circ$ 일 때 $\\angle B$ 예요. 왼쪽은 네 각의 합에서 마주 보는 두 각을 뺀 절반이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(360-2*70)/2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "70",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "110",
+              "body": "$\\angle A$ 와 같은 각은 마주 보는 $\\angle C$ 예요. 이웃한 $\\angle B$ 는 $\\angle A$ 와 더해서 $180^\\circ$ 예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "iso-x",
+            "q": "$\\overline{AB}=\\overline{AC}$ 인 이등변삼각형 $ABC$ 에서 $\\angle A=x^\\circ$, $\\angle B=(2x+10)^\\circ$ 예요. $x$ 의 값을 구하세요.",
+            "hint": "$\\angle C$ 도 $\\angle B$ 와 같아요.",
+            "placeholder": "x =",
+            "steps": [
+              {
+                "title": "세 각의 합",
+                "body": "$$x+(2x+10)+(2x+10)=180$$"
+              },
+              {
+                "title": "정리",
+                "body": "$$5x+20=180$$"
+              },
+              {
+                "title": "x 구하기",
+                "body": "$$x={{answer}}$$"
+              }
+            ],
+            "answer": "32",
+            "answerType": "int",
+            "check": "solve(Eq(x + 2*(2*x + 10), 180), x)[0]"
+          },
+          {
+            "id": "incenter",
+            "q": "삼각형 $ABC$ 의 내심을 $I$ 라 해요. $\\angle A=70^\\circ$ 일 때, $\\angle BIC$ 는 몇 도일까요?",
+            "hint": "$IB$, $IC$ 는 $\\angle B$, $\\angle C$ 를 반으로 나눠요.",
+            "placeholder": "°",
+            "steps": [
+              {
+                "title": "나머지 두 각의 합",
+                "body": "$$\\angle B+\\angle C=180-70=110$$"
+              },
+              {
+                "title": "반씩",
+                "body": "$$110\\div2=55$$"
+              },
+              {
+                "title": "삼각형 IBC",
+                "body": "$$\\angle BIC=180-55={{answer}}$$"
+              }
+            ],
+            "answer": "125",
+            "answerType": "int",
+            "check": "180 - Rational(180-70, 2)"
+          },
+          {
+            "id": "rect",
+            "q": "직사각형 모양 액자의 대각선 $AC$ 가 $14$ cm 예요. 두 대각선이 만나는 점 $O$ 에서 꼭짓점 $B$ 까지는 몇 cm 일까요?",
+            "hint": "직사각형의 두 대각선은 길이가 같아요.",
+            "placeholder": "cm",
+            "steps": [
+              {
+                "title": "다른 대각선",
+                "body": "$\\overline{BD}=\\overline{AC}=14$ 예요."
+              },
+              {
+                "title": "반으로",
+                "body": "$$\\overline{OB}=14\\div2={{answer}}$$"
+              }
+            ],
+            "answer": "7",
+            "answerType": "int",
+            "check": "14*Rational(1, 2)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "**이등변삼각형**은 두 밑각이 같고, 꼭지각의 이등분선은 밑변을 수직이등분해요.",
+          "**외심**은 세 꼭짓점에서, **내심**은 세 변에서 거리가 같아요. $\\angle BOC=2\\angle A$, $\\angle BIC=90^\\circ+\\frac12\\angle A$.",
+          "**평행사변형**은 대변·대각이 각각 같고, 대각선은 서로를 이등분해요.",
+          "직사각형은 대각선 길이가 같고, 마름모는 대각선이 수직이에요."
+        ],
+        "done": "삼각형과 사각형의 성질 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$\\overline{AB}=\\overline{AC}\\Rightarrow\\angle B=\\angle C$",
+    "$(\\text{외심 }O)\\;\\angle BOC=2\\angle A$",
+    "$(\\text{내심 }I)\\;\\angle BIC=90^\\circ+\\dfrac{1}{2}\\angle A$",
+    "$(\\text{삼각형의 넓이})=\\dfrac{1}{2}r(a+b+c)\\quad(r\\text{: 내접원의 반지름})$",
+    "$(\\text{평행사변형})\\;\\angle A+\\angle B=180^\\circ,\\ \\angle A=\\angle C$"
+  ],
+  "generators": [
+    "tq-isosceles",
+    "tq-parallelogram",
+    "tq-centers",
+    "tq-special-quad"
+  ],
+  "problems": [
+    {
+      "q": "$\\overline{AB}=\\overline{AC}$ 인 이등변삼각형 $ABC$ 에서 $\\angle B=74^\\circ$ 예요. 변 $BC$ 를 $C$ 쪽으로 늘인 직선 위에 점 $D$ 를 잡을 때, $\\angle ACD$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "106",
+      "answerTex": "$106^\\circ$",
+      "answerType": "int",
+      "check": "180-74",
+      "concepts": [
+        "이등변삼각형의 두 밑각은 크기가 같아요.",
+        "한 직선 위에서 이웃한 두 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "밑각",
+          "body": "$\\angle ACB=\\angle B=74^\\circ$ 예요."
+        },
+        {
+          "title": "한 직선 위의 각",
+          "body": "$$180-74=106$$"
+        }
+      ],
+      "tip": "외각은 이웃하지 않는 두 내각의 합과 같아요. 확인해 보세요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "tq-isosceles",
+      "seed": 1000
+    },
+    {
+      "q": "평행사변형 $ABCD$ 에서 $\\angle A=67^\\circ$ 일 때, $\\angle B$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "113",
+      "answerTex": "$113^\\circ$",
+      "answerType": "int",
+      "check": "180-67",
+      "concepts": [
+        "평행사변형에서 이웃한 두 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "이웃한 두 각",
+          "body": "$\\overline{AD}\\parallel\\overline{BC}$ 라서 $\\angle A+\\angle B=180^\\circ$ 예요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$180-67=113$$"
+        }
+      ],
+      "tip": "마주 보는 두 각(대각)은 같고, 이웃한 두 각은 합이 180° 예요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "tq-parallelogram",
+      "seed": 1001
+    },
+    {
+      "q": "예각삼각형 $ABC$ 의 외심을 $O$ 라 해요. $\\angle A=59^\\circ$ 일 때, $\\angle BOC$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "118",
+      "answerTex": "$118^\\circ$",
+      "answerType": "int",
+      "check": "2*59",
+      "concepts": [
+        "외심에서 세 꼭짓점까지의 거리는 같아요($\\overline{OA}=\\overline{OB}=\\overline{OC}$).",
+        "$\\angle BOC=2\\angle A$"
+      ],
+      "steps": [
+        {
+          "title": "이등변삼각형 둘",
+          "body": "$\\triangle OAB$, $\\triangle OAC$ 는 이등변삼각형이라 $\\angle A$ 가 두 밑각으로 나뉘어요."
+        },
+        {
+          "title": "두 배",
+          "body": "$$\\angle BOC=2\\times59=118$$"
+        }
+      ],
+      "tip": "외심은 2배, 내심은 90° + 절반. 둘을 섞지 마세요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "tq-centers",
+      "seed": 1002
+    },
+    {
+      "q": "마름모 $ABCD$ 의 두 대각선의 길이가 $8$, $20$ 일 때, 마름모의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "80",
+      "answerTex": "$80$",
+      "answerType": "int",
+      "check": "8*20*Rational(1, 2)",
+      "concepts": [
+        "마름모의 두 대각선은 서로 다른 것을 수직이등분해요."
+      ],
+      "steps": [
+        {
+          "title": "직사각형의 절반",
+          "body": "두 대각선을 가로·세로로 하는 직사각형을 그리면 마름모는 그 절반이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$8\\times20\\div2=80$$"
+        }
+      ],
+      "tip": "2로 나누는 걸 잊기 쉬워요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "tq-special-quad",
+      "seed": 1003
+    },
+    {
+      "q": "$\\overline{AB}=\\overline{AC}$ 인 이등변삼각형 $ABC$ 에서 $\\angle A=58^\\circ$ 일 때, $\\angle B$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "61",
+      "answerTex": "$61^\\circ$",
+      "answerType": "int",
+      "check": "Rational(180-58, 2)",
+      "concepts": [
+        "이등변삼각형의 두 밑각은 크기가 같아요.",
+        "삼각형의 세 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "두 밑각의 합",
+          "body": "$$180-58=122$$"
+        },
+        {
+          "title": "둘로 나누기",
+          "body": "두 밑각은 크기가 같아요.\n$$122\\div2=61$$"
+        }
+      ],
+      "tip": "꼭지각을 180° 에서 빼기만 하면 두 밑각의 합이에요. 반으로 나누는 걸 잊지 마세요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "tq-isosceles",
+      "seed": 1004
+    },
+    {
+      "q": "평행사변형 $ABCD$ 에서 $\\angle A:\\angle B=5:4$ 일 때, $\\angle C$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "100",
+      "answerTex": "$100^\\circ$",
+      "answerType": "int",
+      "check": "180*Rational(5, 5+4)",
+      "concepts": [
+        "평행사변형에서 이웃한 두 각의 합은 $180^\\circ$ 예요.",
+        "평행사변형에서 두 쌍의 대각의 크기는 각각 같아요."
+      ],
+      "steps": [
+        {
+          "title": "비로 나누기",
+          "body": "$\\angle A+\\angle B=180^\\circ$ 를 $5:4$ 으로 나눠요.\n$$\\angle A=180\\times\\frac{5}{9}=100$$"
+        },
+        {
+          "title": "대각",
+          "body": "$\\angle C=\\angle A=100^\\circ$ 예요."
+        }
+      ],
+      "tip": "∠C 는 ∠A 와 마주 보는 각이에요. ∠B 와 헷갈리지 마세요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "tq-parallelogram",
+      "seed": 1005
+    },
+    {
+      "q": "예각삼각형 $ABC$ 의 외심을 $O$ 라 해요. $\\angle A=42^\\circ$ 일 때, $\\angle BOC$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "84",
+      "answerTex": "$84^\\circ$",
+      "answerType": "int",
+      "check": "2*42",
+      "concepts": [
+        "외심에서 세 꼭짓점까지의 거리는 같아요($\\overline{OA}=\\overline{OB}=\\overline{OC}$).",
+        "$\\angle BOC=2\\angle A$"
+      ],
+      "steps": [
+        {
+          "title": "이등변삼각형 둘",
+          "body": "$\\triangle OAB$, $\\triangle OAC$ 는 이등변삼각형이라 $\\angle A$ 가 두 밑각으로 나뉘어요."
+        },
+        {
+          "title": "두 배",
+          "body": "$$\\angle BOC=2\\times42=84$$"
+        }
+      ],
+      "tip": "외심은 2배, 내심은 90° + 절반. 둘을 섞지 마세요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "tq-centers",
+      "seed": 1006
+    },
+    {
+      "q": "마름모 $ABCD$ 에서 $\\angle A=68^\\circ$ 예요. 대각선 $BD$ 를 그을 때, $\\angle ABD$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "56",
+      "answerTex": "$56^\\circ$",
+      "answerType": "int",
+      "check": "Rational(180-68, 2)",
+      "concepts": [
+        "마름모는 네 변의 길이가 같아요. 그래서 $\\triangle ABD$ 는 이등변삼각형이에요."
+      ],
+      "steps": [
+        {
+          "title": "이등변삼각형",
+          "body": "$\\overline{AB}=\\overline{AD}$ 라서 $\\angle ABD=\\angle ADB$ 예요."
+        },
+        {
+          "title": "밑각",
+          "body": "$$(180-68)\\div2=56$$"
+        }
+      ],
+      "tip": "마름모 안의 삼각형이 이등변삼각형인 걸 먼저 찾으세요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "tq-special-quad",
+      "seed": 1007
+    },
+    {
+      "q": "$\\overline{AB}=\\overline{AC}$ 인 이등변삼각형 $ABC$ 에서 $\\angle B=67^\\circ$ 예요. 변 $BC$ 를 $C$ 쪽으로 늘인 직선 위에 점 $D$ 를 잡을 때, $\\angle ACD$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "113",
+      "answerTex": "$113^\\circ$",
+      "answerType": "int",
+      "check": "180-67",
+      "concepts": [
+        "이등변삼각형의 두 밑각은 크기가 같아요.",
+        "한 직선 위에서 이웃한 두 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "밑각",
+          "body": "$\\angle ACB=\\angle B=67^\\circ$ 예요."
+        },
+        {
+          "title": "한 직선 위의 각",
+          "body": "$$180-67=113$$"
+        }
+      ],
+      "tip": "외각은 이웃하지 않는 두 내각의 합과 같아요. 확인해 보세요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "tq-isosceles",
+      "seed": 1008
+    },
+    {
+      "q": "평행사변형 $ABCD$ 의 두 대각선이 점 $O$ 에서 만나요. $\\overline{OA}=x+3$, $\\overline{OC}=2x-4$ 일 때, $\\overline{AC}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "20",
+      "answerTex": "$20$",
+      "answerType": "int",
+      "check": "(2*(x+3)).subs(x, solve(Eq(x+3, 2*x-4), x)[0])",
+      "concepts": [
+        "평행사변형의 두 대각선은 서로 다른 것을 이등분해요."
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$\\overline{OA}=\\overline{OC}$ 예요.\n$$x+3=2x-4$$"
+        },
+        {
+          "title": "$x$ 구하기",
+          "body": "$$x=7$$"
+        },
+        {
+          "title": "대각선 길이",
+          "body": "$$\\overline{AC}=2\\times(7+3)=20$$"
+        }
+      ],
+      "tip": "구한 x 가 답이 아니에요. 묻는 길이를 끝까지 계산해요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "tq-parallelogram",
+      "seed": 1009
+    },
+    {
+      "q": "예각삼각형 $ABC$ 의 외심을 $O$ 라 해요. $\\angle A=74^\\circ$ 일 때, $\\angle BOC$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "148",
+      "answerTex": "$148^\\circ$",
+      "answerType": "int",
+      "check": "2*74",
+      "concepts": [
+        "외심에서 세 꼭짓점까지의 거리는 같아요($\\overline{OA}=\\overline{OB}=\\overline{OC}$).",
+        "$\\angle BOC=2\\angle A$"
+      ],
+      "steps": [
+        {
+          "title": "이등변삼각형 둘",
+          "body": "$\\triangle OAB$, $\\triangle OAC$ 는 이등변삼각형이라 $\\angle A$ 가 두 밑각으로 나뉘어요."
+        },
+        {
+          "title": "두 배",
+          "body": "$$\\angle BOC=2\\times74=148$$"
+        }
+      ],
+      "tip": "외심은 2배, 내심은 90° + 절반. 둘을 섞지 마세요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "tq-centers",
+      "seed": 1010
+    },
+    {
+      "q": "마름모 $ABCD$ 에서 $\\angle A=122^\\circ$ 예요. 대각선 $BD$ 를 그을 때, $\\angle ABD$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "29",
+      "answerTex": "$29^\\circ$",
+      "answerType": "int",
+      "check": "Rational(180-122, 2)",
+      "concepts": [
+        "마름모는 네 변의 길이가 같아요. 그래서 $\\triangle ABD$ 는 이등변삼각형이에요."
+      ],
+      "steps": [
+        {
+          "title": "이등변삼각형",
+          "body": "$\\overline{AB}=\\overline{AD}$ 라서 $\\angle ABD=\\angle ADB$ 예요."
+        },
+        {
+          "title": "밑각",
+          "body": "$$(180-122)\\div2=29$$"
+        }
+      ],
+      "tip": "마름모 안의 삼각형이 이등변삼각형인 걸 먼저 찾으세요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "tq-special-quad",
+      "seed": 1011
+    },
+    {
+      "q": "$\\overline{AB}=\\overline{AC}$ 인 이등변삼각형 $ABC$ 에서 $\\angle A=96^\\circ$ 일 때, $\\angle B$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "42",
+      "answerTex": "$42^\\circ$",
+      "answerType": "int",
+      "check": "Rational(180-96, 2)",
+      "concepts": [
+        "이등변삼각형의 두 밑각은 크기가 같아요.",
+        "삼각형의 세 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "두 밑각의 합",
+          "body": "$$180-96=84$$"
+        },
+        {
+          "title": "둘로 나누기",
+          "body": "두 밑각은 크기가 같아요.\n$$84\\div2=42$$"
+        }
+      ],
+      "tip": "꼭지각을 180° 에서 빼기만 하면 두 밑각의 합이에요. 반으로 나누는 걸 잊지 마세요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "tq-isosceles",
+      "seed": 1012
+    },
+    {
+      "q": "평행사변형 $ABCD$ 에서 $\\angle A=59^\\circ$ 일 때, $\\angle B$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "121",
+      "answerTex": "$121^\\circ$",
+      "answerType": "int",
+      "check": "180-59",
+      "concepts": [
+        "평행사변형에서 이웃한 두 각의 합은 $180^\\circ$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "이웃한 두 각",
+          "body": "$\\overline{AD}\\parallel\\overline{BC}$ 라서 $\\angle A+\\angle B=180^\\circ$ 예요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$180-59=121$$"
+        }
+      ],
+      "tip": "마주 보는 두 각(대각)은 같고, 이웃한 두 각은 합이 180° 예요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "tq-parallelogram",
+      "seed": 1013
+    },
+    {
+      "q": "삼각형 $ABC$ 의 내심을 $I$ 라 해요. $\\angle A=120^\\circ$ 일 때, $\\angle BIC$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "150",
+      "answerTex": "$150^\\circ$",
+      "answerType": "int",
+      "check": "90+Rational(120, 2)",
+      "concepts": [
+        "내심은 세 내각의 이등분선의 교점이에요.",
+        "$\\angle BIC=90^\\circ+\\dfrac12\\angle A$"
+      ],
+      "steps": [
+        {
+          "title": "나머지 두 각의 합",
+          "body": "$$\\angle B+\\angle C=180-120=60$$"
+        },
+        {
+          "title": "반씩",
+          "body": "$IB$, $IC$ 가 각을 반으로 나눠요.\n$$60\\div2=30$$"
+        },
+        {
+          "title": "삼각형 IBC",
+          "body": "$$180-30=150$$"
+        }
+      ],
+      "tip": "외심이면 2배(∠BOC = 2∠A), 내심이면 90° + 절반이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "tq-centers",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\overline{AB}=\\overline{AC}$ 인 이등변삼각형 $ABC$ 에서 $\\angle A=2x^\\circ$, $\\angle B=(x+30)^\\circ$ 예요. $x$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "30",
+      "answerType": "int",
+      "check": "solve(Eq(2*x + 2*(x + 30), 180), x)[0]",
+      "concepts": [
+        "이등변삼각형의 두 밑각은 크기가 같아요."
+      ],
+      "steps": [
+        {
+          "title": "세 각의 합",
+          "body": "$\\angle C=\\angle B$ 예요.\n$$2x+(x+30)+(x+30)=180$$"
+        },
+        {
+          "title": "정리",
+          "body": "$$4x+60=180$$"
+        },
+        {
+          "title": "x 구하기",
+          "body": "$$4x=120,\\quad x=30$$"
+        }
+      ],
+      "tip": "확인: $\\angle A=60^\\circ$, $\\angle B=\\angle C=60^\\circ$. 정삼각형이에요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\overline{AB}=\\overline{AC}$ 인 이등변삼각형 $ABC$ 에서 꼭지각의 이등분선이 $\\overline{BC}$ 와 만나는 점을 $D$ 라 해요. $\\overline{BC}=12$ 이고 삼각형의 넓이가 $48$ 일 때, $\\overline{AD}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "2*48*Rational(1, 12)",
+      "concepts": [
+        "이등변삼각형의 꼭지각의 이등분선은 밑변을 수직이등분해요."
+      ],
+      "steps": [
+        {
+          "title": "높이 찾기",
+          "body": "$\\overline{AD}\\perp\\overline{BC}$ 라서 $\\overline{AD}$ 가 높이예요."
+        },
+        {
+          "title": "넓이 식",
+          "body": "$$\\frac12\\times12\\times\\overline{AD}=48$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$\\overline{AD}=48\\times2\\div12=8$$"
+        }
+      ],
+      "tip": "수직이 보이면 넓이 식의 높이로 쓸 수 있어요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "두 직각삼각형 $ABC$, $DEF$ 에서 $\\angle C=\\angle F=90^\\circ$, $\\overline{AB}=\\overline{DE}$, $\\overline{AC}=\\overline{DF}$ 예요. $\\angle A=58^\\circ$ 일 때, $\\angle E$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "32",
+      "answerTex": "$32^\\circ$",
+      "answerType": "int",
+      "check": "90 - 58",
+      "concepts": [
+        "빗변과 다른 한 변이 같으면 두 직각삼각형은 합동(RHS)이에요."
+      ],
+      "steps": [
+        {
+          "title": "합동 확인",
+          "body": "빗변 $AB=DE$, 한 변 $AC=DF$ 라서 $\\triangle ABC\\equiv\\triangle DEF$ (RHS) 예요."
+        },
+        {
+          "title": "대응각",
+          "body": "$\\angle D=\\angle A=58^\\circ$ 예요."
+        },
+        {
+          "title": "나머지 각",
+          "body": "$$\\angle E=180-90-58=32$$"
+        }
+      ],
+      "tip": "기호 순서대로 A↔D, B↔E 가 대응해요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\angle XOY$ 의 이등분선 위의 점 $P$ 에서 두 변 $OX$, $OY$ 에 내린 수선의 발을 각각 $A$, $B$ 라 해요. $\\overline{PA}=2x-1$, $\\overline{PB}=x+3$ 일 때, $x$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "solve(Eq(2*x - 1, x + 3), x)[0]",
+      "concepts": [
+        "각의 이등분선 위의 점은 각의 두 변에서 같은 거리에 있어요(RHA 합동)."
+      ],
+      "steps": [
+        {
+          "title": "같은 거리",
+          "body": "$$2x-1=x+3$$"
+        },
+        {
+          "title": "x 구하기",
+          "body": "$$x=4$$"
+        }
+      ],
+      "tip": "이 성질 덕분에 내심이 세 변에서 같은 거리에 있어요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "삼각형 $ABC$ 의 외심 $O$ 가 삼각형 안에 있어요. $\\angle OAB=20^\\circ$, $\\angle OBC=30^\\circ$ 일 때, $\\angle OCA$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "40",
+      "answerTex": "$40^\\circ$",
+      "answerType": "int",
+      "check": "Rational(180, 2) - 20 - 30",
+      "concepts": [
+        "$\\overline{OA}=\\overline{OB}=\\overline{OC}$ 라서 $\\triangle OAB$, $\\triangle OBC$, $\\triangle OCA$ 는 이등변삼각형이에요."
+      ],
+      "steps": [
+        {
+          "title": "같은 밑각 세 쌍",
+          "body": "여섯 각이 세 쌍으로 같고 모두 더하면 $180^\\circ$ 예요."
+        },
+        {
+          "title": "한 쌍씩",
+          "body": "$$\\angle OAB+\\angle OBC+\\angle OCA=90^\\circ$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$90-20-30=40$$"
+        }
+      ],
+      "tip": "외심 문제에서 90° 가 보이면 이 성질이에요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "삼각형 $ABC$ 의 내심을 $I$ 라 해요. $\\angle A=80^\\circ$ 일 때, $\\angle BIC$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "130",
+      "answerTex": "$130^\\circ$",
+      "answerType": "int",
+      "check": "90 + Rational(80, 2)",
+      "concepts": [
+        "$\\angle BIC=90^\\circ+\\dfrac12\\angle A$"
+      ],
+      "steps": [
+        {
+          "title": "나머지 두 각의 절반",
+          "body": "$$(180-80)\\div2=50$$"
+        },
+        {
+          "title": "삼각형 IBC",
+          "body": "$$180-50=130$$"
+        }
+      ],
+      "tip": "공식으로 바로: $90+80\\div2=130$."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "세 변의 길이가 $6$, $8$, $10$ 인 삼각형의 내접원 반지름이 $2$ 예요. 이 삼각형의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "24",
+      "answerType": "int",
+      "check": "Rational(1, 2)*2*(6 + 8 + 10)",
+      "concepts": [
+        "내심과 세 꼭짓점을 이으면 높이가 $r$ 인 삼각형 세 개로 나뉘어요."
+      ],
+      "steps": [
+        {
+          "title": "세 조각",
+          "body": "$$\\frac12\\times2\\times6+\\frac12\\times2\\times8+\\frac12\\times2\\times10$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$6+8+10=24$$"
+        }
+      ],
+      "tip": "넓이 $=\\frac12r(a+b+c)$ 로 한 번에 계산해도 돼요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "평행사변형 $ABCD$ 에서 $\\overline{AB}=2x+1$, $\\overline{CD}=x+5$, $\\overline{AD}=7$ 이에요. 평행사변형의 둘레를 구하세요.",
+      "choices": null,
+      "answer": "32",
+      "answerType": "int",
+      "check": "2*((2*x + 1).subs(x, solve(Eq(2*x + 1, x + 5), x)[0]) + 7)",
+      "concepts": [
+        "평행사변형의 마주 보는 두 변의 길이는 같아요."
+      ],
+      "steps": [
+        {
+          "title": "대변이 같다",
+          "body": "$$2x+1=x+5,\\quad x=4$$"
+        },
+        {
+          "title": "변 AB",
+          "body": "$$\\overline{AB}=2\\times4+1=9$$"
+        },
+        {
+          "title": "둘레",
+          "body": "$$2\\times(9+7)=32$$"
+        }
+      ],
+      "tip": "x 를 구한 뒤 둘레까지 끝까지 계산해요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "평행사변형 $ABCD$ 에서 $\\angle A:\\angle B=3:2$ 일 때, $\\angle C$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "108",
+      "answerTex": "$108^\\circ$",
+      "answerType": "int",
+      "check": "180*Rational(3, 5)",
+      "concepts": [
+        "이웃한 두 각의 합은 $180^\\circ$, 대각은 같아요."
+      ],
+      "steps": [
+        {
+          "title": "비로 나누기",
+          "body": "$$\\angle A=180\\times\\frac35=108$$"
+        },
+        {
+          "title": "대각",
+          "body": "$\\angle C=\\angle A=108^\\circ$"
+        }
+      ],
+      "tip": "∠C 는 ∠A 의 마주 보는 각이에요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "마름모 모양 연의 두 대각선 길이가 $10$ cm, $16$ cm 예요. 연의 넓이는 몇 cm² 인가요?",
+      "choices": null,
+      "answer": "80",
+      "answerType": "int",
+      "check": "10*16*Rational(1, 2)",
+      "concepts": [
+        "마름모의 두 대각선은 서로를 수직이등분해요."
+      ],
+      "steps": [
+        {
+          "title": "직사각형의 절반",
+          "body": "두 대각선을 가로·세로로 하는 직사각형의 절반이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$10\\times16\\div2=80$$"
+        }
+      ],
+      "tip": "대각선이 수직인 사각형이면 이 방법을 쓸 수 있어요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "$\\overline{AB}=\\overline{AC}$, $\\angle A=36^\\circ$ 인 삼각형 $ABC$ 가 있어요. 변 $AC$ 위에 $\\overline{BD}=\\overline{BC}$ 가 되도록 점 $D$ 를 잡을 때, $\\angle ABD$ 의 크기는?",
+      "choices": [
+        "$24^\\circ$",
+        "$30^\\circ$",
+        "$36^\\circ$",
+        "$42^\\circ$",
+        "$48^\\circ$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "Rational(180 - 36, 2) - (180 - 2*Rational(180 - 36, 2))",
+      "choiceChecks": [
+        "24",
+        "30",
+        "36",
+        "42",
+        "48"
+      ],
+      "concepts": [
+        "이등변삼각형의 두 밑각은 크기가 같아요."
+      ],
+      "steps": [
+        {
+          "title": "큰 삼각형의 밑각",
+          "body": "$$\\angle ABC=\\angle C=(180-36)\\div2=72$$"
+        },
+        {
+          "title": "삼각형 BCD",
+          "body": "$\\overline{BD}=\\overline{BC}$ 라서 $\\angle BDC=\\angle C=72^\\circ$, 그러니 $\\angle DBC=180-72-72=36$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$\\angle ABD=72-36=36$$"
+        }
+      ],
+      "tip": "$\\angle ABD=\\angle A$ 라서 $\\triangle ABD$ 도 이등변삼각형이에요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "$\\angle C=90^\\circ$ 인 직각삼각형 $ABC$ 에서 빗변 $AB$ 의 중점을 $M$ 이라 해요. $\\angle A=25^\\circ$ 일 때, $\\angle MCB$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "65",
+      "answerTex": "$65^\\circ$",
+      "answerType": "int",
+      "check": "90 - 25",
+      "concepts": [
+        "직각삼각형의 외심은 빗변의 중점이에요. 그래서 $\\overline{MA}=\\overline{MB}=\\overline{MC}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "같은 길이",
+          "body": "$M$ 이 외심이라 $\\overline{MB}=\\overline{MC}$ 예요."
+        },
+        {
+          "title": "각 B",
+          "body": "$$\\angle B=90-25=65$$"
+        },
+        {
+          "title": "이등변삼각형",
+          "body": "$\\triangle MBC$ 에서 $\\angle MCB=\\angle B=65^\\circ$ 예요."
+        }
+      ],
+      "tip": "빗변의 중점은 세 꼭짓점에서 같은 거리예요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "삼각형 $ABC$ 의 내심 $I$ 를 지나고 $\\overline{BC}$ 에 평행한 직선이 $\\overline{AB}$, $\\overline{AC}$ 와 만나는 점을 각각 $D$, $E$ 라 해요. $\\overline{AB}=9$, $\\overline{AC}=7$ 일 때, 삼각형 $ADE$ 의 둘레를 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "9 + 7",
+      "concepts": [
+        "내심은 각의 이등분선 위에 있어요.",
+        "평행선이 만드는 엇각은 크기가 같아요."
+      ],
+      "steps": [
+        {
+          "title": "삼각형 DBI",
+          "body": "$\\angle DBI=\\angle IBC=\\angle DIB$ (엇각) 라서 $\\overline{DI}=\\overline{DB}$ 예요."
+        },
+        {
+          "title": "삼각형 EIC",
+          "body": "같은 이유로 $\\overline{EI}=\\overline{EC}$ 예요."
+        },
+        {
+          "title": "둘레",
+          "body": "$$\\overline{AD}+\\overline{DB}+\\overline{EC}+\\overline{AE}=\\overline{AB}+\\overline{AC}=16$$"
+        }
+      ],
+      "tip": "BC 의 길이는 필요 없어요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "평행사변형 $ABCD$ 에서 $\\angle A$ 의 이등분선이 $\\overline{BC}$ 와 만나는 점을 $E$ 라 해요. $\\overline{AB}=6$, $\\overline{AD}=10$ 일 때, $\\overline{EC}$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "10 - 6",
+      "concepts": [
+        "평행사변형의 대변은 같아요.",
+        "평행선의 엇각은 크기가 같아요."
+      ],
+      "steps": [
+        {
+          "title": "엇각",
+          "body": "$\\overline{AD}\\parallel\\overline{BC}$ 라서 $\\angle DAE=\\angle AEB$ 예요."
+        },
+        {
+          "title": "이등변삼각형",
+          "body": "$\\angle BAE=\\angle AEB$ 라서 $\\overline{BE}=\\overline{AB}=6$ 이에요."
+        },
+        {
+          "title": "나머지",
+          "body": "$$\\overline{EC}=10-6=4$$"
+        }
+      ],
+      "tip": "각의 이등분선과 평행선이 만나면 이등변삼각형이 생겨요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "정사각형 $ABCD$ 안에 정삼각형 $EBC$ 가 있어요. $\\angle AED$ 는 몇 도인가요?",
+      "choices": null,
+      "answer": "150",
+      "answerTex": "$150^\\circ$",
+      "answerType": "int",
+      "check": "360 - 2*Rational(180 - (90 - 60), 2) - 60",
+      "concepts": [
+        "정사각형과 정삼각형의 변은 모두 같아요.",
+        "이등변삼각형의 두 밑각은 같아요."
+      ],
+      "steps": [
+        {
+          "title": "삼각형 ABE",
+          "body": "$\\overline{BA}=\\overline{BC}=\\overline{BE}$ 이고 $\\angle ABE=90-60=30$ 이에요."
+        },
+        {
+          "title": "밑각",
+          "body": "$$\\angle AEB=(180-30)\\div2=75$$"
+        },
+        {
+          "title": "같은 모양",
+          "body": "$\\triangle DCE$ 도 같아서 $\\angle DEC=75^\\circ$ 예요."
+        },
+        {
+          "title": "한 바퀴",
+          "body": "$$\\angle AED=360-75-75-60=150$$"
+        }
+      ],
+      "tip": "점 E 둘레의 각을 모두 더하면 360° 예요."
+    }
+  ]
+}
