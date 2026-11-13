@@ -2,6 +2,7 @@
 // 필기 내용은 여기서 들고 있지 않는다(쪽마다 InkPage 가 저장소와 직접 주고받는다).
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import type { Background, Tool } from '../ink/types.ts';
+import { LessonPlayer } from '../lesson/LessonPlayer.tsx';
 import { type CardState, type Grade, gradeCard } from '../lib/srs.ts';
 import { Book } from './Book.tsx';
 import { unitById } from './content.ts';
@@ -13,7 +14,8 @@ import { DEFAULT_SETTINGS, normalizeSettings, type Settings } from './settings.t
 import { requestPersist, saver, setCurrentProfile, store } from './store.ts';
 import type { Cards } from './today.ts';
 
-type UnitRoute = Extract<Route, { name: 'unit' }>;
+/** '이어서 공부하기'로 돌아갈 곳: 문제 쪽 또는 레슨 */
+type LastRoute = Extract<Route, { name: 'unit' | 'lesson' }>;
 
 const CARD = 'card:';
 
@@ -80,7 +82,7 @@ function Screen() {
   const [ready, setReady] = useState(false);
   const [cards, setCards] = useState<Cards>({});
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [last, setLast] = useState<UnitRoute | null>(null);
+  const [last, setLast] = useState<LastRoute | null>(null);
   const [persisted, setPersisted] = useState(false);
 
   useEffect(() => {
@@ -88,18 +90,18 @@ function Screen() {
     void Promise.all([
       store.entries<CardState>(CARD),
       store.get('settings'),
-      store.get<UnitRoute>('last'),
+      store.get<LastRoute>('last'),
     ])
       .then(([cs, s, l]) => {
         setCards(Object.fromEntries(cs.map(([k, v]) => [k.slice(CARD.length), v])));
         setSettings(normalizeSettings(s));
-        if (l?.name === 'unit' && unitById.has(l.unitId)) setLast(l);
+        if ((l?.name === 'unit' || l?.name === 'lesson') && unitById.has(l.unitId)) setLast(l);
       })
       .finally(() => setReady(true));
   }, []);
 
   useEffect(() => {
-    if (route.name !== 'unit' || !unitById.has(route.unitId)) return;
+    if ((route.name !== 'unit' && route.name !== 'lesson') || !unitById.has(route.unitId)) return;
     setLast(route);
     saver.save('last', route);
   }, [route]);
@@ -118,7 +120,9 @@ function Screen() {
   };
 
   // 없는 단원 주소면 지도로. 렌더 중에 주소를 바꾸면 그리는 도중 다른 화면 렌더가 끼어드므로 효과에서.
-  const missing = route.name === 'unit' && !unitById.has(route.unitId);
+  const missing =
+    (route.name === 'unit' && !unitById.has(route.unitId)) ||
+    (route.name === 'lesson' && !unitById.get(route.unitId)?.lesson);
   useEffect(() => {
     if (missing) location.hash = routeHash({ name: 'map' });
   }, [missing]);
@@ -134,6 +138,19 @@ function Screen() {
       return <WrongNote cards={cards} />;
     case 'settings':
       return <SettingsScreen settings={settings} persisted={persisted} onChange={saveSettings} />;
+    case 'lesson': {
+      const unit = unitById.get(route.unitId);
+      if (!unit?.lesson) return null;
+      return (
+        <LessonPlayer
+          key={unit.id}
+          unit={unit}
+          lesson={unit.lesson}
+          tool={settings.tool}
+          background={settings.background}
+        />
+      );
+    }
     case 'unit': {
       const unit = unitById.get(route.unitId);
       if (!unit) return null;

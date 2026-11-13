@@ -1,0 +1,910 @@
+/* 레슨 화면. 승인된 미리보기(docs/mockups/linear-eq-lesson.html)의 토큰·모양을 그대로 옮겼다.
+   새 디자인 토큰은 아직 .lesson 안에서만 쓴다 — 책 화면까지 바꾸는 것은 7단계(화면 구조 개편)에서.
+   기존 app.css 와 이름이 겹치는 클래스(btn·bar·row·choices·step·dot·big)는 바꿔 달았다(전역 규칙이 새지 않게).
+   글꼴은 시스템 고딕만 쓴다(오프라인 앱이라 웹폰트를 넣지 않는다). 수식은 KaTeX. */
+.lesson {
+  --bg: #ffffff;
+  --surface: #f3f5f8;
+  --surface-2: #e9edf3;
+  --ink: #161b26;
+  --sub: #687385;
+  --faint: #a9b1bf;
+  --primary: #2f6bff;
+  --primary-ink: #ffffff;
+  --primary-soft: #eaf0ff;
+  --good: #10b07a;
+  --good-soft: #e3f7ef;
+  --bad: #f0455a;
+  --bad-soft: #feecee;
+  --coin: #ffc53d;
+  --coin-ink: #4a3500;
+  --shadow: 0 1px 2px rgba(22, 27, 38, 0.06), 0 8px 24px rgba(22, 27, 38, 0.06);
+  --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  .lesson {
+    --bg: #0e1117;
+    --surface: #181c25;
+    --surface-2: #222836;
+    --ink: #eef1f6;
+    --sub: #98a2b3;
+    --faint: #5b6476;
+    --primary: #5b8cff;
+    --primary-ink: #0b1020;
+    --primary-soft: #1a2442;
+    --good: #34d399;
+    --good-soft: #10291f;
+    --bad: #ff6b7d;
+    --bad-soft: #321a1f;
+    --coin: #f5b82e;
+    --coin-ink: #3a2900;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+  }
+}
+
+.lesson {
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  padding-bottom: 140px;
+  -webkit-tap-highlight-color: transparent;
+}
+.lesson * {
+  -webkit-tap-highlight-color: transparent;
+}
+.lesson::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: var(--bg);
+}
+.lesson .wrap {
+  max-width: 640px;
+  margin: 0 auto;
+}
+.lesson p {
+  margin: 0;
+}
+.lesson .num {
+  font-variant-numeric: tabular-nums;
+}
+.lesson .katex {
+  font-size: 1.12em;
+}
+
+/* 상단 바 */
+.lesson .top {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 5;
+  background: var(--bg);
+  padding-block: 14px 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.lesson .top .x {
+  width: 44px;
+  height: 44px;
+  margin-left: -4px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  color: var(--sub);
+  flex: none;
+}
+.lesson .lbar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.lesson .lbar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--primary);
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lesson .top .count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--sub);
+  flex: none;
+}
+
+/* 장면 */
+.lesson .scene {
+  padding-block: 28px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 64px);
+}
+.lesson .scene.enter {
+  animation: l-rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes l-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lesson .chip {
+  align-self: flex-start;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 5px 11px;
+  border-radius: 999px;
+  letter-spacing: 0;
+}
+.lesson h1,
+.lesson h2 {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.28;
+  text-wrap: balance;
+}
+.lesson h1 {
+  font-size: 2.05rem;
+}
+.lesson h2 {
+  font-size: 1.6rem;
+}
+.lesson .lead {
+  color: var(--sub);
+  font-size: 1.05rem;
+}
+.lesson .hl {
+  color: var(--primary);
+  font-weight: 800;
+}
+.lesson .meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lesson .meta span {
+  font-size: 0.82rem;
+  color: var(--sub);
+  background: var(--surface);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+/* 카드 */
+.lesson .card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 720px;
+}
+
+/* 영수증 */
+.lesson .receipt {
+  background: var(--bg);
+  border-radius: 18px 18px 6px 6px;
+  padding: 18px 20px 22px;
+  box-shadow: var(--shadow);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.98rem;
+}
+.lesson .receipt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -9px;
+  height: 10px;
+  background:
+    radial-gradient(circle at 8px 0, transparent 7px, var(--bg) 7.5px) 0 0 / 16px 10px repeat-x;
+}
+.lesson .receipt .shop {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--sub);
+}
+.lesson .receipt .rrow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.lesson .receipt .q {
+  color: var(--primary);
+  font-weight: 900;
+}
+.lesson .receipt .total {
+  border-top: 1.5px dashed var(--surface-2);
+  padding-top: 10px;
+  margin-top: 2px;
+  font-weight: 900;
+  font-size: 1.08rem;
+}
+
+/* 보기 */
+.lesson .opts {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 3), 1fr);
+  gap: 10px;
+}
+.lesson .opt {
+  font: inherit;
+  font-weight: 800;
+  font-size: 1.05rem;
+  min-height: 56px;
+  padding: 12px 6px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    background 0.2s,
+    border-color 0.2s;
+}
+.lesson .opt:active {
+  transform: scale(0.96);
+}
+.lesson .opt.right {
+  border-color: var(--good);
+  background: var(--good-soft);
+  color: var(--good);
+}
+.lesson .opt.wrong {
+  border-color: var(--bad);
+  background: var(--bad-soft);
+  color: var(--bad);
+  animation: l-shake 0.35s;
+}
+.lesson .opt:disabled {
+  cursor: default;
+}
+@keyframes l-shake {
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+.lesson .reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson .thought {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.lesson .thought > b {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  display: grid;
+  place-items: center;
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
+
+/* 버튼 */
+.lesson button {
+  font: inherit;
+  cursor: pointer;
+}
+.lesson .lbtn {
+  font-weight: 800;
+  font-size: 1rem;
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 0;
+  background: var(--bg);
+  color: var(--ink);
+  transition:
+    transform 0.12s,
+    opacity 0.2s,
+    background 0.2s;
+}
+.lesson .lbtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.lesson .lbtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.lesson .lbtn.blue {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.lesson .lbtn.soft {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.lesson .lbtn.redline {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+.lesson .lbtn.quiet {
+  background: transparent;
+  color: var(--sub);
+  min-height: 48px;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.lesson button:focus-visible,
+.lesson a:focus-visible,
+.lesson [role="slider"]:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+.lesson .row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.lesson .actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 저울 */
+.lesson .scale {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  margin: 4px auto 0;
+  aspect-ratio: 380 / 230;
+  /* 접시 높이 차를 저울 폭 비율(cqw)로 계산한다 — 폭을 재는 스크립트 없이 크기가 바뀌어도 맞는다 */
+  container-type: inline-size;
+}
+.lesson .scale svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.lesson .beam {
+  transition: transform 0.7s cubic-bezier(0.34, 1.45, 0.5, 1);
+  transform-origin: 190px 52px;
+}
+.lesson .pan {
+  position: absolute;
+  top: 22.6%;
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.7s cubic-bezier(0.34, 1.45, 0.5, 1);
+}
+.lesson .pan.l {
+  left: 0;
+}
+.lesson .pan.r {
+  right: 0;
+}
+.lesson .pan .hang {
+  width: 2px;
+  height: 26px;
+  background: var(--faint);
+}
+.lesson .pan .items {
+  min-height: 70px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 4px;
+  padding: 0 4px 4px;
+}
+.lesson .pan .plate {
+  width: 100%;
+  height: 8px;
+  border-radius: 0 0 8px 8px;
+  background: var(--ink);
+}
+.lesson .cup {
+  width: 34px;
+  height: 38px;
+  position: relative;
+  animation: l-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.lesson .cup svg {
+  width: 100%;
+  height: 100%;
+}
+.lesson .cup span {
+  position: absolute;
+  left: 0;
+  right: 8px;
+  top: 9px;
+  text-align: center;
+  color: #fff;
+  font-family: KaTeX_Math, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 1.05rem;
+}
+.lesson .won {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 15px;
+  background: var(--coin);
+  color: var(--coin-ink);
+  font-weight: 900;
+  font-size: 0.8rem;
+  display: grid;
+  place-items: center;
+  align-self: flex-end;
+  animation: l-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes l-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.lesson .scale-eq {
+  text-align: center;
+  font-size: 1.5rem;
+  min-height: 1.6em;
+  letter-spacing: 0;
+}
+.lesson .scale-eq .ne {
+  color: var(--bad);
+}
+.lesson .toast {
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.98rem;
+  min-height: 3.1em;
+  color: var(--sub);
+  transition: color 0.2s;
+}
+.lesson .toast.ok {
+  color: var(--good);
+}
+.lesson .toast.bad {
+  color: var(--bad);
+}
+
+/* 용어 */
+.lesson .terms {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson .term {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.lesson .term > b {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+.lesson .term > div {
+  color: var(--sub);
+  font-size: 0.98rem;
+}
+.lesson .aside {
+  font-size: 0.92rem;
+  color: var(--sub);
+  background: var(--surface);
+  padding: 14px 18px;
+  border-radius: 16px;
+}
+
+/* 항 끌기 */
+.lesson .jumpline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  font-size: 1.75rem;
+  min-height: 86px;
+  flex-wrap: nowrap;
+  letter-spacing: 0;
+}
+.lesson .jumpline .eqsign {
+  color: var(--sub);
+  padding: 0 0.1em;
+}
+.lesson .mover {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  min-width: 56px;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.8em;
+  background: var(--coin);
+  color: var(--coin-ink);
+  padding: 4px 12px;
+  border-radius: 12px;
+  transition:
+    background 0.3s,
+    color 0.3s;
+  /* 손잡이에만 touch-action:none — 페이지 스크롤은 살려 둔다 */
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  position: relative;
+  z-index: 2;
+}
+.lesson .mover .katex {
+  font-size: 1em;
+}
+.lesson .mover.flipped {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.lesson .mover.dragging {
+  cursor: grabbing;
+  box-shadow: 0 10px 24px rgba(22, 27, 38, 0.22);
+  scale: 1.08;
+}
+.lesson .mover.ready {
+  outline: 3px dashed var(--good);
+  outline-offset: 3px;
+}
+.lesson .mover:not(.flipped):not(.dragging) {
+  animation: l-nudge 1.8s ease-in-out 1s 2;
+}
+@keyframes l-nudge {
+  0%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: translateX(10px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+}
+
+/* 틀린 곳 찾기 */
+.lesson .spot {
+  font-size: 1.45rem;
+  text-align: center;
+  line-height: 2.1;
+  letter-spacing: 0;
+}
+.lesson .spot .tok {
+  display: inline-block;
+  padding: 0 6px;
+  margin: 0 1px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  min-height: 48px;
+  min-width: 44px;
+  box-shadow: var(--shadow);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.lesson .spot .tok.ok {
+  background: var(--good-soft);
+  color: var(--good);
+}
+.lesson .spot .tok.nope {
+  animation: l-shake 0.35s;
+}
+.lesson .spot .tok.found {
+  background: var(--bad);
+  color: #fff;
+}
+.lesson .spot .arrow {
+  color: var(--faint);
+  padding: 0 0.3em;
+}
+.lesson .fix {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.lesson .fix .lbl {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--good);
+}
+.lesson .fix .m {
+  font-size: 1.25rem;
+  letter-spacing: 0;
+}
+
+/* 직접 풀기 */
+.lesson .prob {
+  font-size: 1.05rem;
+}
+.lesson .ansrow {
+  display: flex;
+  gap: 8px;
+}
+.lesson .ansrow .ans {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  font-size: 1.3rem;
+  padding: 0 16px;
+  min-height: 56px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background: var(--bg);
+  color: var(--ink);
+  transition: border-color 0.2s;
+}
+.lesson .ansrow .ans[aria-expanded="true"] {
+  border-color: var(--primary);
+}
+.lesson .ansrow .ans .ph {
+  color: var(--faint);
+}
+.lesson .ansrow .ans.ok {
+  border-color: var(--good);
+}
+.lesson .ansrow .ans.bad {
+  border-color: var(--bad);
+}
+.lesson .ansrow .lbtn {
+  flex: none;
+}
+.lesson .numpad {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lesson .numpad-row {
+  display: flex;
+  gap: 6px;
+}
+.lesson .numpad .btn {
+  flex: 1;
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.lesson .numpad .btn.pad-wide {
+  flex: 2;
+}
+.lesson .fb {
+  font-weight: 800;
+  min-height: 1.4em;
+}
+.lesson .fb.ok {
+  color: var(--good);
+}
+.lesson .fb.bad {
+  color: var(--bad);
+}
+.lesson .hintbox {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 14px 16px;
+  color: var(--sub);
+  font-size: 0.96rem;
+}
+.lesson .stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lesson .lstep {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: l-rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.lesson .lstep small {
+  font-weight: 800;
+  color: var(--primary);
+  font-size: 0.8rem;
+}
+.lesson .lstep .katex-display {
+  margin: 0.2em 0;
+  text-align: left;
+}
+.lesson .lstep .katex-display > .katex {
+  text-align: left;
+}
+.lesson .burst {
+  position: relative;
+}
+.lesson .burst i.bdot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  animation: l-fly 0.7s ease-out forwards;
+}
+@keyframes l-fly {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.3);
+    opacity: 0;
+  }
+}
+.lesson .note-drawer {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--bg);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+.lesson .note-drawer > * {
+  flex: 1;
+}
+
+/* 요약 */
+.lesson .sum {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson .sum .it {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 12px;
+  align-items: start;
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+.lesson .sum .it > b {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--good);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+}
+.lesson .done {
+  text-align: center;
+  padding: 26px 10px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.lesson .done .bigcheck {
+  width: 72px;
+  height: 72px;
+  border-radius: 36px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+/* 하단 고정 버튼 */
+.lesson .dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  padding: 14px max(20px, env(safe-area-inset-right, 0px))
+    calc(14px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
+}
+.lesson .dock .lbtn {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 58px;
+  font-size: 1.08rem;
+}
+
+/* 높이가 낮은 화면(Duo 가로·접음): 하단 버튼 영역을 낮추고 부품을 화면 절반 안으로 */
+@media (max-height: 600px) {
+  .lesson {
+    padding-bottom: 110px;
+  }
+  .lesson .dock {
+    padding-top: 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+  .lesson .dock .lbtn {
+    min-height: 50px;
+  }
+  .lesson .scale {
+    max-height: 50svh;
+    max-width: min(380px, calc(50svh * 380 / 230));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* 동작 줄이기: 레슨 안의 모든 움직임(올라오기·흔들기·튐·점 퍼짐·저울 기울기 전환)을 끈다.
+     부품마다 따로 끄면 빠뜨리기 쉬워 한 곳에서 덮는다. */
+  .lesson *,
+  .lesson *::before,
+  .lesson *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: 부품별 animation 규칙보다 늘 이겨야 한다 */
+    animation: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: 위와 같음 */
+    transition: none !important;
+  }
+}
+@media (max-width: 380px) {
+  .lesson h1 {
+    font-size: 1.8rem;
+  }
+  .lesson h2 {
+    font-size: 1.42rem;
+  }
+  .lesson .term {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

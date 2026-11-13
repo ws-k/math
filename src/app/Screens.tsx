@@ -8,7 +8,7 @@ import { type Route, routeHash } from './route.ts';
 import type { Settings } from './settings.ts';
 import { type Cards, GRADE_LABEL, todayPlan, unitProgress, wrongNote } from './today.ts';
 
-type UnitRoute = Extract<Route, { name: 'unit' }>;
+type LastRoute = Extract<Route, { name: 'unit' | 'lesson' }>;
 
 const keyHash = (key: string) => {
   const k = parseCardKey(key);
@@ -34,7 +34,7 @@ function Nav() {
   );
 }
 
-export function Home(p: { cards: Cards; settings: Settings; last: UnitRoute | null }) {
+export function Home(p: { cards: Cards; settings: Settings; last: LastRoute | null }) {
   const plan = todayPlan({
     cards: p.cards,
     units,

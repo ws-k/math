@@ -30,6 +30,12 @@ export function ConceptPage({ unit }: { unit: Unit }) {
           ))}
         </section>
       )}
+      {/* 쪽 맨 끝에 둔다 — 위에 끼우면 이미 쓴 개념 쪽 필기가 글자와 어긋난다 */}
+      {unit.lesson && (
+        <a className="btn primary" href={routeHash({ name: 'lesson', unitId: unit.id })}>
+          새 레슨으로 배우기
+        </a>
+      )}
     </article>
   );
 }
