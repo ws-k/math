@@ -2,7 +2,9 @@
 // 화면 쪽 등록부(widgets/index.tsx)와 나눈 이유: 검사기는 Node 로 .ts 만 읽을 수 있어서다.
 // checks 는 화면이 쓰는 바로 그 TS 모델을 돌린 결과를 sympy 에 넘긴다(두 벌 계산 금지).
 import type { CheckItem } from '../../content/check.ts';
+import { areaModelDef } from './areaModel.ts';
 import { balanceDef } from './balance.ts';
+import { coordDef } from './coord.ts';
 import { tableDef } from './table.ts';
 import { termDragDef } from './termDrag.ts';
 
@@ -27,4 +29,6 @@ export const widgetDefs: Record<string, WidgetDef<any>> = {
   balance: balanceDef,
   termDrag: termDragDef,
   table: tableDef,
+  coord: coordDef,
+  areaModel: areaModelDef,
 };
