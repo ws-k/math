@@ -191,7 +191,8 @@ def check_plot(it):
         from fractions import Fraction as F
 
         def fr(v):
-            v = sympy.Rational(evaluate(v)) if isinstance(v, str) else sympy.Rational(v)
+            # 글자는 sympy 가 유리수로 읽게 한다 — 파이썬 나눗셈("2/3")은 0.666… 실수가 되어 정확한 비교가 어긋난다
+            v = sympy.Rational(sympy.sympify(v, rational=True)) if isinstance(v, str) else sympy.Rational(v)
             return F(int(v.p), int(v.q))
 
         fsx, fsy = fr(sx), fr(sy)

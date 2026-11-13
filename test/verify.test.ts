@@ -172,6 +172,8 @@ test('좌표 과제(plot): 범위 안 격자로 답을 낼 수 있으면 통과'
     { ...plot, task: 'pointsOn', curve: 'x**2-1', count: 3 },
     { ...plot, task: 'line', slope: '2', through: ['1', '0'] },
     { ...plot, task: 'line', slope: '1/2' },
+    // 2/3 처럼 소수로 딱 떨어지지 않는 분수도 정확히 읽어야 한다
+    { ...plot, task: 'line', slope: '2/3', through: ['0', '0'] },
     { ...plot, task: 'line', intercept: '-1', slope: '-1' },
     { ...plot, task: 'sketch', curve: 'x/2', tol: '1/2' },
     {

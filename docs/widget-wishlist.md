@@ -24,4 +24,4 @@
 - LITERAL 규칙이 `Rational(360, n)` 같은 계산식도 거부함(우회: 360*Rational(1,n)) — m1-plane-figures
 - coord: 정답 곡선 숨기기(채점 전 숨김, 맞히면 보임) — 곡선 손그리기 장면에 필수 — m1-coord-graph
 - shape: 함께 움직이는 점(한 점을 끌면 마주 보는 점이 따라옴, 교차한 두 직선 돌리기) — m1-basic-geometry
-- **verify.py 버그**: plot 직선 과제 기울기를 분수("2/3")로 주면 fr() 가 실수로 계산해 "풀 수 있나" 검사 실패(215줄 근처) — m1-coord-graph
+- ~~verify.py 버그~~ (고침): plot 직선 과제 기울기를 분수("2/3")로 주면 fr() 가 실수로 계산해 "풀 수 있나" 검사 실패(215줄 근처) — m1-coord-graph
