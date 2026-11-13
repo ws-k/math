@@ -19,6 +19,9 @@ import { generators as g_m1_expressions } from './m1-expressions.ts';
 import { generators as g_m1_linear_eq } from './m1-linear-eq.ts';
 import { generators as g_m1_plane_figures } from './m1-plane-figures.ts';
 import { generators as g_m1_solid_figures } from './m1-solid-figures.ts';
+import { generators as g_m2_linear_func_eq } from './m2-linear-func-eq.ts';
+import { generators as g_m2_linear_func } from './m2-linear-func.ts';
+import { generators as g_m2_simul_eq } from './m2-simul-eq.ts';
 import { generators as g_math2_diff_product_rule } from './math2-diff-product-rule.ts';
 
-export const unitGenerators: Generator[] = [...g_e_circle_area, ...g_e_cuboid, ...g_e_decimal, ...g_e_divisor_multiple, ...g_e_fraction_addsub, ...g_e_fraction_basics, ...g_e_fraction_div, ...g_e_fraction_mul, ...g_e_polygon_area, ...g_e_proportion, ...g_e_ratio, ...g_e_whole_ops, ...g_m1_basic_geometry, ...g_m1_coord_graph, ...g_m1_data, ...g_m1_expressions, ...g_m1_linear_eq, ...g_m1_plane_figures, ...g_m1_solid_figures, ...g_math2_diff_product_rule];
+export const unitGenerators: Generator[] = [...g_e_circle_area, ...g_e_cuboid, ...g_e_decimal, ...g_e_divisor_multiple, ...g_e_fraction_addsub, ...g_e_fraction_basics, ...g_e_fraction_div, ...g_e_fraction_mul, ...g_e_polygon_area, ...g_e_proportion, ...g_e_ratio, ...g_e_whole_ops, ...g_m1_basic_geometry, ...g_m1_coord_graph, ...g_m1_data, ...g_m1_expressions, ...g_m1_linear_eq, ...g_m1_plane_figures, ...g_m1_solid_figures, ...g_m2_linear_func_eq, ...g_m2_linear_func, ...g_m2_simul_eq, ...g_math2_diff_product_rule];
