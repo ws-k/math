@@ -69,3 +69,12 @@ test('기록이 쌓인다', () => {
     ['wrong', 'right'],
   );
 });
+
+test('애매하면 졸업한 카드도 5번 상자로 돌아와 다시 복습한다', () => {
+  let s = gradeCard(undefined, 'right', now);
+  for (let i = 0; i < 4; i++) s = gradeCard(s, 'right', now);
+  assert.equal(s.box, 6);
+  s = gradeCard(s, 'unsure', now);
+  assert.equal(s.box, 5);
+  assert.equal(s.due, today0 + DAY);
+});

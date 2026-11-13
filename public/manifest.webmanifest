@@ -1,0 +1,10 @@
+{
+  "name": "수학 다시 쌓기",
+  "short_name": "수학 다시 쌓기",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4ecd8",
+  "theme_color": "#f4ecd8"
+}

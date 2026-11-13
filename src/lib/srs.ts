@@ -17,7 +17,7 @@ export interface CardState {
 const INTERVAL: Record<number, number> = { 1: 1, 2: 3, 3: 7, 4: 14, 5: 30 };
 const GRADUATED = 6;
 
-function startOfDay(t: number): number {
+export function startOfDay(t: number): number {
   const d = new Date(t);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
@@ -32,7 +32,8 @@ export function gradeCard(prev: CardState | undefined, r: Grade, now: number): C
   const box0 = prev?.box ?? 0;
   let box: number;
   if (r === 'wrong') box = 1;
-  else if (r === 'unsure') box = Math.max(box0, 1);
+  // 애매하면 졸업(6)한 카드도 5번 상자로 끌어내린다 — 확신 없는 문제가 졸업해 다시 안 나오면 안 된다
+  else if (r === 'unsure') box = Math.min(Math.max(box0, 1), GRADUATED - 1);
   else box = box0 === 0 ? 2 : Math.min(box0 + 1, GRADUATED);
   const days = r === 'unsure' ? 1 : (INTERVAL[box] ?? null);
   return {
