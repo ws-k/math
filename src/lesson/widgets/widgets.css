@@ -1,0 +1,483 @@
+/* 부품 6종(수직선·분수·단위원·도형판·경우의 수·확률 실험)의 모양. 색은 앱 토큰(app.css :root)만 쓴다.
+   SVG 는 viewBox 단위가 화면 px 과 비슷하도록 폭을 묶는다 — 공용 손잡이(Handle)의 누르는 영역(반지름 28)이
+   SVG 단위라서, 그림이 너무 커지면 누르는 영역이 커져 옆 손잡이와 겹치고 너무 작으면 56px 보다 작아진다. */
+.lesson .wgt {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson .wgt-svg {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: visible;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.lesson .wgt-svg text {
+  fill: var(--ink);
+  font-family: var(--sans);
+  font-size: 13px;
+  text-anchor: middle;
+}
+.lesson .wgt-head {
+  text-align: center;
+  font-size: 1.2rem;
+}
+.lesson .wgt-read {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  font-weight: 700;
+  min-height: 1.6em;
+}
+.lesson .wgt-ctl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+/* display:flex 가 hidden 속성(브라우저 기본 display:none)을 이기므로 따로 막는다 */
+.lesson .wgt-ctl[hidden] {
+  display: none;
+}
+.lesson .wgt-ctl .lbtn {
+  flex: 1 1 120px;
+  min-height: 52px;
+}
+.lesson .wgt-ctl .lbtn.wide {
+  flex-basis: 100%;
+}
+.lesson .wgt .toast:empty {
+  min-height: 0;
+}
+/* 높이가 낮은 화면(Duo 가로·접음): 그림을 화면 절반 안으로 */
+@media (max-height: 600px) {
+  .lesson .wgt-svg {
+    max-height: 50svh;
+  }
+}
+
+/* 수직선 */
+.lesson .nl-axis,
+.lesson .nl-tick {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lesson .nl-tick {
+  stroke-width: 1.5;
+}
+.lesson .wgt-svg .nl-num {
+  fill: var(--sub);
+  font-size: 13px;
+}
+.lesson .nl-region {
+  stroke: var(--primary);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.lesson .nl-arrow {
+  fill: var(--primary);
+}
+.lesson .nl-end {
+  fill: var(--primary);
+  stroke: var(--primary);
+  stroke-width: 3;
+  pointer-events: none;
+}
+.lesson .nl-end.open {
+  fill: var(--bg);
+}
+.lesson .nl-dot {
+  fill: var(--primary);
+}
+.lesson .nl-stat {
+  stroke-width: 2.5;
+}
+.lesson .nl-stat.mean {
+  stroke: var(--good);
+}
+.lesson .nl-stat.median {
+  stroke: var(--bad);
+  stroke-dasharray: 5 4;
+}
+.lesson .wgt-svg .nl-statT {
+  font-size: 12px;
+  font-weight: 700;
+}
+.lesson .wgt-svg .nl-statT.mean {
+  fill: var(--good);
+}
+.lesson .wgt-svg .nl-statT.median {
+  fill: var(--bad);
+}
+.lesson .wgt-svg .nl-plabel {
+  font-weight: 800;
+  fill: var(--primary);
+}
+.lesson .nl-jump path {
+  fill: none;
+  stroke: var(--good);
+  stroke-width: 2.5;
+}
+.lesson .nl-jump polygon {
+  fill: var(--good);
+}
+.lesson .wgt-svg .nl-jump text {
+  fill: var(--good);
+  font-weight: 800;
+}
+.lesson .wgt-read .t-mean {
+  color: var(--good);
+}
+.lesson .wgt-read .t-median {
+  color: var(--bad);
+}
+
+/* 단위원 */
+.lesson .uc-axis {
+  stroke: var(--faint);
+  stroke-width: 1.5;
+}
+.lesson .uc-circle {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lesson .uc-tick {
+  fill: var(--sub);
+}
+.lesson .uc-rad {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lesson .uc-sin {
+  stroke: var(--bad);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.lesson .uc-cos {
+  stroke: var(--good);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.lesson .uc-arc {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+}
+.lesson .uc-ghost {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+.lesson .uc-trace {
+  fill: none;
+  stroke: var(--bad);
+  stroke-width: 3;
+}
+.lesson .uc-link {
+  stroke: var(--bad);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.lesson .uc-gp {
+  fill: var(--bad);
+}
+.lesson .wgt-read .t-sin {
+  color: var(--bad);
+}
+.lesson .wgt-read .t-cos {
+  color: var(--good);
+}
+
+/* 도형판 */
+.lesson .sh-grid {
+  stroke: var(--surface-2);
+  stroke-width: 1;
+}
+.lesson .sh-poly {
+  fill: var(--primary);
+  fill-opacity: 0.18;
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.lesson .sh-poly.t1 {
+  fill: var(--good);
+  stroke: var(--good);
+}
+.lesson .sh-poly.t2 {
+  fill: var(--bad);
+  stroke: var(--bad);
+}
+.lesson .sh-circle {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lesson .sh-seg {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lesson .sh-pt {
+  fill: var(--ink);
+}
+.lesson .wgt-svg .sh-lab {
+  font-weight: 800;
+  pointer-events: none;
+}
+.lesson .sh-ghost {
+  fill: none;
+  stroke: var(--sub);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.lesson .sh-piece {
+  fill: var(--coin);
+  fill-opacity: 0.8;
+  stroke: var(--ink);
+  stroke-width: 2;
+  cursor: grab;
+}
+.lesson .sh-piece.done {
+  fill: var(--good);
+  fill-opacity: 0.45;
+}
+.lesson .wgt-ctl .lbtn.arrow {
+  flex: 0 0 56px;
+  font-size: 1.3rem;
+}
+.lesson .wgt-note {
+  color: var(--sub);
+  text-align: center;
+}
+
+/* 경우의 수 */
+.lesson .ct-slots,
+.lesson .ct-items,
+.lesson .ct-found {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.lesson .ct-slot {
+  min-width: 56px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px dashed var(--faint);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  padding: 0 8px;
+}
+.lesson .ct-slot.on {
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+.lesson .ct-items .ct-item {
+  min-width: 64px;
+  flex: 0 1 auto;
+}
+.lesson .ct-case {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-weight: 700;
+}
+.lesson .ct-root {
+  fill: var(--ink);
+}
+.lesson .ct-branch line {
+  stroke: var(--sub);
+  stroke-width: 1.5;
+}
+.lesson .wgt-svg .ct-branch text {
+  font-weight: 800;
+}
+.lesson .ct-pascal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.lesson .ct-prow {
+  display: flex;
+  gap: 6px;
+}
+.lesson .ct-pcell {
+  min-width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--surface);
+  font-weight: 700;
+}
+.lesson .ct-pcell.btn {
+  min-width: 48px;
+  height: 48px;
+  border: 2px solid var(--primary);
+  background: var(--bg);
+  color: var(--primary);
+}
+.lesson .ct-pcell.btn.on {
+  background: var(--primary-soft);
+}
+.lesson .ct-reg {
+  fill: transparent;
+  transition: fill 0.2s;
+}
+.lesson .ct-reg.on {
+  fill: var(--primary);
+  fill-opacity: 0.3;
+}
+.lesson .ct-ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lesson .wgt-svg .ct-vname {
+  font-weight: 800;
+}
+.lesson .wgt-svg .ct-vel {
+  font-size: 14px;
+}
+
+/* 확률 실험 */
+.lesson .sim-grid {
+  stroke: var(--surface-2);
+  stroke-width: 1;
+}
+.lesson .wgt-svg .sim-ax {
+  fill: var(--sub);
+  font-size: 11px;
+}
+.lesson .sim-bar {
+  fill: var(--primary);
+  transition:
+    y 0.25s,
+    height 0.25s;
+}
+.lesson .sim-theory {
+  stroke: var(--bad);
+  stroke-width: 2.5;
+  stroke-dasharray: 5 3;
+}
+.lesson .wgt-svg .sim-lab {
+  font-size: 12px;
+  font-weight: 700;
+}
+.lesson .sim-legend {
+  color: var(--sub);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.lesson .sim-table {
+  margin: 0 auto;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.lesson .sim-table th,
+.lesson .sim-table td {
+  padding: 2px 10px;
+  text-align: right;
+}
+.lesson .sim-table th {
+  text-align: left;
+}
+
+/* 분수 조각 */
+.lesson .fp {
+  fill: var(--bg);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  transition: fill 0.2s;
+}
+.lesson .fp.fa {
+  fill: var(--primary);
+}
+.lesson .fp.fb {
+  fill: var(--coin);
+}
+.lesson .fp.fx {
+  fill: var(--bad-soft);
+  stroke-dasharray: 4 3;
+}
+.lesson .funit {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+.lesson .fmis {
+  stroke: var(--bad);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+.lesson .fplace {
+  fill: var(--coin);
+  fill-opacity: 0.35;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lesson .fgrab {
+  cursor: grab;
+}
+.lesson .fa.soft {
+  fill: var(--primary);
+  fill-opacity: 0.25;
+}
+.lesson .fb.soft {
+  fill: var(--coin);
+  fill-opacity: 0.35;
+}
+.lesson .fo {
+  fill: var(--primary);
+  fill-opacity: 0.75;
+}
+.lesson .fgrid {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.lesson .fcut {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+.lesson .fcut-label {
+  color: var(--sub);
+  font-size: 0.95rem;
+}
+.lesson .fcut-label b {
+  color: var(--ink);
+}
+.lesson .fcut-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+}
+.lesson .fcut-row .lbtn {
+  width: 52px;
+  flex: none;
+  padding: 0;
+  font-size: 1.4rem;
+}
+/* 슬라이더: touch-action:none 은 이 입력에만(페이지 스크롤은 산다), 누르는 높이 56px */
+.lesson .fcut-row input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  height: 56px;
+  margin: 0;
+  touch-action: none;
+  accent-color: var(--primary);
+  background: transparent;
+}

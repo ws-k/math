@@ -87,3 +87,26 @@ test('모든 단원의 앱 화면(단원 홈·문제·홈·지도·오답·설�
     assert.match(pages[0] as string, u.lesson ? /레슨 시작하기/ : /예제 1/);
   }
 });
+
+test('부품 6종 시험 레슨의 모든 장면이 그려진다', async () => {
+  const { widgetLessons } = await import('./widgets-fixture.ts');
+  const { renderLesson } = await entry;
+  let html = '';
+  for (const l of widgetLessons()) {
+    const h = renderLesson(withLesson(l));
+    for (const s of l.scenes) assert.ok(h.includes(`data-scene="${s.id}"`), s.id);
+    html += h;
+  }
+  // 손잡이(role=slider)와 그림 제목이 실제로 나온다
+  assert.match(html, /role="slider"/);
+  for (const t of [
+    '수직선',
+    '분수 조각',
+    '단위원',
+    '도형판',
+    '수형도',
+    '벤 다이어그램',
+    '확률 실험',
+  ])
+    assert.ok(html.includes(t), t);
+});

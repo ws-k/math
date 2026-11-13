@@ -3,8 +3,14 @@
 // checks 는 화면이 쓰는 바로 그 TS 모델을 돌린 결과를 sympy 에 넘긴다(두 벌 계산 금지).
 import type { CheckItem } from '../../content/check.ts';
 import { balanceDef } from './balance.ts';
+import { countDef } from './count.ts';
+import { fractionDef } from './fraction.ts';
+import { numberLineDef } from './numberLine.ts';
+import { shapeDef } from './shape.ts';
+import { simulateDef } from './simulate.ts';
 import { tableDef } from './table.ts';
 import { termDragDef } from './termDrag.ts';
+import { unitCircleDef } from './unitCircle.ts';
 
 type Named<T> = T extends unknown ? Omit<T, 'ref' | 'unit'> & { name: string } : never;
 /** 부품이 만드는 검산 항목. ref 는 검사기가 "<단원>/lesson:<장면>:<name>"으로 붙인다 */
@@ -27,4 +33,10 @@ export const widgetDefs: Record<string, WidgetDef<any>> = {
   balance: balanceDef,
   termDrag: termDragDef,
   table: tableDef,
+  numberLine: numberLineDef,
+  fraction: fractionDef,
+  unitCircle: unitCircleDef,
+  shape: shapeDef,
+  count: countDef,
+  simulate: simulateDef,
 };

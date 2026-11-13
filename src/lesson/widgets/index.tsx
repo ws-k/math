@@ -3,9 +3,16 @@
 import { type ComponentType, useMemo } from 'react';
 import type { WidgetSpec } from '../types.ts';
 import { Balance } from './Balance.tsx';
+import { Count } from './Count.tsx';
+import { Fraction } from './Fraction.tsx';
+import { NumberLine } from './NumberLine.tsx';
+import { Shape } from './Shape.tsx';
+import { Simulate } from './Simulate.tsx';
 import { widgetDefs } from './specs.ts';
 import { Table } from './Table.tsx';
 import { TermDrag } from './TermDrag.tsx';
+import { UnitCircle } from './UnitCircle.tsx';
+import './widgets.css';
 
 export interface WidgetProps<P = unknown> {
   params: P;
@@ -20,6 +27,12 @@ export const widgetViews: Record<string, ComponentType<WidgetProps<any>>> = {
   balance: Balance,
   termDrag: TermDrag,
   table: Table,
+  numberLine: NumberLine,
+  fraction: Fraction,
+  unitCircle: UnitCircle,
+  shape: Shape,
+  count: Count,
+  simulate: Simulate,
 };
 
 export function Widget({
