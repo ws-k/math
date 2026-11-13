@@ -1,0 +1,1302 @@
+{
+  "id": "h1-function",
+  "course": "고1 수학",
+  "unit": "함수",
+  "title": "함수 (합성함수·역함수)",
+  "prereq": [
+    "m2-linear-func",
+    "h1-set-logic"
+  ],
+  "suneung": [],
+  "hours": 3,
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "g3": {
+        "value": "4",
+        "check": "(x+1).subs(x, 3)"
+      },
+      "fg3": {
+        "value": "5",
+        "check": "(2*x-3).subs(x, (x+1).subs(x, 3))"
+      },
+      "fa": {
+        "value": "4",
+        "check": "(2*x-2).subs(x, 3)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "고1 수학 · 함수",
+        "title": "넣으면 꼭 하나가 나오는 상자,\n거꾸로 돌리면 역함수예요",
+        "lead": "자판기는 버튼 하나에 음료 하나가 나와요. 이런 짝짓기가 함수예요. 함수 두 개를 이어 붙이고, 거꾸로 돌리는 법을 그래프 위에서 익혀요.",
+        "meta": [
+          "함수와 일대일대응",
+          "합성함수",
+          "역함수"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "이 가운데 함수인 대응은\n몇 개일까요?",
+        "lead": "집합 $X=\\{1,2,3,4\\}$ 의 원소 $x$ 마다 짝을 지어요.\n① $x$ 에 $x+1$ 을 짝지어요.\n② $x$ 에 $x$ 의 약수를 모두 짝지어요.\n③ $x$ 에 $x$ 를 $2$ 로 나눈 나머지를 짝지어요.\n④ $x$ 에 제곱해서 $x$ 가 되는 실수를 모두 짝지어요.",
+        "choices": [
+          {
+            "value": "1",
+            "check": "X = [1, 2, 3, 4]\nans = len([f for f in [[k + 1 for k in X], [k % 2 for k in X]] if len(set(f)) == len(f)])",
+            "feedback": "③ 도 함수예요. $1$ 과 $3$ 이 둘 다 $1$ 로 가도 괜찮아요. $x$ 하나에 짝이 하나뿐이면 함수예요."
+          },
+          {
+            "value": "2",
+            "check": "X = [1, 2, 3, 4]\nk1 = max(len(FiniteSet(k + 1)) for k in X)\nk2 = max(len(divisors(k)) for k in X)\nk3 = max(len(FiniteSet(k % 2)) for k in X)\nk4 = max(len(solveset(y**2 - k, y, S.Reals)) for k in X)\nans = len([m for m in [k1, k2, k3, k4] if m == 1])"
+          },
+          {
+            "value": "4",
+            "check": "X = [1, 2, 3, 4]\nk2 = min(len(divisors(k)) for k in X)\nk4 = min(len(solveset(y**2 - k, y, S.Reals)) for k in X)\nans = len([m for m in [1, k2, 1, k4] if m >= 1])",
+            "feedback": "모든 $x$ 에 짝이 있긴 해요. 그런데 ② 는 $x=4$ 의 짝이 $1, 2, 4$ 로 셋, ④ 는 $x=4$ 의 짝이 $2$ 와 $-2$ 로 둘이에요."
+          }
+        ],
+        "format": {
+          "unit": "개"
+        },
+        "answer": 1,
+        "answerCheck": "X = [1, 2, 3, 4]\nk1 = max(len(FiniteSet(k + 1)) for k in X)\nk2 = max(len(divisors(k)) for k in X)\nk3 = max(len(FiniteSet(k % 2)) for k in X)\nk4 = max(len(solveset(y**2 - k, y, S.Reals)) for k in X)\nans = len([m for m in [k1, k2, k3, k4] if m == 1])",
+        "reveal": "**맞아요.** ① 과 ③ 이 함수예요.",
+        "thoughts": [
+          "② 는 $x=4$ 하나에 $1, 2, 4$ 가 모두 짝지어져요.",
+          "④ 는 $x=4$ 하나에 $2$ 와 $-2$ 가 짝지어져요.",
+          "③ 은 $1$ 과 $3$ 이 같은 짝 $1$ 로 가지만, $x$ 마다 짝은 하나뿐이에요."
+        ],
+        "conclude": "==모든 x 에 짝이 꼭 하나씩== 있으면 함수예요. 짝이 없거나 둘 이상이면 함수가 아니에요."
+      },
+      {
+        "kind": "explore",
+        "id": "chain",
+        "chip": "손으로 해 보기",
+        "title": "두 함수를 차례로 지나면\n어디에 도착할까요?",
+        "lead": "$g(x)=x+1$ 로 보낸 결과를 다시 $f(x)=2x-3$ 으로 보내요. 점 A 는 $g(3)$ 을 보여 줘요. 그 값을 $f$ 에 넣은 $f(g(3))$ 을 그래프에서 읽고, 점 $(3,\\ f(g(3)))$ 을 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -2,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": -4,
+              "max": 8,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "g",
+                "curve": "x+1",
+                "label": "$y=g(x)=x+1$",
+                "tone": "soft"
+              },
+              {
+                "id": "f",
+                "curve": "2*x-3",
+                "label": "$y=f(x)=2x-3$"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "on": "g",
+                  "x": 3
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "3",
+                  "check": "solve(Eq(x+1, 4), x)[0]"
+                },
+                "y": {
+                  "value": "5",
+                  "check": "(2*x-3).subs(x, (x+1).subs(x, 3))"
+                }
+              }
+            },
+            "intro": "A 의 높이 $g(3)$ 을 가로축에서 찾고, 거기서 $f$ 그래프까지 올라가 높이를 읽어요.",
+            "done": "$g(3)=4$, $f(4)=5$ 라서 $f(g(3))=5$ 예요."
+          }
+        },
+        "after": "$x$ 를 $g$ 에 넣고, 나온 값을 다시 $f$ 에 넣었어요. 이렇게 이어 붙인 함수를 ==합성함수== $f\\circ g$ 라고 해요. 오른쪽에 쓴 $g$ 가 먼저예요. $g(3)={{g3}}$ 이고 $(f\\circ g)(3)={{fg3}}$ 이에요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "함수 $f:X\\to Y$",
+            "body": "$X$ 의 원소마다 $Y$ 의 원소가 꼭 하나씩 짝지어진 대응이에요. $X$ 를 정의역, $Y$ 를 공역, 실제로 짝이 된 값들의 집합 $\\{f(x)\\mid x\\in X\\}$ 를 치역이라고 해요."
+          },
+          {
+            "term": "일대일대응",
+            "body": "서로 다른 $x$ 는 서로 다른 $y$ 로 가고(일대일함수), 치역이 공역 전체인 함수예요. 짝이 남김없이 하나씩 맞아요."
+          },
+          {
+            "term": "합성함수 $f\\circ g$",
+            "body": "$(f\\circ g)(x)=f(g(x))$. 안쪽 $g$ 를 먼저, 그 결과에 $f$ 를 해요. 보통 $f\\circ g\\neq g\\circ f$ 예요."
+          },
+          {
+            "term": "역함수 $f^{-1}$",
+            "body": "$f$ 가 일대일대응일 때 $y=f(x)$ 를 거꾸로 돌려 $y$ 에 $x$ 를 짝지은 함수예요. $f(a)=b$ 이면 $f^{-1}(b)=a$."
+          }
+        ],
+        "aside": "**참고** · $f^{-1}$ 의 $-1$ 은 지수가 아니에요. $f^{-1}(x)$ 는 $\\dfrac{1}{f(x)}$ 와 전혀 다른 뜻이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "mirror",
+        "chip": "역함수 찾기",
+        "title": "거꾸로 돌리면\n점은 어디로 갈까요?",
+        "lead": "$f(x)=2x-2$ 는 $3$ 을 $4$ 로 보내요(점 A). 역함수 $f^{-1}$ 는 거꾸로 $4$ 를 $3$ 으로 보내요. 역함수의 그래프 위에 있는 이 점을 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -2,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": -2,
+              "max": 6,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "d",
+                "curve": "x",
+                "label": "$y=x$",
+                "tone": "soft"
+              },
+              {
+                "id": "f",
+                "curve": "2*x-2",
+                "label": "$y=f(x)=2x-2$"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "on": "f",
+                  "x": 3
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "4",
+                  "check": "(2*x-2).subs(x, 3)"
+                },
+                "y": {
+                  "value": "3",
+                  "check": "solve(Eq(2*x-2, 4), x)[0]"
+                }
+              }
+            },
+            "intro": "역함수는 $x$ 와 $y$ 의 자리를 바꿔요. 들어간 수와 나온 수가 뒤바뀌어요.",
+            "done": "A$(3,\\ 4)$ 의 두 좌표를 바꾼 $(4,\\ 3)$ 이에요. 두 점은 직선 $y=x$ 를 거울 삼아 마주 봐요."
+          }
+        },
+        "after": "점 A 의 좌표 $(3,\\ {{fa}})$ 를 바꾸면 역함수 위의 점이 돼요. 모든 점에서 이렇게 하면 역함수의 그래프는 원래 그래프를 직선 $y=x$ 에 대해 ==대칭이동==한 모양이 돼요."
+      },
+      {
+        "kind": "explore",
+        "id": "draw",
+        "chip": "두 번째 해 보기",
+        "title": "역함수의 그래프를\n직선으로 그어 보세요",
+        "lead": "$f(x)=2x+2$ 의 그래프 위 점 두 개를 골라 좌표를 바꿔 보세요. 바꾼 두 점을 잇는 직선이 $y=f^{-1}(x)$ 예요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "line",
+            "x": {
+              "min": -4,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": -4,
+              "max": 6,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "d",
+                "curve": "x",
+                "label": "$y=x$",
+                "tone": "soft"
+              },
+              {
+                "id": "f",
+                "curve": "2*x+2",
+                "label": "$y=f(x)=2x+2$"
+              }
+            ],
+            "task": {
+              "line": {
+                "slope": {
+                  "value": "1/2",
+                  "check": "diff(solve(Eq(2*y+2, x), y)[0], x)"
+                },
+                "intercept": {
+                  "value": "-1",
+                  "check": "solve(Eq(2*y+2, x), y)[0].subs(x, 0)"
+                }
+              }
+            },
+            "intro": "손잡이 두 개를 끌어 직선을 맞춰요. $f$ 는 $(-1,\\ 0)$ 과 $(0,\\ 2)$ 를 지나요.",
+            "done": "$(0,\\ -1)$ 과 $(2,\\ 0)$ 을 지나는 직선, $y=\\frac{1}{2}x-1$ 이에요."
+          }
+        },
+        "after": "식으로 구해도 같아요. $y=2x+2$ 에서 $x$ 와 $y$ 를 바꿔 $x=2y+2$ 로 쓰고, $y$ 에 대해 풀면 $y=\\frac{1}{2}x-1$ 이에요. 역함수는 ==일대일대응==일 때만 있어요. 짝이 하나씩 맞아야 거꾸로 돌려도 하나가 나오니까요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $f(x)=x+3$, $g(x)=2x$ 예요. $(f\\circ g)(x)=f(g(x))$ 는 $f$ 의 $x$ 자리에 $g(x)=2x$ 를 넣은 것이에요. 정리한 결과에서 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "2*x"
+              },
+              {
+                "sym": "+3"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "2*x+6",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "2*x+3",
+              "body": "$2x+6$ 은 순서를 바꾼 $(g\\circ f)(x)=2(x+3)$ 이에요. $f\\circ g$ 는 오른쪽 $g$ 를 먼저 해서 $2x$ 를 만든 뒤 $3$ 을 더해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $f(x)=2x+4$ 의 역함수를 $\\dfrac{x+4}{2}$ 로 구했어요. 확인하려고 $f(x)$ 를 넣었더니 $x$ 가 돌아오지 않아요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(2*x+4)/2"
+              },
+              {
+                "sym": "+4/2",
+                "bad": true
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "x"
+              }
+            ],
+            "fix": {
+              "sym": "-4/2",
+              "body": "$f$ 는 '두 배 하고 $4$ 더하기'예요. 거꾸로 돌리려면 순서도 연산도 거꾸로, '$4$ 빼고 반으로 나누기'예요. 그래서 $f^{-1}(x)=\\dfrac{x-4}{2}$ 예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "comp",
+            "q": "두 함수 $f(x)=3x-1$, $g(x)=x^2+1$ 에 대하여 $(f\\circ g)(2)$ 의 값을 구하세요.",
+            "hint": "안쪽 $g(2)$ 를 먼저 구해요.",
+            "concepts": [
+              "$(f\\circ g)(x)=f(g(x))$: 안쪽 $g$ 를 먼저 계산하고, 그 결과를 $f$ 에 넣어요."
+            ],
+            "steps": [
+              {
+                "title": "안쪽 g 먼저",
+                "body": "$$g(2)=2^2+1=5$$"
+              },
+              {
+                "title": "f 에 넣기",
+                "body": "$$f(5)=3\\times5-1=14$$"
+              }
+            ],
+            "answer": "14",
+            "answerType": "int",
+            "check": "(3*x-1).subs(x, (x**2+1).subs(x, 2))"
+          },
+          {
+            "id": "inv",
+            "q": "함수 $f(x)=2x+6$ 의 역함수를 $f^{-1}$ 라 할 때, $f^{-1}(10)$ 의 값을 구하세요.",
+            "hint": "$f^{-1}(10)=t$ 이면 $f(t)=10$ 이에요.",
+            "concepts": [
+              "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요."
+            ],
+            "steps": [
+              {
+                "title": "뜻 바꾸기",
+                "body": "$f^{-1}(10)=t$ 라 하면 $f(t)=10$ 이에요."
+              },
+              {
+                "title": "방정식 풀기",
+                "body": "$$2t+6=10,\\quad t=2$$"
+              }
+            ],
+            "answer": "2",
+            "answerType": "int",
+            "check": "solve(Eq(2*x+6, 10), x)[0]"
+          },
+          {
+            "id": "both",
+            "q": "일차함수 $f(x)=ax+b$ 의 그래프와 그 역함수의 그래프가 모두 점 $(1,\\ 3)$ 을 지나요. 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+            "hint": "역함수의 그래프가 $(1,\\ 3)$ 을 지나면 $f$ 의 그래프는 $(3,\\ 1)$ 을 지나요.",
+            "concepts": [
+              "$y=f^{-1}(x)$ 의 그래프가 점 $(p,\\ q)$ 를 지나면 $y=f(x)$ 의 그래프는 점 $(q,\\ p)$ 를 지나요."
+            ],
+            "steps": [
+              {
+                "title": "두 점 찾기",
+                "body": "$f(1)=3$, 그리고 역함수 조건에서 $f(3)=1$ 이에요."
+              },
+              {
+                "title": "식 세우기",
+                "body": "$$a+b=3,\\quad 3a+b=1$$"
+              },
+              {
+                "title": "풀기",
+                "body": "$$2a=-2,\\quad a=-1,\\quad b=4$$"
+              },
+              {
+                "title": "더하기",
+                "body": "$$a+b=3$$"
+              }
+            ],
+            "answer": "3",
+            "answerType": "int",
+            "check": "sol = solve([Eq(a*1 + b, 3), Eq(a*3 + b, 1)], [a, b])\nans = sol[a] + sol[b]"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "함수는 $x$ 마다 짝이 꼭 하나. 일대일대응이면 짝이 남김없이 하나씩 맞아요.",
+          "$(f\\circ g)(x)=f(g(x))$: 오른쪽 $g$ 가 먼저예요. 순서를 바꾸면 보통 다른 함수예요.",
+          "역함수는 $x$ 와 $y$ 를 바꾼 함수. 그래프는 직선 $y=x$ 에 대해 대칭이에요.",
+          "수학Ⅰ의 지수함수와 로그함수가 서로의 역함수이고, 수학Ⅱ에서는 합성함수의 극한을, 확률과 통계에서는 대응의 개수 세기를 다시 만나요."
+        ],
+        "done": "함수 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$(f\\circ g)(x)=f(g(x))$",
+    "$f(a)=b \\iff f^{-1}(b)=a$",
+    "$y=f(x)$ 와 $y=f^{-1}(x)$ 의 그래프는 직선 $y=x$ 에 대해 대칭"
+  ],
+  "generators": [
+    "fn-composite-value",
+    "fn-inverse-value",
+    "fn-inverse-coef",
+    "fn-composite-linear"
+  ],
+  "problems": [
+    {
+      "q": "두 함수 $f(x)=3x+4$, $g(x)=x^2+2$ 에 대하여 $(g\\circ f)(3)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "171",
+      "answerType": "int",
+      "check": "f = 3*x + 4\ng = 1*x**2 + 2\nans = g.subs(x, f.subs(x, 3))",
+      "concepts": [
+        "$(g\\circ f)(x)=g(f(x))$: 안쪽 $f$ 를 먼저 계산하고, 그 결과를 $g$ 에 넣어요."
+      ],
+      "steps": [
+        {
+          "title": "안쪽 f 먼저",
+          "body": "$$f(3)=3\\times3+4=13$$"
+        },
+        {
+          "title": "그 값을 g 에 넣기",
+          "body": "$$g(13)=(13)^2+2=171$$"
+        }
+      ],
+      "tip": "$(g\\circ f)$ 는 오른쪽 $f$ 부터 해요. 왼쪽부터 하면 $(f\\circ g)$ 가 돼요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "fn-composite-value",
+      "seed": 1000
+    },
+    {
+      "q": "함수 $f(x)=-4x-3$ 의 역함수를 $f^{-1}$ 라 할 때, $f^{-1}(13)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "solve(Eq(-4*x - 3, 13), x)[0]",
+      "concepts": [
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요.",
+        "역함수는 $x$ 와 $y$ 의 자리를 바꾼 함수예요."
+      ],
+      "steps": [
+        {
+          "title": "뜻 바꾸기",
+          "body": "$f^{-1}(13)=t$ 라 하면 $f(t)=13$ 이에요."
+        },
+        {
+          "title": "방정식 세우기",
+          "body": "$$-4t-3=13$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$-4t=16,\\quad t=-4$$"
+        }
+      ],
+      "tip": "역함수 식을 다 구하지 않아도 돼요. $f(t)=13$ 인 $t$ 만 찾으면 끝이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "fn-inverse-value",
+      "seed": 1001
+    },
+    {
+      "q": "일차함수 $f(x)=ax+b$ 에 대하여 $f(-2)=-4$, $f^{-1}(2)=4$ 일 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "sol = solve([Eq(a*(-2) + b, -4), Eq(a*(4) + b, 2)], [a, b])\nans = sol[a] + sol[b]",
+      "concepts": [
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요."
+      ],
+      "steps": [
+        {
+          "title": "역함수 조건 바꾸기",
+          "body": "$f^{-1}(2)=4$ 이면 $f(4)=2$ 예요."
+        },
+        {
+          "title": "두 식 세우기",
+          "body": "$$-2a+b=-4,\\quad 4a+b=2$$"
+        },
+        {
+          "title": "빼서 a 구하기",
+          "body": "$$-6a=-6,\\quad a=1$$"
+        },
+        {
+          "title": "b 구하고 더하기",
+          "body": "$$b=-4-1\\times(-2)=-2,\\quad a+b=-1$$"
+        }
+      ],
+      "tip": "역함수 조건은 늘 원래 함수 $f$ 의 조건으로 바꿔서 풀어요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "fn-inverse-coef",
+      "seed": 1002
+    },
+    {
+      "q": "두 함수 $f(x)=-x-3$, $g(x)=3x+5$ 에 대하여 $(f\\circ g)(x)=px+q$ 일 때, 상수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-11",
+      "answerType": "int",
+      "check": "f = -1*x - 3\ng = 3*x + 5\nh = expand(f.subs(x, g))\nans = h.coeff(x, 1) + h.subs(x, 0)",
+      "concepts": [
+        "$(f\\circ g)(x)=f(g(x))$: 안쪽 $g$ 를 먼저 계산하고, 그 결과를 $f$ 에 넣어요."
+      ],
+      "steps": [
+        {
+          "title": "f 의 x 자리에 g(x) 넣기",
+          "body": "$$f(g(x))=-(3x+5)-3$$"
+        },
+        {
+          "title": "전개하기",
+          "body": "$$=-3x-8$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p=-3$, $q=-8$\n$$p+q=-11$$"
+        }
+      ],
+      "tip": "$f(g(x))$ 는 $f$ 의 식에서 $x$ 를 통째로 $g(x)$ 로 바꿔요. 괄호를 꼭 씌워요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "fn-composite-linear",
+      "seed": 1003
+    },
+    {
+      "q": "두 함수 $f(x)=-3x-2$, $g(x)=x^2$ 에 대하여 $(f\\circ g)(1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5",
+      "answerType": "int",
+      "check": "f = -3*x - 2\ng = 1*x**2\nans = f.subs(x, g.subs(x, 1))",
+      "concepts": [
+        "$(f\\circ g)(x)=f(g(x))$: 안쪽 $g$ 를 먼저 계산하고, 그 결과를 $f$ 에 넣어요."
+      ],
+      "steps": [
+        {
+          "title": "안쪽 g 먼저",
+          "body": "$$g(1)=(1)^2=1$$"
+        },
+        {
+          "title": "그 값을 f 에 넣기",
+          "body": "$$f(1)=-3\\times1-2=-5$$"
+        }
+      ],
+      "tip": "$(f\\circ g)$ 는 오른쪽 $g$ 부터 해요. 왼쪽부터 하면 $(g\\circ f)$ 가 돼요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "fn-composite-value",
+      "seed": 1004
+    },
+    {
+      "q": "함수 $f(x)=-2x+2$ 의 역함수를 $f^{-1}$ 라 할 때, $f^{-1}(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "solve(Eq(-2*x + 2, 0), x)[0]",
+      "concepts": [
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요.",
+        "역함수는 $x$ 와 $y$ 의 자리를 바꾼 함수예요."
+      ],
+      "steps": [
+        {
+          "title": "뜻 바꾸기",
+          "body": "$f^{-1}(0)=t$ 라 하면 $f(t)=0$ 이에요."
+        },
+        {
+          "title": "방정식 세우기",
+          "body": "$$-2t+2=0$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$-2t=-2,\\quad t=1$$"
+        }
+      ],
+      "tip": "역함수 식을 다 구하지 않아도 돼요. $f(t)=0$ 인 $t$ 만 찾으면 끝이에요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "fn-inverse-value",
+      "seed": 1005
+    },
+    {
+      "q": "일차함수 $f(x)=ax+b$ 에 대하여 $f(-2)=0$, $f^{-1}(6)=0$ 일 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "sol = solve([Eq(a*(-2) + b, 0), Eq(a*(0) + b, 6)], [a, b])\nans = sol[a] + sol[b]",
+      "concepts": [
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요."
+      ],
+      "steps": [
+        {
+          "title": "역함수 조건 바꾸기",
+          "body": "$f^{-1}(6)=0$ 이면 $f(0)=6$ 이에요."
+        },
+        {
+          "title": "두 식 세우기",
+          "body": "$$-2a+b=0,\\quad b=6$$"
+        },
+        {
+          "title": "빼서 a 구하기",
+          "body": "$$-2a=-6,\\quad a=3$$"
+        },
+        {
+          "title": "b 구하고 더하기",
+          "body": "$$b=0-3\\times(-2)=6,\\quad a+b=9$$"
+        }
+      ],
+      "tip": "역함수 조건은 늘 원래 함수 $f$ 의 조건으로 바꿔서 풀어요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "fn-inverse-coef",
+      "seed": 1006
+    },
+    {
+      "q": "두 함수 $f(x)=3x-3$, $g(x)=-3x-1$ 에 대하여 $(f\\circ g)(x)=px+q$ 일 때, 상수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-15",
+      "answerType": "int",
+      "check": "f = 3*x - 3\ng = -3*x - 1\nh = expand(f.subs(x, g))\nans = h.coeff(x, 1) + h.subs(x, 0)",
+      "concepts": [
+        "$(f\\circ g)(x)=f(g(x))$: 안쪽 $g$ 를 먼저 계산하고, 그 결과를 $f$ 에 넣어요."
+      ],
+      "steps": [
+        {
+          "title": "f 의 x 자리에 g(x) 넣기",
+          "body": "$$f(g(x))=3(-3x-1)-3$$"
+        },
+        {
+          "title": "전개하기",
+          "body": "$$=-9x-6$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p=-9$, $q=-6$\n$$p+q=-15$$"
+        }
+      ],
+      "tip": "$f(g(x))$ 는 $f$ 의 식에서 $x$ 를 통째로 $g(x)$ 로 바꿔요. 괄호를 꼭 씌워요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "fn-composite-linear",
+      "seed": 1007
+    },
+    {
+      "q": "두 함수 $f(x)=3x+2$, $g(x)=x^2$ 에 대하여 $(g\\circ f)(2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "64",
+      "answerType": "int",
+      "check": "f = 3*x + 2\ng = 1*x**2\nans = g.subs(x, f.subs(x, 2))",
+      "concepts": [
+        "$(g\\circ f)(x)=g(f(x))$: 안쪽 $f$ 를 먼저 계산하고, 그 결과를 $g$ 에 넣어요."
+      ],
+      "steps": [
+        {
+          "title": "안쪽 f 먼저",
+          "body": "$$f(2)=3\\times2+2=8$$"
+        },
+        {
+          "title": "그 값을 g 에 넣기",
+          "body": "$$g(8)=(8)^2=64$$"
+        }
+      ],
+      "tip": "$(g\\circ f)$ 는 오른쪽 $f$ 부터 해요. 왼쪽부터 하면 $(f\\circ g)$ 가 돼요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "fn-composite-value",
+      "seed": 1008
+    },
+    {
+      "q": "함수 $f(x)=3x+2$ 의 역함수를 $f^{-1}$ 라 할 때, $f^{-1}(-1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "solve(Eq(3*x + 2, -1), x)[0]",
+      "concepts": [
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요.",
+        "역함수는 $x$ 와 $y$ 의 자리를 바꾼 함수예요."
+      ],
+      "steps": [
+        {
+          "title": "뜻 바꾸기",
+          "body": "$f^{-1}(-1)=t$ 라 하면 $f(t)=-1$ 이에요."
+        },
+        {
+          "title": "방정식 세우기",
+          "body": "$$3t+2=-1$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$3t=-3,\\quad t=-1$$"
+        }
+      ],
+      "tip": "역함수 식을 다 구하지 않아도 돼요. $f(t)=-1$ 인 $t$ 만 찾으면 끝이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "fn-inverse-value",
+      "seed": 1009
+    },
+    {
+      "q": "일차함수 $f(x)=ax+b$ 에 대하여 $f(4)=0$, $f^{-1}(5)=-1$ 일 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "sol = solve([Eq(a*(4) + b, 0), Eq(a*(-1) + b, 5)], [a, b])\nans = sol[a] + sol[b]",
+      "concepts": [
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요."
+      ],
+      "steps": [
+        {
+          "title": "역함수 조건 바꾸기",
+          "body": "$f^{-1}(5)=-1$ 이면 $f(-1)=5$ 예요."
+        },
+        {
+          "title": "두 식 세우기",
+          "body": "$$4a+b=0,\\quad -a+b=5$$"
+        },
+        {
+          "title": "빼서 a 구하기",
+          "body": "$$5a=-5,\\quad a=-1$$"
+        },
+        {
+          "title": "b 구하고 더하기",
+          "body": "$$b=0-(-1)\\times4=4,\\quad a+b=3$$"
+        }
+      ],
+      "tip": "역함수 조건은 늘 원래 함수 $f$ 의 조건으로 바꿔서 풀어요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "fn-inverse-coef",
+      "seed": 1010
+    },
+    {
+      "q": "두 함수 $f(x)=3x+2$, $g(x)=3x+3$ 에 대하여 $(f\\circ g)(x)=px+q$ 일 때, 상수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "20",
+      "answerType": "int",
+      "check": "f = 3*x + 2\ng = 3*x + 3\nh = expand(f.subs(x, g))\nans = h.coeff(x, 1) + h.subs(x, 0)",
+      "concepts": [
+        "$(f\\circ g)(x)=f(g(x))$: 안쪽 $g$ 를 먼저 계산하고, 그 결과를 $f$ 에 넣어요."
+      ],
+      "steps": [
+        {
+          "title": "f 의 x 자리에 g(x) 넣기",
+          "body": "$$f(g(x))=3(3x+3)+2$$"
+        },
+        {
+          "title": "전개하기",
+          "body": "$$=9x+11$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p=9$, $q=11$\n$$p+q=20$$"
+        }
+      ],
+      "tip": "$f(g(x))$ 는 $f$ 의 식에서 $x$ 를 통째로 $g(x)$ 로 바꿔요. 괄호를 꼭 씌워요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "fn-composite-linear",
+      "seed": 1011
+    },
+    {
+      "q": "두 함수 $f(x)=-2x+1$, $g(x)=x^2$ 에 대하여 $(f\\circ g)(1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "f = -2*x + 1\ng = 1*x**2\nans = f.subs(x, g.subs(x, 1))",
+      "concepts": [
+        "$(f\\circ g)(x)=f(g(x))$: 안쪽 $g$ 를 먼저 계산하고, 그 결과를 $f$ 에 넣어요."
+      ],
+      "steps": [
+        {
+          "title": "안쪽 g 먼저",
+          "body": "$$g(1)=(1)^2=1$$"
+        },
+        {
+          "title": "그 값을 f 에 넣기",
+          "body": "$$f(1)=-2\\times1+1=-1$$"
+        }
+      ],
+      "tip": "$(f\\circ g)$ 는 오른쪽 $g$ 부터 해요. 왼쪽부터 하면 $(g\\circ f)$ 가 돼요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "fn-composite-value",
+      "seed": 1012
+    },
+    {
+      "q": "함수 $f(x)=-4x-4$ 의 역함수를 $f^{-1}$ 라 할 때, $f^{-1}(-12)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "solve(Eq(-4*x - 4, -12), x)[0]",
+      "concepts": [
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요.",
+        "역함수는 $x$ 와 $y$ 의 자리를 바꾼 함수예요."
+      ],
+      "steps": [
+        {
+          "title": "뜻 바꾸기",
+          "body": "$f^{-1}(-12)=t$ 라 하면 $f(t)=-12$ 예요."
+        },
+        {
+          "title": "방정식 세우기",
+          "body": "$$-4t-4=-12$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$-4t=-8,\\quad t=2$$"
+        }
+      ],
+      "tip": "역함수 식을 다 구하지 않아도 돼요. $f(t)=-12$ 인 $t$ 만 찾으면 끝이에요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "fn-inverse-value",
+      "seed": 1013
+    },
+    {
+      "q": "일차함수 $f(x)=ax+b$ 에 대하여 $f(-1)=5$, $f^{-1}(7)=1$ 일 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "sol = solve([Eq(a*(-1) + b, 5), Eq(a*(1) + b, 7)], [a, b])\nans = sol[a] + sol[b]",
+      "concepts": [
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요."
+      ],
+      "steps": [
+        {
+          "title": "역함수 조건 바꾸기",
+          "body": "$f^{-1}(7)=1$ 이면 $f(1)=7$ 이에요."
+        },
+        {
+          "title": "두 식 세우기",
+          "body": "$$-a+b=5,\\quad a+b=7$$"
+        },
+        {
+          "title": "빼서 a 구하기",
+          "body": "$$-2a=-2,\\quad a=1$$"
+        },
+        {
+          "title": "b 구하고 더하기",
+          "body": "$$b=5-1\\times(-1)=6,\\quad a+b=7$$"
+        }
+      ],
+      "tip": "역함수 조건은 늘 원래 함수 $f$ 의 조건으로 바꿔서 풀어요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "fn-inverse-coef",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "집합 $X=\\{-1,0,1,2\\}$ 에서 정의된 함수 $f(x)=x^2-1$ 의 치역의 모든 원소의 합을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "sum(FiniteSet(*[k**2 - 1 for k in [-1, 0, 1, 2]]))",
+      "concepts": [
+        "치역은 실제로 나온 함숫값들의 집합이에요. 같은 값은 한 번만 써요."
+      ],
+      "steps": [
+        {
+          "title": "함숫값 구하기",
+          "body": "$$f(-1)=0,\\ f(0)=-1,\\ f(1)=0,\\ f(2)=3$$"
+        },
+        {
+          "title": "치역 쓰기",
+          "body": "겹치는 $0$ 은 한 번만 써서 $\\{-1,0,3\\}$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$-1+0+3=2$$"
+        }
+      ],
+      "tip": "치역은 집합이라 같은 원소를 두 번 세지 않아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "집합 $X=\\{x\\mid 1\\le x\\le 3\\}$ 에서 집합 $Y=\\{y\\mid 1\\le y\\le 7\\}$ 로의 함수 $f(x)=ax+b\\ (a>0)$ 가 일대일대응일 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "sol = solve([Eq(a*1 + b, 1), Eq(a*3 + b, 7)], [a, b])\nans = sol[a] + sol[b]",
+      "concepts": [
+        "일차함수가 일대일대응이면 정의역의 양 끝이 공역의 양 끝으로 가요.",
+        "$a>0$ 이면 증가하므로 작은 끝은 작은 끝으로 가요."
+      ],
+      "steps": [
+        {
+          "title": "끝점끼리 짝짓기",
+          "body": "$a>0$ 이라 $f(1)=1$, $f(3)=7$ 이에요."
+        },
+        {
+          "title": "식 세우기",
+          "body": "$$a+b=1,\\quad 3a+b=7$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$2a=6,\\quad a=3,\\quad b=-2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=1$$"
+        }
+      ],
+      "tip": "$a<0$ 이었다면 $f(1)=7$, $f(3)=1$ 로 짝이 뒤바뀌어요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "두 함수 $f(x)=2x-1$, $g(x)=-x+4$ 에 대하여 $(g\\circ f)(3)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "(-x+4).subs(x, (2*x-1).subs(x, 3))",
+      "concepts": [
+        "$(g\\circ f)(x)=g(f(x))$: 안쪽 $f$ 를 먼저 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "안쪽 f 먼저",
+          "body": "$$f(3)=2\\times3-1=5$$"
+        },
+        {
+          "title": "g 에 넣기",
+          "body": "$$g(5)=-5+4=-1$$"
+        }
+      ],
+      "tip": "$g\\circ f$ 는 $f$ 가 먼저예요. 기호의 오른쪽부터 읽어요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "두 함수 $f(x)=x+2$, $g(x)=3x-1$ 에 대하여 $(f\\circ g)(x)-(g\\circ f)(x)$ 를 간단히 한 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "expand((x+2).subs(x, 3*x-1) - (3*x-1).subs(x, x+2))",
+      "concepts": [
+        "$(f\\circ g)(x)=f(g(x))$, $(g\\circ f)(x)=g(f(x))$"
+      ],
+      "steps": [
+        {
+          "title": "f∘g",
+          "body": "$$f(g(x))=(3x-1)+2=3x+1$$"
+        },
+        {
+          "title": "g∘f",
+          "body": "$$g(f(x))=3(x+2)-1=3x+5$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$(3x+1)-(3x+5)=-4$$"
+        }
+      ],
+      "tip": "두 합성함수가 다르다는 것이 바로 보여요. 합성은 순서가 중요해요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "함수 $f(x)=2x+1$ 에 대하여 $(f\\circ f)(1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "(2*x+1).subs(x, (2*x+1).subs(x, 1))",
+      "concepts": [
+        "$(f\\circ f)(x)=f(f(x))$: 같은 함수를 두 번 해요."
+      ],
+      "steps": [
+        {
+          "title": "한 번",
+          "body": "$$f(1)=2\\times1+1=3$$"
+        },
+        {
+          "title": "두 번",
+          "body": "$$f(3)=2\\times3+1=7$$"
+        }
+      ],
+      "tip": "$(f\\circ f)(1)$ 은 $\\{f(1)\\}^2$ 이 아니에요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "함수 $f(x)=-3x+6$ 의 역함수가 $f^{-1}(x)=ax+b$ 일 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/3",
+      "answerTex": "$\\dfrac{5}{3}$",
+      "answerType": "fraction",
+      "check": "h = solve(Eq(-3*y + 6, x), y)[0]\nans = h.coeff(x, 1) + h.subs(x, 0)",
+      "concepts": [
+        "역함수 구하기: $y=f(x)$ 에서 $x$ 와 $y$ 를 바꾸고 $y$ 에 대해 풀어요."
+      ],
+      "steps": [
+        {
+          "title": "x 와 y 바꾸기",
+          "body": "$$x=-3y+6$$"
+        },
+        {
+          "title": "y 에 대해 풀기",
+          "body": "$$3y=-x+6,\\quad y=-\\frac{1}{3}x+2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=-\\frac{1}{3}+2=\\frac{5}{3}$$"
+        }
+      ],
+      "tip": "역함수의 기울기는 원래 기울기의 역수예요. $-3$ 이면 $-\\frac13$."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "두 함수 $f(x)=3x-2$, $g(x)=x+3$ 에 대하여 $(f^{-1}\\circ g)(1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "solve(Eq(3*x-2, (x+3).subs(x, 1)), x)[0]",
+      "concepts": [
+        "$(f^{-1}\\circ g)(1)=f^{-1}(g(1))$",
+        "$f^{-1}(k)=t$ 는 $f(t)=k$ 와 같은 말이에요."
+      ],
+      "steps": [
+        {
+          "title": "안쪽 g 먼저",
+          "body": "$$g(1)=1+3=4$$"
+        },
+        {
+          "title": "역함수 값을 방정식으로",
+          "body": "$f^{-1}(4)=t$ 라 하면 $f(t)=4$ 예요."
+        },
+        {
+          "title": "풀기",
+          "body": "$$3t-2=4,\\quad t=2$$"
+        }
+      ],
+      "tip": "역함수 식을 따로 구하지 않아도 방정식 하나로 끝나요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "함수 $f(x)=2x+a$ 의 역함수가 $f^{-1}(x)=bx+3$ 일 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-11/2",
+      "answerTex": "$-\\dfrac{11}{2}$",
+      "answerType": "fraction",
+      "check": "e = expand(2*(b*x + 3) + a - x)\nsol = solve([e.coeff(x, 1), e.coeff(x, 0)], [a, b])\nans = sol[a] + sol[b]",
+      "concepts": [
+        "모든 $x$ 에 대하여 $f(f^{-1}(x))=x$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "f(f⁻¹(x)) = x",
+          "body": "$$2(bx+3)+a=x$$"
+        },
+        {
+          "title": "전개하기",
+          "body": "$$2bx+6+a=x$$"
+        },
+        {
+          "title": "계수 비교",
+          "body": "$$2b=1,\\quad 6+a=0$$\n$b=\\frac12$, $a=-6$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=-6+\\frac{1}{2}=-\\frac{11}{2}$$"
+        }
+      ],
+      "tip": "역함수를 직접 구해 $\\frac{x-a}{2}$ 와 비교해도 같은 답이 나와요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "집합 $X=\\{1,2,3\\}$ 에서 $X$ 로의 함수 가운데 일대일대응인 것의 개수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "from itertools import product\nX = [1, 2, 3]\nans = len([f for f in product(X, repeat=3) if len(set(f)) == 3])",
+      "concepts": [
+        "일대일대응: 서로 다른 $x$ 는 서로 다른 $y$ 로, 그리고 $Y$ 의 원소가 모두 짝이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "f(1) 고르기",
+          "body": "$1, 2, 3$ 가운데 하나라 $3$ 가지예요."
+        },
+        {
+          "title": "f(2) 고르기",
+          "body": "$f(1)$ 과 달라야 하므로 $2$ 가지예요."
+        },
+        {
+          "title": "f(3) 고르기",
+          "body": "남은 $1$ 가지예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3\\times2\\times1=6$$"
+        }
+      ],
+      "tip": "경우의 수 단원의 $3!$ 과 같은 계산이에요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "함수 $f(x)=2x-3$ 의 그래프와 그 역함수의 그래프의 교점을 $(p,\\ q)$ 라 할 때 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "s = solve(Eq(2*x - 3, solve(Eq(2*y - 3, x), y)[0]), x)[0]\nans = s + (2*x - 3).subs(x, s)",
+      "concepts": [
+        "두 그래프는 직선 $y=x$ 에 대해 대칭이에요.",
+        "증가하는 일차함수라면 $y=f(x)$ 와 $y=f^{-1}(x)$ 의 교점은 직선 $y=x$ 위에 있어요."
+      ],
+      "steps": [
+        {
+          "title": "y=x 위에서 만나요",
+          "body": "$$2x-3=x$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$x=3$, 이때 $y=3$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$p+q=3+3=6$$"
+        }
+      ],
+      "tip": "역함수 $y=\\frac{x+3}{2}$ 를 구해 $2x-3=\\frac{x+3}{2}$ 를 풀어도 같아요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "일차함수 $f(x)=ax+b\\ (a>0)$ 에 대하여 $(f\\circ f)(x)=4x-9$ 일 때, $f(5)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "e = expand(a*(a*x + b) + b - (4*x - 9))\nsol = [s for s in solve([e.coeff(x, 1), e.coeff(x, 0)], [a, b], dict=True) if s[a] > 0][0]\nans = (a*5 + b).subs(sol)",
+      "concepts": [
+        "$(f\\circ f)(x)=f(f(x))=a(ax+b)+b$",
+        "항등식은 계수끼리 같아요."
+      ],
+      "steps": [
+        {
+          "title": "f(f(x)) 쓰기",
+          "body": "$$a(ax+b)+b=a^2x+ab+b$$"
+        },
+        {
+          "title": "계수 비교",
+          "body": "$$a^2=4,\\quad ab+b=-9$$"
+        },
+        {
+          "title": "a 고르기",
+          "body": "$a>0$ 이라 $a=2$ 예요."
+        },
+        {
+          "title": "b 구하기",
+          "body": "$$3b=-9,\\quad b=-3$$"
+        },
+        {
+          "title": "f(5)",
+          "body": "$$f(5)=2\\times5-3=7$$"
+        }
+      ],
+      "tip": "$a=-2$ 이면 $-b=-9$ 로 다른 함수가 나와요. 조건 $a>0$ 이 하나를 골라 줘요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "$x\\ge1$ 에서 정의된 함수 $f(x)=x^2-2x$ 의 역함수를 $g$ 라 할 때, $g(3)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "ans = [s for s in solve(Eq(x**2 - 2*x, 3), x) if s >= 1][0]",
+      "concepts": [
+        "$g(3)=t$ 이면 $f(t)=3$ 이고, $t$ 는 $f$ 의 정의역 안에 있어야 해요."
+      ],
+      "steps": [
+        {
+          "title": "뜻 바꾸기",
+          "body": "$g(3)=t$ 라 하면 $f(t)=3$, $t\\ge1$ 이에요."
+        },
+        {
+          "title": "방정식",
+          "body": "$$t^2-2t-3=0,\\quad (t-3)(t+1)=0$$"
+        },
+        {
+          "title": "정의역으로 고르기",
+          "body": "$t=3$ 또는 $t=-1$ 인데 $t\\ge1$ 이라 $t=3$ 이에요."
+        }
+      ],
+      "tip": "이차함수는 꼭짓점 한쪽만 잘라야 일대일대응이 돼요. 그래서 정의역 조건이 붙어요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "두 함수 $f(x)=3x-4$ 와 $g(x)$ 에 대하여 $(f\\circ g)(x)=6x+5$ 일 때, $g(2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "solve(Eq(3*y - 4, (6*x + 5).subs(x, 2)), y)[0]",
+      "concepts": [
+        "$(f\\circ g)(2)=f(g(2))$"
+      ],
+      "steps": [
+        {
+          "title": "x=2 넣기",
+          "body": "$$f(g(2))=6\\times2+5=17$$"
+        },
+        {
+          "title": "f 의 식 쓰기",
+          "body": "$$3g(2)-4=17$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$3g(2)=21,\\quad g(2)=7$$"
+        }
+      ],
+      "tip": "$g(x)$ 를 통째로 구해도 되지만($g(x)=2x+3$), 값 하나만 필요하면 넣고 푸는 게 빨라요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "두 함수 $f(x)=x+3$, $g(x)=2x-1$ 에 대하여 $(f\\circ g)^{-1}(6)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "solve(Eq((x+3).subs(x, 2*x-1), 6), x)[0]",
+      "concepts": [
+        "$h^{-1}(k)=t$ 는 $h(t)=k$ 와 같은 말이에요."
+      ],
+      "steps": [
+        {
+          "title": "합성함수 식",
+          "body": "$$(f\\circ g)(x)=(2x-1)+3=2x+2$$"
+        },
+        {
+          "title": "역함수 값을 방정식으로",
+          "body": "$$2t+2=6$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$t=2$$"
+        }
+      ],
+      "tip": "$(f\\circ g)^{-1}=g^{-1}\\circ f^{-1}$ 이에요. $f^{-1}(6)=3$, $g^{-1}(3)=2$ 로 풀어도 같아요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "일차함수 $f(x)=ax+b\\ (a\\neq1)$ 의 역함수가 $f$ 자신과 같고 $f(2)=5$ 일 때, $f(4)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "e = expand(a*(a*x + b) + b - x)\nsol = [s for s in solve([e.coeff(x, 1), e.coeff(x, 0), a*2 + b - 5], [a, b], dict=True) if s[a] != 1][0]\nans = (a*4 + b).subs(sol)",
+      "concepts": [
+        "$f^{-1}=f$ 이면 $f(f(x))=x$ 예요.",
+        "그래프가 직선 $y=x$ 에 대해 자기 자신과 대칭이에요."
+      ],
+      "steps": [
+        {
+          "title": "f(f(x)) = x",
+          "body": "$$a^2x+ab+b=x$$"
+        },
+        {
+          "title": "계수 비교",
+          "body": "$a^2=1$ 이고 $a\\neq1$ 이라 $a=-1$ 이에요."
+        },
+        {
+          "title": "f(2)=5 로 b 구하기",
+          "body": "$$-2+b=5,\\quad b=7$$"
+        },
+        {
+          "title": "f(4)",
+          "body": "$$f(4)=-4+7=3$$"
+        }
+      ],
+      "tip": "기울기가 $-1$ 인 직선은 모두 $y=x$ 에 대해 자기 자신과 대칭이에요."
+    }
+  ]
+}
