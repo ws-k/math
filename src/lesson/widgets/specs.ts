@@ -5,8 +5,14 @@ import type { CheckItem } from '../../content/check.ts';
 import { areaModelDef } from './areaModel.ts';
 import { balanceDef } from './balance.ts';
 import { coordDef } from './coord.ts';
+import { countDef } from './count.ts';
+import { fractionDef } from './fraction.ts';
+import { numberLineDef } from './numberLine.ts';
+import { shapeDef } from './shape.ts';
+import { simulateDef } from './simulate.ts';
 import { tableDef } from './table.ts';
 import { termDragDef } from './termDrag.ts';
+import { unitCircleDef } from './unitCircle.ts';
 
 type Named<T> = T extends unknown ? Omit<T, 'ref' | 'unit'> & { name: string } : never;
 /** 부품이 만드는 검산 항목. ref 는 검사기가 "<단원>/lesson:<장면>:<name>"으로 붙인다 */
@@ -31,4 +37,10 @@ export const widgetDefs: Record<string, WidgetDef<any>> = {
   table: tableDef,
   coord: coordDef,
   areaModel: areaModelDef,
+  numberLine: numberLineDef,
+  fraction: fractionDef,
+  unitCircle: unitCircleDef,
+  shape: shapeDef,
+  count: countDef,
+  simulate: simulateDef,
 };

@@ -100,3 +100,26 @@ test('곱의 미분 레슨: 좌표평면·넓이 모형 부품이 그려진다(�
   assert.match(html, /확인하기/);
   assert.match(html, /할선 PQ 의 기울기/);
 });
+
+test('부품 6종 시험 레슨의 모든 장면이 그려진다', async () => {
+  const { widgetLessons } = await import('./widgets-fixture.ts');
+  const { renderLesson } = await entry;
+  let html = '';
+  for (const l of widgetLessons()) {
+    const h = renderLesson(withLesson(l));
+    for (const s of l.scenes) assert.ok(h.includes(`data-scene="${s.id}"`), s.id);
+    html += h;
+  }
+  // 손잡이(role=slider)와 그림 제목이 실제로 나온다
+  assert.match(html, /role="slider"/);
+  for (const t of [
+    '수직선',
+    '분수 조각',
+    '단위원',
+    '도형판',
+    '수형도',
+    '벤 다이어그램',
+    '확률 실험',
+  ])
+    assert.ok(html.includes(t), t);
+});
