@@ -3,6 +3,7 @@
 // 미지수(x)가 든 칸과 값이 없는 칸은 '?'(구할 것).
 // sum 이면 "줄들의 합 = 합계"라는 관계를 검산한다: 모두 숫자면 합이 맞는지, 미지수가 있으면 그 관계를
 // 방정식으로 내보내 질문·다른 부품과 같은 식인지 대조한다(검사기가 Lesson.equations 와 비교).
+import { derivative, evalExact } from '../expr.ts';
 import { formatValue } from '../format.ts';
 import { arr, fail, obj, optStr, str } from '../parse.ts';
 import { evalRational, type Node, parseSym, ratStr } from '../sym.ts';
@@ -55,6 +56,22 @@ export function cellText(r: TableRow, unit: string): string {
 
 const sumOf = (p: TableParams) => p.rows.map((r) => `(${r.value})`).join('+');
 
+/**
+ * 줄 이름에 넣는 값: {{n1}} = 1번 줄 식의 x 계수(3*x → 3). "아메리카노 × 3" 의 3 을 손으로 적으면
+ * 검산한 식(3*x+1000=13000)과 보이는 개수가 어긋날 수 있다. x 가 없는 줄은 만들지 않는다.
+ */
+function rowVars(p: TableParams): Record<string, string> {
+  const out: Record<string, string> = {};
+  p.rows.forEach((r, i) => {
+    if (r.value === undefined) return;
+    const n = parseSym(r.value);
+    if (!hasVar(n)) return;
+    const k = evalExact(derivative(n, 'x'), { x: [0n, 1n] });
+    if (k) out[`n${i + 1}`] = formatValue(ratStr(k), {});
+  });
+  return out;
+}
+
 export const tableDef: WidgetDef<TableParams> = {
   parse(raw) {
     const o = obj(raw, '표', ['unit', 'rows'], ['title', 'total', 'sum']);
@@ -92,6 +109,7 @@ export const tableDef: WidgetDef<TableParams> = {
     ...p.rows.map((r) => r.label),
     ...(p.total ? [p.total.label] : []),
   ],
+  vars: rowVars,
   equation(p) {
     if (!p.sum || !p.total?.value) return undefined;
     if (!p.rows.some((r) => cellValue(r.value as string) === null)) return undefined;

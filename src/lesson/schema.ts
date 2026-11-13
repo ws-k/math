@@ -52,13 +52,19 @@ const SOLVE_KEYS = ['id', 'q', 'steps', 'answer', 'answerType', 'check'];
 const ID_OK = /^[a-z0-9-]+$/;
 const NAME_OK = /^[a-z][a-zA-Z0-9]*$/;
 
-/** 수식($…$) 속 숫자 가운데 {{…}} 로 넣지 않은 것 — 검산 밖이라 경고로 알린다 */
-function mathNumbers(s: string): string[] {
+/**
+ * 글 속 숫자 가운데 {{…}} 로 넣지 않은 것 — 검산 밖이라 경고로 알린다. 수식($…$)은 덩어리째,
+ * 일반 글은 숫자 하나씩(쉼표·소수점 포함) 알린다. 수식 밖 "12,000원" 도 답과 어긋날 수 있는 숫자다.
+ */
+function textNumbers(s: string): string[] {
   const out: string[] = [];
-  for (const m of s.matchAll(/\$\$([^$]+)\$\$|\$([^$]+)\$/g)) {
-    const seg = (m[1] ?? m[2] ?? '').replace(/\{\{\w+\}\}/g, '');
+  const src = s.replace(/\{\{\w+\}\}/g, '');
+  const math = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
+  for (const m of src.matchAll(math)) {
+    const seg = m[1] ?? m[2] ?? '';
     if (/\d/.test(seg)) out.push((m[0] as string).trim());
   }
+  for (const m of src.replace(math, ' ').matchAll(/\d[\d,.]*/g)) out.push(m[0]);
   return out;
 }
 
@@ -101,7 +107,7 @@ export function validateLesson(
   const text = (at: string, s: string | undefined, extra: Record<string, string> = {}) => {
     if (s === undefined) return;
     filled.add(s);
-    for (const n of mathNumbers(s)) warnings.push(`${at}: 수식 속 숫자 ${n}`);
+    for (const n of textNumbers(s)) warnings.push(`${at}: 글 속 숫자 ${n}`);
     try {
       texOk(at, fill(s, { ...vars, ...extra }), errors, true);
     } catch (e) {
@@ -130,17 +136,27 @@ export function validateLesson(
       for (const [k, rv] of Object.entries(vs)) {
         const at = `${W} values.${k}`;
         if (!NAME_OK.test(k) || k === 'problems' || k === 'answer') fail(at, '쓸 수 없는 이름');
-        const v = obj(rv, at, ['value', 'check']);
+        const v = obj(rv, at, ['value'], ['check', 'eq']);
         const value = rationalStr(v.value, `${at} value`);
-        checkExpr(`${at} check`, v.check, errors);
         vars[k] = value;
-        items.push({
-          ref: `${unitId}/lesson:값:${k}`,
-          unit: unitId,
-          answer: value,
-          answerType: 'fraction',
-          check: String(v.check),
-        });
+        const vref = `${unitId}/lesson:값:${k}`;
+        if ((v.check === undefined) === (v.eq === undefined)) fail(at, 'check 와 eq 중 하나만');
+        if (v.eq !== undefined) {
+          // 레슨 식의 해로 검산 — 같은 방정식을 검산식에 손으로 다시 적지 않게
+          const name = str(v.eq, `${at} eq`);
+          const e = equations[name];
+          if (e === undefined) fail(`${at} eq`, `레슨 equations 에 없는 식 ${name}`);
+          items.push({ ref: vref, unit: unitId, kind: 'root', eq: e as string, value });
+        } else {
+          checkExpr(`${at} check`, v.check, errors);
+          items.push({
+            ref: vref,
+            unit: unitId,
+            answer: value,
+            answerType: 'fraction',
+            check: String(v.check),
+          });
+        }
       }
     }
   } catch (e) {
@@ -194,9 +210,13 @@ export function validateLesson(
           const { name, ...rest } = c;
           items.push({ ref: ref(id, name), unit: unitId, ...rest } as CheckItem);
         }
-        if (w.eq !== undefined) {
+        const drawn = def.equation?.(p);
+        // 레슨에 식이 있는데 식을 그리는 부품이 eq 를 빠뜨리면 장면 간 숫자 어긋남을 못 잡는다.
+        // 일부러 다른 식이면 eq:false 로 밝힌다
+        if (w.eq === undefined && drawn !== undefined && Object.keys(equations).length > 0)
+          fail(`${at} widget`, `식을 그리는 부품은 eq 필수(다른 식이면 eq: false)`);
+        if (w.eq !== undefined && w.eq !== false) {
           const want = eqRef(w.eq, `${at} widget.eq`);
-          const drawn = def.equation?.(p);
           if (drawn === undefined) fail(`${at} widget.eq`, `${type} 부품은 방정식을 그리지 않음`);
           items.push({
             ref: ref(id, '같은 식'),
@@ -284,28 +304,16 @@ export function validateLesson(
             );
           });
           if (s.eq !== undefined) {
-            // 질문의 정답이 레슨 방정식의 해인가 — 영수증·저울과 질문이 같은 문제를 말하는지
-            const [l, r] = eqRef(s.eq, `${at} eq`).split('=');
-            const check = `solve(Eq(${l}, ${r}), x)[0]`;
-            const value = values[answer] as string;
-            items.push(
-              format.approx
-                ? {
-                    ref: ref(id, '식의 해'),
-                    unit: unitId,
-                    kind: 'approx',
-                    expr: check,
-                    value,
-                    digits,
-                  }
-                : {
-                    ref: ref(id, '식의 해'),
-                    unit: unitId,
-                    answer: value,
-                    answerType: 'fraction',
-                    check,
-                  },
-            );
+            // 질문의 정답이 레슨 방정식의 해인가 — 영수증·저울과 질문이 같은 문제를 말하는지.
+            // 미지수 이름이나 '첫 해'에 기대지 않고 해 집합 안에 있는지 본다(verify.py root)
+            items.push({
+              ref: ref(id, '식의 해'),
+              unit: unitId,
+              kind: 'root',
+              eq: eqRef(s.eq, `${at} eq`),
+              value: values[answer] as string,
+              ...(format.approx ? { digits } : {}),
+            });
           }
           break;
         }

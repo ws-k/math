@@ -45,3 +45,7 @@ test('parse: 칸은 계산식만, 합계 관계는 total 이 있어야', () => {
   assert.throws(() => tableDef.parse({ ...P, total: undefined }));
   assert.throws(() => tableDef.parse({ ...P, total: { label: '합계', value: 'x' } }));
 });
+
+test('줄 이름에 쓰는 값: {{n1}} 은 1번 줄의 x 계수(식과 어긋나지 않게)', () => {
+  assert.deepEqual(tableDef.vars?.(P), { n1: '3' });
+});

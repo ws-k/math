@@ -24,16 +24,24 @@ export interface Lesson {
 export interface LessonValue {
   /** 정수·"a/b". 글에는 그대로(쉼표 없이) 들어간다 — 수식 안에도 쓰도록 */
   value: string;
-  /** 이 값을 문제 조건으로 계산하는 sympy 식 */
-  check: string;
+  /** 이 값을 문제 조건으로 계산하는 sympy 식. eq 와 둘 중 하나만 */
+  check?: string;
+  /**
+   * 이 값이 레슨 equations 의 어느 식의 해인가. 검산식을 그 식에서 만든다 —
+   * 같은 방정식을 check 에 손으로 다시 적으면 식이 바뀔 때 한쪽만 고쳐진다.
+   */
+  eq?: string;
 }
 
 /** 부품 지정. type 으로 등록부(widgets/specs.ts)에서 형식 검사·검산 항목 생성을 찾는다 */
 export interface WidgetSpec {
   type: string;
   params: Record<string, unknown>;
-  /** 이 부품이 그리는 식이 레슨 equations 의 어느 식과 같아야 하는가 */
-  eq?: string;
+  /**
+   * 이 부품이 그리는 식이 레슨 equations 의 어느 식과 같아야 하는가. 레슨에 식이 있고 부품이 식을 그리면
+   * 반드시 적는다. 일부러 다른 식을 그리면 false 로 밝힌다(빠뜨린 것과 구분하려고).
+   */
+  eq?: string | false;
 }
 
 interface Base {

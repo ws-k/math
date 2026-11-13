@@ -87,7 +87,21 @@ export type PlotCheck = {
   | { task: 'sketch'; curve: string; tol: string }
 );
 
+/**
+ * 값이 방정식의 해인가. 미지수는 하나여야 하고(이름은 상관없음), 값이 해 집합 안에 있으면 된다(첫 해가 아니어도).
+ * digits 가 있으면 근삿값: 어느 실수 해를 그 자리에서 반올림한 값이 value 와 같으면 된다.
+ */
+export interface RootCheck {
+  ref: string;
+  unit: string;
+  kind: 'root';
+  eq: string;
+  value: string;
+  digits?: number;
+}
+
 export type CheckItem =
+  | RootCheck
   | AnswerCheck
   | SpotCheck
   | EquivCheck

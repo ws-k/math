@@ -198,3 +198,25 @@ for (const [name, it] of [
     assert.equal(r.status, 1, r.stdout);
   });
 }
+
+const root = { unit: 'u', ref: 'u/lesson:hook:식의 해', kind: 'root' };
+
+test('식의 해(root): 미지수 하나인 방정식의 해 집합에 값이 있으면 통과(첫 해가 아니어도)', () => {
+  const r = runVerify([
+    { ...root, eq: 'x**2=4', value: '-2' },
+    { ...root, eq: '3*t+1000=13000', value: '4000' },
+    { ...root, eq: 'x**2=2', value: '-1.41', digits: 2 },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+for (const [name, it] of [
+  ['해가 아님', { eq: 'x**2=4', value: '3' }],
+  ['미지수가 둘', { eq: 'x+y=4', value: '2' }],
+  ['근삿값이 어느 해와도 안 맞음', { eq: 'x**2=2', value: '1.42', digits: 2 }],
+] as const) {
+  test(`실패해야 함(root): ${name}`, () => {
+    const r = runVerify([{ ...root, ...it }]);
+    assert.equal(r.status, 1, r.stdout);
+  });
+}

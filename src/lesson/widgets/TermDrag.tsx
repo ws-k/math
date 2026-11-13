@@ -7,7 +7,7 @@ import { crossedSign } from '../drag.ts';
 import { LRich, reducedMotion, Tex } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
 import type { WidgetProps } from './index.tsx';
-import { layout, type ShownTerm, type TermDragParams, termTex } from './termDrag.ts';
+import { layout, type ShownTerm, type TermDragParams, termDragDef, termTex } from './termDrag.ts';
 
 /** 칩 글자가 바뀌는 시점: 날아가는 중간쯤(미리보기와 같은 0.2초) */
 const LABEL_MS = 200;
@@ -146,7 +146,7 @@ export function TermDrag({ params: p, onDone, onMiss }: WidgetProps<TermDragPara
       >
         {flipped ? '되돌리기' : '끌기 어려우면 눌러서 보내기'}
       </button>
-      <div aria-live="polite">{flipped && <LRich src={p.note} />}</div>
+      <div aria-live="polite">{flipped && <LRich src={p.note} vars={termDragDef.vars?.(p)} />}</div>
     </>
   );
 }

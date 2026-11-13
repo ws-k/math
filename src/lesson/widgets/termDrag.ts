@@ -1,6 +1,6 @@
 // 항 끌기 부품의 모델(순수). 등호 건너편으로 항을 옮기면 부호가 바뀐다(이항).
 // 화면(TermDrag.tsx)과 검산(checks)이 같은 함수를 쓴다.
-import { symToTex } from '../format.ts';
+import { formatValue, symToTex } from '../format.ts';
 import { arr, fail, int, obj, str } from '../parse.ts';
 import type { WidgetDef } from './specs.ts';
 
@@ -80,6 +80,13 @@ function side(v: unknown, at: string): string[] {
   });
 }
 
+/** 항 하나를 글 속 글자로: 숫자면 부호+쉼표(+1,000·−1,000), 아니면 수식 */
+function termText(t: string): string {
+  const m = t.match(/^([+-]?)(\d+(?:\.\d+)?)$/);
+  if (m) return (m[1] === '-' ? '−' : '+') + formatValue(m[2] as string, {});
+  return `$${symToTex(t)}$`;
+}
+
 export const termDragDef: WidgetDef<TermDragParams> = {
   parse(raw) {
     const o = obj(raw, '항 끌기', ['lhs', 'rhs', 'move', 'note']);
@@ -108,5 +115,10 @@ export const termDragDef: WidgetDef<TermDragParams> = {
     ];
   },
   texts: (p) => [p.note],
+  // 설명 글의 {{from}}·{{to}}: 옮기기 전·후 항. 검산한 바로 그 항(layout)에서 만든다
+  vars(p) {
+    const t = p.lhs[p.move] as string;
+    return { from: termText(/^[+-]/.test(t) ? t : `+${t}`), to: termText(flipSign(t)) };
+  },
   equation: (p) => eqOf(layout(p, false)),
 };

@@ -228,7 +228,33 @@ def check_plot(it):
     return f"알 수 없는 과제 {task}"
 
 
+def _round(v, d):
+    """0.5 는 0 에서 먼 쪽으로 반올림한 값(유리수)"""
+    r = sympy.floor(sympy.N(abs(v) * 10**d, 60) + Rational(1, 2))
+    return (-r if v < 0 else r) / 10**d
+
+
+def check_root(it):
+    """값이 방정식의 해인가. 미지수는 하나(이름 무관), 값이 해 집합 안에 있으면 통과. digits 면 근삿값."""
+    l, r = parse_eq(it["eq"])
+    syms = (l - r).free_symbols
+    if len(syms) != 1:
+        return f"미지수가 하나인 방정식이 아님: {it['eq']}"
+    sols = sympy.solveset(sympy.Eq(l, r), syms.pop(), domain=sympy.S.Reals)
+    if "digits" in it:
+        if not sols.is_FiniteSet:
+            return f"해가 유한 개가 아님: {sols}"
+        want = Rational(it["value"])
+        if not any(_round(s, int(it["digits"])) == want for s in sols):
+            return f"{it['value']} 이 해 {sols} 의 근삿값이 아님"
+        return None
+    if Rational(it["value"]) not in sols:
+        return f"{it['value']} 이 {it['eq']} 의 해 {sols} 에 없음"
+    return None
+
+
 KINDS = {
+    "root": check_root,
     "spot": check_spot,
     "equiv": check_equiv,
     "sameeq": check_sameeq,

@@ -88,3 +88,9 @@ test('layout: 옮기기 전·후 보일 항(부호 포함)을 화면과 검산�
 test('equation: 부품이 그리는 처음 식', () => {
   assert.equal(termDragDef.equation?.(P), '3*x+1000=13000');
 });
+
+test('vars: 설명 글의 {{from}}·{{to}} 는 옮기기 전·후 항(검산한 식에서 만든다)', async () => {
+  const { termDragDef } = await import('../src/lesson/widgets/termDrag.ts');
+  const p = { lhs: ['3*x', '+1000'], rhs: ['13000'], move: 1, note: 'n' };
+  assert.deepEqual(termDragDef.vars?.(p), { from: '+1,000', to: '−1,000' });
+});

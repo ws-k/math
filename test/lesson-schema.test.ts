@@ -166,6 +166,61 @@ test('공유 식·값: 질문 정답이 식의 해인지, 부품이 같은 식�
   assert.ok(refs.includes('u/lesson:hook:같은 식'));
   assert.ok(refs.includes('u/lesson:값:coffee'));
   assert.ok(!r.warnings.some((w) => w.includes('terms')));
+  // 질문의 정답은 식의 해 집합 안에 있어야 한다(미지수 이름·첫 해에 기대지 않는다)
+  assert.deepEqual(
+    r.items.find((i) => i.ref === 'u/lesson:hook:식의 해'),
+    { ref: 'u/lesson:hook:식의 해', unit: 'u', kind: 'root', eq: '3*x+1000=13000', value: '4000' },
+  );
+});
+
+test('글 값은 레슨 식(eq)에서 검산식을 만든다 — 같은 방정식을 손으로 다시 적지 않게', () => {
+  const l = good();
+  l.equations = { coffee: '3*x+1000=13000' };
+  l.values = { coffee: { value: '4000', eq: 'coffee' } };
+  const r = run(l);
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(
+    r.items.find((i) => i.ref === 'u/lesson:값:coffee'),
+    { ref: 'u/lesson:값:coffee', unit: 'u', kind: 'root', eq: '3*x+1000=13000', value: '4000' },
+  );
+  for (const bad of [
+    { value: '4000', eq: 'nope' },
+    { value: '4000', eq: 'coffee', check: 'solve(Eq(3*x+1000,13000),x)[0]' },
+    { value: '4000' },
+  ]) {
+    const l2 = good();
+    l2.equations = { coffee: '3*x+1000=13000' };
+    l2.values = { coffee: bad as never };
+    assert.ok(run(l2).errors.length > 0, JSON.stringify(bad));
+  }
+});
+
+test('레슨에 식이 있으면 식을 그리는 부품은 eq 필수(다른 식이면 eq:false 로 밝힌다)', () => {
+  const make = (eq: string | false | undefined) => {
+    const l = good();
+    l.equations = { coffee: '3*x+1000=13000' };
+    scene(l, 'question').widget = {
+      type: 'table',
+      params: {
+        unit: '원',
+        rows: [{ label: '커피', value: '3*x' }],
+        total: { label: '합계', value: '12000' },
+        sum: true,
+      },
+      ...(eq === undefined ? {} : { eq }),
+    };
+    return run(l);
+  };
+  assert.ok(make(undefined).errors.some((e) => e.includes('eq')));
+  assert.deepEqual(make(false).errors, []);
+});
+
+test('글 속 숫자 경고: 수식 밖 일반 글의 숫자도 알린다({{…}} 로 넣은 값은 빼고)', () => {
+  const l = good();
+  (l.scenes[0] as Scene).lead = '커피 3잔이 12,000원이고 문제는 {{problems}}개예요.';
+  const r = run(l);
+  assert.ok(r.warnings.some((w) => w.includes('12,000')));
+  assert.ok(!r.warnings.some((w) => w.includes('30')));
 });
 
 test('근삿값 보기: 보기마다 approx 항목', () => {
