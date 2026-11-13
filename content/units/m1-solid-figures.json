@@ -1,0 +1,1211 @@
+{
+  "id": "m1-solid-figures",
+  "course": "중1",
+  "unit": "도형과 측정",
+  "title": "입체도형의 성질",
+  "prereq": [
+    "m1-plane-figures",
+    "e-cuboid"
+  ],
+  "suneung": [],
+  "hours": 2.5,
+  "lesson": {
+    "minutes": 20,
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "중1 · 도형과 측정",
+        "title": "원뿔 그릇으로 몇 번 부어야\n원기둥이 가득 찰까요?",
+        "lead": "기둥의 부피는 이미 알아요. 뿔과 구는 기둥과 견주어 보면 공식이 저절로 나와요.",
+        "meta": [
+          "입체도형의 성질"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "직사각형을 돌리면\n부피는 얼마일까요?",
+        "lead": "가로 3 cm, 세로 5 cm 직사각형 ABCD 를 변 AD 를 축으로 한 바퀴 돌려요. 왼쪽 그림은 돌아간 반대편 모습이에요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 10,
+              "h": 7
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 5,
+                "y": 0
+              },
+              {
+                "id": "B",
+                "x": 8,
+                "y": 0
+              },
+              {
+                "id": "C",
+                "x": 8,
+                "y": 5
+              },
+              {
+                "id": "D",
+                "x": 5,
+                "y": 5
+              },
+              {
+                "id": "E",
+                "x": 2,
+                "y": 0
+              },
+              {
+                "id": "F",
+                "x": 2,
+                "y": 5
+              },
+              {
+                "id": "P",
+                "x": 5,
+                "y": 7
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "C",
+                "D"
+              ],
+              [
+                "E",
+                "A",
+                "D",
+                "F"
+              ]
+            ],
+            "segments": [
+              [
+                "A",
+                "P"
+              ]
+            ],
+            "note": "AD 를 지나는 세로선이 회전축이에요."
+          }
+        },
+        "format": {
+          "unit": "π cm³"
+        },
+        "choices": [
+          {
+            "value": "15",
+            "check": "3*5",
+            "feedback": "직사각형의 넓이예요. 돌리면 원기둥이 생기니 밑넓이 × 높이를 구해요."
+          },
+          {
+            "value": "45",
+            "check": "3**2*5"
+          },
+          {
+            "value": "75",
+            "check": "5**2*3",
+            "feedback": "반지름과 높이를 바꿨어요. 축에서 떨어진 가로 3 cm 가 밑면의 반지름이에요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "pi*3**2*5/pi",
+        "reveal": "**맞아요!** 반지름 3 cm, 높이 5 cm 인 원기둥이 생겨요.",
+        "thoughts": [
+          "축에서 가장 먼 변 BC 가 돌면서 원기둥의 옆면을 만들어요.",
+          "기둥의 부피는 밑넓이 × 높이예요. 밑넓이 $9\\pi$ 에 높이를 곱해요."
+        ],
+        "conclude": "같은 밑면, 같은 높이의 뿔은 얼마나 담을까요?"
+      },
+      {
+        "kind": "explore",
+        "id": "pour",
+        "chip": "손으로 해 보기",
+        "title": "원뿔로 물을 부어\n원기둥을 채워 보세요",
+        "lead": "밑면과 높이가 같은 원뿔 그릇과 원기둥 그릇이에요. 위 막대가 원기둥 한 그릇, 아래 조각이 원뿔로 한 번 부은 물이에요.",
+        "widget": {
+          "type": "fraction",
+          "params": {
+            "shape": "bar",
+            "mode": "div",
+            "a": "1",
+            "b": "1/3"
+          }
+        },
+        "gate": true,
+        "after": "원뿔로 세 번 부어야 원기둥이 가득 차요. 각뿔과 각기둥도 같아요. 그래서 ==뿔의 부피 = 기둥의 부피 × 1/3== 이에요. 밑넓이를 $S$, 높이를 $h$ 라 하면 $V=\\frac{1}{3}Sh$ 예요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "입체도형의\n이름을 정리해요",
+        "terms": [
+          {
+            "term": "다면체",
+            "body": "다각형인 면으로만 둘러싸인 입체도형. 각기둥·각뿔이 다면체예요."
+          },
+          {
+            "term": "정다면체",
+            "body": "모든 면이 합동인 정다각형이고, 꼭짓점마다 모인 면의 수가 같은 다면체예요."
+          },
+          {
+            "term": "회전체",
+            "body": "평면도형을 한 직선을 축으로 한 바퀴 돌려 만든 입체도형. 원기둥·원뿔·구가 회전체예요."
+          },
+          {
+            "term": "회전축",
+            "body": "회전체를 만들 때 축이 되는 직선이에요."
+          },
+          {
+            "term": "겉넓이",
+            "body": "입체도형의 겉면 전체의 넓이. 전개도의 넓이와 같아요."
+          }
+        ],
+        "aside": "**참고** · 정다면체는 정사면체·정육면체·정팔면체·정십이면체·정이십면체 다섯 가지뿐이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "sphere",
+        "chip": "구로 넓히기",
+        "title": "원뿔과 반구를 합치면\n원기둥이 돼요",
+        "lead": "반지름이 $r$, 높이도 $r$ 인 원기둥 그릇이에요. 같은 반지름의 원뿔과 반구에 물을 담아 부으면 각각 3분의 1, 3분의 2만큼 차요. 두 막대를 합쳐 보세요.",
+        "widget": {
+          "type": "fraction",
+          "params": {
+            "shape": "bar",
+            "mode": "add",
+            "a": "1/3",
+            "b": "2/3"
+          }
+        },
+        "gate": true,
+        "after": "원기둥의 부피는 $\\pi r^2\\times r=\\pi r^3$ 이니 반구는 그 $\\frac{2}{3}$ 이에요. 구는 반구 두 개라서 ==구의 부피 = (4/3)πr³== 예요. 겉넓이는 같은 반지름 원 넓이의 네 배, $4\\pi r^2$ 예요."
+      },
+      {
+        "kind": "question",
+        "id": "skin",
+        "chip": "전개도로 겉넓이",
+        "title": "원기둥의 겉넓이는\n얼마일까요?",
+        "lead": "반지름 3 cm, 높이 5 cm 원기둥을 펼쳤어요. 옆면은 가로가 밑면의 둘레인 직사각형이에요.",
+        "widget": {
+          "type": "table",
+          "params": {
+            "title": "원기둥의 전개도",
+            "unit": "π cm²",
+            "rows": [
+              {
+                "label": "밑면 두 개 (반지름 3 인 원)",
+                "value": "2*3*3"
+              },
+              {
+                "label": "옆면 (가로 2π×3, 세로 5)",
+                "value": "2*3*5"
+              }
+            ],
+            "total": {
+              "label": "겉넓이"
+            }
+          }
+        },
+        "format": {
+          "unit": "π cm²"
+        },
+        "choices": [
+          {
+            "value": "33",
+            "check": "2*3**2+3*5",
+            "feedback": "옆면의 가로를 반지름으로 잡았어요. 가로는 밑면을 한 바퀴 두른 길이, $6\\pi$ 예요."
+          },
+          {
+            "value": "39",
+            "check": "3**2+2*3*5",
+            "feedback": "밑면을 하나만 셌어요. 원기둥은 위아래로 밑면이 두 개예요."
+          },
+          {
+            "value": "48",
+            "check": "2*3**2+2*3*5"
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "(2*pi*3**2+2*pi*3*5)/pi",
+        "reveal": "**맞아요!** 밑면 두 개와 옆면 하나를 더했어요.",
+        "thoughts": [
+          "전개도의 옆면을 말아 붙이면 가로가 밑면 둘레에 꼭 감겨요.",
+          "그래서 옆면의 가로는 $2\\pi r$, 넓이는 $2\\pi r\\times h$ 예요."
+        ],
+        "conclude": "원기둥의 겉넓이 = 밑넓이 × 2 + 옆넓이"
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "자주 틀리는 곳이에요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 밑넓이 12 cm², 높이 5 cm 인 사각뿔의 부피예요. 왼쪽은 바르게 쓴 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "12*5/3"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "12*5",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "12*5/3",
+              "body": "밑넓이 × 높이는 **기둥**의 부피예요. 뿔은 그 3분의 1이에요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 반지름 6 cm 반구의 겉넓이가 π 의 몇 배인지예요. 왼쪽은 둥근 면과 잘린 면을 더한 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "4*6**2/2+6**2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "4*6**2/2",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "4*6**2/2+6**2",
+              "body": "구 겉넓이의 반은 둥근 면뿐이에요. 잘려서 생긴 **평평한 원**도 겉면이에요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "cone",
+            "q": "밑면의 반지름이 3 cm, 높이가 4 cm 인 원뿔 모양 고깔이 있어요. 부피가 $k\\pi$ cm³ 일 때 $k$ 는 얼마일까요?",
+            "hint": "같은 밑면, 같은 높이의 원기둥부터 구해요.",
+            "placeholder": "k",
+            "steps": [
+              {
+                "title": "원기둥이라면",
+                "body": "$$\\pi\\times3^2\\times4=36\\pi$$"
+              },
+              {
+                "title": "3분의 1",
+                "body": "$$36\\pi\\times\\frac{1}{3}=12\\pi$$"
+              }
+            ],
+            "answer": "12",
+            "answerType": "int",
+            "check": "Rational(1,3)*pi*3**2*4/pi"
+          },
+          {
+            "id": "ball",
+            "q": "반지름이 6 cm 인 공의 겉넓이가 $k\\pi$ cm² 일 때 $k$ 는 얼마일까요?",
+            "hint": "같은 반지름 원의 넓이를 네 번 더해요.",
+            "placeholder": "k",
+            "steps": [
+              {
+                "title": "원 하나의 넓이",
+                "body": "$$\\pi\\times6^2=36\\pi$$"
+              },
+              {
+                "title": "네 배",
+                "body": "$$36\\pi\\times4=144\\pi$$"
+              }
+            ],
+            "answer": "144",
+            "answerType": "int",
+            "check": "4*pi*6**2/pi"
+          },
+          {
+            "id": "pyramid",
+            "q": "팔각뿔의 꼭짓점의 수와 모서리의 수를 더하면 몇 개일까요?",
+            "hint": "밑면에 몇 개, 꼭대기에 몇 개인지 나눠 세요.",
+            "placeholder": "개",
+            "steps": [
+              {
+                "title": "꼭짓점",
+                "body": "밑면에 $8$개, 꼭대기에 $1$개예요.\n$$8+1=9$$"
+              },
+              {
+                "title": "모서리",
+                "body": "밑면에 $8$개, 꼭대기로 모이는 옆 모서리 $8$개예요.\n$$8+8=16$$"
+              },
+              {
+                "title": "더하기",
+                "body": "$$9+16=25$$"
+              }
+            ],
+            "answer": "25",
+            "answerType": "int",
+            "check": "(8+1)+2*8"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억해요",
+        "points": [
+          "**기둥**의 부피 = 밑넓이 × 높이. **뿔**은 그 3분의 1, $V=\\frac{1}{3}Sh$",
+          "**구**의 부피 $=\\frac{4}{3}\\pi r^3$, 겉넓이 $=4\\pi r^2$",
+          "원기둥의 겉넓이 = 밑면 두 개 + 옆면(가로 $2\\pi r$, 세로 $h$)",
+          "평면도형을 축으로 돌리면 **회전체**. 축에서 떨어진 거리가 반지름이 돼요."
+        ],
+        "done": "입체도형의 성질 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$(\\text{기둥의 부피})=(\\text{밑넓이})\\times(\\text{높이})$",
+    "$(\\text{뿔의 부피})=\\dfrac{1}{3}\\times(\\text{밑넓이})\\times(\\text{높이})$",
+    "$(\\text{원기둥의 겉넓이})=2\\pi r^2+2\\pi rh$",
+    "$(\\text{원뿔의 겉넓이})=\\pi r^2+\\pi rl$",
+    "$(\\text{구의 겉넓이})=4\\pi r^2,\\quad(\\text{구의 부피})=\\dfrac{4}{3}\\pi r^3$"
+  ],
+  "generators": [
+    "prism-pyramid-count",
+    "cylinder-volume-surface",
+    "pyramid-cone-volume",
+    "sphere-volume-surface"
+  ],
+  "problems": [
+    {
+      "q": "십각뿔의 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "11",
+      "answerTex": "$11$개",
+      "answerType": "int",
+      "check": "10+1",
+      "concepts": [
+        "$n$각뿔: 면 $(n+1)$개, 모서리 $2n$개, 꼭짓점 $(n+1)$개"
+      ],
+      "steps": [
+        {
+          "title": "어디에 있는지 보기",
+          "body": "밑면에 $10$개, 꼭대기에 $1$개예요."
+        },
+        {
+          "title": "세기",
+          "body": "$$10+1=11$$"
+        }
+      ],
+      "tip": "각뿔은 밑면이 하나뿐이고 옆면은 모두 꼭대기 한 점에서 만나요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prism-pyramid-count",
+      "seed": 1000
+    },
+    {
+      "q": "밑면의 반지름이 $3$ cm, 높이가 $4$ cm인 원기둥의 부피는 $k\\pi$ cm³예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "36",
+      "answerTex": "$36\\pi$ cm³",
+      "answerType": "int",
+      "check": "pi*3**2*4/pi",
+      "concepts": [
+        "기둥의 부피 = 밑넓이 × 높이",
+        "원기둥의 밑넓이 $=\\pi r^2$"
+      ],
+      "steps": [
+        {
+          "title": "밑넓이",
+          "body": "$$\\pi\\times3^2=9\\pi$$"
+        },
+        {
+          "title": "높이 곱하기",
+          "body": "$$9\\pi\\times4=36\\pi$$"
+        }
+      ],
+      "tip": "밑면 한 장을 높이만큼 쌓는다고 생각해요. 직육면체와 같은 원리예요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "cylinder-volume-surface",
+      "seed": 1001
+    },
+    {
+      "q": "밑면이 가로 $6$ cm, 세로 $5$ cm인 직사각형이고 높이가 $6$ cm인 사각뿔의 부피는 몇 cm³인가요?",
+      "choices": null,
+      "answer": "60",
+      "answerTex": "$60$ cm³",
+      "answerType": "int",
+      "check": "Rational(1,3)*6*5*6",
+      "concepts": [
+        "뿔의 부피는 밑면과 높이가 같은 기둥의 $\\frac{1}{3}$ 이에요.",
+        "$V=\\frac{1}{3}Sh$"
+      ],
+      "steps": [
+        {
+          "title": "밑넓이",
+          "body": "$$6\\times5=30$$"
+        },
+        {
+          "title": "기둥이라면",
+          "body": "$$30\\times6=180$$"
+        },
+        {
+          "title": "3으로 나누기",
+          "body": "$$180\\div3=60$$"
+        }
+      ],
+      "tip": "뿔 모양 그릇으로 물을 세 번 부어야 같은 기둥이 가득 차요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "pyramid-cone-volume",
+      "seed": 1002
+    },
+    {
+      "q": "반지름이 $4$ cm인 구의 부피는 $k\\pi$ cm³예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "256/3",
+      "answerTex": "$\\frac{256}{3}\\pi$ cm³",
+      "answerType": "fraction",
+      "check": "Rational(4,3)*pi*4**3/pi",
+      "concepts": [
+        "구의 부피 $=\\frac{4}{3}\\pi r^3$",
+        "구는 꼭 맞는 원기둥 부피의 $\\frac{2}{3}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "반지름 세제곱",
+          "body": "$$4^3=64$$"
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{4}{3}\\pi\\times64=\\frac{256}{3}\\pi$$"
+        }
+      ],
+      "tip": "부피는 길이를 세 번 곱해요. 반지름을 제곱만 하면 겉넓이 쪽 식과 헷갈려요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "sphere-volume-surface",
+      "seed": 1003
+    },
+    {
+      "q": "사각기둥의 모서리는 몇 개인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerTex": "$12$개",
+      "answerType": "int",
+      "check": "3*4",
+      "concepts": [
+        "$n$각기둥: 면 $(n+2)$개, 모서리 $3n$개, 꼭짓점 $2n$개"
+      ],
+      "steps": [
+        {
+          "title": "어디에 있는지 보기",
+          "body": "위·아래 밑면에 $4$개씩, 옆에 $4$개예요."
+        },
+        {
+          "title": "세기",
+          "body": "$$4\\times3=12$$"
+        }
+      ],
+      "tip": "각기둥은 위아래가 똑같은 밑면이라 밑면 하나를 세고 2배 하면 편해요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prism-pyramid-count",
+      "seed": 1004
+    },
+    {
+      "q": "밑면의 반지름이 $5$ cm, 높이가 $9$ cm인 원기둥의 겉넓이는 $k\\pi$ cm²예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "140",
+      "answerTex": "$140\\pi$ cm²",
+      "answerType": "int",
+      "check": "(2*pi*5**2 + 2*pi*5*9)/pi",
+      "concepts": [
+        "원기둥의 전개도는 밑면(원) 2개와 옆면(직사각형) 1개예요.",
+        "옆면 직사각형의 가로는 밑면의 둘레 $2\\pi r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "밑면 두 개",
+          "body": "$$\\pi\\times5^2\\times2=50\\pi$$"
+        },
+        {
+          "title": "옆면",
+          "body": "가로 $2\\pi\\times5$, 세로 $9$ 인 직사각형이에요.\n$$10\\pi\\times9=90\\pi$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$50\\pi+90\\pi=140\\pi$$"
+        }
+      ],
+      "tip": "밑면을 하나만 더하는 실수가 많아요. 원기둥은 위아래 두 개예요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "cylinder-volume-surface",
+      "seed": 1005
+    },
+    {
+      "q": "밑면이 가로 $3$ cm, 세로 $10$ cm인 직사각형이고 높이가 $12$ cm인 사각뿔의 부피는 몇 cm³인가요?",
+      "choices": null,
+      "answer": "120",
+      "answerTex": "$120$ cm³",
+      "answerType": "int",
+      "check": "Rational(1,3)*3*10*12",
+      "concepts": [
+        "뿔의 부피는 밑면과 높이가 같은 기둥의 $\\frac{1}{3}$ 이에요.",
+        "$V=\\frac{1}{3}Sh$"
+      ],
+      "steps": [
+        {
+          "title": "밑넓이",
+          "body": "$$3\\times10=30$$"
+        },
+        {
+          "title": "기둥이라면",
+          "body": "$$30\\times12=360$$"
+        },
+        {
+          "title": "3으로 나누기",
+          "body": "$$360\\div3=120$$"
+        }
+      ],
+      "tip": "뿔 모양 그릇으로 물을 세 번 부어야 같은 기둥이 가득 차요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "pyramid-cone-volume",
+      "seed": 1006
+    },
+    {
+      "q": "반지름이 $8$ cm인 구의 부피는 $k\\pi$ cm³예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "2048/3",
+      "answerTex": "$\\frac{2048}{3}\\pi$ cm³",
+      "answerType": "fraction",
+      "check": "Rational(4,3)*pi*8**3/pi",
+      "concepts": [
+        "구의 부피 $=\\frac{4}{3}\\pi r^3$",
+        "구는 꼭 맞는 원기둥 부피의 $\\frac{2}{3}$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "반지름 세제곱",
+          "body": "$$8^3=512$$"
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{4}{3}\\pi\\times512=\\frac{2048}{3}\\pi$$"
+        }
+      ],
+      "tip": "부피는 길이를 세 번 곱해요. 반지름을 제곱만 하면 겉넓이 쪽 식과 헷갈려요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "sphere-volume-surface",
+      "seed": 1007
+    },
+    {
+      "q": "십각뿔의 모서리는 몇 개인가요?",
+      "choices": null,
+      "answer": "20",
+      "answerTex": "$20$개",
+      "answerType": "int",
+      "check": "2*10",
+      "concepts": [
+        "$n$각뿔: 면 $(n+1)$개, 모서리 $2n$개, 꼭짓점 $(n+1)$개"
+      ],
+      "steps": [
+        {
+          "title": "어디에 있는지 보기",
+          "body": "밑면에 $10$개, 꼭대기로 모이는 옆 모서리 $10$개예요."
+        },
+        {
+          "title": "세기",
+          "body": "$$10\\times2=20$$"
+        }
+      ],
+      "tip": "각뿔은 밑면이 하나뿐이고 옆면은 모두 꼭대기 한 점에서 만나요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prism-pyramid-count",
+      "seed": 1008
+    },
+    {
+      "q": "밑면의 반지름이 $7$ cm, 높이가 $8$ cm인 원기둥의 부피는 $k\\pi$ cm³예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "392",
+      "answerTex": "$392\\pi$ cm³",
+      "answerType": "int",
+      "check": "pi*7**2*8/pi",
+      "concepts": [
+        "기둥의 부피 = 밑넓이 × 높이",
+        "원기둥의 밑넓이 $=\\pi r^2$"
+      ],
+      "steps": [
+        {
+          "title": "밑넓이",
+          "body": "$$\\pi\\times7^2=49\\pi$$"
+        },
+        {
+          "title": "높이 곱하기",
+          "body": "$$49\\pi\\times8=392\\pi$$"
+        }
+      ],
+      "tip": "밑면 한 장을 높이만큼 쌓는다고 생각해요. 직육면체와 같은 원리예요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "cylinder-volume-surface",
+      "seed": 1009
+    },
+    {
+      "q": "밑면이 가로 $9$ cm, 세로 $9$ cm인 직사각형이고 높이가 $5$ cm인 사각뿔의 부피는 몇 cm³인가요?",
+      "choices": null,
+      "answer": "135",
+      "answerTex": "$135$ cm³",
+      "answerType": "int",
+      "check": "Rational(1,3)*9*9*5",
+      "concepts": [
+        "뿔의 부피는 밑면과 높이가 같은 기둥의 $\\frac{1}{3}$ 이에요.",
+        "$V=\\frac{1}{3}Sh$"
+      ],
+      "steps": [
+        {
+          "title": "밑넓이",
+          "body": "$$9\\times9=81$$"
+        },
+        {
+          "title": "기둥이라면",
+          "body": "$$81\\times5=405$$"
+        },
+        {
+          "title": "3으로 나누기",
+          "body": "$$405\\div3=135$$"
+        }
+      ],
+      "tip": "뿔 모양 그릇으로 물을 세 번 부어야 같은 기둥이 가득 차요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "pyramid-cone-volume",
+      "seed": 1010
+    },
+    {
+      "q": "반지름이 $9$ cm인 구의 겉넓이는 $k\\pi$ cm²예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "324",
+      "answerTex": "$324\\pi$ cm²",
+      "answerType": "int",
+      "check": "4*pi*9**2/pi",
+      "concepts": [
+        "구의 겉넓이 $=4\\pi r^2$",
+        "반지름이 같은 원 넓이의 4배예요."
+      ],
+      "steps": [
+        {
+          "title": "같은 반지름 원의 넓이",
+          "body": "$$\\pi\\times9^2=81\\pi$$"
+        },
+        {
+          "title": "4배 하기",
+          "body": "$$81\\pi\\times4=324\\pi$$"
+        }
+      ],
+      "tip": "오렌지 껍질을 벗겨 펼치면 같은 반지름 원 네 개를 채워요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "sphere-volume-surface",
+      "seed": 1011
+    },
+    {
+      "q": "오각뿔의 모서리는 몇 개인가요?",
+      "choices": null,
+      "answer": "10",
+      "answerTex": "$10$개",
+      "answerType": "int",
+      "check": "2*5",
+      "concepts": [
+        "$n$각뿔: 면 $(n+1)$개, 모서리 $2n$개, 꼭짓점 $(n+1)$개"
+      ],
+      "steps": [
+        {
+          "title": "어디에 있는지 보기",
+          "body": "밑면에 $5$개, 꼭대기로 모이는 옆 모서리 $5$개예요."
+        },
+        {
+          "title": "세기",
+          "body": "$$5\\times2=10$$"
+        }
+      ],
+      "tip": "각뿔은 밑면이 하나뿐이고 옆면은 모두 꼭대기 한 점에서 만나요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prism-pyramid-count",
+      "seed": 1012
+    },
+    {
+      "q": "밑면의 반지름이 $2$ cm, 높이가 $4$ cm인 원기둥의 겉넓이는 $k\\pi$ cm²예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "24",
+      "answerTex": "$24\\pi$ cm²",
+      "answerType": "int",
+      "check": "(2*pi*2**2 + 2*pi*2*4)/pi",
+      "concepts": [
+        "원기둥의 전개도는 밑면(원) 2개와 옆면(직사각형) 1개예요.",
+        "옆면 직사각형의 가로는 밑면의 둘레 $2\\pi r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "밑면 두 개",
+          "body": "$$\\pi\\times2^2\\times2=8\\pi$$"
+        },
+        {
+          "title": "옆면",
+          "body": "가로 $2\\pi\\times2$, 세로 $4$ 인 직사각형이에요.\n$$4\\pi\\times4=16\\pi$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$8\\pi+16\\pi=24\\pi$$"
+        }
+      ],
+      "tip": "밑면을 하나만 더하는 실수가 많아요. 원기둥은 위아래 두 개예요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "cylinder-volume-surface",
+      "seed": 1013
+    },
+    {
+      "q": "밑면이 가로 $9$ cm, 세로 $9$ cm인 직사각형이고 높이가 $12$ cm인 사각뿔의 부피는 몇 cm³인가요?",
+      "choices": null,
+      "answer": "324",
+      "answerTex": "$324$ cm³",
+      "answerType": "int",
+      "check": "Rational(1,3)*9*9*12",
+      "concepts": [
+        "뿔의 부피는 밑면과 높이가 같은 기둥의 $\\frac{1}{3}$ 이에요.",
+        "$V=\\frac{1}{3}Sh$"
+      ],
+      "steps": [
+        {
+          "title": "밑넓이",
+          "body": "$$9\\times9=81$$"
+        },
+        {
+          "title": "기둥이라면",
+          "body": "$$81\\times12=972$$"
+        },
+        {
+          "title": "3으로 나누기",
+          "body": "$$972\\div3=324$$"
+        }
+      ],
+      "tip": "뿔 모양 그릇으로 물을 세 번 부어야 같은 기둥이 가득 차요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "pyramid-cone-volume",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "정이십면체는 면이 모두 정삼각형이고, 꼭짓점마다 면이 $5$개씩 모여요. 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "answerTex": "$12$개",
+      "check": "20*3*Rational(1,5)",
+      "concepts": [
+        "면마다 꼭짓점을 세면, 한 꼭짓점을 그곳에 모인 면의 수만큼 여러 번 세게 돼요."
+      ],
+      "steps": [
+        {
+          "title": "면마다 꼭짓점 세기",
+          "body": "정삼각형 $20$개의 꼭짓점을 모두 세면\n$$20\\times3=60$$"
+        },
+        {
+          "title": "겹친 것 나누기",
+          "body": "한 꼭짓점을 $5$번씩 셌어요.\n$$60\\div5=12$$"
+        }
+      ],
+      "tip": "모서리도 같은 방법이에요: $60\\div2=30$개."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "정팔면체는 면이 모두 정삼각형이에요. 모서리는 몇 개인가요?",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "answerTex": "$12$개",
+      "check": "8*3*Rational(1,2)",
+      "concepts": [
+        "모서리 하나에는 면 두 개가 만나요."
+      ],
+      "steps": [
+        {
+          "title": "면마다 변 세기",
+          "body": "$$8\\times3=24$$"
+        },
+        {
+          "title": "두 번 센 것 나누기",
+          "body": "모서리 하나를 두 면에서 한 번씩 셌어요.\n$$24\\div2=12$$"
+        }
+      ],
+      "tip": "정팔면체는 사각뿔 두 개를 밑면끼리 붙인 모양이에요. 사각뿔 모서리 8개씩에서 겹친 밑면 4개를 빼도 12개예요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "밑면의 반지름이 $3$ cm, 모선의 길이가 $5$ cm인 원뿔의 겉넓이는 $k\\pi$ cm²예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "24",
+      "answerType": "int",
+      "answerTex": "$24\\pi$ cm²",
+      "check": "(pi*3**2 + pi*3*5)/pi",
+      "concepts": [
+        "원뿔의 옆면을 펼치면 반지름이 모선, 호의 길이가 밑면 둘레인 부채꼴이에요.",
+        "부채꼴의 넓이 $=\\frac{1}{2}\\times(\\text{반지름})\\times(\\text{호의 길이})$"
+      ],
+      "steps": [
+        {
+          "title": "밑넓이",
+          "body": "$$\\pi\\times3^2=9\\pi$$"
+        },
+        {
+          "title": "옆넓이",
+          "body": "$$\\frac{1}{2}\\times5\\times(2\\pi\\times3)=15\\pi$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$9\\pi+15\\pi=24\\pi$$"
+        }
+      ],
+      "tip": "옆넓이는 짧게 $\\pi rl$ 로 기억해도 돼요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "반지름이 $3$ cm인 구의 부피는 $k\\pi$ cm³예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "36",
+      "answerType": "int",
+      "answerTex": "$36\\pi$ cm³",
+      "check": "Rational(4,3)*pi*3**3/pi",
+      "concepts": [
+        "구의 부피 $=\\frac{4}{3}\\pi r^3$"
+      ],
+      "steps": [
+        {
+          "title": "세제곱",
+          "body": "$$3^3=27$$"
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{4}{3}\\times27=36$$"
+        }
+      ],
+      "tip": "반지름이 $3$일 때만 부피와 겉넓이의 수가 우연히 같아요. 공식은 달라요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "반지름이 $6$ cm인 반구의 겉넓이는 $k\\pi$ cm²예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "108",
+      "answerType": "int",
+      "answerTex": "$108\\pi$ cm²",
+      "check": "(4*pi*6**2*Rational(1,2) + pi*6**2)/pi",
+      "concepts": [
+        "반구의 겉면은 둥근 면(구 겉넓이의 반)과 잘린 원이에요."
+      ],
+      "steps": [
+        {
+          "title": "둥근 면",
+          "body": "$$4\\pi\\times6^2\\times\\frac{1}{2}=72\\pi$$"
+        },
+        {
+          "title": "잘린 원",
+          "body": "$$\\pi\\times6^2=36\\pi$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$72\\pi+36\\pi=108\\pi$$"
+        }
+      ],
+      "tip": "자르면 새 면이 생겨요. 겉넓이를 구할 때 잘린 면을 꼭 더해요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "밑면이 세 변의 길이가 $3$ cm, $4$ cm, $5$ cm인 직각삼각형이고 높이가 $10$ cm인 삼각기둥이 있어요. 겉넓이는 몇 cm²인가요?",
+      "choices": null,
+      "answer": "132",
+      "answerType": "int",
+      "answerTex": "$132$ cm²",
+      "check": "2*(Rational(1,2)*3*4) + (3+4+5)*10",
+      "concepts": [
+        "각기둥의 옆면을 펼치면 가로가 밑면의 둘레인 직사각형 하나가 돼요."
+      ],
+      "steps": [
+        {
+          "title": "밑면 두 개",
+          "body": "직각을 낀 두 변이 $3$, $4$ 예요.\n$$\\frac{1}{2}\\times3\\times4\\times2=12$$"
+        },
+        {
+          "title": "옆면",
+          "body": "$$(3+4+5)\\times10=120$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$12+120=132$$"
+        }
+      ],
+      "tip": "옆면을 하나씩 구해도 되지만, 밑면 둘레 × 높이 한 번이면 끝나요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "밑면이 직각을 낀 두 변의 길이가 $3$ cm, $4$ cm인 직각삼각형이고 높이가 $10$ cm인 삼각기둥의 부피는 몇 cm³인가요?",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "answerTex": "$60$ cm³",
+      "check": "Rational(1,2)*3*4*10",
+      "concepts": [
+        "기둥의 부피 = 밑넓이 × 높이"
+      ],
+      "steps": [
+        {
+          "title": "밑넓이",
+          "body": "$$\\frac{1}{2}\\times3\\times4=6$$"
+        },
+        {
+          "title": "높이 곱하기",
+          "body": "$$6\\times10=60$$"
+        }
+      ],
+      "tip": "밑면이 어떤 모양이든 기둥이면 밑넓이 × 높이예요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "가로 $4$ cm, 세로 $6$ cm인 직사각형을 세로 변을 축으로 한 바퀴 돌려 만든 입체도형의 부피는 $k\\pi$ cm³예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "96",
+      "answerType": "int",
+      "answerTex": "$96\\pi$ cm³",
+      "check": "pi*4**2*6/pi",
+      "concepts": [
+        "직사각형을 한 변을 축으로 돌리면 원기둥이 생겨요. 축에서 떨어진 변의 길이가 반지름이에요."
+      ],
+      "steps": [
+        {
+          "title": "어떤 입체인지",
+          "body": "반지름 $4$ cm, 높이 $6$ cm 원기둥이에요."
+        },
+        {
+          "title": "밑넓이",
+          "body": "$$\\pi\\times4^2=16\\pi$$"
+        },
+        {
+          "title": "부피",
+          "body": "$$16\\pi\\times6=96\\pi$$"
+        }
+      ],
+      "tip": "축이 된 변이 높이, 축과 수직인 변이 반지름이에요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "직각을 낀 두 변이 밑변 $3$ cm, 높이 $6$ cm인 직각삼각형을 높이를 축으로 한 바퀴 돌려 만든 입체도형의 부피는 $k\\pi$ cm³예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "18",
+      "answerType": "int",
+      "answerTex": "$18\\pi$ cm³",
+      "check": "Rational(1,3)*pi*3**2*6/pi",
+      "concepts": [
+        "직각삼각형을 직각을 낀 변을 축으로 돌리면 원뿔이 생겨요."
+      ],
+      "steps": [
+        {
+          "title": "어떤 입체인지",
+          "body": "반지름 $3$ cm, 높이 $6$ cm 원뿔이에요."
+        },
+        {
+          "title": "원기둥이라면",
+          "body": "$$\\pi\\times3^2\\times6=54\\pi$$"
+        },
+        {
+          "title": "3분의 1",
+          "body": "$$54\\pi\\div3=18\\pi$$"
+        }
+      ],
+      "tip": "같은 직사각형을 돌린 원기둥의 3분의 1이에요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "모서리가 $20$개인 각뿔이 있어요. 이 각뿔의 꼭짓점은 몇 개인가요?",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "answerTex": "$11$개",
+      "check": "solve(Eq(2*n, 20), n)[0] + 1",
+      "concepts": [
+        "$n$각뿔의 모서리는 $2n$개, 꼭짓점은 $(n+1)$개예요."
+      ],
+      "steps": [
+        {
+          "title": "몇 각뿔인지",
+          "body": "$$2n=20,\\quad n=10$$\n십각뿔이에요."
+        },
+        {
+          "title": "꼭짓점",
+          "body": "$$10+1=11$$"
+        }
+      ],
+      "tip": "각뿔은 밑면 꼭짓점에 꼭대기 하나를 더해요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "밑면의 반지름이 $3$ cm, 높이가 $6$ cm인 원기둥 모양 통에 꼭 맞는 공 하나를 넣었어요. 통 안에서 공이 차지하지 않는 빈 공간의 부피는 $k\\pi$ cm³예요. $k$의 값을 구하세요.",
+      "choices": null,
+      "answer": "18",
+      "answerType": "int",
+      "answerTex": "$18\\pi$ cm³",
+      "check": "(pi*3**2*6 - Rational(4,3)*pi*3**3)/pi",
+      "concepts": [
+        "꼭 맞는 공의 반지름은 통의 반지름과 같고, 통의 높이는 공의 지름이에요."
+      ],
+      "steps": [
+        {
+          "title": "통의 부피",
+          "body": "$$\\pi\\times3^2\\times6=54\\pi$$"
+        },
+        {
+          "title": "공의 부피",
+          "body": "$$\\frac{4}{3}\\pi\\times3^3=36\\pi$$"
+        },
+        {
+          "title": "빈 공간",
+          "body": "$$54\\pi-36\\pi=18\\pi$$"
+        }
+      ],
+      "tip": "구는 꼭 맞는 원기둥의 $\\frac{2}{3}$ 라서 빈 공간은 $\\frac{1}{3}$, 곧 같은 원뿔의 부피와 같아요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "구의 반지름을 $2$배로 늘리면 부피는 처음의 몇 배가 되나요?",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "answerTex": "$8$배",
+      "check": "(Rational(4,3)*pi*(2*r)**3) / (Rational(4,3)*pi*r**3)",
+      "concepts": [
+        "부피는 길이를 세 번 곱한 꼴이에요."
+      ],
+      "steps": [
+        {
+          "title": "처음 부피",
+          "body": "$$\\frac{4}{3}\\pi r^3$$"
+        },
+        {
+          "title": "늘린 부피",
+          "body": "$$\\frac{4}{3}\\pi(2r)^3=\\frac{4}{3}\\pi r^3\\times8$$"
+        },
+        {
+          "title": "몇 배인지",
+          "body": "$2\\times2\\times2=8$배예요."
+        }
+      ],
+      "tip": "겉넓이는 길이를 두 번 곱하니 $4$배, 부피는 세 번 곱하니 $8$배예요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "반지름이 $3$ cm인 쇠구슬 하나를 녹여서 반지름이 $1$ cm인 쇠구슬을 만들려고 해요. 작은 구슬은 최대 몇 개 만들 수 있나요?",
+      "choices": null,
+      "answer": "27",
+      "answerType": "int",
+      "answerTex": "$27$개",
+      "check": "floor((Rational(4,3)*pi*3**3) / (Rational(4,3)*pi*1**3))",
+      "concepts": [
+        "녹여도 부피는 그대로예요."
+      ],
+      "steps": [
+        {
+          "title": "큰 구슬의 부피",
+          "body": "$$\\frac{4}{3}\\pi\\times3^3=36\\pi$$"
+        },
+        {
+          "title": "작은 구슬의 부피",
+          "body": "$$\\frac{4}{3}\\pi\\times1^3=\\frac{4}{3}\\pi$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$36\\pi\\div\\frac{4}{3}\\pi=27$$"
+        }
+      ],
+      "tip": "반지름이 $3$배면 부피는 $3\\times3\\times3=27$배예요. 공식을 끝까지 계산하지 않아도 돼요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "밑면의 반지름이 $6$ cm, 높이가 $9$ cm인 원뿔 모양 그릇에 1분에 $4\\pi$ cm³씩 물을 넣어요. 빈 그릇이 가득 차는 데 몇 분이 걸리나요?",
+      "choices": null,
+      "answer": "27",
+      "answerType": "int",
+      "answerTex": "$27$분",
+      "check": "(Rational(1,3)*pi*6**2*9) / (4*pi)",
+      "concepts": [
+        "원뿔의 부피 $=\\frac{1}{3}\\pi r^2h$"
+      ],
+      "steps": [
+        {
+          "title": "그릇의 부피",
+          "body": "$$\\frac{1}{3}\\times\\pi\\times6^2\\times9=108\\pi$$"
+        },
+        {
+          "title": "걸리는 시간",
+          "body": "$$108\\pi\\div4\\pi=27$$"
+        }
+      ],
+      "tip": "π 는 나눗셈에서 지워져요. 끝까지 π 를 붙여 두면 실수가 줄어요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "가로 $4$ cm, 세로 $6$ cm인 직사각형을 세로 변을 축으로 한 바퀴 돌려 회전체를 만들었어요. 이 회전체를 회전축을 품은 평면으로 자르면 단면의 넓이는 몇 cm²인가요?",
+      "choices": null,
+      "answer": "48",
+      "answerType": "int",
+      "answerTex": "$48$ cm²",
+      "check": "(2*4)*6",
+      "concepts": [
+        "회전축을 품은 평면으로 자른 단면은 처음 도형과 축에 대칭인 도형을 붙인 모양이에요."
+      ],
+      "steps": [
+        {
+          "title": "단면의 모양",
+          "body": "처음 직사각형과 축 반대편의 같은 직사각형이 붙은, 가로 $8$ cm, 세로 $6$ cm 직사각형이에요."
+        },
+        {
+          "title": "넓이",
+          "body": "$$8\\times6=48$$"
+        }
+      ],
+      "tip": "단면의 가로는 반지름이 아니라 지름이에요. 처음 직사각형 넓이의 2배가 돼요."
+    }
+  ]
+}
