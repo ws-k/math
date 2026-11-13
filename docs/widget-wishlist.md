@@ -28,3 +28,9 @@
 - 소인수분해 나무(새 부품: 수를 눌러 두 수로 쪼개기) — m1-prime-factor
 - areaModel: 칸 합계(약수의 합) 숨기기 옵션 — m1-prime-factor
 - 숫자 문제(solve)에서 객관식 보기 허용 — m1-integer-rational
+- balance: 부등호(<) 저울, 음수 곱하기 버튼(부등호 방향 바뀜 체험) — m2-linear-ineq
+- numberLine: 점 여러 개를 옮기는 과제 — m2-linear-ineq
+- spot: 부등호 토큰 — m2-linear-ineq
+- 질문 보기: 식·구간을 보기로("x>−3") — m2-linear-ineq
+- 긴 나눗셈(세로셈) 부품 — m2-repeating-decimal (e-divisor-multiple 요청과 같은 계열)
+- **verify.py**: 검산식 안의 정수 나눗셈(2**5*2**3/2**4)이 파이썬 실수로 계산됨 — 전역 evaluate 를 유리수로 읽게 검토 — m2-exponent-poly
