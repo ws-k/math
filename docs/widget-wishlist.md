@@ -53,3 +53,10 @@
 - 조립제법·세로 나눗셈 부품 — h1-poly-ops, h1-remainder-factor
 - numberLine: 양쪽 막힌 구간(a<x<b)·두 조각 구간(x<a 또는 x>b) 고르기 — h1-inequalities
 - coord: x축 위/아래 구간 칠하기·고르기 과제, 식 값 읽기(판별식), x 범위 칠하기·끌기 범위 제한, 목표 점 숨기기, 원(음함수) 그리기 — h1-inequalities, h1-quad-eq-func, h1-higher-eq
+- coord: 매개변수 곡선(원 전체), 원 위 점 찍기, 원의 접선 과제, 선분·직각 표시, 끄는 점 목표 칸(x,y) — h1-circle-eq, h1-coord-line, h1-transform
+- numberLine: 진리집합 두 개 비교, 무리수 점(log₂5) — h1-set-logic, math1-log
+- count venn: 전체집합 U·여집합 영역 — h1-set-logic
+- 질문 보기 글자·spot 논리 토큰(역·대우) — h1-set-logic
+- coord 슬라이더: 특정 값 제외(밑 a≠1) — math1-log-func
+- verify 성능: 로그부등식 생성기가 시드마다 solveset 을 돌려 단원 검산 3분 — math1-log-func
+- 작성 주의: sympy solveset 이 치환형 삼각방정식(2cos²x−cos x−1=0) 해를 덜 찾음 — math1-trig 작성 시
