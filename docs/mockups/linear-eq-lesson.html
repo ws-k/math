@@ -1,0 +1,520 @@
+<title>일차방정식 다시 배우기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800;900&display=swap">
+<style>
+/* 레이아웃: 앱처럼 한 화면씩 쌓이는 레슨. 위 진행 막대 + 아래 고정 '계속하기' 버튼. 카드는 회색 면, 강조는 파랑 하나. */
+:root {
+  --bg: #ffffff;
+  --surface: #f3f5f8;
+  --surface-2: #e9edf3;
+  --ink: #161b26;
+  --sub: #687385;
+  --faint: #a9b1bf;
+  --primary: #2f6bff;
+  --primary-ink: #ffffff;
+  --primary-soft: #eaf0ff;
+  --good: #10b07a;
+  --good-soft: #e3f7ef;
+  --bad: #f0455a;
+  --bad-soft: #feecee;
+  --coin: #ffc53d;
+  --coin-ink: #4a3500;
+  --shadow: 0 1px 2px rgba(22,27,38,.06), 0 8px 24px rgba(22,27,38,.06);
+  --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Gothic A1", sans-serif;
+  --math: "Times New Roman", Georgia, serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1117; --surface: #181c25; --surface-2: #222836; --ink: #eef1f6; --sub: #98a2b3; --faint: #5b6476;
+    --primary: #5b8cff; --primary-ink: #0b1020; --primary-soft: #1a2442; --good: #34d399; --good-soft: #10291f;
+    --bad: #ff6b7d; --bad-soft: #321a1f; --coin: #f5b82e; --coin-ink: #3a2900; --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1117; --surface: #181c25; --surface-2: #222836; --ink: #eef1f6; --sub: #98a2b3; --faint: #5b6476;
+  --primary: #5b8cff; --primary-ink: #0b1020; --primary-soft: #1a2442; --good: #34d399; --good-soft: #10291f;
+  --bad: #ff6b7d; --bad-soft: #321a1f; --coin: #f5b82e; --coin-ink: #3a2900; --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.65;
+  letter-spacing: -0.01em; word-break: keep-all; margin: 0;
+  padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+  padding-block: 0 140px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 560px; margin: 0 auto; }
+p { margin: 0; }
+i.v { font-family: var(--math); font-style: italic; font-size: 1.12em; letter-spacing: 0; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* 상단 바 */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 14px 12px; display: flex; align-items: center; gap: 14px; }
+.top .x { width: 36px; height: 36px; border-radius: 18px; display: grid; place-items: center; color: var(--sub); flex: none; }
+.bar { flex: 1; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.bar > span { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--primary); transition: width .5s cubic-bezier(.2,.8,.2,1); }
+.top .count { font-size: .85rem; font-weight: 700; color: var(--sub); flex: none; }
+
+/* 장면 */
+.scene { padding-block: 28px 8px; display: flex; flex-direction: column; gap: 18px; }
+.scene[hidden] { display: none !important; }
+.scene.enter { animation: rise .55s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.chip { align-self: flex-start; font-size: .8rem; font-weight: 800; color: var(--primary); background: var(--primary-soft); padding: 5px 11px; border-radius: 999px; letter-spacing: 0; }
+h1, h2 { margin: 0; font-weight: 900; letter-spacing: -0.035em; line-height: 1.28; text-wrap: balance; }
+h1 { font-size: 2.05rem; }
+h2 { font-size: 1.6rem; }
+.lead { color: var(--sub); font-size: 1.05rem; }
+.hl { color: var(--primary); font-weight: 800; }
+.meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.meta span { font-size: .82rem; color: var(--sub); background: var(--surface); padding: 6px 12px; border-radius: 999px; font-weight: 500; }
+
+/* 카드 */
+.card { background: var(--surface); border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+
+/* 영수증 */
+.receipt { background: var(--bg); border-radius: 18px 18px 6px 6px; padding: 18px 20px 22px; box-shadow: var(--shadow); position: relative; display: flex; flex-direction: column; gap: 8px; font-size: .98rem; }
+.receipt::after { content: ""; position: absolute; left: 0; right: 0; bottom: -9px; height: 10px; background: radial-gradient(circle at 8px 0, transparent 7px, var(--bg) 7.5px) 0 0 / 16px 10px repeat-x; }
+.receipt .shop { font-weight: 800; font-size: .9rem; color: var(--sub); }
+.receipt .row { display: flex; justify-content: space-between; gap: 12px; }
+.receipt .q { color: var(--primary); font-weight: 900; }
+.receipt .total { border-top: 1.5px dashed var(--surface-2); padding-top: 10px; margin-top: 2px; font-weight: 900; font-size: 1.08rem; }
+.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.opt { font: inherit; font-weight: 800; font-size: 1.05rem; padding: 16px 6px; border-radius: 16px; border: 2px solid transparent; background: var(--bg); color: var(--ink); cursor: pointer; transition: transform .15s, background .2s, border-color .2s; }
+.opt:active { transform: scale(.96); }
+.opt.right { border-color: var(--good); background: var(--good-soft); color: var(--good); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); animation: shake .35s; }
+@keyframes shake { 20%,60% { transform: translateX(-5px); } 40%,80% { transform: translateX(5px); } }
+.reveal { display: flex; flex-direction: column; gap: 10px; }
+.thought { display: flex; gap: 12px; align-items: flex-start; }
+.thought > b { flex: none; width: 26px; height: 26px; border-radius: 13px; background: var(--primary); color: var(--primary-ink); display: grid; place-items: center; font-size: .82rem; margin-top: 2px; }
+
+/* 수식 한 줄 */
+.eq { font-family: var(--math); font-size: 1.6rem; text-align: center; padding: 18px 10px; letter-spacing: 0; overflow-x: auto; white-space: nowrap; }
+.eq .op { font-family: var(--sans); font-style: normal; color: var(--sub); padding: 0 .18em; }
+
+/* 저울 */
+.scale { position: relative; width: 100%; max-width: 380px; margin: 4px auto 0; aspect-ratio: 380 / 230; }
+.scale svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+#beam { transition: transform .7s cubic-bezier(.34,1.45,.5,1); transform-origin: 190px 52px; }
+.pan { position: absolute; top: 22.6%; width: 40%; display: flex; flex-direction: column; align-items: center; transition: transform .7s cubic-bezier(.34,1.45,.5,1); }
+.pan.l { left: 0; } .pan.r { right: 0; }
+.pan .hang { width: 2px; height: 26px; background: var(--faint); }
+.pan .items { min-height: 70px; width: 100%; display: flex; flex-wrap: wrap-reverse; justify-content: center; align-content: flex-start; gap: 4px; padding: 0 4px 4px; }
+.pan .plate { width: 100%; height: 8px; border-radius: 0 0 8px 8px; background: var(--ink); }
+.cup { width: 34px; height: 38px; position: relative; animation: pop .35s cubic-bezier(.34,1.56,.64,1) both; }
+.cup svg { width: 100%; height: 100%; }
+.cup span { position: absolute; left: 0; right: 8px; top: 9px; text-align: center; color: #fff; font-family: var(--math); font-style: italic; font-size: 1.05rem; }
+.won { height: 30px; padding: 0 10px; border-radius: 15px; background: var(--coin); color: var(--coin-ink); font-weight: 900; font-size: .8rem; display: grid; place-items: center; align-self: flex-end; animation: pop .35s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+.scale-eq { text-align: center; font-family: var(--math); font-size: 1.5rem; min-height: 1.6em; letter-spacing: 0; }
+.scale-eq .ne { color: var(--bad); font-family: var(--sans); font-weight: 900; }
+.toast { text-align: center; font-weight: 700; font-size: .98rem; min-height: 3.1em; color: var(--sub); transition: color .2s; }
+.toast.ok { color: var(--good); } .toast.bad { color: var(--bad); }
+.actions { display: flex; flex-direction: column; gap: 8px; }
+.actions .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+button { font: inherit; cursor: pointer; }
+.btn { font-weight: 800; font-size: 1rem; min-height: 52px; padding: 0 16px; border-radius: 16px; border: 0; background: var(--bg); color: var(--ink); transition: transform .12s, opacity .2s, background .2s; }
+.btn:active:not(:disabled) { transform: scale(.97); }
+.btn:disabled { opacity: .35; cursor: default; }
+.btn.blue { background: var(--primary); color: var(--primary-ink); }
+.btn.soft { background: var(--primary-soft); color: var(--primary); }
+.btn.redline { background: var(--bad-soft); color: var(--bad); }
+.btn.quiet { background: transparent; color: var(--sub); min-height: 40px; font-weight: 700; font-size: .92rem; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+/* 용어 */
+.terms { display: flex; flex-direction: column; gap: 10px; }
+.term { background: var(--surface); border-radius: 20px; padding: 18px 20px; display: grid; grid-template-columns: 76px 1fr; gap: 14px; align-items: start; }
+.term > b { font-size: 1.15rem; font-weight: 900; letter-spacing: -0.03em; }
+.term p { color: var(--sub); font-size: .98rem; }
+.aside { font-size: .92rem; color: var(--sub); background: var(--surface); padding: 14px 18px; border-radius: 16px; }
+
+/* 이항 */
+.jumpline { display: flex; align-items: center; justify-content: center; gap: .3em; font-family: var(--math); font-size: 1.75rem; min-height: 86px; flex-wrap: nowrap; letter-spacing: 0; }
+.jumpline .eqsign { font-family: var(--sans); color: var(--sub); padding: 0 .1em; }
+.mover { display: inline-block; font-family: var(--sans); font-weight: 900; font-size: .8em; background: var(--coin); color: var(--coin-ink); padding: 4px 12px; border-radius: 12px; transition: background .3s, color .3s; }
+.mover.flipped { background: var(--primary); color: var(--primary-ink); }
+.mover { touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; position: relative; z-index: 2; }
+.mover.dragging { cursor: grabbing; box-shadow: 0 10px 24px rgba(22,27,38,.22); scale: 1.08; }
+.mover.ready { outline: 3px dashed var(--good); outline-offset: 3px; }
+.mover:not(.flipped):not(.dragging) { animation: nudge 1.8s ease-in-out 1s 2; }
+@keyframes nudge { 0%,100% { transform: none; } 30% { transform: translateX(10px); } 60% { transform: translateX(-3px); } }
+
+/* 틀린 곳 찾기 */
+.spot { font-family: var(--math); font-size: 1.45rem; text-align: center; line-height: 2.1; letter-spacing: 0; }
+.spot .tok { display: inline-block; padding: 0 6px; margin: 0 1px; border-radius: 10px; border: 0; background: var(--bg); color: var(--ink); font: inherit; min-height: 40px; box-shadow: var(--shadow); transition: background .2s, color .2s; }
+.spot .tok.ok { background: var(--good-soft); color: var(--good); }
+.spot .tok.nope { animation: shake .35s; }
+.spot .tok.found { background: var(--bad); color: #fff; }
+.spot .arrow { color: var(--faint); font-family: var(--sans); padding: 0 .3em; }
+.fix { display: flex; flex-direction: column; gap: 6px; background: var(--bg); border-radius: 16px; padding: 14px 16px; }
+.fix .lbl { font-size: .78rem; font-weight: 800; color: var(--good); }
+.fix .m { font-family: var(--math); font-size: 1.25rem; letter-spacing: 0; }
+
+/* 직접 풀기 */
+.prob { color: var(--ink); font-size: 1.05rem; }
+.ansrow { display: flex; gap: 8px; }
+.ansrow input { flex: 1; min-width: 0; font: inherit; font-family: var(--math); font-size: 1.3rem; padding: 0 16px; min-height: 56px; border-radius: 16px; border: 2px solid transparent; background: var(--bg); color: var(--ink); transition: border-color .2s; }
+.ansrow input.ok { border-color: var(--good); } .ansrow input.bad { border-color: var(--bad); }
+.ansrow .btn { flex: none; }
+.fb { font-weight: 800; min-height: 1.4em; }
+.fb.ok { color: var(--good); } .fb.bad { color: var(--bad); }
+.hintbox { background: var(--bg); border-radius: 16px; padding: 14px 16px; color: var(--sub); font-size: .96rem; }
+.stepper { display: flex; flex-direction: column; gap: 8px; }
+.step { background: var(--bg); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; animation: rise .4s cubic-bezier(.2,.8,.2,1) both; }
+.step small { font-weight: 800; color: var(--primary); font-size: .8rem; }
+.step .m { font-family: var(--math); font-size: 1.3rem; letter-spacing: 0; }
+.burst { position: relative; }
+.burst i.dot { position: absolute; width: 8px; height: 8px; border-radius: 4px; pointer-events: none; animation: fly .7s ease-out forwards; }
+@keyframes fly { from { transform: translate(0,0) scale(1); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; } }
+
+/* 요약 */
+.sum { display: flex; flex-direction: column; gap: 10px; }
+.sum .it { display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start; background: var(--surface); border-radius: 18px; padding: 16px 18px; }
+.sum .it > b { width: 32px; height: 32px; border-radius: 16px; background: var(--good); color: #fff; display: grid; place-items: center; font-size: .9rem; }
+.done { text-align: center; padding: 26px 10px 6px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.done .big { width: 72px; height: 72px; border-radius: 36px; background: var(--primary); color: var(--primary-ink); display: grid; place-items: center; font-size: 2rem; font-weight: 900; }
+
+/* 하단 고정 버튼 */
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; padding: 14px max(20px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px)); background: linear-gradient(to top, var(--bg) 70%, transparent); }
+.dock .btn { display: block; width: 100%; max-width: 560px; margin: 0 auto; min-height: 58px; font-size: 1.08rem; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 380px) { h1 { font-size: 1.8rem; } h2 { font-size: 1.42rem; } .term { grid-template-columns: 1fr; gap: 4px; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cupi" viewBox="0 0 34 38"><path d="M3 6h22l-2.4 26a4 4 0 0 1-4 3.6H9.4a4 4 0 0 1-4-3.6z" fill="var(--primary)"/><path d="M25 11h3.5a4.5 4.5 0 0 1 0 9H24" fill="none" stroke="var(--primary)" stroke-width="3"/><rect x="1" y="3" width="26" height="5" rx="2.5" fill="var(--ink)"/></symbol>
+</svg>
+
+<div class="wrap">
+  <div class="top">
+    <span class="x" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M3 3l12 12M15 3L3 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+    <div class="bar" role="progressbar" aria-label="진행"><span id="prog"></span></div>
+    <span class="count num" id="count">1/8</span>
+  </div>
+
+  <!-- 1 -->
+  <section class="scene" data-title="start">
+    <span class="chip">중1 · 문자와 식</span>
+    <h1>모르는 수 하나,<br>1분 만에 찾아내기</h1>
+    <p class="lead">공식부터 외우지 않아요. 이미 머릿속으로 하고 있는 계산에 이름을 붙이고, 종이 위에서 실수 없이 하는 법만 익혀요.</p>
+    <div class="meta"><span>일차방정식</span><span>약 20분</span><span>직접 해 보기 5번</span></div>
+  </section>
+
+  <!-- 2 -->
+  <section class="scene" data-title="hook" hidden>
+    <span class="chip">오늘의 질문</span>
+    <h2>커피 한 잔은 얼마일까요?</h2>
+    <div class="card">
+      <div class="receipt">
+        <span class="shop">동네 카페 영수증</span>
+        <div class="row"><span>아메리카노 × 3</span><span class="q">?</span></div>
+        <div class="row"><span>버터 쿠키 × 1</span><span class="num">1,000원</span></div>
+        <div class="row total"><span>합계</span><span class="num">13,000원</span></div>
+      </div>
+      <div class="choices" id="hookChoices">
+        <button class="opt num" data-v="3000">3,000원</button>
+        <button class="opt num" data-v="4000">4,000원</button>
+        <button class="opt num" data-v="4333">4,333원</button>
+      </div>
+      <div class="reveal" id="hookReveal" hidden>
+        <p><b>맞아요!</b> 아마 머릿속에서 이렇게 하셨을 거예요.</p>
+        <div class="thought"><b>1</b><p>쿠키 값 1,000원을 빼면, 커피 3잔이 12,000원.</p></div>
+        <div class="thought"><b>2</b><p>3잔이 12,000원이니, 1잔은 4,000원.</p></div>
+        <p>이게 오늘 배울 전부예요. <span class="hl">방정식은 이 생각을 식으로 적은 것</span>이에요.</p>
+      </div>
+      <p class="fb bad" id="hookFb" hidden></p>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="scene" data-title="scale" hidden>
+    <span class="chip">손으로 해 보기</span>
+    <h2>등호(=)는<br>수평을 이룬 저울이에요</h2>
+    <p class="lead">커피 한 잔 값을 <i class="v">x</i>라고 불러요. 모르는 값에 잠깐 붙인 이름표예요. 버튼을 눌러 왼쪽에 <b>커피 한 잔만</b> 남겨 보세요.</p>
+    <div class="card">
+      <div class="scale" id="scale">
+        <svg viewBox="0 0 380 230" aria-hidden="true">
+          <path d="M190 52 L190 214" stroke="var(--ink)" stroke-width="8" stroke-linecap="round"/>
+          <rect x="130" y="210" width="120" height="12" rx="6" fill="var(--ink)"/>
+          <g id="beam"><rect x="40" y="47" width="300" height="10" rx="5" fill="var(--ink)"/></g>
+          <circle cx="190" cy="52" r="10" fill="var(--primary)"/>
+        </svg>
+        <div class="pan l" id="panL"><div class="hang"></div><div class="items" id="itemsL"></div><div class="plate"></div></div>
+        <div class="pan r" id="panR"><div class="hang"></div><div class="items" id="itemsR"></div><div class="plate"></div></div>
+      </div>
+      <div class="scale-eq" id="scaleEq" aria-live="polite"></div>
+      <p class="toast" id="toast" aria-live="polite"></p>
+      <div class="actions">
+        <div class="row2">
+          <button class="btn blue" id="bSub">양쪽 −1,000</button>
+          <button class="btn blue" id="bDiv">양쪽 ÷3</button>
+        </div>
+        <button class="btn redline" id="bTrap">왼쪽에서만 −1,000 해 보기</button>
+        <button class="btn quiet" id="bReset">처음부터 다시</button>
+      </div>
+    </div>
+    <p>규칙은 딱 하나예요. <span class="hl">양쪽에 똑같은 일을 하면 저울은 기울지 않아요.</span> 더하기·빼기·곱하기·나누기 모두요. 단, 0으로 나누기만은 안 돼요.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="scene" data-title="terms" hidden>
+    <span class="chip">이름 붙이기</span>
+    <h2>방금 한 일에는<br>이름이 있어요</h2>
+    <div class="terms">
+      <div class="term"><b>방정식</b><p>모르는 수가 들어 있어서, 넣는 값에 따라 맞기도 틀리기도 하는 식. 일종의 수수께끼예요.</p></div>
+      <div class="term"><b>해</b><p>수수께끼의 답. 오늘은 <i class="v">x</i> = 4000 이 해예요.</p></div>
+      <div class="term"><b>일차</b><p><i class="v">x</i>가 곱해지지 않고 한 번만 나온다는 뜻. <i class="v">x</i>² 이 나오면 이차예요.</p></div>
+    </div>
+    <p class="aside"><b>참고</b> · 2(<i class="v">x</i> + 1) = 2<i class="v">x</i> + 2 처럼 무엇을 넣어도 늘 맞는 식은 수수께끼가 아니라 그냥 사실이에요. 이런 식은 <b>항등식</b>이라고 따로 불러요.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="scene" data-title="move" hidden>
+    <span class="chip">지름길</span>
+    <h2>"건너가면 부호가 바뀐다"의 정체</h2>
+    <p class="lead">양쪽에서 1,000을 빼는 걸 매번 다 적으면 길어요. 노란 <b>+ 1000</b> 칩을 손가락으로 잡아 등호(=) 건너편으로 끌어 보세요.</p>
+    <div class="card">
+      <div class="jumpline" id="jumpline"><i class="v">3x</i><span class="mover num" id="mover">+ 1000</span><span class="eqsign">=</span><span class="num" id="rhs">13000</span></div>
+      <button class="btn soft" id="bMove">끌기 어려우면 눌러서 보내기</button>
+      <p id="moveNote" hidden><b>+1000이 −1000으로 바뀌었죠?</b> 이걸 <span class="hl">이항</span>이라고 해요. 새 규칙이 아니라 "양쪽에서 똑같이 빼기"를 줄여 적은 거예요. 헷갈리면 언제든 저울로 돌아가면 돼요.</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="scene" data-title="traps" hidden>
+    <span class="chip">틀린 곳 찾기</span>
+    <h2>다들 여기서 틀려요.<br>어디가 틀렸을까요?</h2>
+    <div class="card" data-spot>
+      <p><b>함정 1</b> · 괄호 앞에 빼기가 있어요. 틀린 부분을 눌러 보세요.</p>
+      <div class="spot"><button class="tok">−(<i class="v">x</i> − 3)</button><span class="arrow">=</span><button class="tok">−<i class="v">x</i></button><button class="tok" data-bad>− 3</button></div>
+      <div class="fix" hidden><span class="lbl">이렇게 고쳐요</span><span class="m">−(<i class="v">x</i> − 3) = −<i class="v">x</i> + 3</span><p>괄호 앞의 −는 안쪽 <b>모든</b> 항의 부호를 바꿔요. 뒤쪽 항을 자주 놓쳐요.</p></div>
+    </div>
+    <div class="card" data-spot>
+      <p><b>함정 2</b> · 분모를 없애려고 양쪽에 6을 곱했어요. 틀린 부분은?</p>
+      <div class="spot"><span><i class="v">x</i>/2 + 1 = <i class="v">x</i>/3</span><span class="arrow">→</span><button class="tok">3<i class="v">x</i></button><button class="tok" data-bad>+ 1</button><span class="arrow">=</span><button class="tok">2<i class="v">x</i></button></div>
+      <div class="fix" hidden><span class="lbl">이렇게 고쳐요</span><span class="m">3<i class="v">x</i> + 6 = 2<i class="v">x</i></span><p>숫자만 있는 1에도 6을 곱해야 해요. 저울 위 <b>모든 물건</b>에 똑같이요.</p></div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="scene" data-title="try" hidden>
+    <span class="chip">직접 풀어 보기</span>
+    <h2>이제 직접 해 볼 차례</h2>
+    <div class="card burst" data-ans="5">
+      <p class="prob">택시 기본요금은 <b>4,800원</b>이고, 기본 거리를 넘으면 1km마다 <b>1,000원</b>씩 더 나와요. 요금이 <b>9,800원</b>이었다면 몇 km를 더 갔을까요?</p>
+      <div class="ansrow"><input inputmode="numeric" id="q1" aria-label="문제 1 답" placeholder="km"><button class="btn blue" data-check>확인</button></div>
+      <p class="fb" aria-live="polite"></p>
+      <div class="hintbox" hidden>더 간 거리를 <i class="v">x</i> km로 두면 요금은 4800 + 1000<i class="v">x</i> 원이에요.</div>
+      <div class="stepper"></div>
+      <div class="row2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn soft" data-hint>힌트</button><button class="btn soft" data-next>풀이 한 단계</button>
+      </div>
+      <template>
+        <div class="step"><small>식 세우기</small><span class="m">4800 + 1000<i class="v">x</i> = 9800</span></div>
+        <div class="step"><small>양쪽에서 4800 빼기</small><span class="m">1000<i class="v">x</i> = 5000</span></div>
+        <div class="step"><small>양쪽을 1000으로 나누기</small><span class="m"><i class="v">x</i> = 5</span></div>
+        <div class="step"><small>검산</small><span>4800 + 1000 × 5 = 9800. 영수증과 같아요.</span></div>
+      </template>
+    </div>
+    <div class="card burst" data-ans="7">
+      <p class="prob">방정식 <span style="font-family:var(--math);font-size:1.15em">3(<i class="v">x</i> − 2) = <i class="v">x</i> + 8</span> 의 해를 구하세요.</p>
+      <div class="ansrow"><input inputmode="numeric" id="q2" aria-label="문제 2 답" placeholder="x ="><button class="btn blue" data-check>확인</button></div>
+      <p class="fb" aria-live="polite"></p>
+      <div class="hintbox" hidden>괄호부터 풀어요. 3을 <i class="v">x</i>에도, −2에도 곱해요.</div>
+      <div class="stepper"></div>
+      <div class="row2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn soft" data-hint>힌트</button><button class="btn soft" data-next>풀이 한 단계</button>
+      </div>
+      <template>
+        <div class="step"><small>괄호 풀기</small><span class="m">3<i class="v">x</i> − 6 = <i class="v">x</i> + 8</span></div>
+        <div class="step"><small>양쪽에서 <i class="v">x</i> 빼기</small><span class="m">2<i class="v">x</i> − 6 = 8</span></div>
+        <div class="step"><small>양쪽에 6 더하기</small><span class="m">2<i class="v">x</i> = 14</span></div>
+        <div class="step"><small>양쪽을 2로 나누기</small><span class="m"><i class="v">x</i> = 7</span></div>
+        <div class="step"><small>검산</small><span>왼쪽 3 × 5 = 15, 오른쪽 7 + 8 = 15. 같아요.</span></div>
+      </template>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="scene" data-title="sum" hidden>
+    <span class="chip">한 장 요약</span>
+    <h2>이것만 기억하세요</h2>
+    <div class="sum">
+      <div class="it"><b>1</b><p>방정식은 <b>수평 저울</b>. 양쪽에 똑같이 하면 기울지 않아요.</p></div>
+      <div class="it"><b>2</b><p><i class="v">x</i>는 한쪽, 숫자는 다른 쪽으로 모아 <i class="v">ax</i> = <i class="v">b</i>를 만들고 <i class="v">a</i>로 나눠요.</p></div>
+      <div class="it"><b>3</b><p>이항은 "양쪽에서 빼기"의 줄임말이에요.</p></div>
+      <div class="it"><b>4</b><p>답이 나오면 처음 식에 넣어 <b>검산</b>. 10초면 실수를 잡아요.</p></div>
+    </div>
+    <div class="done"><div class="big">✓</div><b>일차방정식 개념 끝!</b><p class="lead">다음은 연습문제 30개예요.</p></div>
+  </section>
+</div>
+
+<div class="dock"><button class="btn blue" id="next">시작하기</button></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const scenes = [...document.querySelectorAll('.scene')];
+  let shown = 1;
+  const labels = ['시작하기', '계속하기', '계속하기', '계속하기', '계속하기', '계속하기', '계속하기', '다 했어요'];
+  function updateDock() {
+    $('prog').style.width = (shown / scenes.length * 100) + '%';
+    $('count').textContent = shown + '/' + scenes.length;
+    $('next').textContent = shown >= scenes.length ? '처음부터 다시 보기' : labels[shown - 1];
+  }
+  $('next').onclick = () => {
+    if (shown >= scenes.length) { location.reload(); return; }
+    const s = scenes[shown]; s.hidden = false; s.classList.add('enter'); shown++;
+    updateDock();
+    requestAnimationFrame(() => s.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }));
+  };
+  updateDock();
+
+  // 오늘의 질문
+  $('hookChoices').addEventListener('click', (e) => {
+    const b = e.target.closest('.opt'); if (!b) return;
+    if (b.dataset.v === '4000') {
+      b.classList.add('right'); $('hookReveal').hidden = false; $('hookFb').hidden = true;
+      $('hookChoices').querySelectorAll('.opt').forEach((o) => { o.disabled = true; });
+    } else {
+      b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+      $('hookFb').hidden = false;
+      $('hookFb').textContent = b.dataset.v === '4333' ? '13,000을 3으로 나눴네요. 쿠키 값은 빼고 나눠야 해요.' : '커피 3잔이면 9,000원, 쿠키까지 10,000원이에요. 합계와 달라요.';
+    }
+  });
+
+  // 저울
+  const fmt = (n) => n.toLocaleString('ko-KR');
+  let st;
+  function cup() { const d = document.createElement('div'); d.className = 'cup'; d.innerHTML = '<svg viewBox="0 0 34 38"><use href="#cupi"/></svg><span>x</span>'; return d; }
+  function won(n) { const d = document.createElement('div'); d.className = 'won num'; d.textContent = fmt(n) + '원'; return d; }
+  function draw(msg, cls) {
+    const L = $('itemsL'), R = $('itemsR');
+    L.replaceChildren(); R.replaceChildren();
+    for (let i = 0; i < st.cups; i++) L.appendChild(cup());
+    if (st.lc) L.appendChild(won(st.lc));
+    R.appendChild(won(st.rc));
+    const left = (st.cups === 1 ? '' : st.cups) + '<i class="v">x</i>' + (st.lc ? ' + ' + st.lc : '');
+    $('scaleEq').innerHTML = left + (st.tilt ? ' <span class="ne">≠</span> ' : ' = ') + st.rc;
+    const w = $('scale').clientWidth, dy = Math.sin(st.tilt * Math.PI / 180) * w * (150 / 380);
+    $('beam').style.transform = 'rotate(' + st.tilt + 'deg)';
+    $('panL').style.transform = 'translateY(' + (-dy) + 'px)';
+    $('panR').style.transform = 'translateY(' + dy + 'px)';
+    $('toast').textContent = msg; $('toast').className = 'toast ' + (cls || '');
+    $('bSub').disabled = st.step !== 0 || !!st.tilt;
+    $('bDiv').disabled = st.step !== 1 || !!st.tilt;
+    $('bTrap').disabled = st.step !== 0 || !!st.tilt;
+  }
+  const reset = () => { st = { cups: 3, lc: 1000, rc: 13000, tilt: 0, step: 0 }; draw('쿠키 값부터 덜어 내 볼까요?'); };
+  $('bSub').onclick = () => { st.lc = 0; st.rc = 12000; st.step = 1; draw('수평 그대로예요. 커피 3잔 = 12,000원. 이제 한 잔만 남기려면?', 'ok'); };
+  $('bDiv').onclick = () => { st.cups = 1; st.rc = 4000; st.step = 2; draw('커피 한 잔 = 4,000원. x = 4000 을 찾았어요!', 'ok'); };
+  $('bTrap').onclick = () => {
+    st.lc = 0; st.tilt = -9; draw('기울었어요! 한쪽만 바꾸면 양쪽이 더는 같지 않아요.', 'bad');
+    setTimeout(() => { st.lc = 1000; st.tilt = 0; draw('되돌렸어요. 이번엔 양쪽에서 함께 빼 보세요.'); }, 2200);
+  };
+  $('bReset').onclick = reset;
+  reset();
+  new ResizeObserver(() => st && draw($('toast').textContent, $('toast').className.replace('toast', '').trim())).observe($('scale'));
+
+  // 이항 (자리 이동 애니메이션)
+  const mv = $('mover'), line = $('jumpline'), bMove = $('bMove');
+  function across(first) {
+    first = first || mv.getBoundingClientRect();
+    line.appendChild(mv);
+    animateFrom(mv, first, !first.dragged);
+    setTimeout(() => { mv.textContent = '− 1000'; mv.classList.add('flipped'); }, 200);
+    bMove.textContent = '되돌리기'; $('moveNote').hidden = false;
+  }
+  function back(first) {
+    first = first || mv.getBoundingClientRect();
+    line.insertBefore(mv, line.querySelector('.eqsign'));
+    mv.textContent = '+ 1000'; mv.classList.remove('flipped');
+    animateFrom(mv, first, !first.dragged); bMove.textContent = '끌기 어려우면 눌러서 보내기'; $('moveNote').hidden = true;
+  }
+  bMove.onclick = () => (mv.classList.contains('flipped') ? back() : across());
+  function animateFrom(el, first, arc) {
+    const last = el.getBoundingClientRect();
+    const dx = first.left - last.left, dy = first.top - last.top;
+    const frames = arc
+      ? [{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'translate(' + dx / 2 + 'px, -34px)', offset: .5 }, { transform: 'none' }]
+      : [{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }];
+    el.animate(frames, { duration: arc ? 560 : 320, easing: 'cubic-bezier(.3,.7,.3,1)' });
+  }
+  let drag = null;
+  const crossed = () => {
+    const eq = line.querySelector('.eqsign').getBoundingClientRect(), r = mv.getBoundingClientRect();
+    const mid = (r.left + r.right) / 2;
+    return mv.classList.contains('flipped') ? mid < eq.left : mid > eq.right;
+  };
+  mv.addEventListener('pointerdown', (e) => {
+    drag = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    mv.setPointerCapture(e.pointerId); mv.classList.add('dragging'); mv.getAnimations().forEach((a) => a.cancel());
+  });
+  mv.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    mv.style.transform = 'translate(' + (e.clientX - drag.x) + 'px,' + (e.clientY - drag.y) + 'px)';
+    mv.classList.toggle('ready', crossed());
+  });
+  const drop = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const go = crossed(), first = mv.getBoundingClientRect();
+    first.dragged = true;
+    drag = null; mv.style.transform = ''; mv.classList.remove('dragging', 'ready');
+    if (go) (mv.classList.contains('flipped') ? back : across)(first);
+    else animateFrom(mv, first, false);
+  };
+  mv.addEventListener('pointerup', drop);
+  mv.addEventListener('pointercancel', drop);
+
+  // 틀린 곳 찾기
+  document.querySelectorAll('[data-spot]').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      const t = e.target.closest('.tok'); if (!t || card.dataset.done) return;
+      if (t.hasAttribute('data-bad')) { t.classList.add('found'); card.querySelector('.fix').hidden = false; card.dataset.done = '1'; }
+      else { t.classList.remove('nope'); void t.offsetWidth; t.classList.add('nope', 'ok'); }
+    });
+  });
+
+  // 직접 풀기
+  document.querySelectorAll('[data-ans]').forEach((card) => {
+    const input = card.querySelector('input'), fb = card.querySelector('.fb'), stepper = card.querySelector('.stepper');
+    const steps = [...card.querySelector('template').content.children];
+    let shownSteps = 0, tries = 0;
+    const nextBtn = card.querySelector('[data-next]');
+    const showStep = () => { if (shownSteps < steps.length) { stepper.appendChild(steps[shownSteps++].cloneNode(true)); } if (shownSteps >= steps.length) { nextBtn.disabled = true; nextBtn.textContent = '풀이 끝'; } };
+    nextBtn.onclick = showStep;
+    card.querySelector('[data-hint]').onclick = () => { card.querySelector('.hintbox').hidden = false; };
+    const check = () => {
+      const v = input.value.replace('−', '-').replace(/[^0-9.\-]/g, '');
+      if (!v) { fb.textContent = '숫자로 적어 주세요.'; fb.className = 'fb'; return; }
+      tries++;
+      if (Number(v) === Number(card.dataset.ans)) {
+        fb.textContent = '정답이에요! 풀이와 비교해 보세요.'; fb.className = 'fb ok'; input.className = 'ok';
+        burst(card, input);
+      } else {
+        fb.textContent = tries < 2 ? '아쉬워요. 힌트를 보고 한 번 더!' : '괜찮아요. 풀이를 한 단계씩 따라가 봐요.'; fb.className = 'fb bad'; input.className = 'bad';
+        if (tries >= 2 && shownSteps === 0) showStep();
+      }
+    };
+    card.querySelector('[data-check]').onclick = check;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') check(); });
+  });
+  function burst(card, anchor) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cr = card.getBoundingClientRect(), ar = anchor.getBoundingClientRect();
+    const colors = ['var(--primary)', 'var(--good)', 'var(--coin)', 'var(--bad)'];
+    for (let i = 0; i < 16; i++) {
+      const d = document.createElement('i'); d.className = 'dot';
+      const a = (i / 16) * Math.PI * 2, r = 50 + Math.random() * 40;
+      d.style.left = (ar.right - cr.left - 40) + 'px'; d.style.top = (ar.top - cr.top + ar.height / 2) + 'px';
+      d.style.background = colors[i % 4];
+      d.style.setProperty('--dx', Math.cos(a) * r + 'px'); d.style.setProperty('--dy', Math.sin(a) * r + 'px');
+      card.appendChild(d); setTimeout(() => d.remove(), 800);
+    }
+  }
+})();
+</script>
