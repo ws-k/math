@@ -1,0 +1,2274 @@
+{
+ "courses": [
+  {
+   "id": "elem",
+   "name": "초등",
+   "track": "common"
+  },
+  {
+   "id": "m1",
+   "name": "중1",
+   "track": "common"
+  },
+  {
+   "id": "m2",
+   "name": "중2",
+   "track": "common"
+  },
+  {
+   "id": "m3",
+   "name": "중3",
+   "track": "common"
+  },
+  {
+   "id": "h1",
+   "name": "고1 수학",
+   "track": "common"
+  },
+  {
+   "id": "math1",
+   "name": "수학Ⅰ",
+   "track": "common"
+  },
+  {
+   "id": "math2",
+   "name": "수학Ⅱ",
+   "track": "common"
+  },
+  {
+   "id": "prob",
+   "name": "확률과 통계",
+   "track": "prob"
+  },
+  {
+   "id": "calc",
+   "name": "미적분",
+   "track": "calc"
+  },
+  {
+   "id": "geo",
+   "name": "기하",
+   "track": "geo"
+  }
+ ],
+ "units": [
+  {
+   "id": "e-whole-ops",
+   "course": "elem",
+   "title": "자연수의 사칙연산과 혼합 계산",
+   "prereq": [],
+   "topics": [
+    "자릿값과 큰 수",
+    "받아올림·받아내림",
+    "세로셈 곱셈",
+    "몫과 나머지",
+    "혼합 계산 순서"
+   ],
+   "keyFormula": "$a=bq+r$ · 괄호 → ×÷ → +−",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-divisor-multiple",
+   "course": "elem",
+   "title": "약수와 배수",
+   "prereq": [
+    "e-whole-ops"
+   ],
+   "topics": [
+    "약수·배수",
+    "공약수와 최대공약수",
+    "공배수와 최소공배수",
+    "곱셈으로 찾기"
+   ],
+   "keyFormula": "(최대공약수)×(최소공배수)=두 수의 곱",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-fraction-basics",
+   "course": "elem",
+   "title": "분수의 뜻과 약분·통분",
+   "prereq": [
+    "e-divisor-multiple"
+   ],
+   "topics": [
+    "분수의 뜻",
+    "진분수·가분수·대분수",
+    "크기가 같은 분수",
+    "약분과 기약분수",
+    "통분과 크기 비교"
+   ],
+   "keyFormula": "$\\frac{a}{b}=\\frac{a\\times k}{b\\times k}$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-fraction-addsub",
+   "course": "elem",
+   "title": "분수의 덧셈과 뺄셈",
+   "prereq": [
+    "e-fraction-basics"
+   ],
+   "topics": [
+    "분모가 같은 분수",
+    "분모가 다른 분수(통분)",
+    "대분수의 덧셈",
+    "받아내림이 있는 뺄셈"
+   ],
+   "keyFormula": "$\\frac{a}{b}+\\frac{c}{d}=\\frac{ad+bc}{bd}$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 7"
+   ]
+  },
+  {
+   "id": "e-fraction-mul",
+   "course": "elem",
+   "title": "분수의 곱셈",
+   "prereq": [
+    "e-fraction-addsub"
+   ],
+   "topics": [
+    "(분수)×(자연수)",
+    "(분수)×(분수)",
+    "약분하며 곱하기",
+    "대분수의 곱셈"
+   ],
+   "keyFormula": "$\\frac{a}{b}\\times\\frac{c}{d}=\\frac{ac}{bd}$",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-fraction-div",
+   "course": "elem",
+   "title": "분수의 나눗셈",
+   "prereq": [
+    "e-fraction-mul"
+   ],
+   "topics": [
+    "나눗셈의 몫을 분수로",
+    "(분수)÷(자연수)",
+    "(분수)÷(분수) = 역수 곱하기"
+   ],
+   "keyFormula": "$\\frac{a}{b}\\div\\frac{c}{d}=\\frac{a}{b}\\times\\frac{d}{c}$",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-decimal",
+   "course": "elem",
+   "title": "소수와 소수의 계산",
+   "prereq": [
+    "e-fraction-basics"
+   ],
+   "topics": [
+    "소수의 자릿값",
+    "덧셈·뺄셈",
+    "곱셈의 소수점 위치",
+    "나눗셈",
+    "분수 ↔ 소수"
+   ],
+   "keyFormula": "$0.1=\\frac{1}{10}$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-ratio",
+   "course": "elem",
+   "title": "비와 비율",
+   "prereq": [
+    "e-fraction-div",
+    "e-decimal"
+   ],
+   "topics": [
+    "비 $a:b$",
+    "비율",
+    "백분율",
+    "할인율·농도 같은 활용"
+   ],
+   "keyFormula": "비율 = 비교하는 양 ÷ 기준량",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-proportion",
+   "course": "elem",
+   "title": "비례식과 비례배분",
+   "prereq": [
+    "e-ratio"
+   ],
+   "topics": [
+    "비의 성질",
+    "비례식",
+    "외항의 곱 = 내항의 곱",
+    "비례배분"
+   ],
+   "keyFormula": "$a:b=c:d \\Leftrightarrow ad=bc$",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-polygon-area",
+   "course": "elem",
+   "title": "다각형의 둘레와 넓이",
+   "prereq": [
+    "e-whole-ops",
+    "e-fraction-mul"
+   ],
+   "topics": [
+    "직사각형",
+    "평행사변형",
+    "삼각형",
+    "사다리꼴",
+    "마름모"
+   ],
+   "keyFormula": "삼각형 $\\frac12\\times$밑변$\\times$높이, 사다리꼴 $\\frac12(a+b)h$",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 10",
+    "기하 27"
+   ]
+  },
+  {
+   "id": "e-circle-area",
+   "course": "elem",
+   "title": "원주율과 원의 넓이",
+   "prereq": [
+    "e-polygon-area",
+    "e-decimal"
+   ],
+   "topics": [
+    "원주와 원주율",
+    "원주 공식",
+    "원을 잘라 붙여 넓이 구하기"
+   ],
+   "keyFormula": "$l=2\\pi r$, $S=\\pi r^2$",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "e-cuboid",
+   "course": "elem",
+   "title": "직육면체의 부피와 겉넓이",
+   "prereq": [
+    "e-polygon-area"
+   ],
+   "topics": [
+    "직육면체·정육면체",
+    "전개도",
+    "겉넓이",
+    "부피와 단위"
+   ],
+   "keyFormula": "$V=$가로$\\times$세로$\\times$높이",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m1-prime-factor",
+   "course": "m1",
+   "title": "소인수분해",
+   "prereq": [
+    "e-divisor-multiple"
+   ],
+   "topics": [
+    "소수와 합성수",
+    "거듭제곱",
+    "소인수분해",
+    "소인수분해로 최대공약수·최소공배수",
+    "약수의 개수"
+   ],
+   "keyFormula": "$p^aq^b$의 약수 개수 $(a+1)(b+1)$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m1-integer-rational",
+   "course": "m1",
+   "title": "정수와 유리수",
+   "prereq": [
+    "e-fraction-basics",
+    "e-decimal"
+   ],
+   "topics": [
+    "양수와 음수",
+    "정수·유리수",
+    "수직선",
+    "절댓값",
+    "대소 비교"
+   ],
+   "keyFormula": "$\\lvert a\\rvert$ = 원점까지의 거리",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m1-signed-ops",
+   "course": "m1",
+   "title": "정수와 유리수의 계산",
+   "prereq": [
+    "m1-integer-rational"
+   ],
+   "topics": [
+    "부호가 있는 덧셈·뺄셈",
+    "곱셈·나눗셈 부호 규칙",
+    "거듭제곱의 부호",
+    "혼합 계산"
+   ],
+   "keyFormula": "$(-)\\times(-)=(+)$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m1-expressions",
+   "course": "m1",
+   "title": "문자의 사용과 식의 계산",
+   "prereq": [
+    "m1-signed-ops"
+   ],
+   "topics": [
+    "문자로 식 세우기",
+    "기호 생략 규칙",
+    "식의 값(대입)",
+    "동류항",
+    "일차식의 덧셈·뺄셈"
+   ],
+   "keyFormula": "$a(b+c)=ab+ac$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m1-linear-eq",
+   "course": "m1",
+   "title": "일차방정식",
+   "prereq": [
+    "m1-expressions"
+   ],
+   "topics": [
+    "등식·방정식·항등식",
+    "등식의 성질",
+    "이항",
+    "괄호·분수·소수가 있는 방정식",
+    "활용"
+   ],
+   "keyFormula": "$ax+b=0 \\Rightarrow x=-\\frac{b}{a}$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 4"
+   ]
+  },
+  {
+   "id": "m1-coord-graph",
+   "course": "m1",
+   "title": "좌표평면과 그래프",
+   "prereq": [
+    "m1-linear-eq"
+   ],
+   "topics": [
+    "순서쌍과 좌표",
+    "사분면",
+    "그래프 읽기",
+    "정비례 $y=ax$",
+    "반비례 $y=\\frac{a}{x}$"
+   ],
+   "keyFormula": null,
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 10"
+   ]
+  },
+  {
+   "id": "m1-basic-geometry",
+   "course": "m1",
+   "title": "기본 도형과 작도·합동",
+   "prereq": [
+    "e-polygon-area"
+   ],
+   "topics": [
+    "점·선·면과 각",
+    "맞꼭지각",
+    "평행선의 동위각·엇각",
+    "위치 관계",
+    "작도",
+    "삼각형의 합동 조건"
+   ],
+   "keyFormula": "SSS · SAS · ASA",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m1-plane-figures",
+   "course": "m1",
+   "title": "평면도형의 성질",
+   "prereq": [
+    "m1-basic-geometry",
+    "e-circle-area"
+   ],
+   "topics": [
+    "다각형의 대각선 개수",
+    "내각의 합",
+    "외각",
+    "원과 부채꼴(호의 길이·넓이)"
+   ],
+   "keyFormula": "내각의 합 $180^\\circ(n-2)$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m1-solid-figures",
+   "course": "m1",
+   "title": "입체도형의 성질",
+   "prereq": [
+    "m1-plane-figures",
+    "e-cuboid"
+   ],
+   "topics": [
+    "다면체·정다면체",
+    "회전체",
+    "기둥·뿔·구의 겉넓이와 부피"
+   ],
+   "keyFormula": "뿔 $V=\\frac13Sh$, 구 $V=\\frac43\\pi r^3$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "기하 28"
+   ]
+  },
+  {
+   "id": "m1-data",
+   "course": "m1",
+   "title": "자료의 정리와 해석",
+   "prereq": [
+    "e-whole-ops"
+   ],
+   "topics": [
+    "평균",
+    "줄기와 잎 그림",
+    "도수분포표",
+    "히스토그램",
+    "상대도수"
+   ],
+   "keyFormula": "상대도수 = 도수 ÷ 도수의 총합",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m2-repeating-decimal",
+   "course": "m2",
+   "title": "유리수와 순환소수",
+   "prereq": [
+    "m1-prime-factor",
+    "e-decimal"
+   ],
+   "topics": [
+    "유한소수·무한소수",
+    "유한소수가 되는 조건(분모가 2, 5뿐)",
+    "순환소수",
+    "순환소수를 분수로"
+   ],
+   "keyFormula": "$0.\\dot{a}=\\frac{a}{9}$",
+   "hours": 1.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m2-exponent-poly",
+   "course": "m2",
+   "title": "식의 계산 (지수법칙·다항식)",
+   "prereq": [
+    "m1-expressions"
+   ],
+   "topics": [
+    "지수법칙 4가지",
+    "단항식의 곱셈·나눗셈",
+    "다항식의 덧셈·뺄셈",
+    "다항식×단항식"
+   ],
+   "keyFormula": "$a^ma^n=a^{m+n}$, $(a^m)^n=a^{mn}$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 1"
+   ]
+  },
+  {
+   "id": "m2-linear-ineq",
+   "course": "m2",
+   "title": "일차부등식",
+   "prereq": [
+    "m1-linear-eq"
+   ],
+   "topics": [
+    "부등식의 성질(음수를 곱하면 방향이 바뀜)",
+    "일차부등식 풀이",
+    "수직선에 나타내기",
+    "활용"
+   ],
+   "keyFormula": "$a<b,\\ c<0 \\Rightarrow ac>bc$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m2-simul-eq",
+   "course": "m2",
+   "title": "연립일차방정식",
+   "prereq": [
+    "m1-linear-eq"
+   ],
+   "topics": [
+    "미지수가 2개인 방정식",
+    "가감법",
+    "대입법",
+    "해가 없거나 무수히 많은 경우",
+    "활용"
+   ],
+   "keyFormula": null,
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m2-linear-func",
+   "course": "m2",
+   "title": "일차함수와 그래프",
+   "prereq": [
+    "m1-coord-graph"
+   ],
+   "topics": [
+    "함수의 뜻",
+    "$y=ax+b$",
+    "기울기와 $y$절편",
+    "평행이동",
+    "직선의 식 구하기"
+   ],
+   "keyFormula": "기울기 = $y$의 증가량 ÷ $x$의 증가량",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 13"
+   ]
+  },
+  {
+   "id": "m2-linear-func-eq",
+   "course": "m2",
+   "title": "일차함수와 일차방정식",
+   "prereq": [
+    "m2-linear-func",
+    "m2-simul-eq"
+   ],
+   "topics": [
+    "$ax+by+c=0$의 그래프",
+    "$x=p$, $y=q$",
+    "연립방정식의 해 = 두 직선의 교점"
+   ],
+   "keyFormula": null,
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m2-triangle-quad",
+   "course": "m2",
+   "title": "삼각형과 사각형의 성질",
+   "prereq": [
+    "m1-basic-geometry"
+   ],
+   "topics": [
+    "이등변삼각형",
+    "직각삼각형의 합동",
+    "외심·내심",
+    "평행사변형의 성질·조건",
+    "여러 가지 사각형"
+   ],
+   "keyFormula": null,
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m2-similarity",
+   "course": "m2",
+   "title": "도형의 닮음",
+   "prereq": [
+    "m2-triangle-quad",
+    "e-proportion"
+   ],
+   "topics": [
+    "닮음비",
+    "삼각형의 닮음 조건",
+    "평행선과 선분의 비",
+    "중점 연결 정리",
+    "무게중심",
+    "넓이·부피의 비"
+   ],
+   "keyFormula": "넓이의 비 $m^2:n^2$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "기하 28"
+   ]
+  },
+  {
+   "id": "m2-pythagoras",
+   "course": "m2",
+   "title": "피타고라스 정리",
+   "prereq": [
+    "m2-similarity"
+   ],
+   "topics": [
+    "정리의 뜻과 증명",
+    "변의 길이 구하기",
+    "직각삼각형이 되는 조건",
+    "활용"
+   ],
+   "keyFormula": "$a^2+b^2=c^2$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 14",
+    "기하 27"
+   ]
+  },
+  {
+   "id": "m2-probability",
+   "course": "m2",
+   "title": "경우의 수와 확률",
+   "prereq": [
+    "e-fraction-mul"
+   ],
+   "topics": [
+    "사건과 경우의 수",
+    "합의 법칙·곱의 법칙",
+    "확률의 뜻",
+    "여사건",
+    "확률의 덧셈·곱셈"
+   ],
+   "keyFormula": "$P=\\frac{\\text{해당 경우의 수}}{\\text{전체 경우의 수}}$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m3-sqrt",
+   "course": "m3",
+   "title": "제곱근과 실수",
+   "prereq": [
+    "m2-repeating-decimal"
+   ],
+   "topics": [
+    "제곱근의 뜻과 성질",
+    "$\\sqrt{a^2}=\\lvert a\\rvert$",
+    "대소 비교",
+    "무리수",
+    "실수와 수직선"
+   ],
+   "keyFormula": "$(\\sqrt a)^2=a$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m3-radical-ops",
+   "course": "m3",
+   "title": "근호를 포함한 식의 계산",
+   "prereq": [
+    "m3-sqrt"
+   ],
+   "topics": [
+    "$\\sqrt a\\sqrt b=\\sqrt{ab}$",
+    "근호 밖으로 꺼내기",
+    "분모의 유리화",
+    "덧셈·뺄셈"
+   ],
+   "keyFormula": "$\\frac{1}{\\sqrt a}=\\frac{\\sqrt a}{a}$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 8",
+    "확통 26"
+   ]
+  },
+  {
+   "id": "m3-poly-mul",
+   "course": "m3",
+   "title": "다항식의 곱셈 (곱셈 공식)",
+   "prereq": [
+    "m2-exponent-poly"
+   ],
+   "topics": [
+    "전개",
+    "$(a\\pm b)^2$",
+    "$(a+b)(a-b)$",
+    "$(x+a)(x+b)$",
+    "$(ax+b)(cx+d)$"
+   ],
+   "keyFormula": "$(a+b)^2=a^2+2ab+b^2$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 5"
+   ]
+  },
+  {
+   "id": "m3-factoring",
+   "course": "m3",
+   "title": "인수분해",
+   "prereq": [
+    "m3-poly-mul"
+   ],
+   "topics": [
+    "공통인수",
+    "완전제곱식",
+    "합차 공식",
+    "$x^2+(a+b)x+ab$",
+    "$acx^2+\\cdots$",
+    "치환"
+   ],
+   "keyFormula": "$x^2+(a+b)x+ab=(x+a)(x+b)$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 9"
+   ]
+  },
+  {
+   "id": "m3-quadratic-eq",
+   "course": "m3",
+   "title": "이차방정식",
+   "prereq": [
+    "m3-factoring",
+    "m3-radical-ops"
+   ],
+   "topics": [
+    "인수분해로 풀기",
+    "완전제곱식으로 풀기",
+    "근의 공식",
+    "중근",
+    "활용"
+   ],
+   "keyFormula": "$x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "m3-quadratic-func",
+   "course": "m3",
+   "title": "이차함수와 그래프",
+   "prereq": [
+    "m3-quadratic-eq",
+    "m2-linear-func"
+   ],
+   "topics": [
+    "$y=ax^2$",
+    "$y=a(x-p)^2+q$",
+    "일반형을 표준형으로",
+    "꼭짓점과 축",
+    "식 구하기"
+   ],
+   "keyFormula": "꼭짓점 $(p,q)$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 7"
+   ]
+  },
+  {
+   "id": "m3-trig-ratio",
+   "course": "m3",
+   "title": "삼각비",
+   "prereq": [
+    "m2-pythagoras",
+    "m3-radical-ops"
+   ],
+   "topics": [
+    "sin·cos·tan의 뜻",
+    "30°·45°·60°",
+    "길이 구하기",
+    "넓이 $\\frac12ab\\sin C$"
+   ],
+   "keyFormula": "$\\sin^2A+\\cos^2A=1$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 18",
+    "미적 26"
+   ]
+  },
+  {
+   "id": "m3-circle",
+   "course": "m3",
+   "title": "원의 성질",
+   "prereq": [
+    "m2-triangle-quad",
+    "m2-pythagoras"
+   ],
+   "topics": [
+    "현의 수직이등분선",
+    "접선의 길이",
+    "원주각",
+    "지름에 대한 원주각 = 90°",
+    "원에 내접하는 사각형"
+   ],
+   "keyFormula": "원주각 = 중심각 ÷ 2",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 14",
+    "기하 27",
+    "기하 30"
+   ]
+  },
+  {
+   "id": "m3-statistics",
+   "course": "m3",
+   "title": "대푯값과 산포도·상관관계",
+   "prereq": [
+    "m1-data",
+    "m3-sqrt"
+   ],
+   "topics": [
+    "중앙값·최빈값",
+    "편차",
+    "분산·표준편차",
+    "산점도와 상관관계"
+   ],
+   "keyFormula": "분산 = 편차 제곱의 평균",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "확통 27"
+   ]
+  },
+  {
+   "id": "h1-poly-ops",
+   "course": "h1",
+   "title": "다항식의 연산",
+   "prereq": [
+    "m3-poly-mul"
+   ],
+   "topics": [
+    "내림차순 정리",
+    "덧셈·뺄셈·곱셈",
+    "곱셈 공식 확장 $(a+b)^3$ 등",
+    "다항식의 나눗셈"
+   ],
+   "keyFormula": "$A=BQ+R$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "h1-remainder-factor",
+   "course": "h1",
+   "title": "나머지정리와 인수분해",
+   "prereq": [
+    "h1-poly-ops",
+    "m3-factoring"
+   ],
+   "topics": [
+    "항등식",
+    "미정계수법",
+    "나머지정리",
+    "인수정리",
+    "조립제법",
+    "삼차식 인수분해"
+   ],
+   "keyFormula": "$f(x)$를 $x-a$로 나눈 나머지 $=f(a)$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 21"
+   ]
+  },
+  {
+   "id": "h1-complex",
+   "course": "h1",
+   "title": "복소수",
+   "prereq": [
+    "m3-radical-ops"
+   ],
+   "topics": [
+    "허수 $i$",
+    "복소수의 사칙연산",
+    "켤레복소수",
+    "음수의 제곱근"
+   ],
+   "keyFormula": "$i^2=-1$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "h1-quadratic-eq",
+   "course": "h1",
+   "title": "이차방정식 (판별식·근과 계수)",
+   "prereq": [
+    "m3-quadratic-eq",
+    "h1-complex"
+   ],
+   "topics": [
+    "판별식으로 근 판별",
+    "근과 계수의 관계",
+    "두 근으로 방정식 만들기"
+   ],
+   "keyFormula": "$D=b^2-4ac$, $\\alpha+\\beta=-\\frac ba$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 11"
+   ]
+  },
+  {
+   "id": "h1-quad-eq-func",
+   "course": "h1",
+   "title": "이차방정식과 이차함수",
+   "prereq": [
+    "h1-quadratic-eq",
+    "m3-quadratic-func"
+   ],
+   "topics": [
+    "그래프와 $x$축의 위치 관계",
+    "직선과의 위치 관계",
+    "범위가 정해진 최대·최소"
+   ],
+   "keyFormula": "$D>0$ ⇔ 두 점에서 만남",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 19"
+   ]
+  },
+  {
+   "id": "h1-higher-eq",
+   "course": "h1",
+   "title": "여러 가지 방정식",
+   "prereq": [
+    "h1-remainder-factor",
+    "h1-quadratic-eq"
+   ],
+   "topics": [
+    "삼차·사차방정식",
+    "연립이차방정식"
+   ],
+   "keyFormula": null,
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 21"
+   ]
+  },
+  {
+   "id": "h1-inequalities",
+   "course": "h1",
+   "title": "여러 가지 부등식",
+   "prereq": [
+    "m2-linear-ineq",
+    "h1-quad-eq-func"
+   ],
+   "topics": [
+    "연립일차부등식",
+    "절댓값이 있는 부등식",
+    "이차부등식",
+    "연립이차부등식"
+   ],
+   "keyFormula": "$D\\le0$이면 $ax^2+bx+c\\ge0$ ($a>0$)",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 15"
+   ]
+  },
+  {
+   "id": "h1-coord-line",
+   "course": "h1",
+   "title": "평면좌표와 직선의 방정식",
+   "prereq": [
+    "m2-linear-func-eq",
+    "m2-pythagoras"
+   ],
+   "topics": [
+    "두 점 사이 거리",
+    "내분점·중점",
+    "무게중심",
+    "직선의 방정식",
+    "평행·수직 조건",
+    "점과 직선 사이 거리"
+   ],
+   "keyFormula": "중점 $\\left(\\frac{x_1+x_2}{2},\\frac{y_1+y_2}{2}\\right)$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 22"
+   ]
+  },
+  {
+   "id": "h1-circle-eq",
+   "course": "h1",
+   "title": "원의 방정식",
+   "prereq": [
+    "h1-coord-line",
+    "h1-quadratic-eq"
+   ],
+   "topics": [
+    "표준형·일반형",
+    "원과 직선의 위치 관계",
+    "원의 접선"
+   ],
+   "keyFormula": "$(x-a)^2+(y-b)^2=r^2$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "h1-transform",
+   "course": "h1",
+   "title": "도형의 이동",
+   "prereq": [
+    "h1-circle-eq"
+   ],
+   "topics": [
+    "평행이동",
+    "$x$축·$y$축·원점·$y=x$ 대칭이동"
+   ],
+   "keyFormula": "$y=x$ 대칭: $(a,b)\\to(b,a)$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 22",
+    "기하 24",
+    "기하 25"
+   ]
+  },
+  {
+   "id": "h1-set-logic",
+   "course": "h1",
+   "title": "집합과 명제",
+   "prereq": [
+    "m1-signed-ops"
+   ],
+   "topics": [
+    "집합의 표현과 연산",
+    "명제의 참·거짓",
+    "역·대우",
+    "필요조건·충분조건",
+    "절대부등식"
+   ],
+   "keyFormula": "대우가 참이면 원래 명제도 참",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 11"
+   ]
+  },
+  {
+   "id": "h1-function",
+   "course": "h1",
+   "title": "함수 (합성함수·역함수)",
+   "prereq": [
+    "m2-linear-func",
+    "h1-set-logic"
+   ],
+   "topics": [
+    "정의역·치역",
+    "일대일대응",
+    "합성함수",
+    "역함수와 $y=x$ 대칭"
+   ],
+   "keyFormula": "$(f\\circ g)(x)=f(g(x))$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 22",
+    "미적 30"
+   ]
+  },
+  {
+   "id": "h1-rational-irrational",
+   "course": "h1",
+   "title": "유리함수와 무리함수",
+   "prereq": [
+    "h1-function",
+    "h1-transform"
+   ],
+   "topics": [
+    "유리식·무리식",
+    "$y=\\frac{k}{x-p}+q$와 점근선",
+    "$y=\\sqrt{a(x-p)}+q$"
+   ],
+   "keyFormula": "점근선 $x=p$, $y=q$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "h1-counting",
+   "course": "h1",
+   "title": "경우의 수, 순열과 조합",
+   "prereq": [
+    "m2-probability"
+   ],
+   "topics": [
+    "합의 법칙·곱의 법칙",
+    "$_n\\mathrm{P}_r$",
+    "계승 $n!$",
+    "$_n\\mathrm{C}_r$",
+    "조합의 성질"
+   ],
+   "keyFormula": "$_n\\mathrm{C}_r=\\frac{n!}{r!(n-r)!}$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "확통 23",
+    "확통 25",
+    "확통 30"
+   ]
+  },
+  {
+   "id": "math1-exponent",
+   "course": "math1",
+   "title": "거듭제곱근과 지수",
+   "prereq": [
+    "m2-exponent-poly",
+    "m3-radical-ops"
+   ],
+   "topics": [
+    "거듭제곱근",
+    "지수를 0·음수·유리수·실수로 넓히기",
+    "지수법칙"
+   ],
+   "keyFormula": "$a^{\\frac mn}=\\sqrt[n]{a^m}$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 1"
+   ],
+   "suneungTools": [
+    "공통 6"
+   ]
+  },
+  {
+   "id": "math1-log",
+   "course": "math1",
+   "title": "로그",
+   "prereq": [
+    "math1-exponent"
+   ],
+   "topics": [
+    "로그의 정의",
+    "성질",
+    "밑 변환",
+    "상용로그"
+   ],
+   "keyFormula": "$\\log_ab=c \\Leftrightarrow a^c=b$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 6"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math1-exp-func",
+   "course": "math1",
+   "title": "지수함수",
+   "prereq": [
+    "math1-exponent",
+    "h1-transform"
+   ],
+   "topics": [
+    "그래프",
+    "점근선",
+    "평행이동",
+    "증가·감소",
+    "지수방정식·부등식"
+   ],
+   "keyFormula": "$y=a^{x}+q$의 점근선 $y=q$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 10",
+    "공통 22"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math1-log-func",
+   "course": "math1",
+   "title": "로그함수",
+   "prereq": [
+    "math1-log",
+    "math1-exp-func",
+    "h1-function"
+   ],
+   "topics": [
+    "그래프",
+    "지수함수와 역함수 관계",
+    "로그방정식·부등식"
+   ],
+   "keyFormula": "$y=\\log_ax \\Leftrightarrow x=a^y$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 22"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math1-trig-def",
+   "course": "math1",
+   "title": "삼각함수의 뜻",
+   "prereq": [
+    "m3-trig-ratio",
+    "m1-plane-figures",
+    "h1-circle-eq"
+   ],
+   "topics": [
+    "일반각",
+    "호도법",
+    "부채꼴",
+    "단위원으로 정의",
+    "사분면별 부호",
+    "기본 관계식"
+   ],
+   "keyFormula": "$\\sin^2\\theta+\\cos^2\\theta=1$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 8"
+   ],
+   "suneungTools": [
+    "미적 24"
+   ]
+  },
+  {
+   "id": "math1-trig-graph",
+   "course": "math1",
+   "title": "삼각함수의 그래프",
+   "prereq": [
+    "math1-trig-def"
+   ],
+   "topics": [
+    "주기·최댓값·최솟값",
+    "$y=a\\sin(bx+c)+d$",
+    "$\\pi\\pm\\theta$ 등의 성질",
+    "삼각방정식·부등식"
+   ],
+   "keyFormula": "$\\cos(\\pi-\\theta)=-\\cos\\theta$",
+   "hours": 4.0,
+   "track": "common",
+   "suneung": [
+    "공통 8"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math1-sine-cosine-law",
+   "course": "math1",
+   "title": "사인법칙과 코사인법칙",
+   "prereq": [
+    "math1-trig-graph",
+    "m3-circle"
+   ],
+   "topics": [
+    "사인법칙(외접원)",
+    "코사인법칙",
+    "삼각형의 넓이"
+   ],
+   "keyFormula": "$\\frac{a}{\\sin A}=2R$, $a^2=b^2+c^2-2bc\\cos A$",
+   "hours": 3.5,
+   "track": "common",
+   "suneung": [
+    "공통 14",
+    "공통 18"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math1-arith-geo",
+   "course": "math1",
+   "title": "등차수열과 등비수열",
+   "prereq": [
+    "m1-linear-eq",
+    "math1-exponent"
+   ],
+   "topics": [
+    "수열의 뜻",
+    "등차수열 일반항과 합",
+    "등비수열 일반항과 합",
+    "등차중항·등비중항"
+   ],
+   "keyFormula": "$a_n=ar^{n-1}$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 12"
+   ],
+   "suneungTools": [
+    "미적 29"
+   ]
+  },
+  {
+   "id": "math1-sigma",
+   "course": "math1",
+   "title": "수열의 합",
+   "prereq": [
+    "math1-arith-geo"
+   ],
+   "topics": [
+    "$\\sum$의 성질",
+    "$\\sum k$, $\\sum k^2$, $\\sum k^3$",
+    "부분분수로 합",
+    "합과 일반항의 관계"
+   ],
+   "keyFormula": "$\\sum_{k=1}^n k=\\frac{n(n+1)}{2}$",
+   "hours": 3.5,
+   "track": "common",
+   "suneung": [
+    "공통 3",
+    "공통 20"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math1-induction",
+   "course": "math1",
+   "title": "수학적 귀납법",
+   "prereq": [
+    "math1-sigma"
+   ],
+   "topics": [
+    "귀납적 정의(점화식)",
+    "등차·등비 점화식",
+    "수학적 귀납법(빈칸 채우기)"
+   ],
+   "keyFormula": "$a_{n+1}=f(a_n)$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 16"
+   ],
+   "suneungTools": [
+    "공통 20"
+   ]
+  },
+  {
+   "id": "math2-limit",
+   "course": "math2",
+   "title": "함수의 극한",
+   "prereq": [
+    "h1-rational-irrational",
+    "h1-remainder-factor"
+   ],
+   "topics": [
+    "극한의 뜻",
+    "좌극한·우극한",
+    "극한의 성질",
+    "$\\frac00$ 꼴(인수분해·유리화)",
+    "$\\frac\\infty\\infty$ 꼴",
+    "미정계수"
+   ],
+   "keyFormula": "분모 → 0이고 극한이 있으면 분자 → 0",
+   "hours": 3.5,
+   "track": "common",
+   "suneung": [
+    "공통 21"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math2-continuity",
+   "course": "math2",
+   "title": "함수의 연속",
+   "prereq": [
+    "math2-limit"
+   ],
+   "topics": [
+    "연속의 세 조건",
+    "구간에서의 연속",
+    "최대·최소 정리",
+    "사잇값 정리"
+   ],
+   "keyFormula": "좌극한 = 우극한 = 함숫값",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 4",
+    "공통 21"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math2-diff-coefficient",
+   "course": "math2",
+   "title": "미분계수",
+   "prereq": [
+    "math2-limit",
+    "m2-linear-func"
+   ],
+   "topics": [
+    "평균변화율",
+    "미분계수의 정의",
+    "접선의 기울기",
+    "미분가능성과 연속"
+   ],
+   "keyFormula": "$f'(a)=\\lim_{h\\to0}\\frac{f(a+h)-f(a)}{h}$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 2"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math2-diff-polynomial",
+   "course": "math2",
+   "title": "도함수와 다항함수의 미분",
+   "prereq": [
+    "math2-diff-coefficient"
+   ],
+   "topics": [
+    "도함수의 정의",
+    "$(x^n)'$",
+    "상수배·합·차의 미분"
+   ],
+   "keyFormula": "$(x^n)'=nx^{n-1}$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 2"
+   ]
+  },
+  {
+   "id": "math2-diff-product-rule",
+   "course": "math2",
+   "title": "곱의 미분법",
+   "prereq": [
+    "math2-diff-polynomial"
+   ],
+   "topics": [
+    "두 함수 곱의 미분",
+    "세 함수 곱",
+    "$\\{f(x)\\}^n$의 미분",
+    "전개 없이 대입하기"
+   ],
+   "keyFormula": "$\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [
+    "공통 5"
+   ],
+   "suneungTools": [
+    "공통 13"
+   ]
+  },
+  {
+   "id": "math2-tangent",
+   "course": "math2",
+   "title": "접선의 방정식",
+   "prereq": [
+    "math2-diff-product-rule",
+    "h1-coord-line"
+   ],
+   "topics": [
+    "곡선 위 점에서의 접선",
+    "기울기가 주어진 접선",
+    "곡선 밖의 점에서 그은 접선",
+    "롤·평균값 정리"
+   ],
+   "keyFormula": "$y=f'(a)(x-a)+f(a)$",
+   "hours": 3.0,
+   "track": "common",
+   "suneung": [
+    "공통 13"
+   ],
+   "suneungTools": [
+    "공통 9",
+    "미적 28"
+   ]
+  },
+  {
+   "id": "math2-extrema",
+   "course": "math2",
+   "title": "증가·감소와 극대·극소",
+   "prereq": [
+    "math2-tangent",
+    "h1-inequalities"
+   ],
+   "topics": [
+    "증가·감소 판정",
+    "극대·극소",
+    "삼차·사차함수 그래프 개형",
+    "극값을 가질 조건"
+   ],
+   "keyFormula": "극값 ⇔ $f'$의 부호가 바뀜",
+   "hours": 4.0,
+   "track": "common",
+   "suneung": [
+    "공통 9"
+   ],
+   "suneungTools": [
+    "공통 15"
+   ]
+  },
+  {
+   "id": "math2-max-min-eq",
+   "course": "math2",
+   "title": "최대·최소와 방정식·부등식",
+   "prereq": [
+    "math2-extrema"
+   ],
+   "topics": [
+    "닫힌구간의 최대·최소",
+    "방정식의 실근 개수",
+    "부등식이 항상 성립할 조건"
+   ],
+   "keyFormula": "최대·최소 후보 = 극값 + 양 끝값",
+   "hours": 3.5,
+   "track": "common",
+   "suneung": [
+    "공통 19"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math2-velocity",
+   "course": "math2",
+   "title": "속도와 가속도",
+   "prereq": [
+    "math2-diff-polynomial"
+   ],
+   "topics": [
+    "위치 → 속도 → 가속도",
+    "운동 방향이 바뀌는 순간"
+   ],
+   "keyFormula": "$v=x'(t)$, $a=v'(t)$",
+   "hours": 2.0,
+   "track": "common",
+   "suneung": [],
+   "suneungTools": [
+    "공통 11"
+   ]
+  },
+  {
+   "id": "math2-indefinite",
+   "course": "math2",
+   "title": "부정적분",
+   "prereq": [
+    "math2-diff-polynomial"
+   ],
+   "topics": [
+    "부정적분의 뜻",
+    "$\\int x^n dx$",
+    "적분상수 정하기"
+   ],
+   "keyFormula": "$\\int x^ndx=\\frac{x^{n+1}}{n+1}+C$",
+   "hours": 2.5,
+   "track": "common",
+   "suneung": [
+    "공통 17"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math2-definite",
+   "course": "math2",
+   "title": "정적분",
+   "prereq": [
+    "math2-indefinite"
+   ],
+   "topics": [
+    "정적분의 계산",
+    "성질",
+    "구간 나누기",
+    "우함수·기함수",
+    "정적분으로 정의된 함수"
+   ],
+   "keyFormula": "$\\frac{d}{dx}\\int_a^x f(t)dt=f(x)$",
+   "hours": 4.0,
+   "track": "common",
+   "suneung": [
+    "공통 15"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "math2-area-distance",
+   "course": "math2",
+   "title": "정적분의 활용 (넓이·거리)",
+   "prereq": [
+    "math2-definite",
+    "math2-velocity"
+   ],
+   "topics": [
+    "곡선과 $x$축 사이 넓이",
+    "두 곡선 사이 넓이",
+    "위치의 변화량과 움직인 거리"
+   ],
+   "keyFormula": "거리 $=\\int_a^b\\lvert v(t)\\rvert dt$",
+   "hours": 3.5,
+   "track": "common",
+   "suneung": [
+    "공통 7",
+    "공통 11"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "prob-permutation",
+   "course": "prob",
+   "title": "여러 가지 순열",
+   "prereq": [
+    "h1-counting"
+   ],
+   "topics": [
+    "원순열",
+    "중복순열",
+    "같은 것이 있는 순열",
+    "이웃하는 것은 한 묶음으로"
+   ],
+   "keyFormula": "$_n\\Pi_r=n^r$, $\\frac{n!}{p!q!r!}$",
+   "hours": 3.5,
+   "track": "prob",
+   "suneung": [
+    "확통 23",
+    "확통 30"
+   ],
+   "suneungTools": [
+    "확통 28"
+   ]
+  },
+  {
+   "id": "prob-combination-binomial",
+   "course": "prob",
+   "title": "중복조합과 이항정리",
+   "prereq": [
+    "prob-permutation"
+   ],
+   "topics": [
+    "중복조합",
+    "방정식의 음이 아닌 정수해 개수",
+    "이항정리",
+    "파스칼의 삼각형"
+   ],
+   "keyFormula": "$_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$",
+   "hours": 3.0,
+   "track": "prob",
+   "suneung": [],
+   "suneungTools": []
+  },
+  {
+   "id": "prob-probability",
+   "course": "prob",
+   "title": "확률의 뜻과 덧셈정리",
+   "prereq": [
+    "m2-probability",
+    "h1-counting",
+    "h1-set-logic"
+   ],
+   "topics": [
+    "시행과 사건",
+    "수학적·통계적 확률",
+    "덧셈정리",
+    "배반사건",
+    "여사건"
+   ],
+   "keyFormula": "$P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$",
+   "hours": 3.0,
+   "track": "prob",
+   "suneung": [
+    "확통 24",
+    "확통 25"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "prob-conditional",
+   "course": "prob",
+   "title": "조건부확률과 독립시행",
+   "prereq": [
+    "prob-probability"
+   ],
+   "topics": [
+    "조건부확률",
+    "곱셈정리",
+    "독립과 종속",
+    "독립시행의 확률"
+   ],
+   "keyFormula": "$P(B\\mid A)=\\frac{P(A\\cap B)}{P(A)}$",
+   "hours": 3.5,
+   "track": "prob",
+   "suneung": [
+    "확통 24",
+    "확통 28"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "prob-discrete",
+   "course": "prob",
+   "title": "이산확률분포",
+   "prereq": [
+    "prob-conditional",
+    "m3-statistics"
+   ],
+   "topics": [
+    "확률변수",
+    "확률분포",
+    "평균·분산·표준편차",
+    "$aX+b$의 평균·분산"
+   ],
+   "keyFormula": "$V(X)=E(X^2)-\\{E(X)\\}^2$",
+   "hours": 3.0,
+   "track": "prob",
+   "suneung": [
+    "확통 27"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "prob-binomial",
+   "course": "prob",
+   "title": "이항분포",
+   "prereq": [
+    "prob-discrete"
+   ],
+   "topics": [
+    "이항분포 $B(n,p)$",
+    "평균과 분산"
+   ],
+   "keyFormula": "$E(X)=np$, $V(X)=np(1-p)$",
+   "hours": 2.5,
+   "track": "prob",
+   "suneung": [
+    "확통 29"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "prob-normal",
+   "course": "prob",
+   "title": "정규분포",
+   "prereq": [
+    "prob-binomial"
+   ],
+   "topics": [
+    "확률밀도함수",
+    "정규분포의 성질",
+    "표준화",
+    "표준정규분포표",
+    "이항분포의 정규 근사"
+   ],
+   "keyFormula": "$Z=\\frac{X-m}{\\sigma}$",
+   "hours": 3.5,
+   "track": "prob",
+   "suneung": [
+    "확통 29"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "prob-estimation",
+   "course": "prob",
+   "title": "통계적 추정",
+   "prereq": [
+    "prob-normal"
+   ],
+   "topics": [
+    "모집단과 표본",
+    "표본평균의 분포",
+    "모평균의 신뢰구간"
+   ],
+   "keyFormula": "$\\bar x-z\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+z\\frac{\\sigma}{\\sqrt n}$",
+   "hours": 3.0,
+   "track": "prob",
+   "suneung": [
+    "확통 26"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "calc-seq-limit",
+   "course": "calc",
+   "title": "수열의 극한",
+   "prereq": [
+    "math1-arith-geo",
+    "math2-limit"
+   ],
+   "topics": [
+    "수렴과 발산",
+    "극한의 성질",
+    "$\\frac\\infty\\infty$ 꼴",
+    "샌드위치 정리",
+    "등비수열의 극한"
+   ],
+   "keyFormula": "$\\lvert r\\rvert<1 \\Rightarrow r^n\\to0$",
+   "hours": 3.5,
+   "track": "calc",
+   "suneung": [
+    "미적 25"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "calc-series",
+   "course": "calc",
+   "title": "급수",
+   "prereq": [
+    "calc-seq-limit",
+    "math1-sigma"
+   ],
+   "topics": [
+    "급수의 합",
+    "부분분수로 소거",
+    "등비급수",
+    "수렴 조건"
+   ],
+   "keyFormula": "$\\sum ar^{n-1}=\\frac{a}{1-r}$",
+   "hours": 3.0,
+   "track": "calc",
+   "suneung": [
+    "미적 29"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "calc-exp-log-diff",
+   "course": "calc",
+   "title": "지수·로그함수의 극한과 미분",
+   "prereq": [
+    "math1-log-func",
+    "math2-diff-polynomial",
+    "calc-seq-limit"
+   ],
+   "topics": [
+    "수 $e$",
+    "자연로그",
+    "$\\frac{e^x-1}{x}\\to1$",
+    "$(e^x)'$, $(\\ln x)'$"
+   ],
+   "keyFormula": "$(\\ln x)'=\\frac1x$",
+   "hours": 3.5,
+   "track": "calc",
+   "suneung": [],
+   "suneungTools": [
+    "미적 26"
+   ]
+  },
+  {
+   "id": "calc-trig-addition",
+   "course": "calc",
+   "title": "삼각함수의 덧셈정리",
+   "prereq": [
+    "math1-trig-graph"
+   ],
+   "topics": [
+    "csc·sec·cot",
+    "덧셈정리",
+    "배각 공식",
+    "두 직선이 이루는 각"
+   ],
+   "keyFormula": "$\\sin(\\alpha+\\beta)=\\sin\\alpha\\cos\\beta+\\cos\\alpha\\sin\\beta$",
+   "hours": 3.0,
+   "track": "calc",
+   "suneung": [],
+   "suneungTools": [
+    "미적 27"
+   ]
+  },
+  {
+   "id": "calc-trig-limit-diff",
+   "course": "calc",
+   "title": "삼각함수의 극한과 미분",
+   "prereq": [
+    "calc-trig-addition",
+    "math2-limit"
+   ],
+   "topics": [
+    "$\\frac{\\sin x}{x}\\to1$",
+    "$\\frac{\\tan x}{x}\\to1$",
+    "$\\sin$, $\\cos$의 도함수"
+   ],
+   "keyFormula": "$(\\sin x)'=\\cos x$",
+   "hours": 3.0,
+   "track": "calc",
+   "suneung": [
+    "미적 23"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "calc-quotient-chain",
+   "course": "calc",
+   "title": "몫과 합성함수의 미분",
+   "prereq": [
+    "calc-exp-log-diff",
+    "calc-trig-limit-diff"
+   ],
+   "topics": [
+    "몫의 미분",
+    "$\\tan x$ 등의 도함수",
+    "합성함수의 미분"
+   ],
+   "keyFormula": "$\\{f(g(x))\\}'=f'(g(x))g'(x)$",
+   "hours": 3.5,
+   "track": "calc",
+   "suneung": [],
+   "suneungTools": [
+    "미적 27"
+   ]
+  },
+  {
+   "id": "calc-param-implicit",
+   "course": "calc",
+   "title": "여러 가지 미분법",
+   "prereq": [
+    "calc-quotient-chain",
+    "h1-function"
+   ],
+   "topics": [
+    "매개변수로 나타낸 함수",
+    "음함수",
+    "역함수의 미분",
+    "이계도함수"
+   ],
+   "keyFormula": "$\\frac{dy}{dx}=\\frac{dy/dt}{dx/dt}$",
+   "hours": 3.5,
+   "track": "calc",
+   "suneung": [
+    "미적 27"
+   ],
+   "suneungTools": [
+    "미적 28",
+    "미적 30"
+   ]
+  },
+  {
+   "id": "calc-diff-app",
+   "course": "calc",
+   "title": "도함수의 활용",
+   "prereq": [
+    "calc-param-implicit",
+    "math2-max-min-eq"
+   ],
+   "topics": [
+    "접선",
+    "오목·볼록과 변곡점",
+    "그래프 개형",
+    "방정식·부등식",
+    "평면 운동"
+   ],
+   "keyFormula": "$f''(x)>0$ ⇔ 아래로 볼록",
+   "hours": 4.0,
+   "track": "calc",
+   "suneung": [
+    "미적 30"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "calc-integration-tech",
+   "course": "calc",
+   "title": "여러 가지 적분법",
+   "prereq": [
+    "calc-quotient-chain",
+    "math2-definite"
+   ],
+   "topics": [
+    "여러 함수의 적분",
+    "치환적분",
+    "부분적분",
+    "정적분의 치환"
+   ],
+   "keyFormula": "$\\int uv'dx=uv-\\int u'v\\,dx$",
+   "hours": 4.0,
+   "track": "calc",
+   "suneung": [
+    "미적 24",
+    "미적 26",
+    "미적 28"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "calc-integral-app",
+   "course": "calc",
+   "title": "정적분의 활용",
+   "prereq": [
+    "calc-integration-tech",
+    "math2-area-distance"
+   ],
+   "topics": [
+    "급수의 합과 정적분",
+    "넓이",
+    "입체도형의 부피",
+    "평면 위 속도와 거리"
+   ],
+   "keyFormula": "$V=\\int_a^b S(x)dx$",
+   "hours": 3.5,
+   "track": "calc",
+   "suneung": [
+    "미적 26",
+    "미적 28"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "geo-parabola",
+   "course": "geo",
+   "title": "포물선",
+   "prereq": [
+    "h1-transform",
+    "h1-coord-line"
+   ],
+   "topics": [
+    "정의(초점·준선)",
+    "$y^2=4px$, $x^2=4py$",
+    "평행이동한 포물선"
+   ],
+   "keyFormula": "초점 $(p,0)$, 준선 $x=-p$",
+   "hours": 2.5,
+   "track": "geo",
+   "suneung": [
+    "기하 24",
+    "기하 29"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "geo-ellipse",
+   "course": "geo",
+   "title": "타원",
+   "prereq": [
+    "geo-parabola"
+   ],
+   "topics": [
+    "정의(두 초점까지 거리의 합)",
+    "표준형",
+    "초점 구하기"
+   ],
+   "keyFormula": "$c^2=a^2-b^2$",
+   "hours": 2.5,
+   "track": "geo",
+   "suneung": [
+    "기하 29"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "geo-hyperbola",
+   "course": "geo",
+   "title": "쌍곡선",
+   "prereq": [
+    "geo-ellipse"
+   ],
+   "topics": [
+    "정의(거리의 차)",
+    "표준형",
+    "점근선",
+    "초점"
+   ],
+   "keyFormula": "$c^2=a^2+b^2$",
+   "hours": 2.5,
+   "track": "geo",
+   "suneung": [
+    "기하 26"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "geo-conic-tangent",
+   "course": "geo",
+   "title": "이차곡선과 직선 (접선)",
+   "prereq": [
+    "geo-hyperbola",
+    "h1-quadratic-eq"
+   ],
+   "topics": [
+    "판별식으로 위치 관계",
+    "곡선 위 점에서의 접선 공식",
+    "기울기가 주어진 접선"
+   ],
+   "keyFormula": "$\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$",
+   "hours": 3.0,
+   "track": "geo",
+   "suneung": [
+    "기하 26"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "geo-vector-ops",
+   "course": "geo",
+   "title": "벡터의 연산",
+   "prereq": [
+    "h1-coord-line",
+    "m2-similarity"
+   ],
+   "topics": [
+    "벡터의 뜻",
+    "덧셈·뺄셈·실수배",
+    "평행 조건",
+    "위치벡터",
+    "내분점"
+   ],
+   "keyFormula": "중점: $\\vec{PA}+\\vec{PB}=2\\vec{PM}$",
+   "hours": 3.0,
+   "track": "geo",
+   "suneung": [
+    "기하 30"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "geo-vector-dot",
+   "course": "geo",
+   "title": "평면벡터의 성분과 내적",
+   "prereq": [
+    "geo-vector-ops",
+    "math1-trig-def"
+   ],
+   "topics": [
+    "성분",
+    "크기",
+    "내적(정의·성분)",
+    "이루는 각·수직",
+    "직선과 원의 벡터 방정식"
+   ],
+   "keyFormula": "$\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta$",
+   "hours": 3.5,
+   "track": "geo",
+   "suneung": [
+    "기하 23",
+    "기하 30"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "geo-space-figures",
+   "course": "geo",
+   "title": "공간도형",
+   "prereq": [
+    "m1-solid-figures",
+    "m3-circle",
+    "m2-pythagoras"
+   ],
+   "topics": [
+    "직선·평면의 위치 관계",
+    "꼬인 위치",
+    "이면각",
+    "삼수선의 정리",
+    "정사영"
+   ],
+   "keyFormula": "$S'=S\\cos\\theta$",
+   "hours": 4.0,
+   "track": "geo",
+   "suneung": [
+    "기하 27",
+    "기하 28"
+   ],
+   "suneungTools": []
+  },
+  {
+   "id": "geo-space-coord",
+   "course": "geo",
+   "title": "공간좌표",
+   "prereq": [
+    "geo-space-figures",
+    "h1-coord-line"
+   ],
+   "topics": [
+    "공간의 좌표",
+    "두 점 사이 거리",
+    "대칭",
+    "내분점",
+    "구의 방정식"
+   ],
+   "keyFormula": "$\\sqrt{\\Delta x^2+\\Delta y^2+\\Delta z^2}$",
+   "hours": 3.0,
+   "track": "geo",
+   "suneung": [
+    "기하 25",
+    "기하 28"
+   ],
+   "suneungTools": []
+  }
+ ]
+}

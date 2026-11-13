@@ -1,0 +1,29 @@
+{
+  "name": "math-rebuild",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run verify && node scripts/build.mjs",
+    "verify": "node scripts/dump-problems.ts && .venv/bin/python verify/verify.py .cache/problems.json",
+    "gen-content": "node scripts/gen-content.ts",
+    "typecheck": "tsc --noEmit -p .",
+    "lint": "biome check .",
+    "test": "node --test 'test/**/*.test.ts'",
+    "setup-python": "python3 -m venv .venv && .venv/bin/pip install -q -r verify/requirements.txt"
+  },
+  "dependencies": {
+    "katex": "0.19.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.7",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2"
+  }
+}
