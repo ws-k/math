@@ -3,7 +3,7 @@
 // 끌기마다 버튼·방향키 대체가 있다: grow 는 'Δx 줄이기·늘리기', tiles 는 '고르고 판을 눌러 놓기'.
 import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { nearest } from '../drag.ts';
-import { HANDLE_HIT, Handle } from '../Handle.tsx';
+import { HANDLE_HIT, Handle, handleAt } from '../Handle.tsx';
 import { symToTex } from '../sym.ts';
 import { LRich, Tex } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
@@ -152,7 +152,8 @@ function Grow({ params: p, onDone }: WidgetProps<GrowParams>) {
       el.setAttribute('width', String(r.w));
       el.setAttribute('height', String(r.h));
     }
-    els.current.get('h')?.setAttribute('transform', `translate(${d.handle.x} ${d.handle.y})`);
+    const he = els.current.get('h') as HTMLElement | undefined;
+    if (he) he.style.transform = handleAt(d.handle.x, d.handle.y);
     els.current.get('h')?.setAttribute('aria-valuenow', String(d.d));
     for (const r of d.readouts) {
       const el = els.current.get(`r:${r.key}`);
@@ -168,7 +169,7 @@ function Grow({ params: p, onDone }: WidgetProps<GrowParams>) {
     }
   };
 
-  useDrag(svg, {
+  useDrag(host, {
     pick(cx, cy) {
       const r = svg.current?.getBoundingClientRect();
       if (!r) return false;
@@ -227,18 +228,18 @@ function Grow({ params: p, onDone }: WidgetProps<GrowParams>) {
               className={r.cls}
             />
           ))}
-          <Handle
-            ref={reg('h')}
-            x={dr.handle.x}
-            y={dr.handle.y}
-            label="x 늘리기(Δx)"
-            value={dr.d}
-            min={p.stepN}
-            max={p.maxN}
-            valueText={`Δx ${dr.readouts[0]?.text ?? ''}`}
-            onKey={onKey}
-          />
         </svg>
+        <Handle
+          ref={reg('h')}
+          x={dr.handle.x}
+          y={dr.handle.y}
+          label="x 늘리기(Δx)"
+          value={dr.d}
+          min={p.stepN}
+          max={p.maxN}
+          valueText={`Δx ${dr.readouts[0]?.text ?? ''}`}
+          onKey={onKey}
+        />
       </div>
       <div className="legend">
         <span className="lg base">
@@ -280,7 +281,8 @@ function Grow({ params: p, onDone }: WidgetProps<GrowParams>) {
 
 function Tiles({ params: p, onDone, onMiss }: WidgetProps<TilesParams>) {
   const { host, w } = useWidth(320);
-  const u = w / BOARD;
+  // 한 칸 크기: 폭에 맞추되 34px 까지만 — 넓은 화면에서 판이 화면 높이를 넘지 않게
+  const u = Math.min(w / BOARD, 34);
   const [tiles, setTiles] = useState<Tile[]>(() => initialTiles(p));
   const [sel, setSel] = useState<number | null>(null);
   const [made, setMade] = useState(false);

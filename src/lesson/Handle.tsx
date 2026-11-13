@@ -1,13 +1,20 @@
 // 그래프·도형 위의 끄는 점. 보이는 점은 14px, 누르는 영역은 56px(손가락 크기) — 둘을 따로 둔다.
-// 키보드로도 옮길 수 있게 role="slider" 와 방향키 한 칸 이동을 갖는다(값 계산은 drag.ts keyStep).
-// 좌표 평면 부품(5단계)이 쓴다. touch-action:none 은 이 손잡이에만 건다(페이지 스크롤을 살리려고).
+// 키보드로도 옮길 수 있게 role="slider" 와 방향키 한 칸 이동을 갖는다(값 계산은 부품 모델이 한다).
+//
+// SVG 안의 <g> 가 아니라 그림 위에 겹친 HTML 요소다: 헤드리스 Chrome 에서 터치로 재 보니 SVG 자식 요소의
+// touch-action:none 은 무시되어 손가락 끌기가 페이지 스크롤로 넘어갔다. HTML 요소의 touch-action 은 지켜진다.
+// 그래서 부모(그림을 감싼 상자)는 position:relative 이고, 손잡이는 그림과 같은 px 좌표(x, y)에 놓인다.
+// touch-action:none 은 이 손잡이에만 건다(페이지 스크롤을 살리려고).
 import { forwardRef, type KeyboardEvent } from 'react';
 
 export const HANDLE_DOT = 7;
 export const HANDLE_HIT = 28;
 
+/** 손잡이 자리(끄는 동안 부품이 style.transform 에 직접 넣는 값과 같은 꼴) */
+export const handleAt = (x: number, y: number) => `translate(${x}px, ${y}px)`;
+
 export const Handle = forwardRef<
-  SVGGElement,
+  HTMLDivElement,
   {
     x: number;
     y: number;
@@ -21,7 +28,7 @@ export const Handle = forwardRef<
   }
 >(function Handle(p, ref) {
   return (
-    <g
+    <div
       ref={ref}
       className="handle"
       role="slider"
@@ -31,12 +38,10 @@ export const Handle = forwardRef<
       aria-valuemax={p.max}
       aria-valuenow={p.value}
       aria-valuetext={p.valueText}
-      transform={`translate(${p.x} ${p.y})`}
       onKeyDown={p.onKey}
-      style={{ touchAction: 'none', cursor: 'grab' }}
+      style={{ transform: handleAt(p.x, p.y), touchAction: 'none' }}
     >
-      <circle r={HANDLE_HIT} fill="transparent" />
-      <circle r={HANDLE_DOT} fill="var(--primary)" stroke="var(--bg)" strokeWidth={3} />
-    </g>
+      <i className="dot" />
+    </div>
   );
 });

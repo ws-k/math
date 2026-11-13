@@ -13,6 +13,11 @@ export interface DragHandlers {
   pick?(x: number, y: number): boolean;
   /** 끌기를 시작한 자리(화면 좌표) */
   onStart?(x: number, y: number): void;
+  /**
+   * 이 끌기 동안 손가락 스크롤을 막을지(기본 막음). 빈 칸 누르기처럼 탭만 받는 경우 false 를 돌려주면
+   * 그 자리에서 시작한 쓸기는 페이지 스크롤로 남는다.
+   */
+  holdTouch?(): boolean;
   /** 누른 곳에서 움직인 거리(px). 프레임마다 많아야 한 번 */
   onMove(dx: number, dy: number): void;
   /**
@@ -65,6 +70,14 @@ export function useDrag(ref: RefObject<HTMLElement | SVGElement | null>, h: Drag
     };
     const up = end(false);
     const cancel = end(true);
+    // touch-action:none 만으로는 부족하다: Chrome 은 SVG 안쪽 요소의 touch-action 을 무시해(실측) 몇 프레임 뒤
+    // pointercancel 을 내고 페이지를 스크롤한다. 끌기가 잡힌 터치는 touchstart·touchmove 를 막아 스크롤을 끈다.
+    // pointerdown 이 touchstart 보다 먼저 오므로 여기서는 drag 가 이미 정해져 있다.
+    const hold = (e: TouchEvent) => {
+      if (drag && (latest.current.holdTouch?.() ?? true) && e.cancelable) e.preventDefault();
+    };
+    el.addEventListener('touchstart', hold as EventListener, { passive: false });
+    el.addEventListener('touchmove', hold as EventListener, { passive: false });
     el.addEventListener('pointerdown', down as EventListener);
     el.addEventListener('pointermove', move as EventListener);
     el.addEventListener('pointerup', up as EventListener);
@@ -73,6 +86,8 @@ export function useDrag(ref: RefObject<HTMLElement | SVGElement | null>, h: Drag
     return () => {
       cancelAnimationFrame(raf);
       if (drag) guard(false);
+      el.removeEventListener('touchstart', hold as EventListener);
+      el.removeEventListener('touchmove', hold as EventListener);
       el.removeEventListener('pointerdown', down as EventListener);
       el.removeEventListener('pointermove', move as EventListener);
       el.removeEventListener('pointerup', up as EventListener);

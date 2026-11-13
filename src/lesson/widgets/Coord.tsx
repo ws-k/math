@@ -7,7 +7,7 @@
 // touch-action:none 은 손잡이와, 긋는 중인 그림 영역에만 건다 — 그래야 그래프 위에서도 페이지가 스크롤된다.
 import { type KeyboardEvent, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { EDGE, nearest } from '../drag.ts';
-import { HANDLE_HIT, Handle } from '../Handle.tsx';
+import { HANDLE_HIT, Handle, handleAt } from '../Handle.tsx';
 import { LRich } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
 import {
@@ -113,7 +113,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     for (const h of d.handles) {
       const el = m.get(`h:${h.key}`);
       if (!el) continue;
-      el.setAttribute('transform', `translate(${h.x} ${h.y})`);
+      (el as HTMLElement).style.transform = handleAt(h.x, h.y);
       el.setAttribute('aria-valuenow', String(h.value));
       el.setAttribute('aria-valuetext', h.valueText);
     }
@@ -143,7 +143,8 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
 
   const gridMode = p.mode === 'plot' || p.mode === 'connect' || p.mode === 'line';
 
-  useDrag(svg, {
+  // 손잡이(HTML)와 그림(SVG)을 함께 감싼 상자에서 받는다 — 손잡이는 SVG 밖에 겹쳐 있다
+  useDrag(host, {
     pick(cx, cy) {
       const at = local(cx, cy);
       if (p.mode === 'sketch') {
@@ -163,6 +164,8 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       }
       return false;
     },
+    // 빈 칸 누르기(탭)로 시작한 터치는 스크롤로 남긴다 — 그래프 위에서도 페이지를 내릴 수 있게
+    holdTouch: () => ctx.current?.kind !== 'tap',
     onStart() {
       const c = ctx.current;
       if (c?.kind === 'stroke') {
@@ -391,21 +394,21 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
               );
             })}
           </g>
-          {d.handles.map((h) => (
-            <Handle
-              key={h.key}
-              ref={reg(`h:${h.key}`)}
-              x={h.x}
-              y={h.y}
-              label={h.label}
-              value={h.value}
-              min={h.min}
-              max={h.max}
-              valueText={h.valueText}
-              onKey={onKey(h.key)}
-            />
-          ))}
         </svg>
+        {d.handles.map((h) => (
+          <Handle
+            key={h.key}
+            ref={reg(`h:${h.key}`)}
+            x={h.x}
+            y={h.y}
+            label={h.label}
+            value={h.value}
+            min={h.min}
+            max={h.max}
+            valueText={h.valueText}
+            onKey={onKey(h.key)}
+          />
+        ))}
       </div>
       {legend.length > 0 && (
         <div className="legend">

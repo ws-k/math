@@ -146,11 +146,7 @@ for (const [name, f] of [
     '틀린 곳 찾기의 틀린 식이 사실은 맞음',
     (l: Lesson) => {
       const it = scene<'spot'>(l, 'traps').items[0] as { tokens: unknown[] };
-      it.tokens = [
-        { sym: 'diff((2*x+1)*(x**2+3),x)' },
-        { sep: '=' },
-        { sym: '6*x**2+2*x+6', bad: true },
-      ];
+      it.tokens = [{ sym: 'diff(x*(x**2+1),x)' }, { sep: '=' }, { sym: '3*x**2+1', bad: true }];
     },
   ],
   [

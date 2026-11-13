@@ -624,6 +624,10 @@
   color: var(--good);
 }
 .lesson .fix .m {
+  /* 긴 식이 좁은 화면에서 페이지를 옆으로 밀지 않게 식 칸 안에서만 넘친다 */
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
   font-size: 1.25rem;
   letter-spacing: 0;
 }
@@ -896,6 +900,7 @@
 /* 좌표평면(coord). 폭은 카드 폭을 그대로 쓰고(SVG viewBox = 실제 px), 높이는 부품이 화면 절반 안으로 정한다 */
 .lesson .coord-host,
 .lesson .area-host {
+  position: relative;
   width: 100%;
   /* 손잡이를 길게 눌러도 iOS 확대경·복사 메뉴가 뜨지 않게 */
   -webkit-touch-callout: none;
@@ -978,8 +983,30 @@
   border-radius: 6px;
   cursor: crosshair;
 }
-.lesson .handle:focus-visible circle:last-child {
-  stroke: var(--ink);
+/* 끄는 손잡이(HTML, 그림 위에 겹침). 누르는 영역 56px, 보이는 점 14px */
+.lesson .handle {
+  position: absolute;
+  left: -28px;
+  top: -28px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  cursor: grab;
+}
+.lesson .handle .dot {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1.5px var(--primary);
+}
+.lesson .handle:active {
+  cursor: grabbing;
 }
 .lesson .legend {
   display: flex;
