@@ -1,11 +1,9 @@
 import type { Problem } from '../content/types.ts';
-import { generators as fractionAddSub } from './e-fraction-addsub.ts';
-import { generators as linearEq } from './m1-linear-eq.ts';
-import { generators as productRule } from './math2-diff-product-rule.ts';
+import { unitGenerators } from './registry.ts';
 import { makeRng } from './rng.ts';
 import type { Generator } from './types.ts';
 
-export const allGenerators: Generator[] = [...fractionAddSub, ...linearEq, ...productRule];
+export const allGenerators: Generator[] = unitGenerators;
 
 export const generatorById = new Map(allGenerators.map((g) => [g.id, g]));
 
