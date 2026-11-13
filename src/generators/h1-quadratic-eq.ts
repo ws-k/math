@@ -25,7 +25,7 @@ function withK(a: number, b: number, k: string): string {
 
 export const generators: Generator[] = [
   {
-    id: 'qe-double-root',
+    id: 'h1qe-double-root',
     unitId: UNIT,
     title: '중근을 가질 조건',
     make(rng) {

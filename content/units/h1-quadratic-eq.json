@@ -424,7 +424,7 @@
     ]
   },
   "generators": [
-    "qe-double-root",
+    "h1qe-double-root",
     "qe-vieta-value",
     "qe-from-roots",
     "qe-real-range"
@@ -456,7 +456,7 @@
       "tip": "$k=27$ 을 넣으면 $3x^2-18x+27=3(x-3)^2$ 이 되어 중근 $x=3$ 이 나와요.",
       "id": "b01",
       "level": "기초",
-      "generator": "qe-double-root",
+      "generator": "h1qe-double-root",
       "seed": 1000
     },
     {
@@ -577,7 +577,7 @@
       "tip": "$k=4$ 을 넣으면 $x^2+4x+4=(x+2)^2$ 이 되어 중근 $x=-2$ 이 나와요.",
       "id": "b05",
       "level": "기초",
-      "generator": "qe-double-root",
+      "generator": "h1qe-double-root",
       "seed": 1004
     },
     {
@@ -702,7 +702,7 @@
       "tip": "$k=12$ 을 넣으면 $3x^2-12x+12=3(x-2)^2$ 이 되어 중근 $x=2$ 이 나와요.",
       "id": "b09",
       "level": "기초",
-      "generator": "qe-double-root",
+      "generator": "h1qe-double-root",
       "seed": 1008
     },
     {
@@ -827,7 +827,7 @@
       "tip": "$k=4$ 을 넣으면 $x^2-4x+4=(x-2)^2$ 이 되어 중근 $x=2$ 이 나와요.",
       "id": "b13",
       "level": "기초",
-      "generator": "qe-double-root",
+      "generator": "h1qe-double-root",
       "seed": 1012
     },
     {
