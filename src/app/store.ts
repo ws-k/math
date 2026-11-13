@@ -108,6 +108,9 @@ export async function requestPersist(): Promise<boolean> {
 /** 프로필 하나의 기록(진행·필기·설정)을 모두 지운다. 첫 프로필은 접두어가 없어 지우지 않는다 */
 export async function deleteProfileData(id: string): Promise<void> {
   if (id === FIRST) return;
-  const keys = await raw.keys(scopedKey(id, ''));
-  for (const k of keys) await raw.del(k);
+  const prefix = scopedKey(id, '');
+  // 쥐고 있던 이 사람의 값이 다시 시도로 지운 뒤에 되살아나지 않게 먼저 버린다
+  saver.discard(prefix);
+  // 범위 지우기 한 번(한 트랜잭션): 키마다 따로 지우다 중간에 실패하면 반쯤 지운 기록이 남는다
+  await write((s) => s.delete(range(prefix)));
 }

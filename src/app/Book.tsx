@@ -50,6 +50,9 @@ export function ProblemScreen(p: ProblemScreenProps) {
       },
       penActive: (_k, a) => {
         penAt.current = a ? Number.POSITIVE_INFINITY : performance.now();
+        // 손가락이 먼저 닿아 쓸기 후보가 된 뒤 펜이 닿으면(손바닥을 대고 쓰기) 그 후보를 버린다 —
+        // 펜을 뗀 뒤 손가락을 떼면 palm() 시간 창이 지나 쓸기로 오인될 수 있다
+        if (a) touch.current = null;
       },
     }),
     [],
@@ -167,7 +170,8 @@ export function ProblemScreen(p: ProblemScreenProps) {
         </button>
       </header>
       <div
-        key={pid}
+        // 단원이 달라도 문제 id(p101)는 겹칠 수 있다 — 다른 단원 같은 번호로 가면 화면이 새로 만들어져야 한다
+        key={`${unit.id}/${pid}`}
         className={`pbody ${split ? 'split' : 'tabs'} ${turn}`}
         onPointerDownCapture={onDown}
         onPointerUpCapture={onUp}

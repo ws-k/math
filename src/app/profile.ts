@@ -75,12 +75,18 @@ export function createProfileSwitch(d: {
   setModule(id: string): void;
   setState(u: (s: ProfileState) => ProfileState): void;
   persist(id: string): void;
+  /**
+   * 홈으로. 새 사람의 화면이 앞 사람이 보던 주소(단원·레슨)로 열리면, 그 주소가 새 사람의 '이어서 하기'(last)로
+   * 저장돼 버린다. 화면을 바꾸기 전에 주소부터 홈으로 돌린다.
+   */
+  goHome(): void;
 }) {
   return {
     request(id: string) {
       d.setState((s) => (s.profile === id && s.leaving === null ? s : { ...s, leaving: id }));
     },
     commit(id: string) {
+      d.goHome();
       d.setModule(id);
       d.setState(() => ({ profile: id, leaving: null }));
       d.persist(id);

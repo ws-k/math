@@ -8,6 +8,8 @@ export interface Saver {
   idle(): Promise<void>;
   /** 지금 저장에 실패해 다시 시도하는 중인가 */
   failing(): boolean;
+  /** 실제 저장 키가 prefix 로 시작하는 쥔 값을 버린다(지운 프로필의 값이 다시 시도로 되살아나지 않게) */
+  discard(prefix: string): void;
   subscribe(f: () => void): () => void;
 }
 
@@ -35,6 +37,9 @@ export function createSaver(
     waiters = [];
     for (const w of ws) w();
   };
+  /** 버린 접두어. 이미 쓰는 중이던 값이 실패해 다시 시도로 돌아와도 여기서 버린다 */
+  const discarded = new Set<string>();
+  const dropped = (key: string) => [...discarded].some((p) => key.startsWith(p));
   let wasFailing = false;
   const notify = () => {
     const now = failed.size > 0;
@@ -44,6 +49,13 @@ export function createSaver(
   };
 
   const pump = (key: string) => {
+    if (dropped(key)) {
+      pending.delete(key);
+      failed.delete(key);
+      notify();
+      settle();
+      return;
+    }
     if (busy.has(key) || !pending.has(key)) return;
     const value = pending.get(key);
     pending.delete(key);
@@ -70,6 +82,7 @@ export function createSaver(
   return {
     save(rawKey, value) {
       const key = o.scope ? o.scope(rawKey) : rawKey;
+      if (dropped(key)) return;
       pending.set(key, value);
       // 실패 중인 키는 다시 시도 타이머가 이어 쓴다(바로 또 쓰면 실패를 연달아 쌓는다)
       if (!failed.has(key)) pump(key);
@@ -81,6 +94,14 @@ export function createSaver(
       });
     },
     failing: () => failed.size > 0,
+    discard(prefix) {
+      if (!prefix) return; // 첫 프로필(접두어 없음)은 지우지 않는다 — 빈 접두어는 모든 키다
+      discarded.add(prefix);
+      for (const k of [...pending.keys()]) if (k.startsWith(prefix)) pending.delete(k);
+      for (const k of [...failed]) if (k.startsWith(prefix)) failed.delete(k);
+      notify();
+      settle();
+    },
     subscribe(f) {
       listeners.add(f);
       return () => listeners.delete(f);

@@ -157,6 +157,7 @@ test('전환: 사라지는 화면의 마지막 저장은 옛 프로필로, 그 �
       log.push(`state:${state.profile}/${state.leaving}`);
     },
     persist: (id) => saver.save('profile', id),
+    goHome: () => log.push('home'),
   });
   sw.request('kid');
   assert.deepEqual(state, { profile: FIRST, leaving: 'kid' });
@@ -166,7 +167,8 @@ test('전환: 사라지는 화면의 마지막 저장은 옛 프로필로, 그 �
   sw.commit('kid');
   assert.equal(cur, 'kid');
   assert.deepEqual(state, { profile: 'kid', leaving: null });
-  assert.deepEqual(log, ['state:first/kid', 'module:kid', 'state:kid/null']);
+  // 새 사람 화면이 앞 사람 주소(단원·레슨)로 열리면 그 주소가 새 사람의 '이어서 하기'로 저장된다 — 홈부터
+  assert.deepEqual(log, ['state:first/kid', 'home', 'module:kid', 'state:kid/null']);
   saver.save('ink:b', 2);
   await tick();
   assert.equal(raw.data.get('ink:a'), 1);

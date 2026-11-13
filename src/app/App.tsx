@@ -77,12 +77,16 @@ export function App() {
   const [ps, setPs] = useState<ProfileState | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [picking, setPicking] = useState(false);
+  const [removeFailed, setRemoveFailed] = useState(false);
   const sw = useMemo(
     () =>
       createProfileSwitch({
         setModule: setCurrentProfile,
         setState: (u) => setPs((s) => u(s ?? { profile: FIRST, leaving: null })),
         persist: (id) => saver.save('profile', id),
+        goHome: () => {
+          if (location.hash !== '' && location.hash !== '#/') location.hash = '#/';
+        },
       }),
     [],
   );
@@ -143,7 +147,11 @@ export function App() {
         onRename={(id, name) => saveProfiles(renameProfile(profiles, id, name))}
         onRemove={(id) => {
           saveProfiles(removeProfile(profiles, id));
-          void deleteProfileData(id).catch(() => undefined);
+          // 실패하면 목록에서는 빠졌어도 기록이 기기에 남는다 — 조용히 넘기지 않고 알린다
+          deleteProfileData(id).then(
+            () => setRemoveFailed(false),
+            () => setRemoveFailed(true),
+          );
         }}
         onSwitch={(id) => sw.request(id)}
       />
@@ -152,6 +160,12 @@ export function App() {
   return (
     <>
       <SaveWarning />
+      {removeFailed && (
+        <div className="save-warn" role="alert">
+          지운 사람의 기록을 기기에서 다 지우지 못했어요. 목록에서는 빠졌고, 남은 기록은 다른
+          사람에게 보이지 않아요.
+        </div>
+      )}
       {body}
     </>
   );
