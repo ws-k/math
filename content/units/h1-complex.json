@@ -1,0 +1,1266 @@
+{
+  "id": "h1-complex",
+  "course": "고1 수학",
+  "unit": "방정식과 부등식",
+  "title": "복소수",
+  "prereq": [
+    "m3-radical-ops"
+  ],
+  "suneung": [],
+  "hours": 2,
+  "lesson": {
+    "minutes": 20,
+    "values": {
+      "conjsum": {
+        "value": "4",
+        "check": "(2+3*I) + conjugate(2+3*I)"
+      },
+      "conjmul": {
+        "value": "13",
+        "check": "expand((2+3*I)*conjugate(2+3*I))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "고1 수학 · 방정식과 부등식",
+        "title": "제곱해서 $-1$ 이 되는 수는\n90° 돌리기예요",
+        "lead": "실수 중에는 제곱해서 음수가 되는 수가 없어요. 수직선을 평면으로 넓히면 $-1$ 을 곱하는 것은 반 바퀴, $i$ 를 곱하는 것은 4분의 1바퀴 돌리기가 돼요.",
+        "meta": [
+          "허수 단위",
+          "복소수의 계산",
+          "켤레복소수"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "제곱해서 $-1$ 이 되는\n실수는 몇 개일까요?",
+        "lead": "$x^2=-1$ 을 만족하는 실수 $x$ 를 찾아봐요. 양수, 음수, $0$ 을 각각 제곱하면 어떻게 되는지 떠올려 보세요.",
+        "choices": [
+          {
+            "value": "0",
+            "check": "len(solveset(x**2 + 1, x, S.Reals))"
+          },
+          {
+            "value": "1",
+            "check": "len(solveset(x + 1, x, S.Reals))",
+            "feedback": "$x=-1$ 이면 $(-1)^2=1$ 이에요. 음수도 제곱하면 양수가 돼요."
+          },
+          {
+            "value": "2",
+            "check": "len(solveset(x**2 - 1, x, S.Reals))",
+            "feedback": "$x^2=1$ 의 해 $\\pm1$ 과 헷갈렸어요. 제곱이 $-1$ 이 되어야 해요."
+          }
+        ],
+        "format": {
+          "unit": "개"
+        },
+        "answer": 0,
+        "answerCheck": "len(solveset(Eq(x**2, -1), x, S.Reals))",
+        "reveal": "**맞아요!** 실수는 제곱하면 늘 $0$ 이상이에요.",
+        "thoughts": [
+          "양수 × 양수도, 음수 × 음수도 양수예요",
+          "그래서 제곱해서 $-1$ 이 되려면 새로운 수가 필요해요"
+        ],
+        "conclude": "==제곱해서 음수가 되는 수를 새로 만들어요.== 어디에 있는지 돌려서 찾아봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "turn",
+        "chip": "손으로 해 보기",
+        "title": "두 번 돌려 반 바퀴가 되는\n각도를 찾아봐요",
+        "lead": "$-1$ 을 곱하면 $1$ 이 $-1$ 로 가요. 원점을 중심으로 반 바퀴($180°$) 돈 거예요. 같은 돌리기를 **두 번** 해서 반 바퀴가 되려면 한 번에 몇 도 돌려야 할까요? 점을 끌어 그 자리에 놓아 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "unitCircle",
+          "params": {
+            "unit": "deg",
+            "start": 0,
+            "snap": 15,
+            "show": [
+              "cos",
+              "sin"
+            ],
+            "task": {
+              "answer": 90,
+              "check": "deg(arg(-1))/2"
+            }
+          }
+        },
+        "after": "$90°$ 자리, 곧 점 $(0,\\ 1)$ 이에요. 가로 값(cos)이 실수 부분, 세로 값(sin)이 새 방향의 크기예요. 이 자리의 수를 ==허수 단위== $i$ 라고 해요. $i$ 를 두 번 곱하면 $90°+90°=180°$ 돌아서 $i^2=-1$ 이에요."
+      },
+      {
+        "kind": "terms",
+        "id": "terms",
+        "chip": "이름 붙이기",
+        "title": "새로 만든 수의\n이름",
+        "terms": [
+          {
+            "term": "허수 단위 $i$",
+            "body": "제곱해서 $-1$ 이 되는 수. $i^2=-1$ 이에요."
+          },
+          {
+            "term": "복소수",
+            "body": "실수 $a$, $b$ 로 $a+bi$ 꼴인 수. $a$ 는 실수부분, $b$ 는 허수부분이에요. $b\\neq0$ 이면 허수라고 해요."
+          },
+          {
+            "term": "켤레복소수",
+            "body": "허수부분의 부호만 바꾼 수. $a+bi$ 의 켤레는 $\\overline{a+bi}=a-bi$ 예요."
+          },
+          {
+            "term": "음수의 제곱근",
+            "body": "$a>0$ 일 때 $\\sqrt{-a}=\\sqrt{a}\\,i$. 계산하기 전에 먼저 이 꼴로 바꿔요."
+          }
+        ],
+        "aside": "**참고** · 가로를 실수부분, 세로를 허수부분으로 그린 평면을 복소평면이라고 해요. 교과서 밖 그림이지만 $i$ 의 뜻이 잘 보여서 빌려 왔어요."
+      },
+      {
+        "kind": "explore",
+        "id": "rotate",
+        "chip": "복소평면에서 돌리기",
+        "title": "$i$ 를 곱하면\n점이 90° 돌아가요",
+        "lead": "가로는 실수부분, 세로는 허수부분이에요. 점 A 는 $z=3+i$ 예요. $iz$ 를 계산해서 그 자리에 점을 찍어 보세요. 찍은 점은 끌어서 옮길 수 있어요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "y": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "O",
+                "point": {
+                  "x": 0,
+                  "y": 0
+                },
+                "name": "O"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "x": 3,
+                  "y": 1
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "-1",
+                  "check": "re(I*(3+I))"
+                },
+                "y": {
+                  "value": "3",
+                  "check": "im(I*(3+I))"
+                }
+              }
+            },
+            "intro": "$iz=3i+i^2$ 이에요. $i^2=-1$ 을 쓰세요.",
+            "done": "$iz=-1+3i$. 선분 OA 를 원점 둘레로 $90°$ 돌린 자리예요."
+          }
+        },
+        "after": "$i$ 를 한 번 더 곱하면 또 $90°$ 돌아 $-z=-3-i$ 가 돼요. ==곱할 때마다 90°씩 돌아서== 네 번이면 제자리: $i^4=1$."
+      },
+      {
+        "kind": "explore",
+        "id": "conj",
+        "chip": "두 번째 해 보기",
+        "title": "켤레복소수는\n실수축에 비친 모습이에요",
+        "lead": "점 B 는 $w=2+3i$ 예요. 켤레복소수 $\\overline{w}$ 의 자리에 점을 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "y": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "O",
+                "point": {
+                  "x": 0,
+                  "y": 0
+                },
+                "name": "O"
+              },
+              {
+                "id": "B",
+                "point": {
+                  "x": 2,
+                  "y": 3
+                },
+                "name": "B"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "2",
+                  "check": "re(conjugate(2+3*I))"
+                },
+                "y": {
+                  "value": "-3",
+                  "check": "im(conjugate(2+3*I))"
+                }
+              }
+            },
+            "intro": "허수부분의 부호만 바꿔요.",
+            "done": "$\\overline{w}=2-3i$. 실수축을 거울 삼아 위아래로 뒤집은 자리예요."
+          }
+        },
+        "after": "두 점은 실수축에 대해 대칭이라 ==더하면 허수부분이 지워져요==: $w+\\overline{w}={{conjsum}}$. 곱해도 실수예요: $(2+3i)(2-3i)=4+9={{conjmul}}$. 나눗셈에서 분모의 $i$ 를 없앨 때 이걸 써요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 음수의 제곱근끼리 곱했어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt(-2)*sqrt(-3)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sqrt(6)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "-sqrt(6)",
+              "body": "$\\sqrt{-2}=\\sqrt2\\,i$, $\\sqrt{-3}=\\sqrt3\\,i$ 로 먼저 바꿔요. 곱하면 $\\sqrt6\\,i^2=-\\sqrt6$ 이에요. 둘 다 음수일 때는 $\\sqrt a\\sqrt b=\\sqrt{ab}$ 를 쓸 수 없어요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 분모가 음수인 제곱근으로 나눴어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt(8)/sqrt(-2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sqrt(-4)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "-sqrt(-4)",
+              "body": "$\\frac{\\sqrt8}{\\sqrt2\\,i}=\\frac{2}{i}=-2i$ 예요. 분자는 양수, 분모만 음수일 때는 $\\frac{\\sqrt a}{\\sqrt b}=\\sqrt{\\frac ab}$ 가 성립하지 않아요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "mul",
+            "q": "$(1+2i)(3-i)=a+bi$ 일 때 실수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+            "hint": "보통의 식처럼 전개하고 $i^2$ 을 $-1$ 로 바꿔요.",
+            "placeholder": "a+b",
+            "steps": [
+              {
+                "title": "전개하기",
+                "body": "$$3-i+6i-2i^2$$"
+              },
+              {
+                "title": "$i^2=-1$",
+                "body": "$$3+5i+2=5+5i$$"
+              },
+              {
+                "title": "더하기",
+                "body": "$a=5$, $b=5$\n$$a+b=10$$"
+              }
+            ],
+            "answer": "10",
+            "answerType": "int",
+            "check": "ee = expand((1 + 2*I)*(3 - I))\nans = re(ee) + im(ee)"
+          },
+          {
+            "id": "div",
+            "q": "$\\dfrac{5}{2-i}=a+bi$ 일 때 실수 $a$, $b$ 에 대하여 $ab$ 의 값을 구하세요.",
+            "hint": "분자·분모에 분모의 켤레복소수 $2+i$ 를 곱해요.",
+            "placeholder": "ab",
+            "steps": [
+              {
+                "title": "켤레 곱하기",
+                "body": "$$\\frac{5(2+i)}{(2-i)(2+i)}$$"
+              },
+              {
+                "title": "분모",
+                "body": "$$4+1=5$$"
+              },
+              {
+                "title": "약분",
+                "body": "$$\\frac{5(2+i)}{5}=2+i$$"
+              },
+              {
+                "title": "곱하기",
+                "body": "$a=2$, $b=1$\n$$ab=2$$"
+              }
+            ],
+            "answer": "2",
+            "answerType": "int",
+            "check": "ee = 5/(2 - I)\nans = re(ee)*im(ee)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$i^2=-1$. $i$ 는 문자처럼 계산하고 $i^2$ 이 나오면 $-1$ 로 바꿔요.",
+          "$i$ 를 곱하면 $90°$ 돌아요. 그래서 $i^4=1$, 거듭제곱은 네 번마다 되풀이돼요.",
+          "나눗셈은 분모의 켤레복소수를 곱해 분모를 실수로 만들어요. 음수의 제곱근은 먼저 $i$ 꼴로 바꿔요.",
+          "다음 단원 이차방정식의 허근이 바로 복소수예요. 수학Ⅰ의 거듭제곱근에서는 이 가운데 실수인 것만 골라 써요."
+        ],
+        "done": "복소수 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "formulas": [
+    "$i^2=-1$, $i^4=1$",
+    "$\\overline{a+bi}=a-bi$, $(a+bi)(a-bi)=a^2+b^2$",
+    "$a>0$ 일 때 $\\sqrt{-a}=\\sqrt a\\,i$"
+  ],
+  "generators": [
+    "complex-mul",
+    "complex-div",
+    "i-power",
+    "complex-equal"
+  ],
+  "problems": [
+    {
+      "q": "$(3+3i)(2+3i)=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "ee = expand((3 + (3)*I)*(2 + (3)*I))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i^2=-1$ 이에요. $i$ 는 보통의 문자처럼 계산하고, $i^2$ 이 나오면 $-1$ 로 바꿔요.",
+        "두 복소수가 같으면 실수부끼리, 허수부끼리 같아요."
+      ],
+      "steps": [
+        {
+          "title": "분배법칙으로 펼치기",
+          "body": "$$6+9i+6i+9i^2$$"
+        },
+        {
+          "title": "$i^2=-1$ 로 바꾸기",
+          "body": "$9i^2=-9$ 예요.\n$$6-9+15i=-3+15i$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p=-3$, $q=15$\n$$p+q=12$$"
+        }
+      ],
+      "tip": "$i^2$ 을 $1$ 로 두면 실수부의 부호가 뒤집혀요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "complex-mul",
+      "seed": 1000
+    },
+    {
+      "q": "$\\dfrac{7+9i}{-3-i}=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5",
+      "answerType": "int",
+      "check": "ee = expand((7 + (9)*I)*conjugate((-3 + (-1)*I)))/expand((-3 + (-1)*I)*conjugate((-3 + (-1)*I)))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "분모의 켤레복소수를 분자·분모에 곱하면 분모가 실수가 돼요: $(c+di)(c-di)=c^2+d^2$",
+        "$i^2=-1$ 이에요. $i$ 는 보통의 문자처럼 계산하고, $i^2$ 이 나오면 $-1$ 로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "분모의 켤레 곱하기",
+          "body": "분자·분모에 $-3+i$ 를 곱해요."
+        },
+        {
+          "title": "분모",
+          "body": "$$(-3-i)(-3+i)=9+1=10$$"
+        },
+        {
+          "title": "분자",
+          "body": "$$(7+9i)(-3+i)=-30-20i$$"
+        },
+        {
+          "title": "나누고 더하기",
+          "body": "$$\\frac{-30-20i}{10}=-3-2i,\\quad p+q=-3+(-2)=-5$$"
+        }
+      ],
+      "tip": "분모에 $i$ 가 남으면 아직 끝난 게 아니에요. 켤레를 곱해 분모를 실수로 만들어요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "complex-div",
+      "seed": 1001
+    },
+    {
+      "q": "$i^{29}+i^{34}=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerType": "int",
+      "check": "ee = I**29 + I**34\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i^4=1$ 이라서 $i$ 의 거듭제곱은 $i,\\ -1,\\ -i,\\ 1$ 이 네 번마다 되풀이돼요."
+      ],
+      "steps": [
+        {
+          "title": "4 로 나눈 나머지",
+          "body": "$29=4\\times7+1$, $34=4\\times8+2$"
+        },
+        {
+          "title": "각각 줄이기",
+          "body": "$$i^{29}=i^{1}=i,\\quad i^{34}=i^{2}=-1$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$i^{29}+i^{34}=-1+i,\\quad p+q=0$$"
+        }
+      ],
+      "tip": "$i^0=1$ 이에요. 나머지가 $0$ 이면 $1$ 로 바꿔요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "i-power",
+      "seed": 1002
+    },
+    {
+      "q": "실수 $x$, $y$ 에 대하여 $(x-2)+(2y+3)i=3+15i$ 일 때 $x+y$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "xr, yr = symbols('xr yr', real=True)\nee = expand(xr + (-2) + (2*yr - (-3))*I - (3 + (15)*I))\nsol = solve([re(ee), im(ee)], [xr, yr])\nans = sol[xr] + sol[yr]",
+      "concepts": [
+        "$a$, $b$, $c$, $d$ 가 실수일 때 $a+bi=c+di$ 이면 $a=c$, $b=d$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "실수부끼리",
+          "body": "$$x-2=3,\\quad x=5$$"
+        },
+        {
+          "title": "허수부끼리",
+          "body": "$$2y+3=15,\\quad y=6$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$x+y=5+6=11$$"
+        }
+      ],
+      "tip": "$x$, $y$ 가 실수라는 조건이 있어야 실수부·허수부로 나눌 수 있어요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "complex-equal",
+      "seed": 1003
+    },
+    {
+      "q": "$(-3-2i)(1-4i)=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "ee = expand((-3 + (-2)*I)*(1 + (-4)*I))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i^2=-1$ 이에요. $i$ 는 보통의 문자처럼 계산하고, $i^2$ 이 나오면 $-1$ 로 바꿔요.",
+        "두 복소수가 같으면 실수부끼리, 허수부끼리 같아요."
+      ],
+      "steps": [
+        {
+          "title": "분배법칙으로 펼치기",
+          "body": "$$-3+12i-2i+8i^2$$"
+        },
+        {
+          "title": "$i^2=-1$ 로 바꾸기",
+          "body": "$8i^2=-8$ 이에요.\n$$-3-8+10i=-11+10i$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p=-11$, $q=10$\n$$p+q=-1$$"
+        }
+      ],
+      "tip": "$i^2$ 을 $1$ 로 두면 실수부의 부호가 뒤집혀요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "complex-mul",
+      "seed": 1004
+    },
+    {
+      "q": "$\\dfrac{-12-5i}{3-2i}=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5",
+      "answerType": "int",
+      "check": "ee = expand((-12 + (-5)*I)*conjugate((3 + (-2)*I)))/expand((3 + (-2)*I)*conjugate((3 + (-2)*I)))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "분모의 켤레복소수를 분자·분모에 곱하면 분모가 실수가 돼요: $(c+di)(c-di)=c^2+d^2$",
+        "$i^2=-1$ 이에요. $i$ 는 보통의 문자처럼 계산하고, $i^2$ 이 나오면 $-1$ 로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "분모의 켤레 곱하기",
+          "body": "분자·분모에 $3+2i$ 를 곱해요."
+        },
+        {
+          "title": "분모",
+          "body": "$$(3-2i)(3+2i)=9+4=13$$"
+        },
+        {
+          "title": "분자",
+          "body": "$$(-12-5i)(3+2i)=-26-39i$$"
+        },
+        {
+          "title": "나누고 더하기",
+          "body": "$$\\frac{-26-39i}{13}=-2-3i,\\quad p+q=-2+(-3)=-5$$"
+        }
+      ],
+      "tip": "분모에 $i$ 가 남으면 아직 끝난 게 아니에요. 켤레를 곱해 분모를 실수로 만들어요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "complex-div",
+      "seed": 1005
+    },
+    {
+      "q": "$i^{24}+i^{17}=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "ee = I**24 + I**17\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i^4=1$ 이라서 $i$ 의 거듭제곱은 $i,\\ -1,\\ -i,\\ 1$ 이 네 번마다 되풀이돼요."
+      ],
+      "steps": [
+        {
+          "title": "4 로 나눈 나머지",
+          "body": "$24=4\\times6+0$, $17=4\\times4+1$"
+        },
+        {
+          "title": "각각 줄이기",
+          "body": "$$i^{24}=i^{0}=1,\\quad i^{17}=i^{1}=i$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$i^{24}+i^{17}=1+i,\\quad p+q=2$$"
+        }
+      ],
+      "tip": "$i^0=1$ 이에요. 나머지가 $0$ 이면 $1$ 로 바꿔요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "i-power",
+      "seed": 1006
+    },
+    {
+      "q": "실수 $x$, $y$ 에 대하여 $(x+4)+(2y+3)i=-1+i$ 일 때 $x+y$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-6",
+      "answerType": "int",
+      "check": "xr, yr = symbols('xr yr', real=True)\nee = expand(xr + (4) + (2*yr - (-3))*I - (-1 + (1)*I))\nsol = solve([re(ee), im(ee)], [xr, yr])\nans = sol[xr] + sol[yr]",
+      "concepts": [
+        "$a$, $b$, $c$, $d$ 가 실수일 때 $a+bi=c+di$ 이면 $a=c$, $b=d$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "실수부끼리",
+          "body": "$$x+4=-1,\\quad x=-5$$"
+        },
+        {
+          "title": "허수부끼리",
+          "body": "$$2y+3=1,\\quad y=-1$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$x+y=-5+(-1)=-6$$"
+        }
+      ],
+      "tip": "$x$, $y$ 가 실수라는 조건이 있어야 실수부·허수부로 나눌 수 있어요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "complex-equal",
+      "seed": 1007
+    },
+    {
+      "q": "$(2+2i)(3+i)=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "ee = expand((2 + (2)*I)*(3 + (1)*I))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i^2=-1$ 이에요. $i$ 는 보통의 문자처럼 계산하고, $i^2$ 이 나오면 $-1$ 로 바꿔요.",
+        "두 복소수가 같으면 실수부끼리, 허수부끼리 같아요."
+      ],
+      "steps": [
+        {
+          "title": "분배법칙으로 펼치기",
+          "body": "$$6+2i+6i+2i^2$$"
+        },
+        {
+          "title": "$i^2=-1$ 로 바꾸기",
+          "body": "$2i^2=-2$ 예요.\n$$6-2+8i=4+8i$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p=4$, $q=8$\n$$p+q=12$$"
+        }
+      ],
+      "tip": "$i^2$ 을 $1$ 로 두면 실수부의 부호가 뒤집혀요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "complex-mul",
+      "seed": 1008
+    },
+    {
+      "q": "$\\dfrac{-11+3i}{3-2i}=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "ee = expand((-11 + (3)*I)*conjugate((3 + (-2)*I)))/expand((3 + (-2)*I)*conjugate((3 + (-2)*I)))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "분모의 켤레복소수를 분자·분모에 곱하면 분모가 실수가 돼요: $(c+di)(c-di)=c^2+d^2$",
+        "$i^2=-1$ 이에요. $i$ 는 보통의 문자처럼 계산하고, $i^2$ 이 나오면 $-1$ 로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "분모의 켤레 곱하기",
+          "body": "분자·분모에 $3+2i$ 를 곱해요."
+        },
+        {
+          "title": "분모",
+          "body": "$$(3-2i)(3+2i)=9+4=13$$"
+        },
+        {
+          "title": "분자",
+          "body": "$$(-11+3i)(3+2i)=-39-13i$$"
+        },
+        {
+          "title": "나누고 더하기",
+          "body": "$$\\frac{-39-13i}{13}=-3-i,\\quad p+q=-3+(-1)=-4$$"
+        }
+      ],
+      "tip": "분모에 $i$ 가 남으면 아직 끝난 게 아니에요. 켤레를 곱해 분모를 실수로 만들어요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "complex-div",
+      "seed": 1009
+    },
+    {
+      "q": "$i^{29}+i^{49}=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "ee = I**29 + I**49\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i^4=1$ 이라서 $i$ 의 거듭제곱은 $i,\\ -1,\\ -i,\\ 1$ 이 네 번마다 되풀이돼요."
+      ],
+      "steps": [
+        {
+          "title": "4 로 나눈 나머지",
+          "body": "$29=4\\times7+1$, $49=4\\times12+1$"
+        },
+        {
+          "title": "각각 줄이기",
+          "body": "$$i^{29}=i^{1}=i,\\quad i^{49}=i^{1}=i$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$i^{29}+i^{49}=2i,\\quad p+q=2$$"
+        }
+      ],
+      "tip": "$i^0=1$ 이에요. 나머지가 $0$ 이면 $1$ 로 바꿔요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "i-power",
+      "seed": 1010
+    },
+    {
+      "q": "실수 $x$, $y$ 에 대하여 $(x+5)+(2y-2)i=10+6i$ 일 때 $x+y$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "xr, yr = symbols('xr yr', real=True)\nee = expand(xr + (5) + (2*yr - (2))*I - (10 + (6)*I))\nsol = solve([re(ee), im(ee)], [xr, yr])\nans = sol[xr] + sol[yr]",
+      "concepts": [
+        "$a$, $b$, $c$, $d$ 가 실수일 때 $a+bi=c+di$ 이면 $a=c$, $b=d$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "실수부끼리",
+          "body": "$$x+5=10,\\quad x=5$$"
+        },
+        {
+          "title": "허수부끼리",
+          "body": "$$2y-2=6,\\quad y=4$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$x+y=5+4=9$$"
+        }
+      ],
+      "tip": "$x$, $y$ 가 실수라는 조건이 있어야 실수부·허수부로 나눌 수 있어요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "complex-equal",
+      "seed": 1011
+    },
+    {
+      "q": "$(-2+2i)(3-i)=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "ee = expand((-2 + (2)*I)*(3 + (-1)*I))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i^2=-1$ 이에요. $i$ 는 보통의 문자처럼 계산하고, $i^2$ 이 나오면 $-1$ 로 바꿔요.",
+        "두 복소수가 같으면 실수부끼리, 허수부끼리 같아요."
+      ],
+      "steps": [
+        {
+          "title": "분배법칙으로 펼치기",
+          "body": "$$-6+2i+6i-2i^2$$"
+        },
+        {
+          "title": "$i^2=-1$ 로 바꾸기",
+          "body": "$-2i^2=2$ 예요.\n$$-6+2+8i=-4+8i$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p=-4$, $q=8$\n$$p+q=4$$"
+        }
+      ],
+      "tip": "$i^2$ 을 $1$ 로 두면 실수부의 부호가 뒤집혀요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "complex-mul",
+      "seed": 1012
+    },
+    {
+      "q": "$\\dfrac{1-8i}{1+2i}=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5",
+      "answerType": "int",
+      "check": "ee = expand((1 + (-8)*I)*conjugate((1 + (2)*I)))/expand((1 + (2)*I)*conjugate((1 + (2)*I)))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "분모의 켤레복소수를 분자·분모에 곱하면 분모가 실수가 돼요: $(c+di)(c-di)=c^2+d^2$",
+        "$i^2=-1$ 이에요. $i$ 는 보통의 문자처럼 계산하고, $i^2$ 이 나오면 $-1$ 로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "분모의 켤레 곱하기",
+          "body": "분자·분모에 $1-2i$ 를 곱해요."
+        },
+        {
+          "title": "분모",
+          "body": "$$(1+2i)(1-2i)=1+4=5$$"
+        },
+        {
+          "title": "분자",
+          "body": "$$(1-8i)(1-2i)=-15-10i$$"
+        },
+        {
+          "title": "나누고 더하기",
+          "body": "$$\\frac{-15-10i}{5}=-3-2i,\\quad p+q=-3+(-2)=-5$$"
+        }
+      ],
+      "tip": "분모에 $i$ 가 남으면 아직 끝난 게 아니에요. 켤레를 곱해 분모를 실수로 만들어요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "complex-div",
+      "seed": 1013
+    },
+    {
+      "q": "$i^{13}+i^{50}=p+qi$ 일 때 실수 $p$, $q$ 에 대하여 $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerType": "int",
+      "check": "ee = I**13 + I**50\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i^4=1$ 이라서 $i$ 의 거듭제곱은 $i,\\ -1,\\ -i,\\ 1$ 이 네 번마다 되풀이돼요."
+      ],
+      "steps": [
+        {
+          "title": "4 로 나눈 나머지",
+          "body": "$13=4\\times3+1$, $50=4\\times12+2$"
+        },
+        {
+          "title": "각각 줄이기",
+          "body": "$$i^{13}=i^{1}=i,\\quad i^{50}=i^{2}=-1$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$i^{13}+i^{50}=-1+i,\\quad p+q=0$$"
+        }
+      ],
+      "tip": "$i^0=1$ 이에요. 나머지가 $0$ 이면 $1$ 로 바꿔요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "i-power",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$(3+2i)+(1-5i)-(2-i)=a+bi$ 일 때 실수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerType": "int",
+      "check": "ee = (3 + 2*I) + (1 - 5*I) - (2 - I)\nans = re(ee) + im(ee)",
+      "concepts": [
+        "복소수의 덧셈·뺄셈: 실수부분끼리, 허수부분끼리 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "실수부분",
+          "body": "$$3+1-2=2$$"
+        },
+        {
+          "title": "허수부분",
+          "body": "$$2-5+1=-2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=2+(-2)=0$$"
+        }
+      ],
+      "tip": "뺄셈 괄호 앞의 $-$ 는 $-i$ 에도 적용돼서 $+i$ 가 돼요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\sqrt{-4}\\times\\sqrt{-9}+\\dfrac{\\sqrt{-16}}{\\sqrt{4}}=a+bi$ 일 때 실수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "ee = sqrt(-4)*sqrt(-9) + sqrt(-16)/sqrt(4)\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$a>0$ 일 때 $\\sqrt{-a}=\\sqrt a\\,i$ 로 먼저 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "$i$ 꼴로 바꾸기",
+          "body": "$$\\sqrt{-4}=2i,\\quad \\sqrt{-9}=3i,\\quad \\sqrt{-16}=4i$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$2i\\times3i=6i^2=-6$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{4i}{2}=2i$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$-6+2i$ 에서 $a+b=-4$"
+        }
+      ],
+      "tip": "$\\sqrt{-4}\\sqrt{-9}=\\sqrt{36}=6$ 으로 계산하면 부호가 틀려요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$(1+i)^8$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "expand((1 + I)**8)",
+      "concepts": [
+        "$(1+i)^2=2i$ 를 먼저 구하면 거듭제곱이 짧아져요."
+      ],
+      "steps": [
+        {
+          "title": "제곱 먼저",
+          "body": "$$(1+i)^2=1+2i+i^2=2i$$"
+        },
+        {
+          "title": "네제곱으로",
+          "body": "$$(1+i)^8=(2i)^4=16i^4$$"
+        },
+        {
+          "title": "$i^4=1$",
+          "body": "$$16$$"
+        }
+      ],
+      "tip": "$(1+i)^2=2i$, $(1-i)^2=-2i$ 는 자주 써요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$z=2-3i$ 일 때 $z\\overline{z}+z+\\overline{z}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "17",
+      "answerType": "int",
+      "check": "zz = 2 - 3*I\nans = expand(zz*conjugate(zz) + zz + conjugate(zz))",
+      "concepts": [
+        "$(a+bi)(a-bi)=a^2+b^2$",
+        "$z+\\overline{z}=2a$"
+      ],
+      "steps": [
+        {
+          "title": "켤레",
+          "body": "$$\\overline{z}=2+3i$$"
+        },
+        {
+          "title": "곱",
+          "body": "$$z\\overline z=4+9=13$$"
+        },
+        {
+          "title": "합",
+          "body": "$$z+\\overline z=4$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$13+4=17$$"
+        }
+      ],
+      "tip": "켤레끼리의 합과 곱은 늘 실수예요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\left(\\dfrac{1+i}{1-i}\\right)^{2026}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "simplify(((1 + I)/(1 - I))**2026)",
+      "concepts": [
+        "분모의 켤레를 곱해 간단히 해요.",
+        "$i$ 의 거듭제곱은 네 번마다 되풀이돼요."
+      ],
+      "steps": [
+        {
+          "title": "괄호 안",
+          "body": "$$\\frac{(1+i)^2}{(1-i)(1+i)}=\\frac{2i}{2}=i$$"
+        },
+        {
+          "title": "4 로 나눈 나머지",
+          "body": "$2026=4\\times506+2$"
+        },
+        {
+          "title": "계산",
+          "body": "$$i^{2026}=i^2=-1$$"
+        }
+      ],
+      "tip": "큰 지수는 $4$ 로 나눈 나머지만 보면 돼요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "복소수 $z=(x^2-x-2)+(x^2-4)i$ 가 순허수(실수부분이 $0$ 인 허수)일 때 실수 $x$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "xr = symbols('xr', real=True)\nsol = [s0 for s0 in solve(xr**2 - xr - 2, xr) if s0**2 - 4 != 0]\nans = sol[0]",
+      "concepts": [
+        "순허수: 실수부분 $=0$, 허수부분 $\\neq0$"
+      ],
+      "steps": [
+        {
+          "title": "실수부분 $=0$",
+          "body": "$$x^2-x-2=(x-2)(x+1)=0$$"
+        },
+        {
+          "title": "후보",
+          "body": "$x=2$ 또는 $x=-1$"
+        },
+        {
+          "title": "허수부분 $\\neq0$",
+          "body": "$x=2$ 이면 $x^2-4=0$ 이라 $z=0$ 이 돼요. 그래서 $x=-1$"
+        }
+      ],
+      "tip": "허수부분이 $0$ 이 아니라는 조건을 빠뜨리면 답이 두 개가 돼요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$x=1+2i$ 일 때 $x^2-2x+5$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerType": "int",
+      "check": "xx = 1 + 2*I\nans = expand(xx**2 - 2*xx + 5)",
+      "concepts": [
+        "$x-1=2i$ 를 제곱하면 $i$ 가 사라져요."
+      ],
+      "steps": [
+        {
+          "title": "옮기기",
+          "body": "$$x-1=2i$$"
+        },
+        {
+          "title": "제곱하기",
+          "body": "$$x^2-2x+1=-4$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$x^2-2x+5=0$$"
+        }
+      ],
+      "tip": "$x$ 를 바로 넣어도 되지만, 허수부분만 남기고 제곱하면 계산이 짧아요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "복소수 $z$ 가 $z(1+i)=3-i$ 를 만족할 때 $z=a+bi$ 라 하면 $a-b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "ee = (3 - I)/(1 + I)\nans = re(ee) - im(ee)",
+      "concepts": [
+        "분모의 켤레를 곱해 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "나누기",
+          "body": "$$z=\\frac{3-i}{1+i}=\\frac{(3-i)(1-i)}{2}$$"
+        },
+        {
+          "title": "분자 전개",
+          "body": "$$3-3i-i+i^2=2-4i$$"
+        },
+        {
+          "title": "약분",
+          "body": "$z=1-2i$"
+        },
+        {
+          "title": "계산",
+          "body": "$$a-b=1-(-2)=3$$"
+        }
+      ],
+      "tip": "검산: $(1-2i)(1+i)=1+i-2i-2i^2=3-i$"
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$i+i^2+i^3+\\cdots+i^{30}=a+bi$ 일 때 실수 $a$, $b$ 에 대하여 $a-b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "ee = sum(I**k0 for k0 in range(1, 31))\nans = re(ee) - im(ee)",
+      "concepts": [
+        "연속한 네 거듭제곱의 합은 $i+(-1)+(-i)+1=0$"
+      ],
+      "steps": [
+        {
+          "title": "네 개씩 묶기",
+          "body": "$i$ 부터 $i^{28}$ 까지 $28$ 개는 일곱 묶음이라 합이 $0$"
+        },
+        {
+          "title": "남은 두 개",
+          "body": "$$i^{29}+i^{30}=i+i^2=-1+i$$"
+        },
+        {
+          "title": "계산",
+          "body": "$a=-1$, $b=1$\n$$a-b=-2$$"
+        }
+      ],
+      "tip": "몇 개가 남는지는 항의 개수를 $4$ 로 나눈 나머지로 알아요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "실수 $a$, $b$ 에 대하여 $(a+2i)(1-i)=5+bi$ 일 때 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "ar, br = symbols('ar br', real=True)\nee = expand((ar + 2*I)*(1 - I) - (5 + br*I))\nsol = solve([re(ee), im(ee)], [ar, br])\nans = sol[ar] + sol[br]",
+      "concepts": [
+        "복소수가 같으면 실수부분끼리, 허수부분끼리 같아요."
+      ],
+      "steps": [
+        {
+          "title": "왼쪽 전개",
+          "body": "$$a-ai+2i-2i^2=(a+2)+(2-a)i$$"
+        },
+        {
+          "title": "실수부분",
+          "body": "$$a+2=5,\\quad a=3$$"
+        },
+        {
+          "title": "허수부분",
+          "body": "$$b=2-a=-1$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=2$$"
+        }
+      ],
+      "tip": "$a$, $b$ 가 실수라는 조건이 있어야 실수부분·허수부분으로 나눌 수 있어요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "복소평면에서 $z=4+2i$ 를 원점 둘레로 시계 반대 방향으로 $90°$ 돌린 뒤 실수축에 대해 대칭이동한 점을 $a+bi$ 라 할 때 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-6",
+      "answerType": "int",
+      "check": "ee = conjugate(I*(4 + 2*I))\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$i$ 를 곱하면 $90°$ 회전",
+        "켤레복소수는 실수축 대칭"
+      ],
+      "steps": [
+        {
+          "title": "$90°$ 돌리기",
+          "body": "$$i(4+2i)=4i+2i^2=-2+4i$$"
+        },
+        {
+          "title": "실수축 대칭",
+          "body": "$$\\overline{-2+4i}=-2-4i$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$-2+(-4)=-6$$"
+        }
+      ],
+      "tip": "돌리는 순서와 대칭하는 순서를 바꾸면 다른 점이 나와요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "$(1-i)^{10}=a+bi$ 일 때 실수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-32",
+      "answerType": "int",
+      "check": "ee = expand((1 - I)**10)\nans = re(ee) + im(ee)",
+      "concepts": [
+        "$(1-i)^2=-2i$"
+      ],
+      "steps": [
+        {
+          "title": "제곱 먼저",
+          "body": "$$(1-i)^2=1-2i+i^2=-2i$$"
+        },
+        {
+          "title": "다섯제곱",
+          "body": "$$(-2i)^5=-32i^5$$"
+        },
+        {
+          "title": "$i^5=i$",
+          "body": "$-32i$ 에서 $a=0$, $b=-32$\n$$a+b=-32$$"
+        }
+      ],
+      "tip": "실수부분이 $0$ 이어도 $a=0$ 으로 넣어요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "복소수 $z=a+bi$ ($a$, $b$ 는 실수)가 $z+2\\overline{z}=6-i$ 를 만족할 때 $ab$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "ar, br = symbols('ar br', real=True)\nzz = ar + br*I\nee = expand(zz + 2*conjugate(zz) - (6 - I))\nsol = solve([re(ee), im(ee)], [ar, br])\nans = sol[ar]*sol[br]",
+      "concepts": [
+        "$\\overline{a+bi}=a-bi$",
+        "복소수가 같을 조건"
+      ],
+      "steps": [
+        {
+          "title": "왼쪽 정리",
+          "body": "$$(a+bi)+2(a-bi)=3a-bi$$"
+        },
+        {
+          "title": "비교하기",
+          "body": "$$3a=6,\\quad -b=-1$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$a=2$, $b=1$\n$$ab=2$$"
+        }
+      ],
+      "tip": "$z$ 를 $a+bi$ 로 놓고 켤레를 함께 쓰면 실수부분·허수부분 두 식이 생겨요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "$\\omega$ 가 $x^2+x+1=0$ 의 한 허근일 때 $\\omega^{20}+\\omega^{10}+1$ 의 값은?",
+      "choices": [
+        "$-2$",
+        "$-1$",
+        "$0$",
+        "$1$",
+        "$2$"
+      ],
+      "choiceChecks": [
+        "-2",
+        "-1",
+        "0",
+        "1",
+        "2"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "ww = solve(x**2 + x + 1, x)[0]\nans = simplify(expand(ww**20 + ww**10 + 1))",
+      "concepts": [
+        "$x^3-1=(x-1)(x^2+x+1)$ 이라 $\\omega^3=1$"
+      ],
+      "steps": [
+        {
+          "title": "$\\omega^3=1$",
+          "body": "$\\omega^2+\\omega+1=0$ 의 양변에 $\\omega-1$ 을 곱하면 $\\omega^3-1=0$"
+        },
+        {
+          "title": "지수 줄이기",
+          "body": "$$\\omega^{20}=\\omega^{2},\\quad \\omega^{10}=\\omega$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$\\omega^2+\\omega+1=0$$"
+        }
+      ],
+      "tip": "$i$ 처럼 거듭제곱이 되풀이되는 수는 되풀이 주기로 지수를 줄여요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "복소수 $z$ 가 $z+\\overline{z}=4$, $z\\overline{z}=13$ 을 만족하고 허수부분이 양수일 때 $z=a+bi$ 라 하면 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "ar, br = symbols('ar br', real=True)\nsol = [s0 for s0 in solve([2*ar - 4, ar**2 + br**2 - 13], [ar, br]) if s0[1] > 0]\nans = sol[0][0] + sol[0][1]",
+      "concepts": [
+        "$z+\\overline z=2a$, $z\\overline z=a^2+b^2$"
+      ],
+      "steps": [
+        {
+          "title": "합",
+          "body": "$$2a=4,\\quad a=2$$"
+        },
+        {
+          "title": "곱",
+          "body": "$$4+b^2=13,\\quad b^2=9$$"
+        },
+        {
+          "title": "부호 고르기",
+          "body": "허수부분이 양수라 $b=3$\n$$a+b=5$$"
+        }
+      ],
+      "tip": "켤레끼리의 합과 곱만 알면 $z$ 를 바로 찾을 수 있어요."
+    }
+  ]
+}
