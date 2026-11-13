@@ -87,3 +87,16 @@ test('모든 단원의 앱 화면(단원 홈·문제·홈·지도·오답·설�
     assert.match(pages[0] as string, u.lesson ? /레슨 시작하기/ : /예제 1/);
   }
 });
+
+test('곱의 미분 레슨: 좌표평면·넓이 모형 부품이 그려진다(손잡이·확인하기 포함)', async () => {
+  const { units, renderLesson } = await entry;
+  const u = units.find((x) => x.id === 'math2-diff-product-rule');
+  assert.ok(u?.lesson);
+  const html = renderLesson(u);
+  assert.match(html, /class="coord m-explore"/);
+  assert.match(html, /class="coord m-line"/);
+  assert.match(html, /class="area"/);
+  assert.match(html, /role="slider"/);
+  assert.match(html, /확인하기/);
+  assert.match(html, /할선 PQ 의 기울기/);
+});
