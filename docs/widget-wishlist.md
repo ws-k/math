@@ -25,3 +25,6 @@
 - coord: 정답 곡선 숨기기(채점 전 숨김, 맞히면 보임) — 곡선 손그리기 장면에 필수 — m1-coord-graph
 - shape: 함께 움직이는 점(한 점을 끌면 마주 보는 점이 따라옴, 교차한 두 직선 돌리기) — m1-basic-geometry
 - ~~verify.py 버그~~ (고침): plot 직선 과제 기울기를 분수("2/3")로 주면 fr() 가 실수로 계산해 "풀 수 있나" 검사 실패(215줄 근처) — m1-coord-graph
+- 소인수분해 나무(새 부품: 수를 눌러 두 수로 쪼개기) — m1-prime-factor
+- areaModel: 칸 합계(약수의 합) 숨기기 옵션 — m1-prime-factor
+- 숫자 문제(solve)에서 객관식 보기 허용 — m1-integer-rational
