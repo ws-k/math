@@ -1,0 +1,1455 @@
+{
+  "id": "h1-inequalities",
+  "course": "고1 수학",
+  "unit": "방정식과 부등식",
+  "title": "여러 가지 부등식",
+  "prereq": [
+    "m2-linear-ineq",
+    "h1-quad-eq-func"
+  ],
+  "suneung": [],
+  "hours": 2.5,
+  "formulas": [
+    "$\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+    "$\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)>0 \\Leftrightarrow x<\\alpha$ 또는 $x>\\beta$",
+    "$D\\le0$ 이면 $ax^2+bx+c\\ge0$ ($a>0$)",
+    "$a>0$ 일 때 $|X|<a \\Leftrightarrow -a<X<a$, $|X|>a \\Leftrightarrow X<-a$ 또는 $X>a$",
+    "연립부등식의 해 $=$ 각 부등식의 해의 공통부분"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "r1": {
+        "value": "-1",
+        "check": "Min(*solve(x**2-2*x-3, x))"
+      },
+      "r2": {
+        "value": "3",
+        "check": "Max(*solve(x**2-2*x-3, x))"
+      },
+      "vD": {
+        "value": "-8",
+        "check": "(-2)**2-4*1*3"
+      },
+      "ab": {
+        "value": "-1",
+        "check": "solve(Eq(-(x-1), x+3), x)[0]"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "고1 수학 · 방정식과 부등식",
+        "title": "그래프가 $x$축 아래로\n내려가는 곳 찾기",
+        "lead": "이차부등식은 계산보다 그림으로 먼저 보면 쉬워요. 포물선이 $x$축 위에 있는지 아래에 있는지만 보면 해가 나와요.",
+        "meta": [
+          "이차부등식",
+          "연립부등식",
+          "절댓값이 있는 부등식"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$x^2<4$ 를 만족하는\n정수는 몇 개일까요?",
+        "lead": "$x<2$ 라고 바로 쓰고 싶어지지만, 정수를 하나씩 넣어 보면 달라요.",
+        "choices": [
+          {
+            "value": "2",
+            "check": "len([t for t in range(0, 11) if t**2 < 4])",
+            "feedback": "$0$, $1$ 만 셌네요. 음수도 제곱하면 양수예요. $x=-1$ 을 넣으면 $1<4$ 로 맞아요."
+          },
+          {
+            "value": "3",
+            "check": "len([t for t in range(-10, 11) if t**2 < 4])"
+          },
+          {
+            "value": "5",
+            "check": "len([t for t in range(-10, 11) if t**2 <= 4])",
+            "feedback": "$\\pm2$ 까지 셌네요. $2^2=4$ 이고 $4<4$ 는 거짓이라 경계는 빠져요."
+          }
+        ],
+        "format": {
+          "unit": "개"
+        },
+        "answer": 1,
+        "answerCheck": "len([t for t in range(-10, 11) if t**2 < 4])",
+        "reveal": "**맞아요.** $-1$, $0$, $1$ 이에요.",
+        "thoughts": [
+          "$x=-3$ 이면 $9<4$ 로 거짓, $x=-2$ 이면 $4<4$ 로 거짓이에요.",
+          "그래서 해는 한쪽으로 뻗지 않고 $-2<x<2$ 처럼 **양쪽이 막힌 구간**이에요."
+        ],
+        "conclude": "이차부등식의 해는 일차부등식처럼 한 방향이 아니에요. ==경계가 두 개==예요."
+      },
+      {
+        "kind": "question",
+        "id": "sign",
+        "chip": "손으로 해 보기",
+        "title": "포물선이 $x$축 아래인 곳,\n끌면서 찾아보세요",
+        "lead": "곡선은 $y=x^2-2x-3$ 이에요. 점 P 를 좌우로 끌면서 P 의 $y$ 가 음수인 구간을 찾아보세요. 그 구간 안의 정수 $x$ 는 몇 개일까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -3,
+              "max": 5,
+              "step": 1
+            },
+            "y": {
+              "min": -5,
+              "max": 12,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "f",
+                "curve": "x**2-2*x-3",
+                "label": "$y=x^2-2x-3$"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "f",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": "1/2"
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "P 의 $x$",
+                "digits": 1
+              },
+              {
+                "readout": "y(P)",
+                "label": "P 의 $y$",
+                "digits": 2
+              }
+            ],
+            "intro": "P 를 오른쪽 끝까지, 왼쪽 끝까지 끌어 보세요. $y$ 의 부호가 바뀌는 곳이 경계예요."
+          },
+          "eq": false
+        },
+        "choices": [
+          {
+            "value": "2",
+            "check": "len([t for t in range(1, 11) if t**2-2*t-3 < 0])",
+            "feedback": "$x=0$ 을 빠뜨렸어요. P 를 $x=0$ 에 두면 $y=-3$ 으로 아래에 있어요."
+          },
+          {
+            "value": "3",
+            "check": "len([t for t in range(-10, 11) if t**2-2*t-3 < 0])"
+          },
+          {
+            "value": "5",
+            "check": "len([t for t in range(-10, 11) if t**2-2*t-3 <= 0])",
+            "feedback": "경계 $x={{r1}}$, $x={{r2}}$ 에서는 $y=0$ 이라 $x$축 **위에 붙어** 있어요. 아래가 아니에요."
+          }
+        ],
+        "format": {
+          "unit": "개"
+        },
+        "answer": 1,
+        "answerCheck": "len([t for t in range(-10, 11) if t**2-2*t-3 < 0])",
+        "reveal": "**맞아요.** $0$, $1$, $2$ 예요.",
+        "thoughts": [
+          "P 의 $y$ 는 $x={{r1}}$ 과 $x={{r2}}$ 에서 $0$ 이 되고, 그 사이에서만 음수예요.",
+          "그래서 $x^2-2x-3<0$ 의 해는 ${{r1}}<x<{{r2}}$, 두 근 **사이**예요."
+        ],
+        "conclude": "반대로 $x^2-2x-3>0$ 은 $x$축 **위**인 곳, 곧 $x<{{r1}}$ 또는 $x>{{r2}}$ 예요. ==경계는 방정식의 근, 안쪽·바깥쪽은 그래프가 정해요.=="
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 찾은 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "이차부등식",
+            "body": "정리했을 때 $ax^2+bx+c>0$ 처럼 좌변이 이차식인 부등식이에요($<$, $\\ge$, $\\le$ 도 같아요)."
+          },
+          {
+            "term": "두 근 사이·바깥",
+            "body": "$a>0$ 이고 두 근이 $\\alpha<\\beta$ 이면 $<0$ 의 해는 $\\alpha<x<\\beta$(사이), $>0$ 의 해는 $x<\\alpha$ 또는 $x>\\beta$(바깥)예요."
+          },
+          {
+            "term": "판별식과 부등식",
+            "body": "$D<0$ 이면 포물선이 $x$축과 만나지 않아요. $a>0$ 이면 늘 $x$축 위라 $ax^2+bx+c>0$ 은 **모든 실수**, $<0$ 은 **해가 없어요**."
+          },
+          {
+            "term": "연립부등식",
+            "body": "부등식 여러 개를 함께 만족하는 $x$ 를 찾는 것이에요. 각 해를 수직선에 그려 **겹치는 곳**만 남겨요."
+          }
+        ],
+        "aside": "**확인** · $x^2-2x-3=(x+1)(x-3)$ 이라 근은 ${{r1}}$, ${{r2}}$ 예요. 끌어서 찾은 경계와 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "vertex",
+        "chip": "두 번째 해 보기",
+        "title": "꼭짓점을 찍어 보면\n해가 보여요",
+        "lead": "$x^2-2x+3=(x-1)^2+2$ 예요. 포물선 $y=x^2-2x+3$ 의 꼭짓점을 격자에 찍고 '확인하기'를 누르세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -2,
+              "max": 4,
+              "step": 1
+            },
+            "y": {
+              "min": -2,
+              "max": 8,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "f",
+                "curve": "x**2-2*x+3",
+                "label": "$y=x^2-2x+3$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "1",
+                  "check": "solve(diff(x**2-2*x+3, x), x)[0]"
+                },
+                "y": {
+                  "value": "2",
+                  "check": "(x**2-2*x+3).subs(x, solve(diff(x**2-2*x+3, x), x)[0])"
+                }
+              }
+            },
+            "intro": "$(x-1)^2$ 이 가장 작아지는 $x$ 에서 꼭짓점이에요.",
+            "done": "꼭짓점이 $x$축 **위**에 있어요. 그래서 그래프 전체가 $x$축 위예요."
+          }
+        },
+        "after": "판별식은 $D={{vD}}<0$ 이에요. 그래서 $x^2-2x+3>0$ 은 ==모든 실수에서 참==이고, $x^2-2x+3<0$ 은 해가 없어요. 계산하지 않아도 꼭짓점 하나로 알 수 있어요."
+      },
+      {
+        "kind": "explore",
+        "id": "abs",
+        "chip": "절댓값이 있으면",
+        "title": "$|x-1|<x+3$ 의 해를\n수직선에 그려 보세요",
+        "lead": "절댓값은 안이 양수인지 음수인지로 나눠 풀어요. $x\\ge1$ 이면 $x-1<x+3$ 으로 늘 참이고, $x<1$ 이면 $-(x-1)<x+3$ 이에요. 두 경우를 합친 해를 끝점·빈 점/찬 점·방향으로 나타내 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "numberLine",
+          "params": {
+            "min": -5,
+            "max": 5,
+            "step": "1",
+            "task": {
+              "type": "interval",
+              "ineq": "Abs(x-1)<x+3",
+              "answer": {
+                "at": "-1",
+                "dir": "right",
+                "open": true
+              }
+            }
+          }
+        },
+        "after": "$x<1$ 쪽에서 $-x+1<x+3$ 을 풀면 $x>{{ab}}$, 그래서 ${{ab}}<x<1$ 이에요. 여기에 $x\\ge1$ 전체를 붙이면 $x>{{ab}}$ 예요. ==경우를 나눴으면 마지막에 합쳐요.=="
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $x^2-x-6<0$ 을 풀려고 인수분해했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "x**2-x-6"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(x-2)*(x+3)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "(x+2)*(x-3)",
+              "body": "곱이 $-6$, 합이 $-1$ 인 두 수는 $2$ 와 $-3$ 이에요. 부호가 뒤바뀌면 해가 $-3<x<2$ 로 엉뚱해져요. 바른 해는 $-2<x<3$ 이에요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $x^2+4x+7<0$ 을 보려고 완전제곱식으로 바꿨어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "x**2+4*x+7"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(x+2)**2"
+              },
+              {
+                "sym": "+7",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "+3",
+              "body": "$(x+2)^2$ 을 펼치면 $+4$ 가 생기니 그만큼 빼야 해요. $(x+2)^2+3\\ge3$ 이라 $x^2+4x+7<0$ 은 **해가 없어요**."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "sysq",
+            "q": "연립부등식 $\\begin{cases} x^2-3x-10<0 \\\\ x^2-x-2>0 \\end{cases}$ 을 만족하는 정수 $x$ 의 개수를 구하세요.",
+            "hint": "두 부등식을 따로 풀어 수직선에 그리고, 겹치는 곳만 남겨요.",
+            "placeholder": "개",
+            "concepts": [
+              "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+              "$(x-\\alpha)(x-\\beta)>0 \\Leftrightarrow x<\\alpha$ 또는 $x>\\beta$",
+              "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요."
+            ],
+            "steps": [
+              {
+                "title": "첫째 부등식",
+                "body": "$(x+2)(x-5)<0$ 이므로 두 근 사이예요.\n$$-2<x<5$$"
+              },
+              {
+                "title": "둘째 부등식",
+                "body": "$(x+1)(x-2)>0$ 이므로 두 근 바깥이에요.\n$$x<-1\\ \\text{또는}\\ x>2$$"
+              },
+              {
+                "title": "공통부분",
+                "body": "$$-2<x<-1\\ \\text{또는}\\ 2<x<5$$"
+              },
+              {
+                "title": "정수 세기",
+                "body": "왼쪽 구간에는 정수가 없고, 오른쪽에 $3$, $4$ 가 있어요. 모두 {{answer}}개예요."
+              }
+            ],
+            "tip": "공통부분이 두 조각으로 나뉠 수 있어요. 수직선에 두 해를 위아래로 그려 보면 빠뜨리지 않아요.",
+            "answer": "2",
+            "answerType": "int",
+            "check": "len([t for t in range(-100, 101) if t**2-3*t-10 < 0 and t**2-t-2 > 0])"
+          },
+          {
+            "id": "absq",
+            "q": "부등식 $|2x-3|\\le5$ 를 만족하는 정수 $x$ 의 개수를 구하세요.",
+            "hint": "$|X|\\le5$ 는 $-5\\le X\\le5$ 예요.",
+            "placeholder": "개",
+            "concepts": [
+              "$a>0$ 일 때 $|X|<a \\Leftrightarrow -a<X<a$"
+            ],
+            "steps": [
+              {
+                "title": "절댓값 풀기",
+                "body": "$$-5\\le 2x-3\\le 5$$"
+              },
+              {
+                "title": "세 쪽에 $3$ 더하기",
+                "body": "$$-2\\le 2x\\le 8$$"
+              },
+              {
+                "title": "세 쪽을 $2$ 로 나누기",
+                "body": "$$-1\\le x\\le 4$$"
+              },
+              {
+                "title": "정수 세기",
+                "body": "$-1$ 부터 $4$ 까지 모두 {{answer}}개예요."
+              }
+            ],
+            "tip": "$2x-3\\le5$ 하나만 풀면 왼쪽 경계 $-1$ 을 놓쳐요.",
+            "answer": "6",
+            "answerType": "int",
+            "check": "len([t for t in range(-100, 101) if Abs(2*t-3) <= 5])"
+          },
+          {
+            "id": "always",
+            "q": "모든 실수 $x$ 에 대하여 부등식 $x^2-2kx+2k+3>0$ 이 성립하도록 하는 정수 $k$ 의 개수를 구하세요.",
+            "hint": "포물선이 늘 $x$축 위에 있으려면 $x$축과 만나지 않아야 해요.",
+            "placeholder": "개",
+            "concepts": [
+              "$a>0$ 일 때 모든 실수 $x$ 에 대하여 $ax^2+bx+c>0 \\Leftrightarrow D<0$"
+            ],
+            "steps": [
+              {
+                "title": "조건 바꾸기",
+                "body": "$x^2$ 의 계수가 양수이니 판별식이 음수이면 돼요."
+              },
+              {
+                "title": "판별식 쓰기",
+                "body": "$$\\frac{D}{4}=k^2-(2k+3)<0$$"
+              },
+              {
+                "title": "이차부등식 풀기",
+                "body": "$k^2-2k-3=(k+1)(k-3)<0$ 이므로\n$$-1<k<3$$"
+              },
+              {
+                "title": "정수 세기",
+                "body": "$k=0,\\ 1,\\ 2$ 로 {{answer}}개예요."
+              }
+            ],
+            "tip": "$D\\le0$ 으로 쓰면 $x$축에 닿는 경우까지 들어가 $\\ge0$ 이 돼요. 등호가 없는 $>0$ 이라 $D<0$ 이에요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "len([t for t in range(-50, 51) if solveset(x**2-2*t*x+2*t+3 > 0, x, S.Reals) == S.Reals])"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "이차부등식은 **경계(방정식의 근)** 를 먼저 찾고, 그래프가 $x$축 위인지 아래인지로 안쪽·바깥쪽을 골라요.",
+          "$D<0$ 이고 $a>0$ 이면 $ax^2+bx+c>0$ 은 모든 실수, $<0$ 은 해가 없어요.",
+          "연립부등식은 각 해의 공통부분, 절댓값은 $|X|<a \\Leftrightarrow -a<X<a$ 또는 경우 나누기예요.",
+          "수학Ⅰ의 지수·로그 부등식도 결국 이 단원의 부등식으로 바뀌고, 수학Ⅱ의 '부등식이 항상 성립할 조건'은 판별식 대신 최솟값으로 따지는 같은 생각이에요."
+        ],
+        "done": "여러 가지 부등식 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "qineq-int-count",
+    "abs-ineq-count",
+    "sys-linear-count"
+  ],
+  "problems": [
+    {
+      "q": "다음 이차부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$x^2-10x+16\\le 0$$",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if 1*t**2 - 10*t + 16 <= 0])",
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "그래프로 보면 $y=(x-\\alpha)(x-\\beta)$ 가 $x$축 **아래**인 구간이에요."
+      ],
+      "steps": [
+        {
+          "title": "인수분해하기",
+          "body": "$$(x-2)(x-8)\\le 0$$"
+        },
+        {
+          "title": "경계 찾기",
+          "body": "좌변을 $0$ 으로 만드는 경계는 $x=2$, $x=8$ 이에요."
+        },
+        {
+          "title": "부호 보기",
+          "body": "$x^2$ 의 계수가 양수라 그래프는 아래로 볼록이고, 두 경계 **사이**에서 $x$축 아래로 내려가요.\n$$2\\le x\\le 8$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $2,\\ 3,\\ \\dots,\\ 8$, 모두 7개예요."
+        }
+      ],
+      "tip": "등호가 있어서 경계 $2$, $8$ 도 해예요. 경계를 빼먹으면 개수가 2 작게 나와요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "qineq-int-count",
+      "seed": 1000
+    },
+    {
+      "q": "다음 부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$|x+2|<2$$",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if Abs(1*t + 2) < 2])",
+      "concepts": [
+        "$a>0$ 일 때 $|X|<a \\Leftrightarrow -a<X<a$",
+        "절댓값은 수직선에서 $0$ 까지의 거리예요."
+      ],
+      "steps": [
+        {
+          "title": "절댓값 풀기",
+          "body": "$|X|<2$ 는 $X$ 가 $0$ 에서 $2$ 이내라는 뜻이에요.\n$$-2<x+2<2$$"
+        },
+        {
+          "title": "세 쪽에서 $2$ 빼기",
+          "body": "$$-4<x<0$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-3,\\ -2,\\ -1$, 모두 3개예요."
+        }
+      ],
+      "tip": "$|x+2|<2$ 를 $x+2<2$ 하나로만 풀면 왼쪽 경계를 놓쳐요. 거리라서 양쪽으로 2만큼이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "abs-ineq-count",
+      "seed": 1001
+    },
+    {
+      "q": "다음 연립부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$\\begin{cases} 2x+1>-3 \\\\ -x-4>-7 \\end{cases}$$",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if (2*t + 1 > -3) and (-1*t - 4 > -7)])",
+      "concepts": [
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요.",
+        "양변을 **음수**로 나누면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 부등식 풀기",
+          "body": "$$2x>-4\\quad\\Rightarrow\\quad x>-2$$"
+        },
+        {
+          "title": "둘째 부등식 풀기 — 방향 바꾸기",
+          "body": "$$-x>-3\\quad\\Rightarrow\\quad x<3$$\n$-1$로 나눌 때 부등호를 뒤집었어요."
+        },
+        {
+          "title": "공통부분",
+          "body": "$$-2<x<3$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-1,\\ 0,\\ 1,\\ 2$, 모두 4개예요."
+        }
+      ],
+      "tip": "두 해를 수직선 위에 함께 그려 보면, 겹치는 곳만 남는다는 게 한눈에 보여요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "sys-linear-count",
+      "seed": 1002
+    },
+    {
+      "q": "다음 이차부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$x^2+x-2\\le 0$$",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if 1*t**2 + 1*t - 2 <= 0])",
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "그래프로 보면 $y=(x-\\alpha)(x-\\beta)$ 가 $x$축 **아래**인 구간이에요."
+      ],
+      "steps": [
+        {
+          "title": "인수분해하기",
+          "body": "$$(x+2)(x-1)\\le 0$$"
+        },
+        {
+          "title": "경계 찾기",
+          "body": "좌변을 $0$ 으로 만드는 경계는 $x=-2$, $x=1$ 이에요."
+        },
+        {
+          "title": "부호 보기",
+          "body": "$x^2$ 의 계수가 양수라 그래프는 아래로 볼록이고, 두 경계 **사이**에서 $x$축 아래로 내려가요.\n$$-2\\le x\\le 1$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-2,\\ -1,\\ 0,\\ 1$, 모두 4개예요."
+        }
+      ],
+      "tip": "등호가 있어서 경계 $-2$, $1$ 도 해예요. 경계를 빼먹으면 개수가 2 작게 나와요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "qineq-int-count",
+      "seed": 1003
+    },
+    {
+      "q": "다음 부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$|x+1|\\le 4$$",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if Abs(1*t + 1) <= 4])",
+      "concepts": [
+        "$a>0$ 일 때 $|X|<a \\Leftrightarrow -a<X<a$",
+        "절댓값은 수직선에서 $0$ 까지의 거리예요."
+      ],
+      "steps": [
+        {
+          "title": "절댓값 풀기",
+          "body": "$|X|\\le 4$ 는 $X$ 가 $0$ 에서 $4$ 이내라는 뜻이에요.\n$$-4\\le x+1\\le 4$$"
+        },
+        {
+          "title": "세 쪽에서 $1$ 빼기",
+          "body": "$$-5\\le x\\le 3$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-5,\\ -4,\\ \\dots,\\ 3$, 모두 9개예요."
+        }
+      ],
+      "tip": "$|x+1|\\le 4$ 를 $x+1\\le 4$ 하나로만 풀면 왼쪽 경계를 놓쳐요. 거리라서 양쪽으로 4만큼이에요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "abs-ineq-count",
+      "seed": 1004
+    },
+    {
+      "q": "다음 연립부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$\\begin{cases} 3x-2\\ge -8 \\\\ -2x-5\\ge -13 \\end{cases}$$",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if (3*t - 2 >= -8) and (-2*t - 5 >= -13)])",
+      "concepts": [
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요.",
+        "양변을 **음수**로 나누면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 부등식 풀기",
+          "body": "$$3x\\ge -6\\quad\\Rightarrow\\quad x\\ge -2$$"
+        },
+        {
+          "title": "둘째 부등식 풀기 — 방향 바꾸기",
+          "body": "$$-2x\\ge -8\\quad\\Rightarrow\\quad x\\le 4$$\n$-2$로 나눌 때 부등호를 뒤집었어요."
+        },
+        {
+          "title": "공통부분",
+          "body": "$$-2\\le x\\le 4$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-2,\\ -1,\\ \\dots,\\ 4$, 모두 7개예요."
+        }
+      ],
+      "tip": "두 해를 수직선 위에 함께 그려 보면, 겹치는 곳만 남는다는 게 한눈에 보여요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "sys-linear-count",
+      "seed": 1005
+    },
+    {
+      "q": "다음 이차부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$x^2+x-2\\le 0$$",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if 1*t**2 + 1*t - 2 <= 0])",
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "그래프로 보면 $y=(x-\\alpha)(x-\\beta)$ 가 $x$축 **아래**인 구간이에요."
+      ],
+      "steps": [
+        {
+          "title": "인수분해하기",
+          "body": "$$(x+2)(x-1)\\le 0$$"
+        },
+        {
+          "title": "경계 찾기",
+          "body": "좌변을 $0$ 으로 만드는 경계는 $x=-2$, $x=1$ 이에요."
+        },
+        {
+          "title": "부호 보기",
+          "body": "$x^2$ 의 계수가 양수라 그래프는 아래로 볼록이고, 두 경계 **사이**에서 $x$축 아래로 내려가요.\n$$-2\\le x\\le 1$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-2,\\ -1,\\ 0,\\ 1$, 모두 4개예요."
+        }
+      ],
+      "tip": "등호가 있어서 경계 $-2$, $1$ 도 해예요. 경계를 빼먹으면 개수가 2 작게 나와요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "qineq-int-count",
+      "seed": 1006
+    },
+    {
+      "q": "다음 부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$|x+4|\\le 2$$",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if Abs(1*t + 4) <= 2])",
+      "concepts": [
+        "$a>0$ 일 때 $|X|<a \\Leftrightarrow -a<X<a$",
+        "절댓값은 수직선에서 $0$ 까지의 거리예요."
+      ],
+      "steps": [
+        {
+          "title": "절댓값 풀기",
+          "body": "$|X|\\le 2$ 는 $X$ 가 $0$ 에서 $2$ 이내라는 뜻이에요.\n$$-2\\le x+4\\le 2$$"
+        },
+        {
+          "title": "세 쪽에서 $4$ 빼기",
+          "body": "$$-6\\le x\\le -2$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-6,\\ -5,\\ -4,\\ -3,\\ -2$, 모두 5개예요."
+        }
+      ],
+      "tip": "$|x+4|\\le 2$ 를 $x+4\\le 2$ 하나로만 풀면 왼쪽 경계를 놓쳐요. 거리라서 양쪽으로 2만큼이에요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "abs-ineq-count",
+      "seed": 1007
+    },
+    {
+      "q": "다음 연립부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$\\begin{cases} 2x+1\\ge 3 \\\\ -3x-2\\ge -23 \\end{cases}$$",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if (2*t + 1 >= 3) and (-3*t - 2 >= -23)])",
+      "concepts": [
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요.",
+        "양변을 **음수**로 나누면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 부등식 풀기",
+          "body": "$$2x\\ge 2\\quad\\Rightarrow\\quad x\\ge 1$$"
+        },
+        {
+          "title": "둘째 부등식 풀기 — 방향 바꾸기",
+          "body": "$$-3x\\ge -21\\quad\\Rightarrow\\quad x\\le 7$$\n$-3$으로 나눌 때 부등호를 뒤집었어요."
+        },
+        {
+          "title": "공통부분",
+          "body": "$$1\\le x\\le 7$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $1,\\ 2,\\ \\dots,\\ 7$, 모두 7개예요."
+        }
+      ],
+      "tip": "두 해를 수직선 위에 함께 그려 보면, 겹치는 곳만 남는다는 게 한눈에 보여요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "sys-linear-count",
+      "seed": 1008
+    },
+    {
+      "q": "다음 이차부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$x^2-7x+6<0$$",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if 1*t**2 - 7*t + 6 < 0])",
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "그래프로 보면 $y=(x-\\alpha)(x-\\beta)$ 가 $x$축 **아래**인 구간이에요."
+      ],
+      "steps": [
+        {
+          "title": "인수분해하기",
+          "body": "$$(x-1)(x-6)<0$$"
+        },
+        {
+          "title": "경계 찾기",
+          "body": "좌변을 $0$ 으로 만드는 경계는 $x=1$, $x=6$ 이에요."
+        },
+        {
+          "title": "부호 보기",
+          "body": "$x^2$ 의 계수가 양수라 그래프는 아래로 볼록이고, 두 경계 **사이**에서 $x$축 아래로 내려가요.\n$$1<x<6$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $2,\\ 3,\\ 4,\\ 5$, 모두 4개예요."
+        }
+      ],
+      "tip": "등호가 없어서 경계 $1$, $6$ 는 빠져요. 넣어 보면 좌변이 $0$ 이라 $0<0$ 은 거짓이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "qineq-int-count",
+      "seed": 1009
+    },
+    {
+      "q": "다음 부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$|x-4|<6$$",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if Abs(1*t - 4) < 6])",
+      "concepts": [
+        "$a>0$ 일 때 $|X|<a \\Leftrightarrow -a<X<a$",
+        "절댓값은 수직선에서 $0$ 까지의 거리예요."
+      ],
+      "steps": [
+        {
+          "title": "절댓값 풀기",
+          "body": "$|X|<6$ 는 $X$ 가 $0$ 에서 $6$ 이내라는 뜻이에요.\n$$-6<x-4<6$$"
+        },
+        {
+          "title": "세 쪽에 $4$ 더하기",
+          "body": "$$-2<x<10$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-1,\\ 0,\\ \\dots,\\ 9$, 모두 11개예요."
+        }
+      ],
+      "tip": "$|x-4|<6$ 를 $x-4<6$ 하나로만 풀면 왼쪽 경계를 놓쳐요. 거리라서 양쪽으로 6만큼이에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "abs-ineq-count",
+      "seed": 1010
+    },
+    {
+      "q": "다음 연립부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$\\begin{cases} 2x-1\\ge 5 \\\\ -2x-6\\ge -24 \\end{cases}$$",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if (2*t - 1 >= 5) and (-2*t - 6 >= -24)])",
+      "concepts": [
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요.",
+        "양변을 **음수**로 나누면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 부등식 풀기",
+          "body": "$$2x\\ge 6\\quad\\Rightarrow\\quad x\\ge 3$$"
+        },
+        {
+          "title": "둘째 부등식 풀기 — 방향 바꾸기",
+          "body": "$$-2x\\ge -18\\quad\\Rightarrow\\quad x\\le 9$$\n$-2$로 나눌 때 부등호를 뒤집었어요."
+        },
+        {
+          "title": "공통부분",
+          "body": "$$3\\le x\\le 9$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $3,\\ 4,\\ \\dots,\\ 9$, 모두 7개예요."
+        }
+      ],
+      "tip": "두 해를 수직선 위에 함께 그려 보면, 겹치는 곳만 남는다는 게 한눈에 보여요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "sys-linear-count",
+      "seed": 1011
+    },
+    {
+      "q": "다음 이차부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$x^2+2x-3<0$$",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if 1*t**2 + 2*t - 3 < 0])",
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "그래프로 보면 $y=(x-\\alpha)(x-\\beta)$ 가 $x$축 **아래**인 구간이에요."
+      ],
+      "steps": [
+        {
+          "title": "인수분해하기",
+          "body": "$$(x+3)(x-1)<0$$"
+        },
+        {
+          "title": "경계 찾기",
+          "body": "좌변을 $0$ 으로 만드는 경계는 $x=-3$, $x=1$ 이에요."
+        },
+        {
+          "title": "부호 보기",
+          "body": "$x^2$ 의 계수가 양수라 그래프는 아래로 볼록이고, 두 경계 **사이**에서 $x$축 아래로 내려가요.\n$$-3<x<1$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-2,\\ -1,\\ 0$, 모두 3개예요."
+        }
+      ],
+      "tip": "등호가 없어서 경계 $-3$, $1$ 는 빠져요. 넣어 보면 좌변이 $0$ 이라 $0<0$ 은 거짓이에요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "qineq-int-count",
+      "seed": 1012
+    },
+    {
+      "q": "다음 부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$|x+2|\\le 5$$",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if Abs(1*t + 2) <= 5])",
+      "concepts": [
+        "$a>0$ 일 때 $|X|<a \\Leftrightarrow -a<X<a$",
+        "절댓값은 수직선에서 $0$ 까지의 거리예요."
+      ],
+      "steps": [
+        {
+          "title": "절댓값 풀기",
+          "body": "$|X|\\le 5$ 는 $X$ 가 $0$ 에서 $5$ 이내라는 뜻이에요.\n$$-5\\le x+2\\le 5$$"
+        },
+        {
+          "title": "세 쪽에서 $2$ 빼기",
+          "body": "$$-7\\le x\\le 3$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-7,\\ -6,\\ \\dots,\\ 3$, 모두 11개예요."
+        }
+      ],
+      "tip": "$|x+2|\\le 5$ 를 $x+2\\le 5$ 하나로만 풀면 왼쪽 경계를 놓쳐요. 거리라서 양쪽으로 5만큼이에요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "abs-ineq-count",
+      "seed": 1013
+    },
+    {
+      "q": "다음 연립부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$\\begin{cases} 3x+6\\ge -6 \\\\ -x+1\\ge -1 \\end{cases}$$",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if (3*t + 6 >= -6) and (-1*t + 1 >= -1)])",
+      "concepts": [
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요.",
+        "양변을 **음수**로 나누면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 부등식 풀기",
+          "body": "$$3x\\ge -12\\quad\\Rightarrow\\quad x\\ge -4$$"
+        },
+        {
+          "title": "둘째 부등식 풀기 — 방향 바꾸기",
+          "body": "$$-x\\ge -2\\quad\\Rightarrow\\quad x\\le 2$$\n$-1$로 나눌 때 부등호를 뒤집었어요."
+        },
+        {
+          "title": "공통부분",
+          "body": "$$-4\\le x\\le 2$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "해에 들어가는 정수는 $-4,\\ -3,\\ \\dots,\\ 2$, 모두 7개예요."
+        }
+      ],
+      "tip": "두 해를 수직선 위에 함께 그려 보면, 겹치는 곳만 남는다는 게 한눈에 보여요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "sys-linear-count",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "연립부등식 $\\begin{cases} 3x-2<x+6 \\\\ 2x+1\\ge -5 \\end{cases}$ 을 만족하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if 3*t-2 < t+6 and 2*t+1 >= -5])",
+      "concepts": [
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 부등식",
+          "body": "$2x<8$ 이므로 $x<4$ 예요."
+        },
+        {
+          "title": "둘째 부등식",
+          "body": "$2x\\ge-6$ 이므로 $x\\ge-3$ 이에요."
+        },
+        {
+          "title": "공통부분",
+          "body": "$$-3\\le x<4$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$-3,\\ -2,\\ \\dots,\\ 3$ 으로 $7$ 개예요."
+        }
+      ],
+      "tip": "경계 $-3$ 은 등호가 있어 들어가고, $4$ 는 빠져요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "부등식 $x-3<2x+1\\le x+5$ 를 만족하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if t-3 < 2*t+1 and 2*t+1 <= t+5])",
+      "concepts": [
+        "$A<B\\le C$ 꼴은 $A<B$ 와 $B\\le C$ 를 함께 풀어요.",
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요."
+      ],
+      "steps": [
+        {
+          "title": "두 부등식으로 나누기",
+          "body": "$x-3<2x+1$ 그리고 $2x+1\\le x+5$ 예요."
+        },
+        {
+          "title": "첫째 풀기",
+          "body": "$-4<x$, 곧 $x>-4$ 예요."
+        },
+        {
+          "title": "둘째 풀기",
+          "body": "$x\\le4$ 예요."
+        },
+        {
+          "title": "공통부분과 정수",
+          "body": "$-4<x\\le4$ 에서 정수는 $-3$ 부터 $4$ 까지 $8$ 개예요."
+        }
+      ],
+      "tip": "$A<B\\le C$ 를 $A<C$ 로 바꿔 풀면 안 돼요. 가운데 식을 양쪽과 각각 비교해요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "부등식 $|x+1|+|x-2|<5$ 를 만족하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if Abs(t+1)+Abs(t-2) < 5])",
+      "concepts": [
+        "절댓값 안이 $0$ 이 되는 $x$ 를 기준으로 구간을 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "구간 나누기",
+          "body": "기준은 $x=-1$, $x=2$ 예요."
+        },
+        {
+          "title": "$x<-1$ 일 때",
+          "body": "$-(x+1)-(x-2)<5$, $-2x+1<5$, $x>-2$ 이므로 $-2<x<-1$ 이에요."
+        },
+        {
+          "title": "$-1\\le x<2$ 일 때",
+          "body": "$(x+1)-(x-2)=3<5$ 로 늘 참이에요."
+        },
+        {
+          "title": "$x\\ge2$ 일 때",
+          "body": "$(x+1)+(x-2)<5$, $2x<6$, $x<3$ 이므로 $2\\le x<3$ 이에요."
+        },
+        {
+          "title": "합치기",
+          "body": "$-2<x<3$ 이고 정수는 $-1,\\ 0,\\ 1,\\ 2$ 로 $4$ 개예요."
+        }
+      ],
+      "tip": "$|x+1|+|x-2|$ 는 수직선에서 $x$ 와 $-1$, $2$ 까지 거리의 합이에요. 두 점 사이에서는 늘 $3$ 이에요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "이차부등식 $2x^2-x-6>0$ 의 해가 **아닌** 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if not (2*t**2-t-6 > 0)])",
+      "concepts": [
+        "$(x-\\alpha)(x-\\beta)>0 \\Leftrightarrow x<\\alpha$ 또는 $x>\\beta$"
+      ],
+      "steps": [
+        {
+          "title": "인수분해",
+          "body": "$$(2x+3)(x-2)>0$$"
+        },
+        {
+          "title": "경계",
+          "body": "$x=-\\frac{3}{2}$, $x=2$ 예요."
+        },
+        {
+          "title": "해",
+          "body": "두 근 바깥이라 $x<-\\frac{3}{2}$ 또는 $x>2$ 예요."
+        },
+        {
+          "title": "해가 아닌 정수",
+          "body": "$-\\frac{3}{2}\\le x\\le2$ 의 정수 $-1,\\ 0,\\ 1,\\ 2$ 로 $4$ 개예요."
+        }
+      ],
+      "tip": "경계 $2$ 는 좌변이 $0$ 이라 $0>0$ 이 거짓, 해가 아니에요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "이차부등식 $-x^2+2x+8\\ge0$ 을 만족하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if -t**2+2*t+8 >= 0])",
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "양변에 $-1$ 을 곱하면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "$x^2$ 의 계수를 양수로",
+          "body": "양변에 $-1$ 을 곱하고 방향을 바꿔요.\n$$x^2-2x-8\\le0$$"
+        },
+        {
+          "title": "인수분해",
+          "body": "$$(x+2)(x-4)\\le0$$"
+        },
+        {
+          "title": "해",
+          "body": "$$-2\\le x\\le4$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$-2$ 부터 $4$ 까지 $7$ 개예요."
+        }
+      ],
+      "tip": "방향을 안 바꾸면 $x\\le-2$ 또는 $x\\ge4$ 로 정반대 답이 나와요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "이차부등식 $x^2+ax+b<0$ 의 해가 $-2<x<5$ 일 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-13",
+      "answerType": "int",
+      "check": "ans = Poly(expand((x+2)*(x-5)), x).all_coeffs()[1] + Poly(expand((x+2)*(x-5)), x).all_coeffs()[2]",
+      "concepts": [
+        "해가 $\\alpha<x<\\beta$ 이고 $x^2$ 의 계수가 $1$ 이면 부등식은 $(x-\\alpha)(x-\\beta)<0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "부등식 만들기",
+          "body": "해가 $-2<x<5$ 이므로\n$$(x+2)(x-5)<0$$"
+        },
+        {
+          "title": "전개",
+          "body": "$$x^2-3x-10<0$$"
+        },
+        {
+          "title": "계수 비교",
+          "body": "$a=-3$, $b=-10$ 이므로 $a+b=-13$ 이에요."
+        }
+      ],
+      "tip": "근과 계수의 관계로 봐도 $-a=-2+5$, $b=(-2)\\times5$ 예요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "모든 실수 $x$ 에 대하여 이차부등식 $x^2+2kx+k+6>0$ 이 성립하도록 하는 정수 $k$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "len([t for t in range(-50, 51) if solveset(x**2+2*t*x+t+6 > 0, x, S.Reals) == S.Reals])",
+      "concepts": [
+        "$a>0$ 일 때 모든 실수 $x$ 에 대하여 $ax^2+bx+c>0 \\Leftrightarrow D<0$"
+      ],
+      "steps": [
+        {
+          "title": "조건",
+          "body": "$x^2$ 의 계수가 양수이니 $\\frac{D}{4}<0$ 이면 돼요."
+        },
+        {
+          "title": "판별식",
+          "body": "$$\\frac{D}{4}=k^2-(k+6)<0$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$(k+2)(k-3)<0$ 이므로 $-2<k<3$ 이에요."
+        },
+        {
+          "title": "정수 세기",
+          "body": "$-1,\\ 0,\\ 1,\\ 2$ 로 $4$ 개예요."
+        }
+      ],
+      "tip": "$>0$ 이라 $x$축에 닿기만 해도 안 돼요. 그래서 $D\\le0$ 이 아니라 $D<0$ 이에요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "이차부등식 $x^2+4x+4\\le0$ 의 해를 $x=p$ 라 할 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "Add(*[t for t in range(-50, 51) if t**2+4*t+4 <= 0])",
+      "concepts": [
+        "$(x-\\alpha)^2\\le0$ 의 해는 $x=\\alpha$ 하나뿐이에요."
+      ],
+      "steps": [
+        {
+          "title": "완전제곱식",
+          "body": "$$(x+2)^2\\le0$$"
+        },
+        {
+          "title": "제곱의 성질",
+          "body": "제곱은 $0$ 이상이라 $0$ 일 때만 성립해요."
+        },
+        {
+          "title": "해",
+          "body": "$x+2=0$ 이므로 $p=-2$ 예요."
+        }
+      ],
+      "tip": "$D=0$ 이면 포물선이 $x$축에 한 점에서 닿아요. 그 한 점만 $\\le0$ 을 만족해요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "연립부등식 $\\begin{cases} x^2-x-12<0 \\\\ x^2-4x>0 \\end{cases}$ 을 만족하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "len([t for t in range(-100, 101) if t**2-t-12 < 0 and t**2-4*t > 0])",
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "$(x-\\alpha)(x-\\beta)>0 \\Leftrightarrow x<\\alpha$ 또는 $x>\\beta$",
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 부등식",
+          "body": "$(x+3)(x-4)<0$ 이므로 $-3<x<4$ 예요."
+        },
+        {
+          "title": "둘째 부등식",
+          "body": "$x(x-4)>0$ 이므로 $x<0$ 또는 $x>4$ 예요."
+        },
+        {
+          "title": "공통부분",
+          "body": "$$-3<x<0$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$-2,\\ -1$ 로 $2$ 개예요."
+        }
+      ],
+      "tip": "$x>4$ 쪽은 첫째 해 $x<4$ 와 겹치지 않아요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "가로가 세로보다 $4\\,\\text{cm}$ 긴 직사각형의 넓이가 $60\\,\\text{cm}^2$ 이상이 되게 하려고 해요. 세로의 길이를 정수로 정할 때, 가장 짧은 세로의 길이는 몇 cm 일까요?",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "Min(*[t for t in range(1, 100) if t*(t+4) >= 60])",
+      "concepts": [
+        "활용 문제 순서: 미지수 정하기 → 부등식 세우기 → 풀기 → 문제 뜻에 맞는 값 고르기"
+      ],
+      "steps": [
+        {
+          "title": "미지수",
+          "body": "세로를 $x\\,\\text{cm}$ 라 하면 가로는 $(x+4)\\,\\text{cm}$ 예요."
+        },
+        {
+          "title": "부등식",
+          "body": "$$x(x+4)\\ge60$$"
+        },
+        {
+          "title": "정리·인수분해",
+          "body": "$x^2+4x-60\\ge0$, $(x+10)(x-6)\\ge0$ 이에요."
+        },
+        {
+          "title": "해와 조건",
+          "body": "$x\\le-10$ 또는 $x\\ge6$ 인데 길이는 양수라 $x\\ge6$, 가장 짧으면 $6\\,\\text{cm}$ 예요."
+        }
+      ],
+      "tip": "$x=6$ 이면 넓이가 $6\\times10=60$ 으로 딱 맞아요."
+    },
+    {
+      "id": "p201",
+      "level": "응용",
+      "q": "연립부등식 $\\begin{cases} x^2-x-6\\le0 \\\\ x>a \\end{cases}$ 를 만족하는 정수 $x$ 가 **2개**뿐이 되도록 하는 정수 $a$ 의 값은?",
+      "choices": [
+        "$-1$",
+        "$0$",
+        "$1$",
+        "$2$",
+        "$3$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "ans = [s for s in range(-20, 20) if len([t for t in range(-50, 51) if t**2-t-6 <= 0 and t > s]) == 2][0]",
+      "choiceChecks": [
+        "-1",
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "연립부등식의 해는 각 부등식의 해의 **공통부분**이에요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 부등식",
+          "body": "$(x+2)(x-3)\\le0$ 이므로 $-2\\le x\\le3$ 이에요."
+        },
+        {
+          "title": "정수 2개 고르기",
+          "body": "$x>a$ 와 겹쳐 정수가 2개 남으려면 큰 쪽 $2$, $3$ 만 남아야 해요."
+        },
+        {
+          "title": "$a$ 의 범위",
+          "body": "$2$ 는 들어가고 $1$ 은 빠져야 하니 $1\\le a<2$ 예요."
+        },
+        {
+          "title": "정수 $a$",
+          "body": "$a=1$ 이고, 답은 보기 ③이에요."
+        }
+      ],
+      "tip": "수직선에 $-2\\le x\\le3$ 을 그리고 $a$ 를 왼쪽에서 오른쪽으로 옮기며 남는 정수를 세어 보면 쉬워요."
+    },
+    {
+      "id": "p202",
+      "level": "응용",
+      "q": "부등식 $|x-a|<b$ 의 해가 이차부등식 $x^2-4x-5<0$ 의 해와 같을 때, 상수 $a$, $b$ 에 대하여 $a+b$ 의 값을 구하세요. (단, $b>0$)",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "r = solve(x**2-4*x-5, x)\nans = (Max(*r)+Min(*r))/2 + (Max(*r)-Min(*r))/2",
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$",
+        "$a>0$ 일 때 $|X|<a \\Leftrightarrow -a<X<a$"
+      ],
+      "steps": [
+        {
+          "title": "이차부등식 풀기",
+          "body": "$(x+1)(x-5)<0$ 이므로 $-1<x<5$ 예요."
+        },
+        {
+          "title": "절댓값 부등식 풀기",
+          "body": "$-b<x-a<b$, 곧 $a-b<x<a+b$ 예요."
+        },
+        {
+          "title": "비교",
+          "body": "$a-b=-1$, $a+b=5$ 예요."
+        },
+        {
+          "title": "답",
+          "body": "구하는 값은 $a+b=5$ 예요. ($a=2$, $b=3$)"
+        }
+      ],
+      "tip": "$|x-a|<b$ 는 \"가운데가 $a$, 반지름이 $b$ 인 구간\"이에요. 구간 $-1<x<5$ 의 가운데 $2$, 반지름 $3$ 을 바로 읽어도 돼요."
+    },
+    {
+      "id": "p203",
+      "level": "응용",
+      "q": "이차부등식 $ax^2+bx+c>0$ 의 해가 $1<x<4$ 일 때, 이차부등식 $cx^2+bx+a<0$ 의 해는 $x<\\alpha$ 또는 $x>\\beta$ 예요. $\\alpha+\\beta$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$\\frac{5}{4}$",
+        "$\\frac{3}{2}$",
+        "$\\frac{5}{2}$",
+        "$5$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "f = expand(-(x-1)*(x-4))\nans = sum(solve(f.coeff(x, 0)*x**2 + f.coeff(x, 1)*x + f.coeff(x, 2), x))",
+      "choiceChecks": [
+        "1",
+        "Rational(5,4)",
+        "Rational(3,2)",
+        "Rational(5,2)",
+        "5"
+      ],
+      "concepts": [
+        "해가 $\\alpha<x<\\beta$ 인 $>0$ 꼴이면 $x^2$ 의 계수는 음수예요.",
+        "음수로 나누면 부등호 방향이 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "$a$ 의 부호",
+          "body": "해가 두 근 사이인데 $>0$ 이므로 $a<0$ 이에요."
+        },
+        {
+          "title": "식으로 나타내기",
+          "body": "$ax^2+bx+c=a(x-1)(x-4)=ax^2-5ax+4a$ 이므로 $b=-5a$, $c=4a$ 예요."
+        },
+        {
+          "title": "새 부등식에 넣기",
+          "body": "$$4ax^2-5ax+a<0$$"
+        },
+        {
+          "title": "$a$ 로 나누기 — 방향 바꾸기",
+          "body": "$a<0$ 이므로\n$$4x^2-5x+1>0$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$(4x-1)(x-1)>0$ 이므로 $x<\\frac{1}{4}$ 또는 $x>1$, $\\alpha+\\beta=\\frac{5}{4}$ 로 보기 ②예요."
+        }
+      ],
+      "tip": "$a$ 를 음수 하나(예: $a=-1$)로 정해 놓고 풀어도 답이 같아요."
+    },
+    {
+      "id": "p204",
+      "level": "응용",
+      "q": "모든 실수 $x$ 에 대하여 부등식 $(k-1)x^2-2(k-1)x+3>0$ 이 성립하도록 하는 정수 $k$ 의 개수는?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "len([t for t in range(-50, 51) if solveset((t-1)*x**2-2*(t-1)*x+3 > 0, x, S.Reals) == S.Reals])",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "$a>0$ 일 때 모든 실수 $x$ 에 대하여 $ax^2+bx+c>0 \\Leftrightarrow D<0$",
+        "$x^2$ 의 계수가 문자이면 $0$ 인 경우를 따로 봐요."
+      ],
+      "steps": [
+        {
+          "title": "$k=1$ 일 때",
+          "body": "부등식이 $3>0$ 이 되어 늘 참이에요."
+        },
+        {
+          "title": "$k\\ne1$ 일 때 조건",
+          "body": "포물선이 늘 $x$축 위에 있으려면 $k-1>0$ 이고 $\\frac{D}{4}<0$ 이어야 해요."
+        },
+        {
+          "title": "판별식",
+          "body": "$\\frac{D}{4}=(k-1)^2-3(k-1)=(k-1)(k-4)<0$ 이므로 $1<k<4$ 예요."
+        },
+        {
+          "title": "합치기",
+          "body": "$1\\le k<4$ 이고 정수 $k$ 는 $1,\\ 2,\\ 3$ 으로 $3$ 개, 보기 ③이에요."
+        }
+      ],
+      "tip": "$k=1$ 을 빼먹으면 $2$ 개로 답이 틀려요. 계수가 문자이면 \"이차식이 아닐 때\"부터 확인해요."
+    },
+    {
+      "id": "p205",
+      "level": "응용",
+      "q": "공을 위로 던지고 $t$ 초 뒤의 높이가 $(-5t^2+30t)\\,\\text{m}$ 예요. 공의 높이가 $40\\,\\text{m}$ 이상인 시간은 모두 몇 초 동안일까요?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$6$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "r = solve(-5*x**2+30*x-40, x)\nans = Max(*r)-Min(*r)",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "6"
+      ],
+      "concepts": [
+        "$a>0$, $\\alpha<\\beta$ 일 때 $(x-\\alpha)(x-\\beta)<0 \\Leftrightarrow \\alpha<x<\\beta$"
+      ],
+      "steps": [
+        {
+          "title": "부등식 세우기",
+          "body": "$$-5t^2+30t\\ge40$$"
+        },
+        {
+          "title": "정리",
+          "body": "양변을 $-5$ 로 나누고 방향을 바꿔요.\n$$t^2-6t+8\\le0$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$(t-2)(t-4)\\le0$ 이므로 $2\\le t\\le4$ 예요."
+        },
+        {
+          "title": "시간",
+          "body": "$4-2=2$ 초 동안이에요."
+        }
+      ],
+      "tip": "올라갈 때 $2$ 초에 $40\\,\\text{m}$ 를 지나고, 내려올 때 $4$ 초에 다시 지나요."
+    }
+  ]
+}

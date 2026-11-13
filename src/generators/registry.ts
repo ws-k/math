@@ -13,7 +13,11 @@ import { generators as g_e_proportion } from './e-proportion.ts';
 import { generators as g_e_ratio } from './e-ratio.ts';
 import { generators as g_e_whole_ops } from './e-whole-ops.ts';
 import { generators as g_h1_complex } from './h1-complex.ts';
+import { generators as g_h1_higher_eq } from './h1-higher-eq.ts';
+import { generators as g_h1_inequalities } from './h1-inequalities.ts';
 import { generators as g_h1_poly_ops } from './h1-poly-ops.ts';
+import { generators as g_h1_quad_eq_func } from './h1-quad-eq-func.ts';
+import { generators as g_h1_quadratic_eq } from './h1-quadratic-eq.ts';
 import { generators as g_h1_remainder_factor } from './h1-remainder-factor.ts';
 import { generators as g_m1_basic_geometry } from './m1-basic-geometry.ts';
 import { generators as g_m1_coord_graph } from './m1-coord-graph.ts';
@@ -46,4 +50,4 @@ import { generators as g_m3_statistics } from './m3-statistics.ts';
 import { generators as g_m3_trig_ratio } from './m3-trig-ratio.ts';
 import { generators as g_math2_diff_product_rule } from './math2-diff-product-rule.ts';
 
-export const unitGenerators: Generator[] = [...g_e_circle_area, ...g_e_cuboid, ...g_e_decimal, ...g_e_divisor_multiple, ...g_e_fraction_addsub, ...g_e_fraction_basics, ...g_e_fraction_div, ...g_e_fraction_mul, ...g_e_polygon_area, ...g_e_proportion, ...g_e_ratio, ...g_e_whole_ops, ...g_h1_complex, ...g_h1_poly_ops, ...g_h1_remainder_factor, ...g_m1_basic_geometry, ...g_m1_coord_graph, ...g_m1_data, ...g_m1_expressions, ...g_m1_integer_rational, ...g_m1_linear_eq, ...g_m1_plane_figures, ...g_m1_prime_factor, ...g_m1_signed_ops, ...g_m1_solid_figures, ...g_m2_exponent_poly, ...g_m2_linear_func_eq, ...g_m2_linear_func, ...g_m2_linear_ineq, ...g_m2_probability, ...g_m2_pythagoras, ...g_m2_repeating_decimal, ...g_m2_similarity, ...g_m2_simul_eq, ...g_m2_triangle_quad, ...g_m3_circle, ...g_m3_factoring, ...g_m3_poly_mul, ...g_m3_quadratic_eq, ...g_m3_quadratic_func, ...g_m3_radical_ops, ...g_m3_sqrt, ...g_m3_statistics, ...g_m3_trig_ratio, ...g_math2_diff_product_rule];
+export const unitGenerators: Generator[] = [...g_e_circle_area, ...g_e_cuboid, ...g_e_decimal, ...g_e_divisor_multiple, ...g_e_fraction_addsub, ...g_e_fraction_basics, ...g_e_fraction_div, ...g_e_fraction_mul, ...g_e_polygon_area, ...g_e_proportion, ...g_e_ratio, ...g_e_whole_ops, ...g_h1_complex, ...g_h1_higher_eq, ...g_h1_inequalities, ...g_h1_poly_ops, ...g_h1_quad_eq_func, ...g_h1_quadratic_eq, ...g_h1_remainder_factor, ...g_m1_basic_geometry, ...g_m1_coord_graph, ...g_m1_data, ...g_m1_expressions, ...g_m1_integer_rational, ...g_m1_linear_eq, ...g_m1_plane_figures, ...g_m1_prime_factor, ...g_m1_signed_ops, ...g_m1_solid_figures, ...g_m2_exponent_poly, ...g_m2_linear_func_eq, ...g_m2_linear_func, ...g_m2_linear_ineq, ...g_m2_probability, ...g_m2_pythagoras, ...g_m2_repeating_decimal, ...g_m2_similarity, ...g_m2_simul_eq, ...g_m2_triangle_quad, ...g_m3_circle, ...g_m3_factoring, ...g_m3_poly_mul, ...g_m3_quadratic_eq, ...g_m3_quadratic_func, ...g_m3_radical_ops, ...g_m3_sqrt, ...g_m3_statistics, ...g_m3_trig_ratio, ...g_math2_diff_product_rule];
