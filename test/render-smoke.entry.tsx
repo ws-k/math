@@ -2,6 +2,7 @@
 import content from 'virtual:content';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ProblemScreen } from '../src/app/Book.tsx';
+import { DEFAULT_DEVICE } from '../src/app/device.ts';
 import { Home, MapScreen, SettingsScreen, UnitHome, WrongNote } from '../src/app/Screens.tsx';
 import { DEFAULT_SETTINGS } from '../src/app/settings.ts';
 import type { Unit } from '../src/content/types.ts';
@@ -37,6 +38,8 @@ export function renderScreens(unit: Unit): string[] {
         settings={DEFAULT_SETTINGS}
         persisted={false}
         onChange={noop}
+        fingerInk={DEFAULT_DEVICE.fingerInk}
+        onFingerInk={noop}
         profiles={[{ id: 'first', name: '나' }]}
         current="first"
         onAdd={noop}
@@ -59,7 +62,7 @@ export function renderScreens(unit: Unit): string[] {
             background={DEFAULT_SETTINGS.background}
             onTool={noop}
             onBackground={noop}
-            fingerInk={DEFAULT_SETTINGS.fingerInk}
+            fingerInk={DEFAULT_DEVICE.fingerInk}
             onFingerInk={noop}
             onGrade={noop}
           />,

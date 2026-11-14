@@ -17,7 +17,8 @@ import { saver, store } from './store.ts';
 export interface InkControl {
   register(key: string, s: InkSurface): void;
   unregister(key: string): void;
-  penActive(key: string, active: boolean): void;
+  /** kind = 쓴 포인터 종류(pen·mouse·touch) */
+  penActive(key: string, active: boolean, kind?: string): void;
   /** 손가락 쓰기 중 여러 손가락 끌기가 끝남 — 화면이 쪽 넘김 쓸기로 볼지 정한다 */
   swipe?(key: string, g: { dx: number; dy: number; dt: number; fingers: number }): void;
 }
@@ -91,8 +92,8 @@ export function InkPage(p: {
           clearTimeout(timer);
           timer = setTimeout(flush, SAVE_DELAY);
         },
-        onPenActive(active) {
-          ctl.penActive(inkKey, active);
+        onPenActive(active, kind) {
+          ctl.penActive(inkKey, active, kind);
         },
         onSwipe(g) {
           ctl.swipe?.(inkKey, g);

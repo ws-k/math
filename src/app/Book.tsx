@@ -14,7 +14,7 @@ import type { LayoutMode } from './layout.ts';
 import { ProblemCard } from './Pages.tsx';
 import { cardKey, isGenPid, noteKey, problemIndex, resolveProblem, step } from './pages.ts';
 import { type Route, routeHash, type Side } from './route.ts';
-import { classifySwipe } from './swipe.ts';
+import { classifySwipe, noteSwipe } from './swipe.ts';
 import { Toolbar } from './Toolbar.tsx';
 import type { Cards } from './today.ts';
 
@@ -53,14 +53,16 @@ export function ProblemScreen(p: ProblemScreenProps) {
         // 펜이 닿은 채 노트가 사라지면 penAt 이 무한대로 남아 쓸기가 영영 막힌다
         penAt.current = 0;
       },
-      penActive: (_k, a) => {
-        penAt.current = a ? Number.POSITIVE_INFINITY : performance.now();
+      penActive: (_k, a, kind) => {
+        // 뗀 뒤 손바닥 시간은 펜에만 — 마우스·손가락 획 뒤에 문제 카드 쓸기까지 0.5초 막을 까닭이 없다
+        if (kind === 'pen') penAt.current = a ? Number.POSITIVE_INFINITY : performance.now();
         // 손가락이 먼저 닿아 쓸기 후보가 된 뒤 펜이 닿으면(손바닥을 대고 쓰기) 그 후보를 버린다 —
-        // 펜을 뗀 뒤 손가락을 떼면 palm() 시간 창이 지나 쓸기로 오인될 수 있다
+        // 펜을 뗀 뒤 손가락을 떼면 palm() 시간 창이 지나 쓸기로 오인될 수 있다.
+        // 손가락 쓰기면 그 손가락 자체가 획이라 역시 쓸기 후보에서 뺀다.
         if (a) touch.current = null;
       },
       swipe: (_k, g) => {
-        const dir = classifySwipe(g);
+        const dir = noteSwipe(g);
         if (dir !== 0) goRef.current(dir);
       },
     }),

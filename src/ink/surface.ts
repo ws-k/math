@@ -468,7 +468,7 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
         pts: [],
       };
     }
-    opts.onPenActive?.(true);
+    opts.onPenActive?.(true, downType);
     addPoints(e);
   };
 
@@ -487,7 +487,7 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     }
     releaseLive();
     unlockScroll();
-    opts.onPenActive?.(false);
+    opts.onPenActive?.(false, downType);
   };
 
   const onFingerDown = (e: PointerEvent) => {
@@ -506,6 +506,13 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
       if (fingerInk) onFingerDown(e);
       return;
     }
+    if (e.pointerType === 'pen') {
+      // 손가락 쓰기 중에 펜이 오면 펜이 이긴다 — 먼저 닿은 손가락은 펜을 쥔 손의 손바닥이었던 것이라
+      // 그 획은 기록 없이 버리고, 여러 손가락 동작(스크롤)도 끊는다
+      if (penDown && downType === 'touch') abort();
+      finger.reset();
+      panBox = null;
+    }
     if (penDown) return;
     // 마우스는 왼쪽 버튼만 — 오른쪽(메뉴)·가운데(스크롤) 버튼은 원래 일을 하게 둔다
     if (e.pointerType === 'pen' || (e.pointerType === 'mouse' && e.button === 0)) begin(e);
@@ -515,7 +522,8 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     if (e.pointerType === 'touch' && fingerInk) {
       const d = finger.move(e.pointerId, e.clientX, e.clientY);
       // 손가락 쓰기 중엔 브라우저 스크롤을 막아 두었으므로 여러 손가락 끌기는 직접 스크롤한다
-      if (d && panBox) panBox.scrollTop -= d.dy;
+      // 펜이 닿아 있으면 손가락은 손바닥이다 — 종이가 움직이면 펜 획이 엉뚱한 곳에 그어진다
+      if (d && panBox && !(penDown && downType === 'pen')) panBox.scrollTop -= d.dy;
     }
     if (!penDown || e.pointerId !== penId) return;
     e.preventDefault();
@@ -551,11 +559,15 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     }
     releaseLive();
     unlockScroll();
-    opts.onPenActive?.(false);
+    opts.onPenActive?.(false, downType);
   };
 
   const onPointerUp = (e: PointerEvent) => {
-    if (e.pointerType === 'touch' && fingerInk) {
+    if (e.pointerType === 'touch' && fingerInk && e.type === 'pointercancel') {
+      // 브라우저·시스템이 가로챈 동작은 끝까지 간 게 아니다 — 쓸기로 보지 않고 처음부터
+      finger.reset();
+      panBox = null;
+    } else if (e.pointerType === 'touch' && fingerInk) {
       const r = finger.up(e.pointerId, e.timeStamp);
       if (r.kind === 'gesture') {
         panBox = null;
@@ -677,8 +689,9 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
       fingerInk = on;
       finger.reset();
       panBox = null;
-      // 손가락으로 쓰던 중에 꺼지면 쓴 데까지는 남긴다
-      if (penDown && downType === 'touch') finish();
+      // 손가락으로 쓰던 중에 꺼지면 버린다 — 펜을 처음 봐서 자동으로 꺼질 때는 그 손가락이
+      // 펜을 쥔 손의 손바닥이고(감지는 창 전체에서 먼저 듣는다), 남기면 손바닥 자국이 저장된다
+      if (penDown && downType === 'touch') abort();
       applyTouchAction();
     },
     undo() {

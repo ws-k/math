@@ -6,6 +6,13 @@ import { LessonBoundary, LessonPlayer } from '../lesson/LessonPlayer.tsx';
 import { type CardState, type Grade, gradeCard } from '../lib/srs.ts';
 import { ProblemScreen } from './Book.tsx';
 import { unitById } from './content.ts';
+import {
+  DEFAULT_DEVICE,
+  DEVICE_KEY,
+  type DeviceSettings,
+  normalizeDevice,
+  penDetected,
+} from './device.ts';
 import { FingerInkContext } from './InkPage.tsx';
 import { type LayoutMode, layoutMode } from './layout.ts';
 import {
@@ -31,7 +38,7 @@ import {
   UnitHome,
   WrongNote,
 } from './Screens.tsx';
-import { DEFAULT_SETTINGS, normalizeSettings, penDetected, type Settings } from './settings.ts';
+import { DEFAULT_SETTINGS, normalizeSettings, type Settings } from './settings.ts';
 import { deleteProfileData, requestPersist, saver, setCurrentProfile, store } from './store.ts';
 import type { Cards } from './today.ts';
 
@@ -190,6 +197,9 @@ function Screen(p: {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [last, setLast] = useState<LastRoute | null>(null);
   const [persisted, setPersisted] = useState(false);
+  const [device, setDevice] = useState<DeviceSettings>(DEFAULT_DEVICE);
+  // 기기 설정을 읽어 왔는지. 읽기에 실패한 채 펜 감지로 기본값을 저장하면 저장돼 있던 선택을 덮어쓴다
+  const [deviceRead, setDeviceRead] = useState(false);
 
   // 레슨 진행은 레슨 화면이 직접 저장하므로, 홈·지도로 돌아올 때마다 다시 읽는다
   const lessonView = route.name !== 'lesson';
@@ -214,6 +224,14 @@ function Screen(p: {
         if ((l?.name === 'unit' || l?.name === 'lesson') && unitById.has(l.unitId)) setLast(l);
       })
       .finally(() => setReady(true));
+    // 기기 설정은 따로 읽는다 — 프로필 기록 읽기가 실패해도 이건 살고, 이것만 실패해도 앞의 것은 산다
+    void store
+      .get(DEVICE_KEY)
+      .then((d) => {
+        setDevice(normalizeDevice(d));
+        setDeviceRead(true);
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -228,18 +246,22 @@ function Screen(p: {
   }, []);
   const onTool = (tool: Tool) => saveSettings({ ...settings, tool });
   const onBackground = (background: Background) => saveSettings({ ...settings, background });
-  const onFingerInk = (fingerInk: boolean) => saveSettings({ ...settings, fingerInk });
+  const saveDevice = useCallback((d: DeviceSettings) => {
+    setDevice(d);
+    saver.save(DEVICE_KEY, d);
+  }, []);
+  const onFingerInk = (fingerInk: boolean) => saveDevice({ ...device, fingerInk });
 
   // 이 기기에서 펜(Apple Pencil)을 처음 보면 손가락 쓰기를 끈다 — 펜이 있으면 손가락은 스크롤·손바닥이다.
   // 노트 밖(교재·펜 진단)에서 처음 써도 알아채도록 창 전체에서 본다. 한 번 보면 더 듣지 않는다.
-  const latestSettings = useRef(settings);
-  latestSettings.current = settings;
-  const penSeen = settings.penSeen;
+  const latestDevice = useRef(device);
+  latestDevice.current = device;
+  const penSeen = device.penSeen;
   useEffect(() => {
-    if (!ready || penSeen) return;
+    if (!deviceRead || penSeen) return;
     const seen = () => {
-      const next = penDetected(latestSettings.current);
-      if (next) saveSettings(next);
+      const next = penDetected(latestDevice.current);
+      if (next) saveDevice(next);
     };
     const onPointer = (e: PointerEvent) => {
       if (e.pointerType === 'pen') seen();
@@ -257,7 +279,7 @@ function Screen(p: {
       window.removeEventListener('pointerdown', onPointer, opt);
       window.removeEventListener('touchstart', onTouch, opt);
     };
-  }, [ready, penSeen, saveSettings]);
+  }, [deviceRead, penSeen, saveDevice]);
   // before = 그 문제에 들어올 때의 카드. 다시 채점하면 거기서 새로 계산해 덮어쓴다.
   const onGrade = (key: string, r: Grade, before: CardState | undefined) => {
     const c = gradeCard(before, r, Date.now());
@@ -298,6 +320,8 @@ function Screen(p: {
           settings={settings}
           persisted={persisted}
           onChange={saveSettings}
+          fingerInk={device.fingerInk}
+          onFingerInk={onFingerInk}
           profiles={p.profiles}
           current={p.current}
           onAdd={p.onAdd}
@@ -311,7 +335,7 @@ function Screen(p: {
       if (!unit?.lesson) return null;
       // 레슨의 풀이 노트에도 손가락 쓰기 설정이 닿게 한다(레슨 화면엔 도구 막대가 없다)
       return (
-        <FingerInkContext value={settings.fingerInk}>
+        <FingerInkContext value={device.fingerInk}>
           <LessonBoundary key={unit.id} unitId={unit.id}>
             <LessonPlayer
               unit={unit}
@@ -329,7 +353,7 @@ function Screen(p: {
       if (route.pid === null)
         return shell('map', <UnitHome unit={unit} cards={cards} lessons={lessons} />);
       return (
-        <FingerInkContext value={settings.fingerInk}>
+        <FingerInkContext value={device.fingerInk}>
           <ProblemScreen
             unit={unit}
             route={{ ...route, pid: route.pid }}
@@ -339,7 +363,7 @@ function Screen(p: {
             background={settings.background}
             onTool={onTool}
             onBackground={onBackground}
-            fingerInk={settings.fingerInk}
+            fingerInk={device.fingerInk}
             onFingerInk={onFingerInk}
             onGrade={onGrade}
           />

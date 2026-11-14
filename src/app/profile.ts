@@ -4,10 +4,12 @@
 // 이미 쌓인 기록을 옮기는 작업(마이그레이션)이 없어 옮기다 잃을 위험도 없다.
 // 화면 코드(InkPage 등)는 프로필을 모른다. 저장소와 saver 가 키를 바꿔 끼운다.
 
+import { DEVICE_KEY } from './device.ts';
+
 export const FIRST = 'first';
 
-/** 기기 공통 키: 프로필 목록과 지금 프로필. 누가 쓰든 같은 값을 봐야 한다 */
-const DEVICE_KEYS = new Set(['profiles', 'profile']);
+/** 기기 공통 키: 프로필 목록·지금 프로필·기기 설정(펜 유무 등). 누가 쓰든 같은 값을 봐야 한다 */
+const DEVICE_KEYS = new Set(['profiles', 'profile', DEVICE_KEY]);
 
 export function scopedKey(profile: string, key: string): string {
   if (profile === FIRST || DEVICE_KEYS.has(key)) return key;
