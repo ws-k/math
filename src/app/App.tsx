@@ -1,11 +1,12 @@
 // 앱 뼈대: 지금 프로필을 정하고(누가 공부하나요), 해시 주소에 따라 화면을 고른다.
 // 필기 내용은 여기서 들고 있지 않는다(풀이 노트마다 InkPage 가 저장소와 직접 주고받는다).
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Background, Tool } from '../ink/types.ts';
 import { LessonBoundary, LessonPlayer } from '../lesson/LessonPlayer.tsx';
 import { type CardState, type Grade, gradeCard } from '../lib/srs.ts';
 import { ProblemScreen } from './Book.tsx';
 import { unitById } from './content.ts';
+import { FingerInkContext } from './InkPage.tsx';
 import { type LayoutMode, layoutMode } from './layout.ts';
 import {
   addProfile,
@@ -30,7 +31,7 @@ import {
   UnitHome,
   WrongNote,
 } from './Screens.tsx';
-import { DEFAULT_SETTINGS, normalizeSettings, type Settings } from './settings.ts';
+import { DEFAULT_SETTINGS, normalizeSettings, penDetected, type Settings } from './settings.ts';
 import { deleteProfileData, requestPersist, saver, setCurrentProfile, store } from './store.ts';
 import type { Cards } from './today.ts';
 
@@ -227,6 +228,36 @@ function Screen(p: {
   }, []);
   const onTool = (tool: Tool) => saveSettings({ ...settings, tool });
   const onBackground = (background: Background) => saveSettings({ ...settings, background });
+  const onFingerInk = (fingerInk: boolean) => saveSettings({ ...settings, fingerInk });
+
+  // 이 기기에서 펜(Apple Pencil)을 처음 보면 손가락 쓰기를 끈다 — 펜이 있으면 손가락은 스크롤·손바닥이다.
+  // 노트 밖(교재·펜 진단)에서 처음 써도 알아채도록 창 전체에서 본다. 한 번 보면 더 듣지 않는다.
+  const latestSettings = useRef(settings);
+  latestSettings.current = settings;
+  const penSeen = settings.penSeen;
+  useEffect(() => {
+    if (!ready || penSeen) return;
+    const seen = () => {
+      const next = penDetected(latestSettings.current);
+      if (next) saveSettings(next);
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (e.pointerType === 'pen') seen();
+    };
+    // 옛 iOS 는 pointerType 대신 touch 의 touchType 으로만 펜을 알려 준다
+    const onTouch = (e: TouchEvent) => {
+      for (let i = 0; i < e.changedTouches.length; i++)
+        if ((e.changedTouches[i] as Touch & { touchType?: string }).touchType === 'stylus')
+          return seen();
+    };
+    const opt = { capture: true, passive: true };
+    window.addEventListener('pointerdown', onPointer, opt);
+    window.addEventListener('touchstart', onTouch, opt);
+    return () => {
+      window.removeEventListener('pointerdown', onPointer, opt);
+      window.removeEventListener('touchstart', onTouch, opt);
+    };
+  }, [ready, penSeen, saveSettings]);
   // before = 그 문제에 들어올 때의 카드. 다시 채점하면 거기서 새로 계산해 덮어쓴다.
   const onGrade = (key: string, r: Grade, before: CardState | undefined) => {
     const c = gradeCard(before, r, Date.now());
@@ -278,15 +309,18 @@ function Screen(p: {
     case 'lesson': {
       const unit = unitById.get(route.unitId);
       if (!unit?.lesson) return null;
+      // 레슨의 풀이 노트에도 손가락 쓰기 설정이 닿게 한다(레슨 화면엔 도구 막대가 없다)
       return (
-        <LessonBoundary key={unit.id} unitId={unit.id}>
-          <LessonPlayer
-            unit={unit}
-            lesson={unit.lesson}
-            tool={settings.tool}
-            background={settings.background}
-          />
-        </LessonBoundary>
+        <FingerInkContext value={settings.fingerInk}>
+          <LessonBoundary key={unit.id} unitId={unit.id}>
+            <LessonPlayer
+              unit={unit}
+              lesson={unit.lesson}
+              tool={settings.tool}
+              background={settings.background}
+            />
+          </LessonBoundary>
+        </FingerInkContext>
       );
     }
     case 'unit': {
@@ -295,17 +329,21 @@ function Screen(p: {
       if (route.pid === null)
         return shell('map', <UnitHome unit={unit} cards={cards} lessons={lessons} />);
       return (
-        <ProblemScreen
-          unit={unit}
-          route={{ ...route, pid: route.pid }}
-          mode={mode}
-          cards={cards}
-          tool={settings.tool}
-          background={settings.background}
-          onTool={onTool}
-          onBackground={onBackground}
-          onGrade={onGrade}
-        />
+        <FingerInkContext value={settings.fingerInk}>
+          <ProblemScreen
+            unit={unit}
+            route={{ ...route, pid: route.pid }}
+            mode={mode}
+            cards={cards}
+            tool={settings.tool}
+            background={settings.background}
+            onTool={onTool}
+            onBackground={onBackground}
+            fingerInk={settings.fingerInk}
+            onFingerInk={onFingerInk}
+            onGrade={onGrade}
+          />
+        </FingerInkContext>
       );
     }
   }

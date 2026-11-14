@@ -59,6 +59,8 @@ export function renderScreens(unit: Unit): string[] {
             background={DEFAULT_SETTINGS.background}
             onTool={noop}
             onBackground={noop}
+            fingerInk={DEFAULT_SETTINGS.fingerInk}
+            onFingerInk={noop}
             onGrade={noop}
           />,
         ),

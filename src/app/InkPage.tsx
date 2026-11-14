@@ -1,7 +1,14 @@
 // 쪽 하나 = 스크롤되는 내용 상자 + 그 위에 얹는 필기 엔진.
 // 펜 입력은 엔진이 React 밖에서 캔버스에 직접 그린다. 여기서는 만들고/없애고/저장만 한다 —
 // 그리는 동안 React 상태를 건드리면 렌더가 끼어들어 획이 끊겨 보이기 때문이다.
-import { type ReactNode, useEffect, useLayoutEffect, useRef } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import { createInkSurface } from '../ink/surface.ts';
 import type { Background, InkDoc, InkSurface, Tool } from '../ink/types.ts';
 import { saver, store } from './store.ts';
@@ -11,7 +18,15 @@ export interface InkControl {
   register(key: string, s: InkSurface): void;
   unregister(key: string): void;
   penActive(key: string, active: boolean): void;
+  /** 손가락 쓰기 중 여러 손가락 끌기가 끝남 — 화면이 쪽 넘김 쓸기로 볼지 정한다 */
+  swipe?(key: string, g: { dx: number; dy: number; dt: number; fingers: number }): void;
 }
+
+/**
+ * 손가락으로도 쓸지(설정). 노트는 문제 화면·레슨 화면 여러 곳에 있어 props 로 일일이 내려보내지 않고
+ * 앱 맨 위에서 한 번 알려 준다. 알려 주는 곳이 없으면(테스트 등) 예전처럼 끈 상태.
+ */
+export const FingerInkContext = createContext(false);
 
 const SAVE_DELAY = 400;
 /**
@@ -38,8 +53,9 @@ export function InkPage(p: {
   const surf = useRef<InkSurface | null>(null);
   // 엔진은 쪽이 바뀔 때만 다시 만든다. 도구·배경은 아래 효과에서 setTool 등으로 바꾸므로
   // 만드는 효과의 의존성에 넣지 않고 최신 값을 ref 로 읽는다.
-  const latest = useRef({ tool: p.tool, background: p.background });
-  latest.current = { tool: p.tool, background: p.background };
+  const fingerInk = useContext(FingerInkContext);
+  const latest = useRef({ tool: p.tool, background: p.background, fingerInk });
+  latest.current = { tool: p.tool, background: p.background, fingerInk };
   const { inkKey, grow, ctl } = p;
 
   useEffect(() => {
@@ -69,6 +85,7 @@ export function InkPage(p: {
         grow,
         background: latest.current.background,
         tool: latest.current.tool,
+        fingerInk: latest.current.fingerInk,
         onChange(doc) {
           pending = doc;
           clearTimeout(timer);
@@ -76,6 +93,9 @@ export function InkPage(p: {
         },
         onPenActive(active) {
           ctl.penActive(inkKey, active);
+        },
+        onSwipe(g) {
+          ctl.swipe?.(inkKey, g);
         },
       });
       surf.current = s;
@@ -99,6 +119,9 @@ export function InkPage(p: {
   useEffect(() => {
     surf.current?.setBackground(p.background);
   }, [p.background]);
+  useEffect(() => {
+    surf.current?.setFingerInk(fingerInk);
+  }, [fingerInk]);
 
   const { fit } = p;
   useLayoutEffect(() => {

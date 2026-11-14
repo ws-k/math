@@ -4,7 +4,10 @@
 // 그리는 동안은 콜백·상태 갱신 없이 live 캔버스에만 그려 입력 지연을 없애고,
 // 끝난 획은 committed 로 옮겨 획이 많아져도 매 프레임 다시 그리지 않는다.
 // 캔버스는 pointer-events:none — 손가락 입력은 그대로 host 의 스크롤·버튼으로 간다.
+// 손가락 쓰기(fingerInk)를 켜면 한 손가락은 쓰기, 여러 손가락은 스크롤·탭·쓸기(finger.ts 가 가른다).
+// 마우스는 왼쪽 버튼으로 늘 쓴다 — 마우스로 쓰는 사람에게 손바닥은 없으니 손바닥 무시는 펜에만 건다.
 
+import { createFingerGesture } from './finger.ts';
 import { strokeWidths } from './geometry.ts';
 import { createHistory, eraseAt } from './history.ts';
 import { createTapDetector, type TouchPoint } from './tap.ts';
@@ -18,6 +21,8 @@ const ERASER_RADIUS = [8, 14, 22] as const;
 const HIGHLIGHTER_ALPHA = 0.35;
 /** 펜을 뗀 뒤 손가락을 무시하는 시간 */
 export const PALM_MS = 500;
+/** 마우스·손가락 획을 끝낸 직후의 클릭을 버리는 시간 — 떼는 순간의 클릭이 교재 버튼을 누르지 않게 */
+const CLICK_MS = 300;
 /** 공책 아래 이만큼 남으면 늘린다 / 한 번에 늘리는 양 */
 const GROW_MARGIN = 300;
 const GROW_STEP = 600;
@@ -136,6 +141,7 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     position: host.style.position,
     isolation: host.style.isolation,
     minHeight: host.style.minHeight,
+    touchAction: host.style.touchAction,
   };
   if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
   host.style.isolation = 'isolate';
@@ -352,28 +358,52 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
   // ---- 펜 ----
 
   let penId = -1;
+  /** 펜·마우스·손가락 중 무엇이든 획(또는 지우개)을 긋는 중인가 */
   let penDown = false;
+  /** 지금 긋는 포인터 종류(pen·mouse·touch) */
+  let downType = '';
   let penUpAt = Number.NEGATIVE_INFINITY;
+  /** 마우스·손가락 획을 끝낸 때(클릭 막기용 — 손바닥 무시와는 별개) */
+  let inkUpAt = Number.NEGATIVE_INFINITY;
+  let fingerInk = !!opts.fingerInk;
+  const finger = createFingerGesture();
+  /** 여러 손가락 끌기로 직접 옮길 스크롤 상자(동작마다 한 번 찾는다) */
+  let panBox: HTMLElement | null = null;
   let rect: DOMRect | null = null;
   let scroller: HTMLElement | null = null;
   let savedOverflow: string | null = null;
   const scratch: number[] = [];
 
-  const palmBlocked = () => penDown || performance.now() - penUpAt < PALM_MS;
+  // 손바닥은 펜을 쥔 손에서만 생긴다. 마우스·손가락 획 중에 다른 손가락까지 막으면
+  // 두 손가락 탭(실행 취소)이나 획 취소가 안 된다.
+  const palmBlocked = () =>
+    (penDown && downType === 'pen') || performance.now() - penUpAt < PALM_MS;
 
   const emit = () => opts.onChange({ strokes: history.current.slice(), height });
 
   // 펜이 닿은 동안 스크롤 상자를 잠근다. iOS 는 펜 터치를 막아도 관성 스크롤이 남거나
   // 손바닥이 상자를 밀 수 있는데, 쓰는 중에 종이가 움직이면 획이 엉뚱한 곳에 그어진다.
+  // 마우스는 끌어서 스크롤하지 않으니 휠만 막는다. overflow:hidden 으로 잠그면 데스크톱의 보이는
+  // 스크롤바가 사라졌다 생기며 쪽 폭이 바뀌어, 긋는 중에 종이 배율이 달라진다.
+  const stopWheel = (e: WheelEvent) => e.preventDefault();
+  let wheelBox: HTMLElement | null = null;
+  const wheelOpts = { passive: false };
   const lockScroll = () => {
     scroller = scrollParent(host);
     if (!scroller) return;
+    if (downType === 'mouse') {
+      wheelBox = scroller;
+      wheelBox.addEventListener('wheel', stopWheel, wheelOpts);
+      return;
+    }
     savedOverflow = scroller.style.overflow;
     scroller.style.overflow = 'hidden';
   };
   const unlockScroll = () => {
     if (scroller && savedOverflow !== null) scroller.style.overflow = savedOverflow;
     savedOverflow = null;
+    wheelBox?.removeEventListener('wheel', stopWheel);
+    wheelBox = null;
   };
   // 그래도 스크롤되면(잠그기 직전의 관성 등) 쪽 위치가 바뀌었으니 다음 점에서 다시 잰다
   const onScroll = () => {
@@ -410,8 +440,8 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     }
   };
 
-  const onPointerDown = (e: PointerEvent) => {
-    if (e.pointerType !== 'pen' || penDown) return;
+  /** 획(지우개면 문지르기) 시작 — 펜·마우스·손가락 공통 */
+  const begin = (e: PointerEvent) => {
     e.preventDefault();
     try {
       host.setPointerCapture(e.pointerId);
@@ -420,7 +450,10 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     }
     penId = e.pointerId;
     penDown = true;
-    tap.invalidate();
+    downType = e.pointerType;
+    // 펜 획 중의 손가락은 손바닥이라 탭이 아니다. 손가락 획은 곧 올 두 번째 손가락이
+    // 두 손가락 탭일 수 있어 탭 판정을 살려 둔다.
+    if (downType === 'pen') tap.invalidate();
     lockScroll();
     rect = null;
     if (tool.kind === 'eraser') {
@@ -439,7 +472,51 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     addPoints(e);
   };
 
+  /** 손가락 획 취소: 곧바로 다른 손가락이 와서 여러 손가락 동작이었던 것 — 기록에 남기지 않는다 */
+  const abort = () => {
+    if (!penDown) return;
+    penDown = false;
+    penId = -1;
+    rect = null;
+    cancelFrame();
+    cur = null;
+    if (working) {
+      // 지우개로 문지르던 것도 되돌린다
+      working = null;
+      redrawCommitted(history.current);
+    }
+    releaseLive();
+    unlockScroll();
+    opts.onPenActive?.(false);
+  };
+
+  const onFingerDown = (e: PointerEvent) => {
+    // 펜이 닿아 있거나 막 뗐으면 손바닥이다 — 쓰지도, 여러 손가락 동작에 넣지도 않는다
+    if (palmBlocked() || (penDown && downType !== 'touch')) return;
+    const r = finger.down(e.pointerId, e.clientX, e.clientY, e.timeStamp);
+    if (r === 'draw') begin(e);
+    else if (r === 'cancel') {
+      abort();
+      panBox = scrollParent(host);
+    } else if (r === 'ignore') tap.invalidate();
+  };
+
+  const onPointerDown = (e: PointerEvent) => {
+    if (e.pointerType === 'touch') {
+      if (fingerInk) onFingerDown(e);
+      return;
+    }
+    if (penDown) return;
+    // 마우스는 왼쪽 버튼만 — 오른쪽(메뉴)·가운데(스크롤) 버튼은 원래 일을 하게 둔다
+    if (e.pointerType === 'pen' || (e.pointerType === 'mouse' && e.button === 0)) begin(e);
+  };
+
   const onPointerMove = (e: PointerEvent) => {
+    if (e.pointerType === 'touch' && fingerInk) {
+      const d = finger.move(e.pointerId, e.clientX, e.clientY);
+      // 손가락 쓰기 중엔 브라우저 스크롤을 막아 두었으므로 여러 손가락 끌기는 직접 스크롤한다
+      if (d && panBox) panBox.scrollTop -= d.dy;
+    }
     if (!penDown || e.pointerId !== penId) return;
     e.preventDefault();
     addPoints(e);
@@ -449,7 +526,8 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
   const finish = () => {
     penDown = false;
     penId = -1;
-    penUpAt = performance.now();
+    if (downType === 'pen') penUpAt = performance.now();
+    else inkUpAt = performance.now();
     rect = null;
     const committedStale = cancelFrame();
     // pointercancel 이어도 쓴 데까지는 남긴다 — 잃는 것보다 낫다
@@ -477,6 +555,13 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
   };
 
   const onPointerUp = (e: PointerEvent) => {
+    if (e.pointerType === 'touch' && fingerInk) {
+      const r = finger.up(e.pointerId, e.timeStamp);
+      if (r.kind === 'gesture') {
+        panBox = null;
+        opts.onSwipe?.({ dx: r.dx, dy: r.dy, dt: r.dt, fingers: r.fingers });
+      }
+    }
     if (!penDown || e.pointerId !== penId) return;
     finish();
   };
@@ -510,6 +595,9 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
       tap.invalidate();
       return;
     }
+    // 손가락 쓰기 중엔 한 손가락이 쪽을 스크롤·확대하지 않게 막는다(스크롤은 두 손가락으로 직접).
+    // touch-action:none 만으로는 옛 iOS 가 따르지 않을 수 있어 둘 다 건다.
+    if (fingerInk) e.preventDefault();
     tap.down(fingers(e.changedTouches), e.timeStamp);
   };
 
@@ -524,6 +612,7 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
       tap.invalidate();
       return;
     }
+    if (fingerInk) e.preventDefault();
     tap.move(fingers(e.changedTouches), e.timeStamp);
   };
 
@@ -534,9 +623,10 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     else if (n === 3) surface.redo();
   };
 
-  // 펜은 쓰기 전용 — 펜이 닿은 동안·뗀 직후의 클릭이 교재 버튼을 누르지 않게 한다
+  // 펜은 쓰기 전용 — 펜이 닿은 동안·뗀 직후의 클릭이 교재 버튼을 누르지 않게 한다.
+  // 마우스로 긋고 뗀 자리에서도 클릭이 생기므로 그것도 버린다.
   const onClick = (e: MouseEvent) => {
-    if (palmBlocked()) {
+    if (palmBlocked() || penDown || performance.now() - inkUpAt < CLICK_MS) {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -557,6 +647,11 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
   // 스크롤 이벤트는 거품이 안 올라오지만 캡처 단계에서는 창이 모든 상자의 스크롤을 받는다
   window.addEventListener('scroll', onScroll, scrollOpts);
 
+  const applyTouchAction = () => {
+    host.style.touchAction = fingerInk ? 'none' : saved.touchAction;
+  };
+  applyTouchAction();
+
   const ro = new ResizeObserver(() => resize());
   ro.observe(host);
   resize();
@@ -576,6 +671,15 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     setBackground(b: Background) {
       background = b;
       updateBackground();
+    },
+    setFingerInk(on: boolean) {
+      if (on === fingerInk) return;
+      fingerInk = on;
+      finger.reset();
+      panBox = null;
+      // 손가락으로 쓰던 중에 꺼지면 쓴 데까지는 남긴다
+      if (penDown && downType === 'touch') finish();
+      applyTouchAction();
     },
     undo() {
       if (!penDown) afterEdit(history.undo());
@@ -616,6 +720,7 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
       host.style.position = saved.position;
       host.style.isolation = saved.isolation;
       host.style.minHeight = saved.minHeight;
+      host.style.touchAction = saved.touchAction;
     },
   };
   return surface;
