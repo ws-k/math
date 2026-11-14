@@ -96,3 +96,7 @@
 - coord: 수열 점 모드(정수 n 에서만 점, 연속 곡선 숨김) — calc-series, math1-sigma
 - coord line.tangent: ln·e^x 접선 판정 — calc-exp-log-diff
 - 내용 점검: calc-series p107·calc-trig-addition p110 check 가 공식을 그대로 담음(직접 계산 원칙 약함), 등비급수 r 슬라이더 r>1 일 때 화면 확인 필요
+- coord: 곡선 아래 넓이 칠하기·읽기(정규분포 확률), 막대그래프+곡선 겹치기, 신뢰구간 막대 여러 개 — prob-normal, prob-estimation
+- simulate: 표본 크기 고르는 표본평균 실험(지금 주사위 2개까지) — prob-estimation
+- solve 문항 answerTex 허용(0.8185 가 "1637/2000" 으로 보임) — prob-normal
+- 검산 주의: sympy 가 (−1)^n 극한에서 오류 → 위아래 수열로 나눠 검산 — calc-seq-limit
