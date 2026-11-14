@@ -1,0 +1,1422 @@
+{
+  "id": "calc-param-implicit",
+  "course": "미적분",
+  "unit": "미분법",
+  "title": "여러 가지 미분법",
+  "prereq": [
+    "calc-quotient-chain",
+    "h1-function"
+  ],
+  "suneung": [
+    "미적 27",
+    "미적 28",
+    "미적 30"
+  ],
+  "hours": 3.5,
+  "formulas": [
+    "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)",
+    "$\\dfrac{d}{dx}\\{y^n\\}=ny^{n-1}\\dfrac{dy}{dx}$",
+    "$b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$",
+    "$f''(x)=\\{f'(x)\\}'=\\dfrac{d^2y}{dx^2}$"
+  ],
+  "lesson": {
+    "minutes": 30,
+    "values": {
+      "p32": {
+        "value": "3/2",
+        "check": "diff((x/2)**3, x).subs(x, 2)"
+      },
+      "p3": {
+        "value": "3",
+        "check": "diff(t**3, t).subs(t, 1)"
+      },
+      "imp": {
+        "value": "-3/4",
+        "check": "idiff(x**2 + y**2 - 25, y, x).subs({x: 3, y: 4})"
+      },
+      "f2": {
+        "value": "4",
+        "check": "diff(x**2, x).subs(x, 2)"
+      },
+      "g4": {
+        "value": "1/4",
+        "check": "diff(sqrt(x), x).subs(x, 4)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "미적분 · 미분법",
+        "title": "$y$ 를 $x$ 의 식으로\n쓰지 않아도 돼요",
+        "lead": "시간을 따라 움직이는 점, 원처럼 한 식에 묶인 곡선, 거꾸로 돌린 함수의 기울기를 구해요. 비결은 모두 합성함수의 미분법이에요.",
+        "meta": [
+          "매개변수",
+          "음함수",
+          "역함수",
+          "이계도함수"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "움직이는 점이 그리는\n곡선의 기울기는?",
+        "lead": "점 P 가 시각 $t$ 에 $(2t,\\ t^3)$ 에 있어요. $t=1$ 일 때 P 는 $(2,\\ 1)$ 을 지나요. 이 순간 P 가 그리는 곡선의 접선 기울기는 얼마일까요?",
+        "choices": [
+          {
+            "value": "3",
+            "check": "diff(t**3, t).subs(t, 1)",
+            "feedback": "그건 $y$ 가 시간에 따라 변하는 빠르기 $\\frac{dy}{dt}$ 예요. $x$ 도 함께 움직이니 $x$ 의 빠르기로 나눠야 해요."
+          },
+          {
+            "value": "3/2",
+            "check": "diff((x/2)**3, x).subs(x, 2)"
+          },
+          {
+            "value": "2/3",
+            "check": "diff(2*t, t).subs(t, 1)/diff(t**3, t).subs(t, 1)",
+            "feedback": "위아래가 뒤집혔어요. 기울기는 $x$ 가 늘 때 $y$ 가 느는 비율이라 $y$ 쪽이 분자예요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "diff((x/2)**3, x).subs(x, 2)",
+        "reveal": "**맞아요.** 시각 $t$ 를 지우면 곡선의 식이 보여요.",
+        "thoughts": [
+          "$x=2t$ 에서 $t=\\frac x2$ 이므로 $y=\\left(\\frac x2\\right)^3=\\frac{x^3}{8}$ 이에요.",
+          "$y'=\\frac{3x^2}{8}$ 에 $x=2$ 를 넣으면 {{p32}}예요."
+        ],
+        "conclude": "시각으로 보면 $\\frac{dy}{dt}={{p3}}$, $\\frac{dx}{dt}=2$ 예요. ==두 빠르기를 나눈 값==이 기울기예요."
+      },
+      {
+        "kind": "explore",
+        "id": "param",
+        "chip": "손으로 해 보기",
+        "title": "시각을 바꾸며\n할선을 끌어 보세요",
+        "lead": "P 가 지나는 곡선은 $y=\\frac{x^3}{8}$ 이에요. Q 를 끄는 것은 시각 $t$ 를 바꾸는 것과 같아요. Q 를 P 쪽으로 끌어 할선의 기울기가 어디로 가는지 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 4,
+              "step": "1/2"
+            },
+            "y": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "f",
+                "curve": "x**3/8",
+                "label": "$x=2t,\\ y=t^3$"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "f",
+                  "x": 2
+                },
+                "name": "P"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "f",
+                  "x": 3,
+                  "drag": "x",
+                  "snap": "1/10"
+                },
+                "name": "Q"
+              },
+              {
+                "secant": [
+                  "P",
+                  "Q"
+                ]
+              },
+              {
+                "readout": "x(Q)",
+                "label": "Q 의 $x$"
+              },
+              {
+                "readout": "slope(P,Q)",
+                "label": "할선 PQ 의 기울기",
+                "digits": 3
+              }
+            ],
+            "goal": {
+              "approach": [
+                "Q",
+                "P"
+              ]
+            },
+            "intro": "Q 를 끌어 P 에 겹쳐 보세요.",
+            "done": "Q 가 P 에 닿으면 기울기는 {{p32}}이에요. $\\frac{dy}{dt}$ 를 $\\frac{dx}{dt}$ 로 나눈 값과 같아요."
+          }
+        },
+        "after": "할선의 기울기는 $\\frac{\\Delta y}{\\Delta x}=\\frac{\\Delta y/\\Delta t}{\\Delta x/\\Delta t}$ 예요. 시간 간격 $\\Delta t$ 를 0 으로 보내면 분자는 $\\frac{dy}{dt}$, 분모는 $\\frac{dx}{dt}$ 로 가요. ==두 빠르기의 비==가 곧 기울기예요."
+      },
+      {
+        "kind": "explore",
+        "id": "circle",
+        "chip": "두 번째 해 보기",
+        "title": "원 위의 점에서\n접선을 그려 보세요",
+        "lead": "원 $x^2+y^2=25$ 위의 점 A$(3,\\ 4)$ 에서의 접선을 그려요. 원의 접선은 반지름 OA 에 수직이에요. 기울기를 먼저 구하고, 두 손잡이를 끌어 직선을 맞춘 뒤 '확인하기'를 누르세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "line",
+            "x": {
+              "min": -5,
+              "max": 7,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "c",
+                "curve": "sqrt(25-x**2)",
+                "label": "$x^2+y^2=25$ 의 위쪽"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "on": "c",
+                  "x": 3
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "line": {
+                "slope": {
+                  "value": "-3/4",
+                  "check": "idiff(x**2 + y**2 - 25, y, x).subs({x: 3, y: 4})"
+                },
+                "through": {
+                  "x": {
+                    "value": "3",
+                    "check": "sqrt(25 - 4**2)"
+                  },
+                  "y": {
+                    "value": "4",
+                    "check": "sqrt(25 - 3**2)"
+                  }
+                }
+              }
+            },
+            "intro": "반지름 OA 의 기울기에 곱해서 $-1$ 이 되는 기울기를 찾아요.",
+            "done": "맞아요. 기울기는 {{imp}}이에요. 반지름 OA 의 기울기 $\\frac43$ 과 곱하면 $-1$ 이에요."
+          }
+        },
+        "after": "$y$ 를 $x$ 의 식으로 풀지 않고도 같은 값을 얻을 수 있어요. 양변을 $x$ 로 미분하면 $2x+2y\\frac{dy}{dx}=0$, 곧 $\\frac{dy}{dx}=-\\frac{x}{y}$ 예요. $y^2$ 은 $y$ 를 안쪽에 둔 겹친 함수라서 ==안쪽 미분을 곱해요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "inverse",
+        "chip": "거울에 비춰 보기",
+        "title": "마주 보는 두 곡선의\n기울기를 견주어 보세요",
+        "lead": "흐린 직선 $y=x$ 를 사이에 두고 $y=x^2$ $(x\\ge0)$ 과 $y=\\sqrt x$ 가 마주 보고 있어요. 서로의 역함수예요. 점 Q 를 끌어 P$(2,\\ 4)$ 와 마주 보는 점 B 에 겹쳐 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 5,
+              "step": "1/2"
+            },
+            "y": {
+              "min": 0,
+              "max": 5,
+              "step": "1/2"
+            },
+            "objects": [
+              {
+                "id": "l",
+                "curve": "x",
+                "label": "$y=x$",
+                "tone": "soft"
+              },
+              {
+                "id": "f",
+                "curve": "x**2",
+                "label": "$y=x^2$"
+              },
+              {
+                "id": "g",
+                "curve": "sqrt(x)",
+                "label": "$y=\\sqrt x$",
+                "tone": "accent"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "f",
+                  "x": 2
+                },
+                "name": "P"
+              },
+              {
+                "tangent": {
+                  "on": "f",
+                  "at": "P"
+                }
+              },
+              {
+                "id": "B",
+                "point": {
+                  "x": 4,
+                  "y": 2
+                },
+                "name": "B"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "g",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": "1/10"
+                },
+                "name": "Q"
+              },
+              {
+                "tangent": {
+                  "on": "g",
+                  "at": "Q"
+                }
+              },
+              {
+                "readout": "deriv(f,P)",
+                "label": "P 에서의 기울기"
+              },
+              {
+                "readout": "deriv(g,Q)",
+                "label": "Q 에서의 기울기",
+                "digits": 3
+              }
+            ],
+            "goal": {
+              "approach": [
+                "Q",
+                "B"
+              ]
+            },
+            "intro": "Q 를 끌어 B 에 겹쳐 보세요.",
+            "done": "B 에서 $y=\\sqrt x$ 의 기울기는 {{g4}}, P 에서 $y=x^2$ 의 기울기는 {{f2}}이에요. 서로 역수예요."
+          }
+        },
+        "after": "역함수의 그래프는 $y=x$ 에 비친 모양이라 접선도 함께 비쳐요. 비치면 가로와 세로가 바뀌니 기울기는 ==역수==가 돼요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "매개변수로 나타낸 함수",
+            "body": "$x=f(t)$, $y=g(t)$ 처럼 제3의 변수 $t$ 로 $x$, $y$ 를 함께 나타낸 것이에요. $\\frac{dy}{dx}=\\frac{g'(t)}{f'(t)}$ (단, $f'(t)\\ne0$)."
+          },
+          {
+            "term": "음함수 미분법",
+            "body": "$x^2+y^2=25$ 처럼 $x$, $y$ 가 한 식에 묶여 있을 때 양변을 $x$ 로 미분해요. $y$ 가 든 항은 합성함수로 보고 $\\frac{dy}{dx}$ 를 곱해요."
+          },
+          {
+            "term": "역함수의 미분법",
+            "body": "$g$ 가 $f$ 의 역함수이고 $b=f(a)$ 이면 $g'(b)=\\frac{1}{f'(a)}$. $f(g(x))=x$ 의 양변을 미분한 $f'(g(x))\\,g'(x)=1$ 에서 나와요."
+          },
+          {
+            "term": "이계도함수",
+            "body": "도함수를 한 번 더 미분한 것이에요. $f''(x)$, $y''$, $\\frac{d^2y}{dx^2}$ 로 써요. 기울기가 변하는 빠르기예요."
+          }
+        ],
+        "aside": "**확인** · 오늘의 질문에서 $\\frac{dy/dt}{dx/dt}$ 는 할선으로 읽은 {{p32}}와 같아요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $x=t^2+1$, $y=t^3$ 에서 $t=2$ 일 때 $\\frac{dx}{dt}=4$, $\\frac{dy}{dt}=12$ 예요. ($y$ 의 빠르기) = (기울기 $m$) × ($x$ 의 빠르기) 로 $m$ 을 구했어요. 틀린 부분은?",
+            "mode": "equivalent",
+            "from": "4*m=12",
+            "tokens": [
+              {
+                "sym": "m"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "4/12",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "12/4",
+              "body": "양변을 $4$ 로 나눠야 해요. $\\frac{dy}{dx}=\\frac{dy/dt}{dx/dt}$ 이라 **분자는 세로 방향의 빠르기**예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 두 번 미분했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "diff(diff(sin(2*x),x),x)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "-2*sin(2*x)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "-4*sin(2*x)",
+              "body": "한 번 미분할 때마다 안쪽 미분 $2$ 가 곱해져요. 두 번이면 $2\\times2=4$ 예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "param",
+            "q": "매개변수 $t$ 로 나타낸 곡선 $x=t^2+1$, $y=2t^3-t$ 에서 $t=1$ 일 때 $\\dfrac{dy}{dx}$ 의 값을 구하세요.",
+            "hint": "$x$, $y$ 를 각각 $t$ 로 미분해서 나눠요. $y$ 쪽이 분자예요.",
+            "concepts": [
+              "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)"
+            ],
+            "steps": [
+              {
+                "title": "각각 $t$ 로 미분하기",
+                "body": "$$\\frac{dx}{dt}=2t,\\quad \\frac{dy}{dt}=6t^2-1$$"
+              },
+              {
+                "title": "$t=1$ 대입",
+                "body": "$\\frac{dx}{dt}=2$, $\\frac{dy}{dt}=5$ 예요."
+              },
+              {
+                "title": "나누기",
+                "body": "$$\\frac{dy}{dx}=\\frac52={{answer}}$$"
+              }
+            ],
+            "tip": "위아래를 바꾸면 $\\frac25$ 가 나와 틀려요.",
+            "answer": "5/2",
+            "answerType": "fraction",
+            "check": "diff(2*t**3 - t, t).subs(t, 1)/diff(t**2 + 1, t).subs(t, 1)"
+          },
+          {
+            "id": "implicit",
+            "q": "곡선 $x^2+xy+y^2=7$ 위의 점 $(1,\\ 2)$ 에서의 접선의 기울기를 구하세요.",
+            "hint": "$xy$ 는 곱의 미분법, $y^2$ 은 $2y\\frac{dy}{dx}$ 로 미분해요.",
+            "concepts": [
+              "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요.",
+              "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+            ],
+            "steps": [
+              {
+                "title": "양변을 $x$ 로 미분하기",
+                "body": "$$2x+\\left(y+x\\frac{dy}{dx}\\right)+2y\\frac{dy}{dx}=0$$"
+              },
+              {
+                "title": "$\\frac{dy}{dx}$ 로 묶기",
+                "body": "$$(x+2y)\\frac{dy}{dx}=-(2x+y)$$"
+              },
+              {
+                "title": "점 대입",
+                "body": "$x=1$, $y=2$ 이면 $5\\frac{dy}{dx}=-4$ 이므로 $$\\frac{dy}{dx}={{answer}}$$"
+              }
+            ],
+            "tip": "$y$ 를 $x$ 의 식으로 풀려면 근의 공식이 필요해 복잡해요. 음함수로 미분하면 바로 끝나요.",
+            "answer": "-4/5",
+            "answerType": "fraction",
+            "check": "idiff(x**2 + x*y + y**2 - 7, y, x).subs({x: 1, y: 2})"
+          },
+          {
+            "id": "inverse",
+            "q": "함수 $f(x)=x^3+2x+1$ 의 역함수를 $g(x)$ 라 할 때, $g'(4)$ 의 값을 구하세요.",
+            "hint": "먼저 $f(a)=4$ 인 $a$ 를 찾아요.",
+            "concepts": [
+              "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$"
+            ],
+            "steps": [
+              {
+                "title": "$f(a)=4$ 인 $a$ 찾기",
+                "body": "$f(1)=1+2+1=4$ 이므로 $a=1$, 곧 $g(4)=1$ 이에요."
+              },
+              {
+                "title": "$f$ 의 미분계수",
+                "body": "$f'(x)=3x^2+2$ 이므로 $f'(1)=5$ 예요."
+              },
+              {
+                "title": "역수 취하기",
+                "body": "$$g'(4)=\\frac{1}{f'(1)}={{answer}}$$"
+              }
+            ],
+            "tip": "$g'(4)=\\frac{1}{f'(4)}$ 로 쓰면 틀려요. $4$ 는 $f$ 의 출력값이에요.",
+            "answer": "1/5",
+            "answerType": "fraction",
+            "check": "r = [s for s in solve(Eq(x**3 + 2*x + 1, 4), x) if s.is_real][0]\nans = 1/diff(x**3 + 2*x + 1, x).subs(x, r)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "매개변수: $\\frac{dy}{dx}=\\frac{dy/dt}{dx/dt}$. $y$ 쪽이 분자예요.",
+          "음함수: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\frac{dy}{dx}$ 를 곱해요.",
+          "역함수: $b=f(a)$ 이면 $(f^{-1})'(b)=\\frac{1}{f'(a)}$. 출력값 $b$ 에 맞는 입력값 $a$ 를 먼저 찾아요.",
+          "이계도함수는 두 번 미분한 것이에요. 수능에서는 매개변수의 미분이 3점, 역함수의 미분이 4점 문제로 자주 나와요."
+        ],
+        "done": "여러 가지 미분법 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "calc-param-implicit-param",
+    "calc-param-implicit-implicit",
+    "calc-param-implicit-inverse",
+    "calc-param-implicit-second"
+  ],
+  "problems": [
+    {
+      "q": "매개변수 $t$ 로 나타낸 곡선 $x=2t^2+t+3$, $y=-2t^3-t-1$ 에서 $t=-2$ 일 때 $\\dfrac{dy}{dx}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "25/7",
+      "answerType": "fraction",
+      "check": "diff(-2*t**3 - 1*t - 1, t).subs(t, -2)/diff(2*t**2 + 1*t + 3, t).subs(t, -2)",
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)"
+      ],
+      "steps": [
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=4t+1,\\quad \\frac{dy}{dt}=-6t^2-1$$"
+        },
+        {
+          "title": "$t=-2$ 대입",
+          "body": "$\\dfrac{dx}{dt}=-7$, $\\dfrac{dy}{dt}=-25$ 예요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{dy}{dx}=\\frac{dy/dt}{dx/dt}=\\frac{-25}{-7}=\\frac{25}{7}$$"
+        }
+      ],
+      "tip": "분자와 분모를 바꿔 $\\frac{dx/dt}{dy/dt}$ 로 쓰면 역수인 $\\frac{7}{25}$ 이 나와요. 구하는 것이 $\\frac{dy}{dx}$ 이니 $y$ 쪽이 위예요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "calc-param-implicit-param",
+      "seed": 1000
+    },
+    {
+      "q": "곡선 $x^2+xy+2y^2=11$ 위의 점 $(1,\\ 2)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "-4/9",
+      "answerType": "fraction",
+      "check": "idiff(x**2 + 1*x*y + 2*y**2 - 11, y, x).subs({x: 1, y: 2})",
+      "concepts": [
+        "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요.",
+        "$\\dfrac{d}{dx}y^2=2y\\dfrac{dy}{dx}$",
+        "곱의 미분법: $(xy)'=y+x\\dfrac{dy}{dx}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $x$ 로 미분하기",
+          "body": "$$2x+\\left(y+x\\frac{dy}{dx}\\right)+4y\\frac{dy}{dx}=0$$"
+        },
+        {
+          "title": "$\\frac{dy}{dx}$ 로 묶기",
+          "body": "$$\\left(x+4y\\right)\\frac{dy}{dx}=-\\left(2x+y\\right)$$"
+        },
+        {
+          "title": "점 $(1,\\ 2)$ 대입",
+          "body": "$x+4y$ 의 값은 $9$, $2x+y$ 의 값은 $4$ 예요.\n$$\\frac{dy}{dx}=\\frac{-4}{9}=-\\frac{4}{9}$$"
+        }
+      ],
+      "tip": "$y$ 를 $x$ 의 식으로 풀지 않아도 기울기를 구할 수 있어요. $y^2$ 을 미분할 때 $\\frac{dy}{dx}$ 를 곱하는 것을 빠뜨리지 마세요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "calc-param-implicit-implicit",
+      "seed": 1001
+    },
+    {
+      "q": "함수 $f(x)=x^3+2x$ 의 역함수를 $g(x)$ 라 할 때, $g'(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "r = [s for s in solve(Eq(1*x**3 + 2*x, 0), x) if s.is_real][0]\nans = 1/diff(1*x**3 + 2*x, x).subs(x, r)",
+      "concepts": [
+        "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$",
+        "$f'(x)=3x^2+a>0$ 이면 $f$ 는 증가함수라 역함수가 있어요."
+      ],
+      "steps": [
+        {
+          "title": "$f(x)=0$ 인 $x$ 찾기",
+          "body": "작은 정수를 넣어 보면 $f(0)=0$ 이에요. $f$ 는 증가함수라 이런 $x$ 는 $0$ 하나뿐이에요. 곧 $g(0)=0$ 이에요."
+        },
+        {
+          "title": "$f$ 의 도함수",
+          "body": "$$f'(x)=3x^2+2,\\quad f'(0)=2$$"
+        },
+        {
+          "title": "역수 취하기",
+          "body": "$$g'(0)=\\frac{1}{f'(0)}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "$g'(0)=\\frac{1}{f'(0)}$ 로 쓰면 틀려요. $0$ 은 $f$ 의 출력값이라, $f$ 에 넣을 입력값 $0$ 을 먼저 찾아야 해요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "calc-param-implicit-inverse",
+      "seed": 1002
+    },
+    {
+      "q": "함수 $f(x)=3\\sin x+3\\cos x$ 에 대하여 $f''\\left(\\frac{\\pi}{2}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3",
+      "answerType": "int",
+      "check": "diff(3*sin(1*x) + 3*cos(1*x), x, 2).subs(x, pi/2)",
+      "concepts": [
+        "이계도함수: $f''(x)=\\{f'(x)\\}'$, 도함수를 한 번 더 미분해요.",
+        "$(\\sin ax)'=a\\cos ax$, $(\\cos ax)'=-a\\sin ax$"
+      ],
+      "steps": [
+        {
+          "title": "한 번 미분하기",
+          "body": "$$f'(x)=3\\cos x-3\\sin x$$"
+        },
+        {
+          "title": "한 번 더 미분하기",
+          "body": "$$f''(x)=-3\\sin x-3\\cos x=-f(x)$$"
+        },
+        {
+          "title": "$x=\\frac{\\pi}{2}$ 대입",
+          "body": "$f\\left(\\frac{\\pi}{2}\\right)=3$ 이므로\n$$f''\\left(\\frac{\\pi}{2}\\right)=-1\\cdot3=-3$$"
+        }
+      ],
+      "tip": "$\\sin$ 과 $\\cos$ 은 두 번 미분하면 부호만 바뀐 자기 자신(안쪽 계수의 제곱배)으로 돌아와요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "calc-param-implicit-second",
+      "seed": 1003
+    },
+    {
+      "q": "매개변수 $t$ 로 나타낸 곡선 $x=2\\cos t$, $y=3\\sin t$ 에서 $t=\\frac{5\\pi}{4}$ 일 때 $\\dfrac{dy}{dx}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3/2",
+      "answerType": "fraction",
+      "check": "idiff(x**2/4 + y**2/9 - 1, y, x).subs({x: 2*cos(5*pi/4), y: 3*sin(5*pi/4)})",
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)",
+        "$(\\cos t)'=-\\sin t$, $(\\sin t)'=\\cos t$"
+      ],
+      "steps": [
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=-2\\sin t,\\quad \\frac{dy}{dt}=3\\cos t$$"
+        },
+        {
+          "title": "$t=\\frac{5\\pi}{4}$ 의 값",
+          "body": "$\\sin \\frac{5\\pi}{4}=-\\frac{\\sqrt2}{2}$, $\\cos \\frac{5\\pi}{4}=-\\frac{\\sqrt2}{2}$ 이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$\\sqrt2$ 는 약분돼요.\n$$\\frac{dy}{dx}=\\frac{3\\cos t}{-2\\sin t}=\\frac{3\\cdot(-1)}{-2\\cdot(-1)}=-\\frac{3}{2}$$"
+        }
+      ],
+      "tip": "$t$ 를 지우면 $\\frac{x^2}{4}+\\frac{y^2}{9}=1$ 인 타원이에요. 음함수로 미분해도 같은 기울기가 나와요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "calc-param-implicit-param",
+      "seed": 1004
+    },
+    {
+      "q": "곡선 $x^2+2y^2=3$ 위의 점 $(1,\\ -1)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "idiff(x**2 + 0*x*y + 2*y**2 - 3, y, x).subs({x: 1, y: -1})",
+      "concepts": [
+        "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요.",
+        "$\\dfrac{d}{dx}y^2=2y\\dfrac{dy}{dx}$",
+        "곱의 미분법: $(xy)'=y+x\\dfrac{dy}{dx}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $x$ 로 미분하기",
+          "body": "$$2x+4y\\frac{dy}{dx}=0$$"
+        },
+        {
+          "title": "$\\frac{dy}{dx}$ 로 묶기",
+          "body": "$$\\left(4y\\right)\\frac{dy}{dx}=-\\left(2x\\right)$$"
+        },
+        {
+          "title": "점 $(1,\\ -1)$ 대입",
+          "body": "$4y$ 의 값은 $-4$, $2x$ 의 값은 $2$ 예요.\n$$\\frac{dy}{dx}=\\frac{-2}{-4}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "$y$ 를 $x$ 의 식으로 풀지 않아도 기울기를 구할 수 있어요. $y^2$ 을 미분할 때 $\\frac{dy}{dx}$ 를 곱하는 것을 빠뜨리지 마세요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "calc-param-implicit-implicit",
+      "seed": 1005
+    },
+    {
+      "q": "함수 $f(x)=x^3+2x-2$ 의 역함수를 $g(x)$ 라 할 때, $g'(10)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/14",
+      "answerType": "fraction",
+      "check": "r = [s for s in solve(Eq(1*x**3 + 2*x - 2, 10), x) if s.is_real][0]\nans = 1/diff(1*x**3 + 2*x - 2, x).subs(x, r)",
+      "concepts": [
+        "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$",
+        "$f'(x)=3x^2+a>0$ 이면 $f$ 는 증가함수라 역함수가 있어요."
+      ],
+      "steps": [
+        {
+          "title": "$f(x)=10$ 인 $x$ 찾기",
+          "body": "작은 정수를 넣어 보면 $f(2)=10$ 이에요. $f$ 는 증가함수라 이런 $x$ 는 $2$ 하나뿐이에요. 곧 $g(10)=2$ 예요."
+        },
+        {
+          "title": "$f$ 의 도함수",
+          "body": "$$f'(x)=3x^2+2,\\quad f'(2)=14$$"
+        },
+        {
+          "title": "역수 취하기",
+          "body": "$$g'(10)=\\frac{1}{f'(2)}=\\frac{1}{14}$$"
+        }
+      ],
+      "tip": "$g'(10)=\\frac{1}{f'(10)}$ 로 쓰면 틀려요. $10$ 은 $f$ 의 출력값이라, $f$ 에 넣을 입력값 $2$ 를 먼저 찾아야 해요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "calc-param-implicit-inverse",
+      "seed": 1006
+    },
+    {
+      "q": "함수 $f(x)=2\\sin x-3\\cos x$ 에 대하여 $f''\\left(0\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "diff(2*sin(1*x) + -3*cos(1*x), x, 2).subs(x, 0)",
+      "concepts": [
+        "이계도함수: $f''(x)=\\{f'(x)\\}'$, 도함수를 한 번 더 미분해요.",
+        "$(\\sin ax)'=a\\cos ax$, $(\\cos ax)'=-a\\sin ax$"
+      ],
+      "steps": [
+        {
+          "title": "한 번 미분하기",
+          "body": "$$f'(x)=2\\cos x+3\\sin x$$"
+        },
+        {
+          "title": "한 번 더 미분하기",
+          "body": "$$f''(x)=-2\\sin x+3\\cos x=-f(x)$$"
+        },
+        {
+          "title": "$x=0$ 대입",
+          "body": "$f\\left(0\\right)=-3$ 이므로\n$$f''\\left(0\\right)=-1\\cdot(-3)=3$$"
+        }
+      ],
+      "tip": "$\\sin$ 과 $\\cos$ 은 두 번 미분하면 부호만 바뀐 자기 자신(안쪽 계수의 제곱배)으로 돌아와요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "calc-param-implicit-second",
+      "seed": 1007
+    },
+    {
+      "q": "매개변수 $t$ 로 나타낸 곡선 $x=t^2+2$, $y=-2t^3-t+3$ 에서 $t=-1$ 일 때 $\\dfrac{dy}{dx}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7/2",
+      "answerType": "fraction",
+      "check": "diff(-2*t**3 - 1*t + 3, t).subs(t, -1)/diff(1*t**2 + 2, t).subs(t, -1)",
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)"
+      ],
+      "steps": [
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=2t,\\quad \\frac{dy}{dt}=-6t^2-1$$"
+        },
+        {
+          "title": "$t=-1$ 대입",
+          "body": "$\\dfrac{dx}{dt}=-2$, $\\dfrac{dy}{dt}=-7$ 이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{dy}{dx}=\\frac{dy/dt}{dx/dt}=\\frac{-7}{-2}=\\frac{7}{2}$$"
+        }
+      ],
+      "tip": "분자와 분모를 바꿔 $\\frac{dx/dt}{dy/dt}$ 로 쓰면 역수인 $\\frac{2}{7}$ 가 나와요. 구하는 것이 $\\frac{dy}{dx}$ 이니 $y$ 쪽이 위예요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "calc-param-implicit-param",
+      "seed": 1008
+    },
+    {
+      "q": "곡선 $x^2+xy+2y^2=4$ 위의 점 $(-1,\\ -1)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "-3/5",
+      "answerType": "fraction",
+      "check": "idiff(x**2 + 1*x*y + 2*y**2 - 4, y, x).subs({x: -1, y: -1})",
+      "concepts": [
+        "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요.",
+        "$\\dfrac{d}{dx}y^2=2y\\dfrac{dy}{dx}$",
+        "곱의 미분법: $(xy)'=y+x\\dfrac{dy}{dx}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $x$ 로 미분하기",
+          "body": "$$2x+\\left(y+x\\frac{dy}{dx}\\right)+4y\\frac{dy}{dx}=0$$"
+        },
+        {
+          "title": "$\\frac{dy}{dx}$ 로 묶기",
+          "body": "$$\\left(x+4y\\right)\\frac{dy}{dx}=-\\left(2x+y\\right)$$"
+        },
+        {
+          "title": "점 $(-1,\\ -1)$ 대입",
+          "body": "$x+4y$ 의 값은 $-5$, $2x+y$ 의 값은 $-3$ 이에요.\n$$\\frac{dy}{dx}=\\frac{3}{-5}=-\\frac{3}{5}$$"
+        }
+      ],
+      "tip": "$y$ 를 $x$ 의 식으로 풀지 않아도 기울기를 구할 수 있어요. $y^2$ 을 미분할 때 $\\frac{dy}{dx}$ 를 곱하는 것을 빠뜨리지 마세요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "calc-param-implicit-implicit",
+      "seed": 1009
+    },
+    {
+      "q": "함수 $f(x)=x^3+2x+2$ 의 역함수를 $g(x)$ 라 할 때, $g'(14)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/14",
+      "answerType": "fraction",
+      "check": "r = [s for s in solve(Eq(1*x**3 + 2*x + 2, 14), x) if s.is_real][0]\nans = 1/diff(1*x**3 + 2*x + 2, x).subs(x, r)",
+      "concepts": [
+        "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$",
+        "$f'(x)=3x^2+a>0$ 이면 $f$ 는 증가함수라 역함수가 있어요."
+      ],
+      "steps": [
+        {
+          "title": "$f(x)=14$ 인 $x$ 찾기",
+          "body": "작은 정수를 넣어 보면 $f(2)=14$ 예요. $f$ 는 증가함수라 이런 $x$ 는 $2$ 하나뿐이에요. 곧 $g(14)=2$ 예요."
+        },
+        {
+          "title": "$f$ 의 도함수",
+          "body": "$$f'(x)=3x^2+2,\\quad f'(2)=14$$"
+        },
+        {
+          "title": "역수 취하기",
+          "body": "$$g'(14)=\\frac{1}{f'(2)}=\\frac{1}{14}$$"
+        }
+      ],
+      "tip": "$g'(14)=\\frac{1}{f'(14)}$ 로 쓰면 틀려요. $14$ 는 $f$ 의 출력값이라, $f$ 에 넣을 입력값 $2$ 를 먼저 찾아야 해요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "calc-param-implicit-inverse",
+      "seed": 1010
+    },
+    {
+      "q": "함수 $f(x)=(x+2)e^x$ 에 대하여 $f''(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "diff((x + 2)*exp(x), x, 2).subs(x, 0)",
+      "concepts": [
+        "이계도함수: $f''(x)=\\{f'(x)\\}'$, 도함수를 한 번 더 미분해요.",
+        "$(e^x)'=e^x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "한 번 미분하기",
+          "body": "$$f'(x)=1\\cdot e^x+(x+2)e^x=(x+3)e^x$$"
+        },
+        {
+          "title": "한 번 더 미분하기",
+          "body": "$$f''(x)=e^x+(x+3)e^x=(x+4)e^x$$"
+        },
+        {
+          "title": "$x=0$ 대입",
+          "body": "$e^0=1$ 이므로 $f''(0)=4$ 예요."
+        }
+      ],
+      "tip": "$(x+p)e^x$ 는 미분할 때마다 괄호 안 상수만 $1$ 씩 커져요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "calc-param-implicit-second",
+      "seed": 1011
+    },
+    {
+      "q": "매개변수 $t$ 로 나타낸 곡선 $x=2t^2-t-1$, $y=-2t^3+3t-2$ 에서 $t=1$ 일 때 $\\dfrac{dy}{dx}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "fraction",
+      "check": "diff(-2*t**3 + 3*t - 2, t).subs(t, 1)/diff(2*t**2 - 1*t - 1, t).subs(t, 1)",
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)"
+      ],
+      "steps": [
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=4t-1,\\quad \\frac{dy}{dt}=-6t^2+3$$"
+        },
+        {
+          "title": "$t=1$ 대입",
+          "body": "$\\dfrac{dx}{dt}=3$, $\\dfrac{dy}{dt}=-3$ 이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{dy}{dx}=\\frac{dy/dt}{dx/dt}=\\frac{-3}{3}=-1$$"
+        }
+      ],
+      "tip": "분자와 분모를 바꿔 $\\frac{dx/dt}{dy/dt}$ 로 쓰면 역수인 $-1$ 이 나와요. 구하는 것이 $\\frac{dy}{dx}$ 이니 $y$ 쪽이 위예요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "calc-param-implicit-param",
+      "seed": 1012
+    },
+    {
+      "q": "곡선 $x^2-2xy+2y^2=5$ 위의 점 $(-1,\\ 1)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "idiff(x**2 + -2*x*y + 2*y**2 - 5, y, x).subs({x: -1, y: 1})",
+      "concepts": [
+        "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요.",
+        "$\\dfrac{d}{dx}y^2=2y\\dfrac{dy}{dx}$",
+        "곱의 미분법: $(xy)'=y+x\\dfrac{dy}{dx}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $x$ 로 미분하기",
+          "body": "$$2x-2\\left(y+x\\frac{dy}{dx}\\right)+4y\\frac{dy}{dx}=0$$"
+        },
+        {
+          "title": "$\\frac{dy}{dx}$ 로 묶기",
+          "body": "$$\\left(-2x+4y\\right)\\frac{dy}{dx}=-\\left(2x-2y\\right)$$"
+        },
+        {
+          "title": "점 $(-1,\\ 1)$ 대입",
+          "body": "$-2x+4y$ 의 값은 $6$, $2x-2y$ 의 값은 $-4$ 예요.\n$$\\frac{dy}{dx}=\\frac{4}{6}=\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "$y$ 를 $x$ 의 식으로 풀지 않아도 기울기를 구할 수 있어요. $y^2$ 을 미분할 때 $\\frac{dy}{dx}$ 를 곱하는 것을 빠뜨리지 마세요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "calc-param-implicit-implicit",
+      "seed": 1013
+    },
+    {
+      "q": "함수 $f(x)=x^3+x+2$ 의 역함수를 $g(x)$ 라 할 때, $g'(12)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/13",
+      "answerType": "fraction",
+      "check": "r = [s for s in solve(Eq(1*x**3 + 1*x + 2, 12), x) if s.is_real][0]\nans = 1/diff(1*x**3 + 1*x + 2, x).subs(x, r)",
+      "concepts": [
+        "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$",
+        "$f'(x)=3x^2+a>0$ 이면 $f$ 는 증가함수라 역함수가 있어요."
+      ],
+      "steps": [
+        {
+          "title": "$f(x)=12$ 인 $x$ 찾기",
+          "body": "작은 정수를 넣어 보면 $f(2)=12$ 예요. $f$ 는 증가함수라 이런 $x$ 는 $2$ 하나뿐이에요. 곧 $g(12)=2$ 예요."
+        },
+        {
+          "title": "$f$ 의 도함수",
+          "body": "$$f'(x)=3x^2+1,\\quad f'(2)=13$$"
+        },
+        {
+          "title": "역수 취하기",
+          "body": "$$g'(12)=\\frac{1}{f'(2)}=\\frac{1}{13}$$"
+        }
+      ],
+      "tip": "$g'(12)=\\frac{1}{f'(12)}$ 로 쓰면 틀려요. $12$ 는 $f$ 의 출력값이라, $f$ 에 넣을 입력값 $2$ 를 먼저 찾아야 해요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "calc-param-implicit-inverse",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "매개변수 $t$ 로 나타낸 곡선 $x=3t-1$, $y=t^2+t$ 에서 $t=2$ 일 때 $\\dfrac{dy}{dx}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/3",
+      "answerType": "fraction",
+      "check": "diff(t**2 + t, t).subs(t, 2)/diff(3*t - 1, t).subs(t, 2)",
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)"
+      ],
+      "steps": [
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=3,\\quad \\frac{dy}{dt}=2t+1$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$t=2$ 이면 $\\frac{dy}{dx}=\\frac{5}{3}$ 이에요."
+        }
+      ],
+      "tip": "$x=3t-1$ 에서 $t=\\frac{x+1}{3}$ 을 $y$ 에 넣어 미분해도 같은 값이 나와요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "매개변수 $t$ 로 나타낸 곡선 $x=t-\\sin t$, $y=1-\\cos t$ 에서 $t=\\frac{\\pi}{2}$ 일 때 $\\dfrac{dy}{dx}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "diff(1 - cos(t), t).subs(t, pi/2)/diff(t - sin(t), t).subs(t, pi/2)",
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)",
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$"
+      ],
+      "steps": [
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=1-\\cos t,\\quad \\frac{dy}{dt}=\\sin t$$"
+        },
+        {
+          "title": "$t=\\frac{\\pi}{2}$ 대입",
+          "body": "$\\frac{dx}{dt}=1-0=1$, $\\frac{dy}{dt}=1$ 이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{dy}{dx}=\\frac11=1$$"
+        }
+      ],
+      "tip": "이 곡선은 굴러가는 바퀴 위의 한 점이 그리는 사이클로이드예요. $t$ 를 지울 수 없어도 매개변수 미분이면 기울기를 구할 수 있어요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "매개변수 $t$ 로 나타낸 곡선 $x=e^{2t}$, $y=e^{3t}$ 에서 $t=\\ln2$ 일 때 $\\dfrac{dy}{dx}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "simplify(diff(exp(3*t), t).subs(t, log(2))/diff(exp(2*t), t).subs(t, log(2)))",
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)",
+        "합성함수의 미분법: $\\{f(g(x))\\}'=f'(g(x))\\,g'(x)$",
+        "$(e^x)'=e^x$, $(\\ln x)'=\\dfrac1x$"
+      ],
+      "steps": [
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=2e^{2t},\\quad \\frac{dy}{dt}=3e^{3t}$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{dy}{dx}=\\frac{3e^{3t}}{2e^{2t}}=\\frac32e^t$$"
+        },
+        {
+          "title": "$t=\\ln2$ 대입",
+          "body": "$e^{\\ln2}=2$ 이므로 $\\frac32\\cdot2=3$ 이에요."
+        }
+      ],
+      "tip": "먼저 약분해 $\\frac32e^t$ 로 만든 뒤 대입하면 계산이 짧아요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "곡선 $x^2-y^2=7$ 위의 점 $(4,\\ 3)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "4/3",
+      "answerType": "fraction",
+      "check": "idiff(x**2 - y**2 - 7, y, x).subs({x: 4, y: 3})",
+      "concepts": [
+        "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "양변을 $x$ 로 미분하기",
+          "body": "$$2x-2y\\frac{dy}{dx}=0$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$\\frac{dy}{dx}=\\frac{x}{y}$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$$\\frac{dy}{dx}=\\frac43$$"
+        }
+      ],
+      "tip": "$y^2$ 을 미분할 때 $\\frac{dy}{dx}$ 를 빠뜨리면 식에서 기울기가 사라져 버려요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "곡선 $y^2=4x$ 위의 점 $(4,\\ 4)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "idiff(y**2 - 4*x, y, x).subs({x: 4, y: 4})",
+      "concepts": [
+        "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "양변을 $x$ 로 미분하기",
+          "body": "$$2y\\frac{dy}{dx}=4$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$\\frac{dy}{dx}=\\frac{2}{y}$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$y=4$ 이므로 $\\frac24=\\frac12$ 예요."
+        }
+      ],
+      "tip": "$y=2\\sqrt x$ 로 풀어 미분해도 $\\frac{1}{\\sqrt x}=\\frac12$ 로 같아요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "곡선 $x^3+y^3=9$ 위의 점 $(1,\\ 2)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "-1/4",
+      "answerType": "fraction",
+      "check": "idiff(x**3 + y**3 - 9, y, x).subs({x: 1, y: 2})",
+      "concepts": [
+        "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요.",
+        "$\\dfrac{d}{dx}\\{y^3\\}=3y^2\\dfrac{dy}{dx}$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $x$ 로 미분하기",
+          "body": "$$3x^2+3y^2\\frac{dy}{dx}=0$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$\\frac{dy}{dx}=-\\frac{x^2}{y^2}$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$$\\frac{dy}{dx}=-\\frac{1}{4}$$"
+        }
+      ],
+      "tip": "$y^3$ 은 $y$ 를 안쪽에 둔 겹친 함수라 $3y^2$ 뒤에 $\\frac{dy}{dx}$ 가 붙어요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "함수 $f(x)=x^3+x$ 의 역함수를 $g(x)$ 라 할 때, $g'(10)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/13",
+      "answerType": "fraction",
+      "check": "r = [s for s in solve(Eq(x**3 + x, 10), x) if s.is_real][0]\nans = 1/diff(x**3 + x, x).subs(x, r)",
+      "concepts": [
+        "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$"
+      ],
+      "steps": [
+        {
+          "title": "$f(a)=10$ 인 $a$ 찾기",
+          "body": "$f(2)=8+2=10$ 이므로 $g(10)=2$ 예요."
+        },
+        {
+          "title": "$f$ 의 미분계수",
+          "body": "$f'(x)=3x^2+1$ 이므로 $f'(2)=13$ 이에요."
+        },
+        {
+          "title": "역수 취하기",
+          "body": "$$g'(10)=\\frac{1}{13}$$"
+        }
+      ],
+      "tip": "$f'(x)=3x^2+1>0$ 이라 $f$ 는 증가함수이고, $f(x)=10$ 인 $x$ 는 $2$ 하나뿐이에요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "함수 $f(x)=e^{2x}+x$ 의 역함수를 $g(x)$ 라 할 때, $g'(1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "check": "r = 0 if (exp(2*x) + x).subs(x, 0) == 1 else None\nans = 1/diff(exp(2*x) + x, x).subs(x, r)",
+      "concepts": [
+        "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$",
+        "합성함수의 미분법: $\\{f(g(x))\\}'=f'(g(x))\\,g'(x)$",
+        "$(e^x)'=e^x$, $(\\ln x)'=\\dfrac1x$"
+      ],
+      "steps": [
+        {
+          "title": "$f(a)=1$ 인 $a$ 찾기",
+          "body": "$f(0)=e^0+0=1$ 이므로 $g(1)=0$ 이에요."
+        },
+        {
+          "title": "$f$ 의 미분계수",
+          "body": "$f'(x)=2e^{2x}+1$ 이므로 $f'(0)=3$ 이에요."
+        },
+        {
+          "title": "역수 취하기",
+          "body": "$$g'(1)=\\frac{1}{3}$$"
+        }
+      ],
+      "tip": "역함수의 식을 구할 수 없어도 미분계수는 구할 수 있어요. $e^0=1$ 처럼 쉬운 점을 먼저 떠올려요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "함수 $f(x)=x^2\\ln x$ 에 대하여 $f''(1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "diff(x**2*log(x), x, 2).subs(x, 1)",
+      "concepts": [
+        "이계도함수: $f''(x)=\\{f'(x)\\}'$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$",
+        "$(e^x)'=e^x$, $(\\ln x)'=\\dfrac1x$"
+      ],
+      "steps": [
+        {
+          "title": "한 번 미분하기",
+          "body": "$$f'(x)=2x\\ln x+x^2\\cdot\\frac1x=2x\\ln x+x$$"
+        },
+        {
+          "title": "한 번 더 미분하기",
+          "body": "$$f''(x)=2\\ln x+2x\\cdot\\frac1x+1=2\\ln x+3$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$\\ln1=0$ 이므로 $f''(1)=3$ 이에요."
+        }
+      ],
+      "tip": "$f'(x)$ 를 $2x\\ln x+x$ 로 정리한 뒤 다시 미분하면 실수가 줄어요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "함수 $f(x)=e^{-x}\\sin x$ 에 대하여 $f''(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "diff(exp(-x)*sin(x), x, 2).subs(x, 0)",
+      "concepts": [
+        "이계도함수: $f''(x)=\\{f'(x)\\}'$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$",
+        "합성함수의 미분법: $\\{f(g(x))\\}'=f'(g(x))\\,g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "한 번 미분하기",
+          "body": "$$f'(x)=-e^{-x}\\sin x+e^{-x}\\cos x=e^{-x}(\\cos x-\\sin x)$$"
+        },
+        {
+          "title": "한 번 더 미분하기",
+          "body": "$$f''(x)=-e^{-x}(\\cos x-\\sin x)+e^{-x}(-\\sin x-\\cos x)=-2e^{-x}\\cos x$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f''(0)=-2\\cdot1\\cdot1=-2$$"
+        }
+      ],
+      "tip": "$e^{-x}$ 를 미분하면 안쪽 미분 $-1$ 이 곱해져 $-e^{-x}$ 가 돼요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "매개변수 $t$ 로 나타낸 곡선 $x=t^2+2t$, $y=t^3+at$ 에서 $t=1$ 일 때 $\\dfrac{dy}{dx}=2$ 예요. 상수 $a$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "5",
+      "answerType": "choice",
+      "check": "solve(Eq((diff(t**3 + a*t, t)/diff(t**2 + 2*t, t)).subs(t, 1), 2), a)[0]",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)"
+      ],
+      "steps": [
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=2t+2,\\quad \\frac{dy}{dt}=3t^2+a$$"
+        },
+        {
+          "title": "$t=1$ 대입",
+          "body": "$\\frac{dx}{dt}=4$, $\\frac{dy}{dt}=3+a$ 예요."
+        },
+        {
+          "title": "방정식 풀기",
+          "body": "$\\frac{3+a}{4}=2$ 이므로 $a=5$, 정답은 ⑤ 예요."
+        }
+      ],
+      "tip": "조건이 기울기 하나면 미지수 하나를 정할 수 있어요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "매개변수 $t$ $(t>0)$ 로 나타낸 곡선 $x=t+\\ln t$, $y=t^3+1$ 위의 $t=1$ 에 대응하는 점에서의 접선의 $y$ 절편을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "m = (diff(t**3 + 1, t)/diff(t + log(t), t)).subs(t, 1)\nx0 = (t + log(t)).subs(t, 1)\ny0 = (t**3 + 1).subs(t, 1)\nans = y0 - m*x0",
+      "concepts": [
+        "$\\dfrac{dy}{dx}=\\dfrac{dy/dt}{dx/dt}$ (단, $\\dfrac{dx}{dt}\\ne0$)",
+        "점 $(a,\\ b)$ 를 지나고 기울기가 $m$ 인 직선: $y=m(x-a)+b$"
+      ],
+      "steps": [
+        {
+          "title": "대응하는 점",
+          "body": "$t=1$ 이면 $x=1+\\ln1=1$, $y=2$ 이므로 점 $(1,\\ 2)$ 예요."
+        },
+        {
+          "title": "각각 $t$ 로 미분하기",
+          "body": "$$\\frac{dx}{dt}=1+\\frac1t,\\quad \\frac{dy}{dt}=3t^2$$"
+        },
+        {
+          "title": "접선의 기울기",
+          "body": "$t=1$ 이면 $\\frac{dy}{dx}=\\frac{3}{2}$ 예요."
+        },
+        {
+          "title": "접선의 방정식",
+          "body": "$$y=\\frac32(x-1)+2=\\frac32x+\\frac12$$"
+        },
+        {
+          "title": "$y$ 절편",
+          "body": "$x=0$ 이면 $y=\\frac12$ 예요."
+        }
+      ],
+      "tip": "매개변수 곡선의 접선도 \"점 하나 + 기울기 하나\"로 세워요. 점은 $t$ 를 $x$, $y$ 식에 넣어 구해요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "곡선 $x^2-xy+y^2=3$ 위의 점 $(-1,\\ 1)$ 에서의 접선과 $x$ 축, $y$ 축으로 둘러싸인 부분의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "m = idiff(x**2 - x*y + y**2 - 3, y, x).subs({x: -1, y: 1})\nb = 1 - m*(-1)\nans = Abs(b)*Abs(b/m)/2",
+      "concepts": [
+        "음함수 미분법: 양변을 $x$ 로 미분하고, $y$ 가 든 항에는 $\\dfrac{dy}{dx}$ 를 곱해요.",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$",
+        "점 $(a,\\ b)$ 를 지나고 기울기가 $m$ 인 직선: $y=m(x-a)+b$"
+      ],
+      "steps": [
+        {
+          "title": "양변을 $x$ 로 미분하기",
+          "body": "$$2x-\\left(y+x\\frac{dy}{dx}\\right)+2y\\frac{dy}{dx}=0$$"
+        },
+        {
+          "title": "$\\frac{dy}{dx}$ 로 묶기",
+          "body": "$$(2y-x)\\frac{dy}{dx}=y-2x$$"
+        },
+        {
+          "title": "접선의 기울기",
+          "body": "$x=-1$, $y=1$ 이면 $3\\frac{dy}{dx}=3$ 이므로 기울기는 $1$ 이에요."
+        },
+        {
+          "title": "접선의 방정식",
+          "body": "$$y=1\\cdot(x+1)+1=x+2$$"
+        },
+        {
+          "title": "넓이",
+          "body": "두 절편이 $(-2,\\ 0)$, $(0,\\ 2)$ 이므로 $\\frac12\\cdot2\\cdot2=2$ 예요."
+        }
+      ],
+      "tip": "$-xy$ 를 미분할 때 곱의 미분법으로 $y$ 와 $x\\frac{dy}{dx}$ 두 항이 생겨요. 앞의 마이너스를 두 항 모두에 붙여야 해요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "함수 $f(x)=x^3+3x+1$ 의 역함수를 $g(x)$ 라 할 때, $\\displaystyle\\lim_{x\\to5}\\frac{g(x)-1}{x-5}$ 의 값은?",
+      "choices": [
+        "$\\frac16$",
+        "$\\frac15$",
+        "$\\frac14$",
+        "$\\frac13$",
+        "$\\frac12$"
+      ],
+      "answer": "1",
+      "answerType": "choice",
+      "check": "r = [s for s in solve(Eq(x**3 + 3*x + 1, 5), x) if s.is_real][0]\nans = 1/diff(x**3 + 3*x + 1, x).subs(x, r)",
+      "choiceChecks": [
+        "Rational(1,6)",
+        "Rational(1,5)",
+        "Rational(1,4)",
+        "Rational(1,3)",
+        "Rational(1,2)"
+      ],
+      "concepts": [
+        "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$",
+        "미분계수의 정의: $g'(a)=\\displaystyle\\lim_{x\\to a}\\frac{g(x)-g(a)}{x-a}$"
+      ],
+      "steps": [
+        {
+          "title": "$g(5)$ 구하기",
+          "body": "$f(1)=1+3+1=5$ 이므로 $g(5)=1$ 이에요."
+        },
+        {
+          "title": "극한을 미분계수로 보기",
+          "body": "주어진 극한은 $\\displaystyle\\lim_{x\\to5}\\frac{g(x)-g(5)}{x-5}=g'(5)$ 예요."
+        },
+        {
+          "title": "역함수의 미분법",
+          "body": "$f'(x)=3x^2+3$ 이므로 $g'(5)=\\frac{1}{f'(1)}=\\frac16$, 정답은 ① 이에요."
+        }
+      ],
+      "tip": "분자의 $1$ 이 $g(5)$ 라는 것을 알아보는 것이 첫걸음이에요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "함수 $f(x)=e^x+x$ 의 역함수를 $g(x)$ 라 하고, $h(x)=xg(x)$ 라 할 때, $h'(1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "r = 0 if (exp(x) + x).subs(x, 0) == 1 else None\ngp = 1/diff(exp(x) + x, x).subs(x, r)\nans = r + 1*gp",
+      "concepts": [
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$",
+        "역함수의 미분법: $b=f(a)$ 이면 $(f^{-1})'(b)=\\dfrac{1}{f'(a)}$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법",
+          "body": "$$h'(x)=g(x)+xg'(x)$$"
+        },
+        {
+          "title": "$g(1)$ 구하기",
+          "body": "$f(0)=1+0=1$ 이므로 $g(1)=0$ 이에요."
+        },
+        {
+          "title": "$g'(1)$ 구하기",
+          "body": "$f'(x)=e^x+1$ 이므로 $g'(1)=\\frac{1}{f'(0)}=\\frac12$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$h'(1)=0+1\\cdot\\frac12=\\frac12$$"
+        }
+      ],
+      "tip": "$g(x)$ 의 식은 구할 수 없지만, $h'(1)$ 에 필요한 $g(1)$, $g'(1)$ 두 값은 구할 수 있어요."
+    }
+  ]
+}
