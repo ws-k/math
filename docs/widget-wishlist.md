@@ -65,3 +65,8 @@
 - spot: ∑ 식 읽기 — math1-sigma
 - 끌어서 짝 맞추기 부품(거꾸로 써서 짝짓기) — math1-arith-geo
 - 목표 없는 탐색 장면(shape·점 끌기)이 한 번 만지면 완료됨 → "60°·90°·120° 모두 보기" 같은 목표 필요 — math1-sine-cosine-law, math1-sigma
+- unitCircle: 360° 넘게·음수로 돌리기(일반각), 시작·끝 안내 문구 칸 — math1-trig-def
+- coord 슬라이더: 주기 읽기 칸 — math1-trig-graph
+- spot: 계승(!)·조합(C)·순열(P) 기호 — h1-counting
+- 검산 주의: sympy 가 2sin²x−sin x−1=0 해를 덜 찾음(치환해서 셀 것) — math1-trig-graph
+- lint 가 content/units JSON 을 검사하지 않는 것으로 보임 — 확인 필요
