@@ -89,3 +89,6 @@
 - spot: 중복조합(H) 기호 — prob-combination-binomial
 - gen-content 시드 배치: 가까운 시드(1000·1008)가 비슷한 문제를 냄 — prob 단원
 - 글 속 숫자 검사가 "고1"·"함정 1"·물건 이름(빨1)까지 셈 — 검사 다듬기
+- coord: 매개변수 곡선 x=f(t), y=g(t) + t 슬라이더, 음함수 곡선(원 전체), sin·√ 곡선 자동 접선 채점 — calc-param-implicit, calc-quotient-chain
+- spot: 극한(lim) 기호, t 로 미분 — calc-trig-limit-diff, calc-param-implicit
+- 기존 생성기 id 접두어 정리(prod-…, ex1-…, ef-…, lg-…, tr-…, complex-…) — 지금은 중복 없음
