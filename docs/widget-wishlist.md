@@ -74,3 +74,13 @@
 - coord 직선 그리기 채점: 정답 여러 개 허용(곡선 밖 점에서 접선 2개) — math2-tangent
 - coord 목표 점 숨기기(기울기 12 되는 곳, 평균값 정리) — math2-diff-polynomial, math2-tangent
 - coord: 조각 함수 곡선(지금은 log(Abs(1-x))-log(1-x) 꼼수), 빈 점(○)·찬 점(●) 표시, 슬라이더 목표 — math2-limit, math2-continuity
+- coord: 구분구적 직사각형 그리기(정적분 도입 핵심, 우선순위 높음), 곡선 아래·두 곡선 사이 칠하기·넓이 읽기, 세로선, 다른 점 따라 움직이는 점, 축 이름 — math2-definite, math2-area-distance
+- spot: 적분 기호(∫) — math2-indefinite
+- 검산 주의: 좌표 과제 칸 검산식은 sympify 라 max() 대신 Max() — math2-area-distance
+- 생성기 풀이: 계수 −1 항에 양수 대입 시 "-1^3" 표기 — math2 적분 단원
+- numberLine: 점 위치를 슬라이더 식으로(시간에 따라 움직이는 점) — math2-velocity
+- coord: 곡선을 구간만 그리기, 교점 개수 표시, 슬라이더 목표("교점 3개", "두 값 같게") — math2-max-min-eq, math2-indefinite
+- simulate: "확률 p 시행 n 번 성공 횟수" 기구, 주머니 여러 번 꺼내기 — prob-binomial
+- 이항분포 막대그래프 + n·p 슬라이더 — prob-binomial
+- numberLine 점 무게(지금 최대 12점) — prob-discrete
+- table: 단위 칸 비우기, 분수 칸 검산(9.0≠9), 칸 직접 입력 — prob-discrete
