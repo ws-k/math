@@ -34,65 +34,87 @@ export function useDrag(ref: RefObject<HTMLElement | SVGElement | null>, h: Drag
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    let drag: { id: number; x: number; y: number; dx: number; dy: number } | null = null;
-    let raf = 0;
-    const down = (e: PointerEvent) => {
-      // 두 번째 손가락·마우스 오른쪽 단추는 무시
-      if (drag || !e.isPrimary || e.button !== 0) return;
-      if (latest.current.pick && !latest.current.pick(e.clientX, e.clientY)) return;
-      e.preventDefault();
-      drag = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, dy: 0 };
-      el.setPointerCapture(e.pointerId);
-      guard(true);
-      latest.current.onStart?.(e.clientX, e.clientY);
-    };
-    const move = (e: PointerEvent) => {
-      if (!drag || e.pointerId !== drag.id) return;
-      drag.dx = e.clientX - drag.x;
-      drag.dy = e.clientY - drag.y;
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        if (drag) latest.current.onMove(drag.dx, drag.dy);
-      });
-    };
-    const end = (cancelled: boolean) => (e: PointerEvent) => {
-      if (!drag || e.pointerId !== drag.id) return;
-      // 뗀 순간 위치까지 반영(마지막 프레임이 아직 안 그려졌을 수 있다). 취소면 마지막으로 본 값.
-      const dx = cancelled ? drag.dx : e.clientX - drag.x;
-      const dy = cancelled ? drag.dy : e.clientY - drag.y;
-      drag = null;
-      cancelAnimationFrame(raf);
-      raf = 0;
-      if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
-      guard(false);
-      latest.current.onEnd(dx, dy, cancelled);
-    };
-    const up = end(false);
-    const cancel = end(true);
-    // touch-action:none 만으로는 부족하다: Chrome 은 SVG 안쪽 요소의 touch-action 을 무시해(실측) 몇 프레임 뒤
-    // pointercancel 을 내고 페이지를 스크롤한다. 끌기가 잡힌 터치는 touchstart·touchmove 를 막아 스크롤을 끈다.
-    // pointerdown 이 touchstart 보다 먼저 오므로 여기서는 drag 가 이미 정해져 있다.
-    const hold = (e: TouchEvent) => {
-      if (drag && (latest.current.holdTouch?.() ?? true) && e.cancelable) e.preventDefault();
-    };
-    el.addEventListener('touchstart', hold as EventListener, { passive: false });
-    el.addEventListener('touchmove', hold as EventListener, { passive: false });
-    el.addEventListener('pointerdown', down as EventListener);
-    el.addEventListener('pointermove', move as EventListener);
-    el.addEventListener('pointerup', up as EventListener);
-    el.addEventListener('pointercancel', cancel as EventListener);
-    el.addEventListener('lostpointercapture', cancel as EventListener);
-    return () => {
-      cancelAnimationFrame(raf);
-      if (drag) guard(false);
-      el.removeEventListener('touchstart', hold as EventListener);
-      el.removeEventListener('touchmove', hold as EventListener);
-      el.removeEventListener('pointerdown', down as EventListener);
-      el.removeEventListener('pointermove', move as EventListener);
-      el.removeEventListener('pointerup', up as EventListener);
-      el.removeEventListener('pointercancel', cancel as EventListener);
-      el.removeEventListener('lostpointercapture', cancel as EventListener);
-    };
+    return attachDrag(el, () => latest.current, guard);
   }, [ref, guard]);
+}
+
+/**
+ * 요소 하나에 끌기를 붙이고, 떼는 함수를 돌려준다(useDrag 의 알맹이 — React 없이 시험하려고 뺐다).
+ * 끄는 도중에 떼어지면(부품이 화면에서 사라짐) 취소로 끝낸다: 잠금(guard)을 풀고 onEnd(…, true)를 부른다 —
+ * 그러지 않으면 '계속하기' 잠금이나 부품의 "끄는 중" 표시가 영영 남는다.
+ */
+export function attachDrag(
+  el: HTMLElement | SVGElement,
+  get: () => DragHandlers,
+  guard: (dragging: boolean) => void,
+  raf0: (cb: FrameRequestCallback) => number = requestAnimationFrame,
+  caf: (id: number) => void = cancelAnimationFrame,
+): () => void {
+  let drag: { id: number; x: number; y: number; dx: number; dy: number } | null = null;
+  let raf = 0;
+  const down = (e: PointerEvent) => {
+    // 두 번째 손가락·마우스 오른쪽 단추는 무시
+    if (drag || !e.isPrimary || e.button !== 0) return;
+    const h = get();
+    if (h.pick && !h.pick(e.clientX, e.clientY)) return;
+    e.preventDefault();
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, dy: 0 };
+    el.setPointerCapture(e.pointerId);
+    guard(true);
+    h.onStart?.(e.clientX, e.clientY);
+  };
+  const move = (e: PointerEvent) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    drag.dx = e.clientX - drag.x;
+    drag.dy = e.clientY - drag.y;
+    if (raf) return;
+    raf = raf0(() => {
+      raf = 0;
+      if (drag) get().onMove(drag.dx, drag.dy);
+    });
+  };
+  const end = (cancelled: boolean) => (e: PointerEvent) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    // 뗀 순간 위치까지 반영(마지막 프레임이 아직 안 그려졌을 수 있다). 취소면 마지막으로 본 값.
+    const dx = cancelled ? drag.dx : e.clientX - drag.x;
+    const dy = cancelled ? drag.dy : e.clientY - drag.y;
+    drag = null;
+    caf(raf);
+    raf = 0;
+    if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+    guard(false);
+    get().onEnd(dx, dy, cancelled);
+  };
+  const up = end(false);
+  const cancel = end(true);
+  // touch-action:none 만으로는 부족하다: Chrome 은 SVG 안쪽 요소의 touch-action 을 무시해(실측) 몇 프레임 뒤
+  // pointercancel 을 내고 페이지를 스크롤한다. 끌기가 잡힌 터치는 touchstart·touchmove 를 막아 스크롤을 끈다.
+  // pointerdown 이 touchstart 보다 먼저 오므로 여기서는 drag 가 이미 정해져 있다.
+  const hold = (e: TouchEvent) => {
+    if (drag && (get().holdTouch?.() ?? true) && e.cancelable) e.preventDefault();
+  };
+  el.addEventListener('touchstart', hold as EventListener, { passive: false });
+  el.addEventListener('touchmove', hold as EventListener, { passive: false });
+  el.addEventListener('pointerdown', down as EventListener);
+  el.addEventListener('pointermove', move as EventListener);
+  el.addEventListener('pointerup', up as EventListener);
+  el.addEventListener('pointercancel', cancel as EventListener);
+  el.addEventListener('lostpointercapture', cancel as EventListener);
+  return () => {
+    el.removeEventListener('touchstart', hold as EventListener);
+    el.removeEventListener('touchmove', hold as EventListener);
+    el.removeEventListener('pointerdown', down as EventListener);
+    el.removeEventListener('pointermove', move as EventListener);
+    el.removeEventListener('pointerup', up as EventListener);
+    el.removeEventListener('pointercancel', cancel as EventListener);
+    el.removeEventListener('lostpointercapture', cancel as EventListener);
+    caf(raf);
+    raf = 0;
+    if (drag) {
+      const { dx, dy } = drag;
+      drag = null;
+      guard(false);
+      get().onEnd(dx, dy, true);
+    }
+  };
 }

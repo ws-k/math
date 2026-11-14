@@ -4,6 +4,7 @@
 // 보일 항과 부호는 layout()(검산과 같은 함수)이 정한다 — 화면이 따로 늘어놓지 않는다.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { crossedSign } from '../drag.ts';
+import { flyFrom } from '../fly.ts';
 import { LRich, reducedMotion, Tex } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
 import type { WidgetProps } from './index.tsx';
@@ -27,19 +28,7 @@ export function TermDrag({ params: p, onDone, onMiss }: WidgetProps<TermDragPara
   flippedRef.current = flipped;
 
   const animateFrom = (first: Rect, arc: boolean) => {
-    const el = chip.current;
-    if (!el || reducedMotion()) return;
-    const last = el.getBoundingClientRect();
-    const dx = first.left - last.left;
-    const dy = first.top - last.top;
-    const frames = arc
-      ? [
-          { transform: `translate(${dx}px,${dy}px)` },
-          { transform: `translate(${dx / 2}px,-34px)`, offset: 0.5 },
-          { transform: 'none' },
-        ]
-      : [{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }];
-    el.animate(frames, { duration: arc ? 560 : 320, easing: 'cubic-bezier(.3,.7,.3,1)' });
+    if (chip.current) flyFrom(chip.current, first, { duration: arc ? 560 : 320, arc });
   };
 
   const toggle = (first: Rect, arc: boolean) => {
