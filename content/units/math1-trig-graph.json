@@ -1,0 +1,1501 @@
+{
+  "id": "math1-trig-graph",
+  "course": "수학Ⅰ",
+  "unit": "삼각함수",
+  "title": "삼각함수의 그래프",
+  "prereq": [
+    "math1-trig-def"
+  ],
+  "suneung": [
+    "공통 8"
+  ],
+  "hours": 4,
+  "formulas": [
+    "$y=a\\sin(bx+c)+d$, $y=a\\cos(bx+c)+d$: 주기 $\\frac{2\\pi}{|b|}$, 최댓값 $|a|+d$, 최솟값 $-|a|+d$",
+    "$y=a\\tan(bx+c)+d$: 주기 $\\frac{\\pi}{|b|}$, 최댓값·최솟값 없음",
+    "$\\sin(\\pi-\\theta)=\\sin\\theta$, $\\cos(\\pi-\\theta)=-\\cos\\theta$, $\\tan(\\pi-\\theta)=-\\tan\\theta$",
+    "$\\sin(\\pi+\\theta)=-\\sin\\theta$, $\\cos(\\pi+\\theta)=-\\cos\\theta$, $\\tan(\\pi+\\theta)=\\tan\\theta$",
+    "$\\sin(-\\theta)=-\\sin\\theta$, $\\cos(-\\theta)=\\cos\\theta$, $\\tan(-\\theta)=-\\tan\\theta$",
+    "$\\sin\\left(\\frac{\\pi}{2}-\\theta\\right)=\\cos\\theta$, $\\cos\\left(\\frac{\\pi}{2}-\\theta\\right)=\\sin\\theta$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "m3": {
+        "value": "3",
+        "check": "maximum(3*sin(2*x), x)"
+      },
+      "max2": {
+        "value": "2",
+        "check": "maximum(2*sin(x/2), x)"
+      },
+      "p4": {
+        "value": "4",
+        "check": "periodicity(2*sin(x/2), x)/pi"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "수학Ⅰ · 삼각함수",
+        "title": "각이 돌면\n높이는 물결이 돼요",
+        "lead": "단위원 위의 점이 돌 때 높이 $\\sin\\theta$ 를 그래프로 펼쳐요. 점을 찍고 곡선을 그어 보고, 물결의 높이와 간격을 슬라이더로 바꿔 봐요.",
+        "meta": [
+          "주기·최댓값·최솟값",
+          "$\\pi\\pm\\theta$ 의 성질",
+          "삼각방정식·부등식"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "각을 계속 돌리면\n$\\sin\\theta$ 는 언제 되풀이될까요?",
+        "lead": "점을 끌어 한 바퀴 돌려 보세요. 오른쪽에 점의 높이가 그래프로 그려져요. $\\sin\\theta$ 의 값이 처음과 똑같은 순서로 다시 나오기 시작하는 간격은 몇 도일까요?",
+        "widget": {
+          "type": "unitCircle",
+          "params": {
+            "unit": "rad",
+            "start": 0,
+            "snap": "special",
+            "show": [
+              "sin"
+            ],
+            "unroll": true
+          }
+        },
+        "format": {
+          "unit": "°"
+        },
+        "choices": [
+          {
+            "value": "90",
+            "check": "deg(pi/2)",
+            "feedback": "$90^\\circ$ 에서는 높이가 가장 높을 뿐, 처음 값 $0$ 으로 돌아온 게 아니에요."
+          },
+          {
+            "value": "180",
+            "check": "deg(pi)",
+            "feedback": "$180^\\circ$ 에서 높이가 다시 $0$ 이 되지만, 그다음은 위가 아니라 아래로 내려가요. 같은 순서로 되풀이되지 않아요."
+          },
+          {
+            "value": "360",
+            "check": "deg(periodicity(sin(x), x))"
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "deg(periodicity(sin(x), x))",
+        "reveal": "**맞아요.** 한 바퀴 $360^\\circ$, 곧 $2\\pi$ 를 돌면 점이 제자리로 와요.",
+        "thoughts": [
+          "각이 $2\\pi$ 늘면 단위원 위의 점은 같은 자리예요.",
+          "그래서 $\\sin(\\theta+2\\pi)=\\sin\\theta$ 이고, 그래프는 $2\\pi$ 마다 같은 모양이 되풀이돼요."
+        ],
+        "conclude": "오늘은 이 ==되풀이 간격==과 ==물결의 높이==를 직접 재 봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "plot",
+        "chip": "손으로 해 보기",
+        "title": "높이를 옮겨\n점을 찍어 보세요",
+        "lead": "가로 한 칸은 $\\frac{\\pi}{6}$, 곧 $30^\\circ$ 예요. 단위원에서 본 높이를 떠올리며 흐린 곡선 $y=\\sin x$ 위의 격자점을 5개 이상 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "connect",
+            "x": {
+              "min": 0,
+              "max": "2*pi",
+              "step": "pi/6"
+            },
+            "y": {
+              "min": -1,
+              "max": 1,
+              "step": "1/2"
+            },
+            "objects": [
+              {
+                "id": "s",
+                "curve": "sin(x)",
+                "label": "$y=\\sin x$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "pointsOn": {
+                "curve": "s",
+                "count": 5
+              }
+            },
+            "intro": "빈 칸을 눌러 점을 찍어요. 찍은 점은 $x$ 순서로 이어져요.",
+            "done": "찍은 점이 모두 $y=\\sin x$ 위에 있어요. $\\frac{\\pi}{6}$ 에서 $\\frac12$, $\\frac{\\pi}{2}$ 에서 가장 높은 $1$ 이에요."
+          }
+        },
+        "after": "$0$ 에서 $2\\pi$ 까지 한 번 올라갔다 한 번 내려오는 ==물결 하나==가 그려져요. 높이는 언제나 $-1$ 과 $1$ 사이예요."
+      },
+      {
+        "kind": "explore",
+        "id": "slider",
+        "chip": "슬라이더로 바꾸기",
+        "title": "물결의 높이와 간격을\n바꿔 보세요",
+        "lead": "진한 곡선이 $y=a\\sin bx$ 예요. $a$ 를 바꾸면 무엇이, $b$ 를 바꾸면 무엇이 바뀌나요? $b=2$ 로 두고 $0$ 부터 $2\\pi$ 사이의 물결 수도 세어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": "2*pi",
+              "step": "pi/6"
+            },
+            "y": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "sliders": [
+              {
+                "id": "a",
+                "min": "1/2",
+                "max": 3,
+                "step": "1/2",
+                "value": 1,
+                "label": "높이 $a$"
+              },
+              {
+                "id": "b",
+                "min": "1/2",
+                "max": 3,
+                "step": "1/2",
+                "value": 1,
+                "label": "촘촘함 $b$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "s",
+                "curve": "sin(x)",
+                "label": "$y=\\sin x$",
+                "tone": "soft"
+              },
+              {
+                "id": "f",
+                "curve": "a*sin(b*x)",
+                "label": "$y=a\\sin bx$"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "f",
+                  "x": "pi/2",
+                  "drag": "x",
+                  "snap": "pi/12"
+                },
+                "name": "Q"
+              },
+              {
+                "readout": "value(a)",
+                "label": "$a$",
+                "digits": 1
+              },
+              {
+                "readout": "value(b)",
+                "label": "$b$",
+                "digits": 1
+              },
+              {
+                "readout": "y(Q)",
+                "label": "Q 의 높이",
+                "digits": 2
+              }
+            ],
+            "intro": "$a$ 와 $b$ 를 하나씩 바꿔 보고, Q 를 끌어 가장 높은 곳을 찾아보세요.",
+            "done": "$a$ 를 키우면 위아래로 늘어나 가장 높은 값이 $a$ 가 되고, $b$ 를 키우면 물결이 촘촘해져요."
+          }
+        },
+        "after": "$b=2$ 이면 $2\\pi$ 안에 물결이 두 개 들어가 물결 하나의 길이가 $\\pi$ 예요. 물결 하나의 길이는 $\\frac{2\\pi}{b}$, 가장 높은 값은 $a$ 예요. $a$ 는 ==높이만==, $b$ 는 ==간격만== 바꿔요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "주기",
+            "body": "같은 모양이 되풀이되는 가장 짧은 간격이에요. $y=\\sin x$, $y=\\cos x$ 는 $2\\pi$, $y=\\tan x$ 는 $\\pi$ 예요."
+          },
+          {
+            "term": "최댓값·최솟값",
+            "body": "$y=a\\sin bx$ 는 $|a|$ 와 $-|a|$ 사이를 오가요. $a$ 가 음수면 위아래가 뒤집힐 뿐 범위는 같아요."
+          },
+          {
+            "term": "$y=a\\sin(bx+c)+d$",
+            "body": "주기 $\\frac{2\\pi}{|b|}$, 최댓값 $|a|+d$, 최솟값 $-|a|+d$ 예요. $c$ 는 좌우로, $d$ 는 위아래로 옮기기만 해요. $\\cos$ 도 같아요."
+          },
+          {
+            "term": "$y=\\tan x$ 의 그래프",
+            "body": "최댓값·최솟값이 없고 $x=\\frac{\\pi}{2}+n\\pi$ 에서 끊겨요(점근선). $y=\\tan bx$ 의 주기는 $\\frac{\\pi}{|b|}$ 예요."
+          }
+        ],
+        "aside": "**확인** · $y=3\\sin 2x$ 는 주기가 $\\frac{2\\pi}{2}=\\pi$, 최댓값이 {{m3}} 이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "sketch",
+        "chip": "곡선 긋기",
+        "title": "주기와 최댓값을 보고\n곡선을 그어 보세요",
+        "lead": "$y=2\\sin\\frac{x}{2}$ 는 $b=\\frac12$ 라 주기가 $\\frac{2\\pi}{1/2}=4\\pi$, 최댓값은 $2$ 예요. '그리기 시작'을 누르고 흐린 안내선을 따라 왼쪽에서 오른쪽으로 한 번에 그어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "sketch",
+            "x": {
+              "min": 0,
+              "max": "4*pi",
+              "step": "pi/2"
+            },
+            "y": {
+              "min": -2,
+              "max": 2,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "s",
+                "curve": "sin(x)",
+                "label": "$y=\\sin x$",
+                "tone": "soft"
+              },
+              {
+                "id": "g",
+                "curve": "2*sin(x/2)",
+                "label": "$y=2\\sin\\frac{x}{2}$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "sketch": {
+                "curve": "g",
+                "tol": "1/2"
+              }
+            },
+            "intro": "곡선을 왼쪽에서 오른쪽으로 그어요.",
+            "done": "$y=\\sin x$ 가 물결 두 개를 그리는 동안 $y=2\\sin\\frac{x}{2}$ 는 높이 {{max2}} 짜리 물결 하나를 그려요. 주기가 ${{p4}}\\pi$ 예요."
+          }
+        }
+      },
+      {
+        "kind": "question",
+        "id": "mirror",
+        "chip": "지름길",
+        "title": "$\\theta$ 와 $\\pi-\\theta$,\n$\\cos$ 값은 어떤 사이일까요?",
+        "lead": "점을 $\\frac{\\pi}{6}$ 에 두고 $\\cos$ 값을 본 뒤, $\\pi-\\frac{\\pi}{6}=\\frac{5\\pi}{6}$ 으로 옮겨 보세요. 두 점은 $y$ 축을 사이에 두고 마주 봐요. $\\cos\\frac{5\\pi}{6}$ 은 $\\cos\\frac{\\pi}{6}$ 의 몇 배일까요?",
+        "gate": true,
+        "widget": {
+          "type": "unitCircle",
+          "params": {
+            "unit": "rad",
+            "start": 30,
+            "snap": "special",
+            "show": [
+              "sin",
+              "cos"
+            ]
+          }
+        },
+        "choices": [
+          {
+            "value": "1",
+            "check": "sin(5*pi/6)/sin(pi/6)",
+            "feedback": "그건 $\\sin$ 이에요. 높이는 같지만 $\\cos$ 은 가로 위치라 $y$ 축 건너편에서는 부호가 바뀌어요."
+          },
+          {
+            "value": "-1",
+            "check": "cos(5*pi/6)/cos(pi/6)"
+          },
+          {
+            "value": "5",
+            "check": "(5*pi/6)/(pi/6)",
+            "feedback": "각이 5 배라고 값이 5 배가 되지는 않아요. $\\cos$ 값은 언제나 $-1$ 과 $1$ 사이예요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "cos(5*pi/6)/cos(pi/6)",
+        "reveal": "**맞아요.** 마주 보는 두 점은 높이가 같고 가로 위치만 반대예요.",
+        "thoughts": [
+          "$\\pi-\\theta$ 의 점은 $\\theta$ 의 점을 $y$ 축에 비춘 자리예요.",
+          "그래서 $\\sin(\\pi-\\theta)=\\sin\\theta$, $\\cos(\\pi-\\theta)=-\\cos\\theta$ 예요.",
+          "$\\pi+\\theta$ 는 원점에 비춘 자리라 $\\sin$, $\\cos$ 모두 부호가 바뀌어요. $\\tan$ 은 그대로예요."
+        ],
+        "conclude": "$\\cos(\\pi-\\theta)=-\\cos\\theta$ 예요. 큰 각은 $\\pi\\pm\\theta$, $2\\pi-\\theta$ 로 나눠 ==예각의 값으로 바꿔요==."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $y=\\sin\\frac{x}{2}$ 의 주기를 $2\\pi\\times\\frac12=\\pi$ 로 잡았어요. 주기라면 $x$ 에 그만큼 더해도 값이 같아야 해요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sin(x/2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sin((x+pi)/2)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "sin((x+4*pi)/2)",
+              "body": "주기는 $2\\pi$ 에 $b$ 를 곱하는 게 아니라 $b$ 로 **나눠요**. $2\\pi\\div\\frac12=4\\pi$ 예요. $b$ 가 작으면 물결이 느슨해져 주기가 길어져요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 각 $x$ 에 대하여 $\\cos(\\pi-x)$ 를 정리했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "cos(pi-x)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "cos(x)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "-cos(x)",
+              "body": "$\\pi-x$ 의 점은 $y$ 축에 비춘 자리라 가로 위치($\\cos$)의 부호가 바뀌어요. 그대로인 것은 $\\sin(\\pi-x)=\\sin x$ 예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "maxmin",
+            "q": "함수 $y=3\\cos\\left(2x-\\frac{\\pi}{3}\\right)+1$ 의 최댓값과 최솟값의 곱을 구하세요.",
+            "hint": "괄호 속은 신경 쓰지 말고 $-1\\le\\cos(\\cdots)\\le1$ 에서 시작해요.",
+            "concepts": [
+              "$y=a\\sin(bx+c)+d$ 의 최댓값은 $|a|+d$, 최솟값은 $-|a|+d$"
+            ],
+            "steps": [
+              {
+                "title": "$\\cos$ 의 범위",
+                "body": "$$-1\\le\\cos\\left(2x-\\frac{\\pi}{3}\\right)\\le1$$"
+              },
+              {
+                "title": "3 곱하기",
+                "body": "$$-3\\le3\\cos\\left(2x-\\frac{\\pi}{3}\\right)\\le3$$"
+              },
+              {
+                "title": "1 더하기",
+                "body": "$$-2\\le y\\le4$$"
+              },
+              {
+                "title": "곱",
+                "body": "$$4\\times(-2)={{answer}}$$"
+              }
+            ],
+            "tip": "$2x-\\frac{\\pi}{3}$ 은 그래프를 좌우로 옮기고 촘촘하게 할 뿐이라 최댓값·최솟값에는 영향이 없어요.",
+            "answer": "-8",
+            "answerType": "int",
+            "check": "maximum(3*cos(2*x - pi/3) + 1, x) * minimum(3*cos(2*x - pi/3) + 1, x)"
+          },
+          {
+            "id": "equation",
+            "q": "$0\\le x<2\\pi$ 에서 방정식 $2\\sin x+\\sqrt3=0$ 의 모든 해의 합이 $k\\pi$ 일 때, $k$ 의 값을 구하세요.",
+            "hint": "$\\sin x=-\\frac{\\sqrt3}{2}$ 예요. 높이가 음수인 사분면을 찾아요.",
+            "concepts": [
+              "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+              "$\\sin$ 은 1·2사분면, $\\cos$ 은 1·4사분면, $\\tan$ 은 1·3사분면에서 양수예요."
+            ],
+            "steps": [
+              {
+                "title": "$\\sin x$ 의 값",
+                "body": "$$\\sin x=-\\frac{\\sqrt3}{2}$$"
+              },
+              {
+                "title": "기준각",
+                "body": "$\\sin\\theta=\\frac{\\sqrt3}{2}$ 인 예각은 $\\theta=\\frac{\\pi}{3}$ 예요."
+              },
+              {
+                "title": "사분면 고르기",
+                "body": "높이가 음수라 제3사분면과 제4사분면이에요.\n$$x=\\pi+\\frac{\\pi}{3}=\\frac{4\\pi}{3},\\quad x=2\\pi-\\frac{\\pi}{3}=\\frac{5\\pi}{3}$$"
+              },
+              {
+                "title": "합",
+                "body": "$$\\frac{4\\pi}{3}+\\frac{5\\pi}{3}=3\\pi$$ 그래서 $k={{answer}}$ 이에요."
+              }
+            ],
+            "tip": "그래프로 보면 $y=\\sin x$ 와 직선 $y=-\\frac{\\sqrt3}{2}$ 가 두 번 만나요. 두 점은 $x=\\frac{3\\pi}{2}$ 를 사이에 두고 마주 봐서 합이 $2\\times\\frac{3\\pi}{2}$ 예요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "sum(solveset(Eq(2*sin(x) + sqrt(3), 0), x, Interval.Ropen(0, 2*pi)))/pi"
+          },
+          {
+            "id": "ineq",
+            "q": "$0\\le x<2\\pi$ 에서 부등식 $\\cos x<\\frac12$ 의 해가 $\\alpha<x<\\beta$ 일 때, $\\beta-\\alpha=k\\pi$ 예요. $k$ 의 값을 구하세요.",
+            "hint": "먼저 $\\cos x=\\frac12$ 인 $x$ 를 찾고, 그래프가 직선 $y=\\frac12$ 보다 아래인 곳을 봐요.",
+            "concepts": [
+              "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+              "부등식은 방정식의 해를 경계로 그래프가 위인지 아래인지 봐요."
+            ],
+            "steps": [
+              {
+                "title": "경계 찾기",
+                "body": "$\\cos x=\\frac12$ 인 $x$ 는 $\\frac{\\pi}{3}$ 과 $2\\pi-\\frac{\\pi}{3}=\\frac{5\\pi}{3}$ 이에요."
+              },
+              {
+                "title": "아래인 곳",
+                "body": "$y=\\cos x$ 는 $x=0$ 에서 $1$ 로 시작해 내려갔다 올라와요. 두 경계 사이에서 $\\frac12$ 보다 작아요.\n$$\\frac{\\pi}{3}<x<\\frac{5\\pi}{3}$$"
+              },
+              {
+                "title": "차",
+                "body": "$$\\frac{5\\pi}{3}-\\frac{\\pi}{3}=\\frac{4\\pi}{3}$$ 그래서 $k=\\frac43$ 이에요."
+              }
+            ],
+            "tip": "방향을 헷갈리면 $x=\\pi$ 처럼 쉬운 값을 넣어 봐요. $\\cos\\pi=-1<\\frac12$ 라 $\\pi$ 가 들어 있는 쪽이 해예요.",
+            "answer": "4/3",
+            "answerType": "fraction",
+            "check": "s = solveset(cos(x) < Rational(1, 2), x, Interval.Ropen(0, 2*pi))\nans = (s.sup - s.inf)/pi"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$y=a\\sin(bx+c)+d$ 는 주기 $\\frac{2\\pi}{|b|}$, 최댓값 $|a|+d$, 최솟값 $-|a|+d$. 주기는 $b$ 로 **나눠요**.",
+          "$y=\\tan(bx+c)$ 는 주기 $\\frac{\\pi}{|b|}$ 이고 최댓값·최솟값이 없어요.",
+          "$\\pi-\\theta$ 는 $y$ 축에, $\\pi+\\theta$ 는 원점에 비춘 자리예요. $\\cos(\\pi-\\theta)=-\\cos\\theta$.",
+          "삼각방정식은 기준각을 찾고 부호로 사분면을 골라요. 수능에서는 8번처럼 $\\pi\\pm\\theta$ 로 값을 바꾸거나 주기·최댓값으로 계수를 정하는 문제로 나와요."
+        ],
+        "done": "삼각함수의 그래프 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "tgr-max-min-period",
+    "tgr-reduce-value",
+    "tgr-eq-sum"
+  ],
+  "problems": [
+    {
+      "q": "함수 $y=-4\\cos\\frac{x}{3}-3$ 의 최솟값을 구하세요.",
+      "choices": null,
+      "answer": "-7",
+      "answerType": "int",
+      "check": "minimum(-4*cos(x/3)+(-3), x)",
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$ 의 최댓값은 $|a|+d$, 최솟값은 $-|a|+d$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos$ 의 범위",
+          "body": "각이 무엇이든 $-1\\le\\cos\\frac{x}{3}\\le1$ 이에요."
+        },
+        {
+          "title": "$-4$ 곱하기",
+          "body": "음수를 곱하면 위아래가 뒤집히지만 범위는 $-4$ 부터 $4$ 까지 그대로예요."
+        },
+        {
+          "title": "$-3$ 더하기",
+          "body": "$$-4-3=-7$$"
+        }
+      ],
+      "tip": "$a$ 가 음수여도 최솟값은 $-|a|+d$ 예요. $x$ 의 계수나 괄호 속 수는 그래프를 좌우로 늘이거나 옮길 뿐 높이와는 상관없어요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "tgr-max-min-period",
+      "seed": 1000
+    },
+    {
+      "q": "$2\\sin\\frac{5\\pi}{6}+3\\cos\\frac{2\\pi}{3}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1/2",
+      "answerType": "fraction",
+      "check": "2*sin(5*pi/6) + 3*cos(2*pi/3)",
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\sin(-\\theta)=-\\sin\\theta$, $\\cos(-\\theta)=\\cos\\theta$, $\\tan(-\\theta)=-\\tan\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 값",
+          "body": "$\\sin(\\pi-\\theta)=\\sin\\theta$.\n$$\\sin\\frac{5\\pi}{6}=\\sin\\left(\\pi-\\frac{\\pi}{6}\\right)=\\sin\\frac{\\pi}{6}=\\frac{1}{2}$$"
+        },
+        {
+          "title": "뒤의 값",
+          "body": "$\\cos(\\pi-\\theta)=-\\cos\\theta$.\n$$\\cos\\frac{2\\pi}{3}=\\cos\\left(\\pi-\\frac{\\pi}{3}\\right)=-\\cos\\frac{\\pi}{3}=-\\frac{1}{2}$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$2\\cdot\\left(\\frac{1}{2}\\right)+3\\cdot\\left(-\\frac{1}{2}\\right)=-\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "각을 예각 $\\theta$ 와 $\\pi$, $2\\pi$ 로 나눠 적고, 부호는 그 각이 있는 사분면에서 정해요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "tgr-reduce-value",
+      "seed": 1001
+    },
+    {
+      "q": "$0\\le x<2\\pi$ 에서 방정식 $2\\cos x=-1$ 의 모든 해의 합이 $p\\pi$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "fraction",
+      "check": "sum(solveset(Eq(2*cos(x), -1), x, Interval.Ropen(0, 2*pi)))/pi",
+      "concepts": [
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+        "$\\sin$ 은 1·2사분면, $\\cos$ 은 1·4사분면, $\\tan$ 은 1·3사분면에서 양수예요."
+      ],
+      "steps": [
+        {
+          "title": "$\\cos x$ 의 값",
+          "body": "$$\\cos x=-\\frac{1}{2}$$"
+        },
+        {
+          "title": "기준각",
+          "body": "$\\cos\\theta=\\frac{1}{2}$ 인 예각은 $\\theta=\\frac{\\pi}{3}$ 예요."
+        },
+        {
+          "title": "사분면 고르기",
+          "body": "값이 음수라 제2사분면과 제3사분면이에요.\n$$x=\\frac{2\\pi}{3},\\ \\frac{4\\pi}{3}$$"
+        },
+        {
+          "title": "합",
+          "body": "$$\\frac{2\\pi}{3}+\\frac{4\\pi}{3}=2\\pi$$\n그래서 $p=2$ 예요."
+        }
+      ],
+      "tip": "단위원에서 같은 높이(또는 같은 가로 위치)의 점은 늘 두 개예요. 하나만 쓰면 해를 빠뜨려요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "tgr-eq-sum",
+      "seed": 1002
+    },
+    {
+      "q": "함수 $y=-\\sin\\frac{x}{3}$ 의 주기가 $p\\pi$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "fraction",
+      "check": "periodicity(-1*sin(x/3)+(0), x)/pi",
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$, $y=a\\cos(bx+c)+d$ 의 주기는 $\\dfrac{2\\pi}{|b|}$"
+      ],
+      "steps": [
+        {
+          "title": "$x$ 의 계수 찾기",
+          "body": "$x$ 앞에 곱해진 수는 $\\frac{1}{3}$ 이에요."
+        },
+        {
+          "title": "주기 공식",
+          "body": "$$\\frac{2\\pi}{\\frac{1}{3}}=6\\pi$$"
+        },
+        {
+          "title": "$p$ 의 값",
+          "body": "$p=6$ 이에요."
+        }
+      ],
+      "tip": "주기는 $x$ 의 계수만 봐요. 앞에 곱한 $-1$은 주기와 상관없어요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "tgr-max-min-period",
+      "seed": 1003
+    },
+    {
+      "q": "$3\\sin\\frac{5\\pi}{6}+3\\cos\\frac{5\\pi}{3}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "fraction",
+      "check": "3*sin(5*pi/6) + 3*cos(5*pi/3)",
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\sin(-\\theta)=-\\sin\\theta$, $\\cos(-\\theta)=\\cos\\theta$, $\\tan(-\\theta)=-\\tan\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 값",
+          "body": "$\\sin(\\pi-\\theta)=\\sin\\theta$.\n$$\\sin\\frac{5\\pi}{6}=\\sin\\left(\\pi-\\frac{\\pi}{6}\\right)=\\sin\\frac{\\pi}{6}=\\frac{1}{2}$$"
+        },
+        {
+          "title": "뒤의 값",
+          "body": "$\\cos(2\\pi-\\theta)=\\cos\\theta$.\n$$\\cos\\frac{5\\pi}{3}=\\cos\\left(2\\pi-\\frac{\\pi}{3}\\right)=\\cos\\frac{\\pi}{3}=\\frac{1}{2}$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$3\\cdot\\left(\\frac{1}{2}\\right)+3\\cdot\\left(\\frac{1}{2}\\right)=3$$"
+        }
+      ],
+      "tip": "각을 예각 $\\theta$ 와 $\\pi$, $2\\pi$ 로 나눠 적고, 부호는 그 각이 있는 사분면에서 정해요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "tgr-reduce-value",
+      "seed": 1004
+    },
+    {
+      "q": "$0\\le x<2\\pi$ 에서 방정식 $2\\cos x+1=0$ 의 가장 큰 해와 가장 작은 해의 차가 $p\\pi$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "s = solveset(Eq(2*cos(x), -1), x, Interval.Ropen(0, 2*pi))\nans = (Max(*s) - Min(*s))/pi",
+      "concepts": [
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+        "$\\sin$ 은 1·2사분면, $\\cos$ 은 1·4사분면, $\\tan$ 은 1·3사분면에서 양수예요."
+      ],
+      "steps": [
+        {
+          "title": "$\\cos x$ 의 값",
+          "body": "$$\\cos x=-\\frac{1}{2}$$"
+        },
+        {
+          "title": "기준각",
+          "body": "$\\cos\\theta=\\frac{1}{2}$ 인 예각은 $\\theta=\\frac{\\pi}{3}$ 예요."
+        },
+        {
+          "title": "사분면 고르기",
+          "body": "값이 음수라 제2사분면과 제3사분면이에요.\n$$x=\\frac{2\\pi}{3},\\ \\frac{4\\pi}{3}$$"
+        },
+        {
+          "title": "차",
+          "body": "$$\\frac{4\\pi}{3}-\\frac{2\\pi}{3}=\\frac{2}{3}\\pi$$\n그래서 $p=\\frac{2}{3}$ 예요."
+        }
+      ],
+      "tip": "단위원에서 같은 높이(또는 같은 가로 위치)의 점은 늘 두 개예요. 하나만 쓰면 해를 빠뜨려요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "tgr-eq-sum",
+      "seed": 1005
+    },
+    {
+      "q": "함수 $y=-\\sin\\frac{x}{3}+3$ 의 주기가 $p\\pi$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "fraction",
+      "check": "periodicity(-1*sin(x/3)+(3), x)/pi",
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$, $y=a\\cos(bx+c)+d$ 의 주기는 $\\dfrac{2\\pi}{|b|}$"
+      ],
+      "steps": [
+        {
+          "title": "$x$ 의 계수 찾기",
+          "body": "$x$ 앞에 곱해진 수는 $\\frac{1}{3}$ 이에요."
+        },
+        {
+          "title": "주기 공식",
+          "body": "$$\\frac{2\\pi}{\\frac{1}{3}}=6\\pi$$"
+        },
+        {
+          "title": "$p$ 의 값",
+          "body": "$p=6$ 이에요."
+        }
+      ],
+      "tip": "주기는 $x$ 의 계수만 봐요. 앞에 곱한 $-1$, 뒤에 더한 $3$은 주기와 상관없어요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "tgr-max-min-period",
+      "seed": 1006
+    },
+    {
+      "q": "$2\\sin\\left(-\\frac{\\pi}{6}\\right)+\\cos\\frac{2\\pi}{3}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3/2",
+      "answerType": "fraction",
+      "check": "2*sin(-1*pi/6) + 1*cos(2*pi/3)",
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\sin(-\\theta)=-\\sin\\theta$, $\\cos(-\\theta)=\\cos\\theta$, $\\tan(-\\theta)=-\\tan\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 값",
+          "body": "$\\sin(-\\theta)=-\\sin\\theta$.\n$$\\sin\\left(-\\frac{\\pi}{6}\\right)=-\\sin\\frac{\\pi}{6}=-\\frac{1}{2}$$"
+        },
+        {
+          "title": "뒤의 값",
+          "body": "$\\cos(\\pi-\\theta)=-\\cos\\theta$.\n$$\\cos\\frac{2\\pi}{3}=\\cos\\left(\\pi-\\frac{\\pi}{3}\\right)=-\\cos\\frac{\\pi}{3}=-\\frac{1}{2}$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$2\\cdot\\left(-\\frac{1}{2}\\right)+\\left(-\\frac{1}{2}\\right)=-\\frac{3}{2}$$"
+        }
+      ],
+      "tip": "각을 예각 $\\theta$ 와 $\\pi$, $2\\pi$ 로 나눠 적고, 부호는 그 각이 있는 사분면에서 정해요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "tgr-reduce-value",
+      "seed": 1007
+    },
+    {
+      "q": "$0\\le x<2\\pi$ 에서 방정식 $\\tan x+1=0$ 의 가장 큰 해와 가장 작은 해의 차가 $p\\pi$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "fraction",
+      "check": "s = solveset(Eq(1*tan(x), -1), x, Interval.Ropen(0, 2*pi))\nans = (Max(*s) - Min(*s))/pi",
+      "concepts": [
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+        "$\\sin$ 은 1·2사분면, $\\cos$ 은 1·4사분면, $\\tan$ 은 1·3사분면에서 양수예요."
+      ],
+      "steps": [
+        {
+          "title": "$\\tan x$ 의 값",
+          "body": "$$\\tan x=-1$$"
+        },
+        {
+          "title": "기준각",
+          "body": "$\\tan\\theta=1$ 인 예각은 $\\theta=\\frac{\\pi}{4}$ 예요."
+        },
+        {
+          "title": "사분면 고르기",
+          "body": "값이 음수라 제2사분면과 제4사분면이에요.\n$$x=\\frac{3\\pi}{4},\\ \\frac{7\\pi}{4}$$"
+        },
+        {
+          "title": "차",
+          "body": "$$\\frac{7\\pi}{4}-\\frac{3\\pi}{4}=\\pi$$\n그래서 $p=1$ 이에요."
+        }
+      ],
+      "tip": "$\\tan$ 은 주기가 $\\pi$ 라 $0\\le x<2\\pi$ 에서 해가 $\\pi$ 간격으로 두 개예요. 하나만 쓰면 해를 빠뜨려요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "tgr-eq-sum",
+      "seed": 1008
+    },
+    {
+      "q": "함수 $y=3\\cos\\left(4x+\\frac{\\pi}{6}\\right)-1$ 의 최솟값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "minimum(3*cos(4*x+(1*pi/6))+(-1), x)",
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$ 의 최댓값은 $|a|+d$, 최솟값은 $-|a|+d$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos$ 의 범위",
+          "body": "각이 무엇이든 $-1\\le\\cos\\left(4x+\\frac{\\pi}{6}\\right)\\le1$ 이에요."
+        },
+        {
+          "title": "$3$ 곱하기",
+          "body": "$3$ 배로 늘리면 $-3$ 부터 $3$ 까지예요."
+        },
+        {
+          "title": "$-1$ 더하기",
+          "body": "$$-3-1=-4$$"
+        }
+      ],
+      "tip": "$a$ 가 음수여도 최솟값은 $-|a|+d$ 예요. $x$ 의 계수나 괄호 속 수는 그래프를 좌우로 늘이거나 옮길 뿐 높이와는 상관없어요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "tgr-max-min-period",
+      "seed": 1009
+    },
+    {
+      "q": "$2\\sin\\frac{11\\pi}{6}+\\tan\\left(-\\frac{\\pi}{4}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "fraction",
+      "check": "2*sin(11*pi/6) + 1*tan(-1*pi/4)",
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\sin(-\\theta)=-\\sin\\theta$, $\\cos(-\\theta)=\\cos\\theta$, $\\tan(-\\theta)=-\\tan\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 값",
+          "body": "$\\sin(2\\pi-\\theta)=-\\sin\\theta$.\n$$\\sin\\frac{11\\pi}{6}=\\sin\\left(2\\pi-\\frac{\\pi}{6}\\right)=-\\sin\\frac{\\pi}{6}=-\\frac{1}{2}$$"
+        },
+        {
+          "title": "뒤의 값",
+          "body": "$\\tan(-\\theta)=-\\tan\\theta$.\n$$\\tan\\left(-\\frac{\\pi}{4}\\right)=-\\tan\\frac{\\pi}{4}=-1$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$2\\cdot\\left(-\\frac{1}{2}\\right)+\\left(-1\\right)=-2$$"
+        }
+      ],
+      "tip": "각을 예각 $\\theta$ 와 $\\pi$, $2\\pi$ 로 나눠 적고, 부호는 그 각이 있는 사분면에서 정해요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "tgr-reduce-value",
+      "seed": 1010
+    },
+    {
+      "q": "$0\\le x<2\\pi$ 에서 방정식 $3\\tan x+\\sqrt{3}=0$ 의 가장 큰 해와 가장 작은 해의 차가 $p\\pi$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "fraction",
+      "check": "s = solveset(Eq(3*tan(x), -sqrt(3)), x, Interval.Ropen(0, 2*pi))\nans = (Max(*s) - Min(*s))/pi",
+      "concepts": [
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+        "$\\sin$ 은 1·2사분면, $\\cos$ 은 1·4사분면, $\\tan$ 은 1·3사분면에서 양수예요."
+      ],
+      "steps": [
+        {
+          "title": "$\\tan x$ 의 값",
+          "body": "$$\\tan x=-\\frac{\\sqrt{3}}{3}$$"
+        },
+        {
+          "title": "기준각",
+          "body": "$\\tan\\theta=\\frac{\\sqrt{3}}{3}$ 인 예각은 $\\theta=\\frac{\\pi}{6}$ 예요."
+        },
+        {
+          "title": "사분면 고르기",
+          "body": "값이 음수라 제2사분면과 제4사분면이에요.\n$$x=\\frac{5\\pi}{6},\\ \\frac{11\\pi}{6}$$"
+        },
+        {
+          "title": "차",
+          "body": "$$\\frac{11\\pi}{6}-\\frac{5\\pi}{6}=\\pi$$\n그래서 $p=1$ 이에요."
+        }
+      ],
+      "tip": "$\\tan$ 은 주기가 $\\pi$ 라 $0\\le x<2\\pi$ 에서 해가 $\\pi$ 간격으로 두 개예요. 하나만 쓰면 해를 빠뜨려요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "tgr-eq-sum",
+      "seed": 1011
+    },
+    {
+      "q": "함수 $y=3\\sin\\frac{x}{2}+2$ 의 최솟값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "minimum(3*sin(x/2)+(2), x)",
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$ 의 최댓값은 $|a|+d$, 최솟값은 $-|a|+d$"
+      ],
+      "steps": [
+        {
+          "title": "$\\sin$ 의 범위",
+          "body": "각이 무엇이든 $-1\\le\\sin\\frac{x}{2}\\le1$ 이에요."
+        },
+        {
+          "title": "$3$ 곱하기",
+          "body": "$3$ 배로 늘리면 $-3$ 부터 $3$ 까지예요."
+        },
+        {
+          "title": "$2$ 더하기",
+          "body": "$$-3+2=-1$$"
+        }
+      ],
+      "tip": "$a$ 가 음수여도 최솟값은 $-|a|+d$ 예요. $x$ 의 계수나 괄호 속 수는 그래프를 좌우로 늘이거나 옮길 뿐 높이와는 상관없어요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "tgr-max-min-period",
+      "seed": 1012
+    },
+    {
+      "q": "$4\\sin\\frac{5\\pi}{6}+\\cos\\frac{7\\pi}{3}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/2",
+      "answerType": "fraction",
+      "check": "4*sin(5*pi/6) + 1*cos(7*pi/3)",
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\sin(-\\theta)=-\\sin\\theta$, $\\cos(-\\theta)=\\cos\\theta$, $\\tan(-\\theta)=-\\tan\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 값",
+          "body": "$\\sin(\\pi-\\theta)=\\sin\\theta$.\n$$\\sin\\frac{5\\pi}{6}=\\sin\\left(\\pi-\\frac{\\pi}{6}\\right)=\\sin\\frac{\\pi}{6}=\\frac{1}{2}$$"
+        },
+        {
+          "title": "뒤의 값",
+          "body": "$2\\pi$ 를 더해도 값이 같아요.\n$$\\cos\\frac{7\\pi}{3}=\\cos\\left(2\\pi+\\frac{\\pi}{3}\\right)=\\cos\\frac{\\pi}{3}=\\frac{1}{2}$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$4\\cdot\\left(\\frac{1}{2}\\right)+\\left(\\frac{1}{2}\\right)=\\frac{5}{2}$$"
+        }
+      ],
+      "tip": "각을 예각 $\\theta$ 와 $\\pi$, $2\\pi$ 로 나눠 적고, 부호는 그 각이 있는 사분면에서 정해요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "tgr-reduce-value",
+      "seed": 1013
+    },
+    {
+      "q": "$0\\le x<2\\pi$ 에서 방정식 $2\\sin x+\\sqrt{3}=0$ 의 가장 큰 해와 가장 작은 해의 차가 $p\\pi$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "check": "s = solveset(Eq(2*sin(x), -sqrt(3)), x, Interval.Ropen(0, 2*pi))\nans = (Max(*s) - Min(*s))/pi",
+      "concepts": [
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+        "$\\sin$ 은 1·2사분면, $\\cos$ 은 1·4사분면, $\\tan$ 은 1·3사분면에서 양수예요."
+      ],
+      "steps": [
+        {
+          "title": "$\\sin x$ 의 값",
+          "body": "$$\\sin x=-\\frac{\\sqrt{3}}{2}$$"
+        },
+        {
+          "title": "기준각",
+          "body": "$\\sin\\theta=\\frac{\\sqrt{3}}{2}$ 인 예각은 $\\theta=\\frac{\\pi}{3}$ 예요."
+        },
+        {
+          "title": "사분면 고르기",
+          "body": "값이 음수라 제3사분면과 제4사분면이에요.\n$$x=\\frac{4\\pi}{3},\\ \\frac{5\\pi}{3}$$"
+        },
+        {
+          "title": "차",
+          "body": "$$\\frac{5\\pi}{3}-\\frac{4\\pi}{3}=\\frac{1}{3}\\pi$$\n그래서 $p=\\frac{1}{3}$ 이에요."
+        }
+      ],
+      "tip": "단위원에서 같은 높이(또는 같은 가로 위치)의 점은 늘 두 개예요. 하나만 쓰면 해를 빠뜨려요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "tgr-eq-sum",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "함수 $y=2\\sin\\left(3x-\\frac{\\pi}{2}\\right)+1$ 의 최댓값을 $M$, 최솟값을 $m$, 주기를 $p\\pi$ 라 할 때, $M+m+p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8/3",
+      "answerType": "fraction",
+      "check": "f = 2*sin(3*x - pi/2) + 1\nans = maximum(f, x) + minimum(f, x) + periodicity(f, x)/pi",
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$ 의 최댓값은 $|a|+d$, 최솟값은 $-|a|+d$",
+        "$y=a\\sin(bx+c)+d$, $y=a\\cos(bx+c)+d$ 의 주기는 $\\dfrac{2\\pi}{|b|}$"
+      ],
+      "steps": [
+        {
+          "title": "최댓값·최솟값",
+          "body": "$-2\\le2\\sin\\left(3x-\\frac{\\pi}{2}\\right)\\le2$ 에 $1$ 을 더하면 $M=3$, $m=-1$ 이에요."
+        },
+        {
+          "title": "주기",
+          "body": "$\\frac{2\\pi}{3}$ 이므로 $p=\\frac23$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$3+(-1)+\\frac23=\\frac83$$"
+        }
+      ],
+      "tip": "괄호 속 $-\\frac{\\pi}{2}$ 는 좌우 이동이라 셋 다와 상관없어요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "함수 $y=a\\cos bx+c$ 의 최댓값이 $5$, 최솟값이 $-1$, 주기가 $\\pi$ 예요. $a>0$, $b>0$ 일 때 $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "sol = solve([Eq(a + c, 5), Eq(-a + c, -1), Eq(2*pi/b, pi)], [a, b, c], dict=True)[0]\nans = sol[a] + sol[b] + sol[c]",
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$ 의 최댓값은 $|a|+d$, 최솟값은 $-|a|+d$",
+        "$y=a\\sin(bx+c)+d$, $y=a\\cos(bx+c)+d$ 의 주기는 $\\dfrac{2\\pi}{|b|}$"
+      ],
+      "steps": [
+        {
+          "title": "최댓값·최솟값으로 식 세우기",
+          "body": "$a>0$ 이라 최댓값 $a+c=5$, 최솟값 $-a+c=-1$ 이에요."
+        },
+        {
+          "title": "$a$, $c$ 구하기",
+          "body": "두 식을 더하면 $2c=4$, $c=2$ 이고 $a=3$ 이에요."
+        },
+        {
+          "title": "주기로 $b$ 구하기",
+          "body": "$\\frac{2\\pi}{b}=\\pi$ 이므로 $b=2$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$3+2+2=7$$"
+        }
+      ],
+      "tip": "최댓값과 최솟값의 평균이 $d$(여기서는 $c$), 차의 절반이 $|a|$ 예요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$\\sin\\frac{5\\pi}{6}+\\cos\\frac{4\\pi}{3}+\\tan\\frac{7\\pi}{4}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "sin(5*pi/6) + cos(4*pi/3) + tan(7*pi/4)",
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\tan(2\\pi-\\theta)=-\\tan\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "첫째 값",
+          "body": "$$\\sin\\frac{5\\pi}{6}=\\sin\\left(\\pi-\\frac{\\pi}{6}\\right)=\\sin\\frac{\\pi}{6}=\\frac12$$"
+        },
+        {
+          "title": "둘째 값",
+          "body": "$$\\cos\\frac{4\\pi}{3}=\\cos\\left(\\pi+\\frac{\\pi}{3}\\right)=-\\cos\\frac{\\pi}{3}=-\\frac12$$"
+        },
+        {
+          "title": "셋째 값",
+          "body": "$$\\tan\\frac{7\\pi}{4}=\\tan\\left(2\\pi-\\frac{\\pi}{4}\\right)=-\\tan\\frac{\\pi}{4}=-1$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac12-\\frac12-1=-1$$"
+        }
+      ],
+      "tip": "부호는 각이 있는 사분면으로 정해요. $\\frac{4\\pi}{3}$ 은 제3사분면이라 $\\cos$ 이 음수예요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\sin\\theta=\\frac13$ 일 때, $\\sin(\\pi-\\theta)+\\sin(\\pi+\\theta)+\\cos\\left(\\frac{\\pi}{2}-\\theta\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "check": "(sin(pi - t) + sin(pi + t) + cos(pi/2 - t)).subs(sin(t), Rational(1, 3))",
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\sin\\left(\\frac{\\pi}{2}\\pm\\theta\\right)=\\cos\\theta$, $\\cos\\left(\\frac{\\pi}{2}\\pm\\theta\\right)=\\mp\\sin\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "하나씩 바꾸기",
+          "body": "$\\sin(\\pi-\\theta)=\\sin\\theta$, $\\sin(\\pi+\\theta)=-\\sin\\theta$, $\\cos\\left(\\frac{\\pi}{2}-\\theta\\right)=\\sin\\theta$ 예요."
+        },
+        {
+          "title": "정리",
+          "body": "$$\\sin\\theta-\\sin\\theta+\\sin\\theta=\\sin\\theta$$"
+        },
+        {
+          "title": "값",
+          "body": "$$\\sin\\theta=\\frac13$$"
+        }
+      ],
+      "tip": "$\\frac{\\pi}{2}-\\theta$ 는 $\\sin$ 과 $\\cos$ 이 서로 바뀌어요. 직각삼각형의 두 예각을 떠올리면 쉬워요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\cos\\theta=-\\frac25$ 일 때, $\\cos(\\pi-\\theta)-\\cos(-\\theta)+\\sin\\left(\\frac{\\pi}{2}+\\theta\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/5",
+      "answerType": "fraction",
+      "check": "(cos(pi - t) - cos(-t) + sin(pi/2 + t)).subs(cos(t), Rational(-2, 5))",
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\sin(-\\theta)=-\\sin\\theta$, $\\cos(-\\theta)=\\cos\\theta$, $\\tan(-\\theta)=-\\tan\\theta$",
+        "$\\sin\\left(\\frac{\\pi}{2}\\pm\\theta\\right)=\\cos\\theta$, $\\cos\\left(\\frac{\\pi}{2}\\pm\\theta\\right)=\\mp\\sin\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "하나씩 바꾸기",
+          "body": "$\\cos(\\pi-\\theta)=-\\cos\\theta$, $\\cos(-\\theta)=\\cos\\theta$, $\\sin\\left(\\frac{\\pi}{2}+\\theta\\right)=\\cos\\theta$ 예요."
+        },
+        {
+          "title": "정리",
+          "body": "$$-\\cos\\theta-\\cos\\theta+\\cos\\theta=-\\cos\\theta$$"
+        },
+        {
+          "title": "값",
+          "body": "$$-\\left(-\\frac25\\right)=\\frac25$$"
+        }
+      ],
+      "tip": "$\\cos$ 은 $y$ 축에 대해 대칭이라 $\\cos(-\\theta)=\\cos\\theta$ 예요. 부호가 바뀌지 않아요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$0\\le x<\\pi$ 에서 방정식 $\\sin 2x=\\frac{\\sqrt3}{2}$ 의 모든 해의 합이 $k\\pi$ 일 때, $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "sum(solveset(Eq(sin(2*x), sqrt(3)/2), x, Interval.Ropen(0, pi)))/pi",
+      "concepts": [
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+        "$2x=t$ 로 놓으면 범위도 두 배가 돼요."
+      ],
+      "steps": [
+        {
+          "title": "치환",
+          "body": "$2x=t$ 로 놓으면 $0\\le t<2\\pi$ 에서 $\\sin t=\\frac{\\sqrt3}{2}$ 이에요."
+        },
+        {
+          "title": "$t$ 구하기",
+          "body": "$$t=\\frac{\\pi}{3},\\ \\frac{2\\pi}{3}$$"
+        },
+        {
+          "title": "$x$ 로 되돌리기",
+          "body": "$$x=\\frac{\\pi}{6},\\ \\frac{\\pi}{3}$$"
+        },
+        {
+          "title": "합",
+          "body": "$$\\frac{\\pi}{6}+\\frac{\\pi}{3}=\\frac{\\pi}{2}$$ 그래서 $k=\\frac12$ 예요."
+        }
+      ],
+      "tip": "범위를 두 배로 늘리지 않으면 $t$ 의 해를 빠뜨리거나 더 넣게 돼요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$0\\le x<2\\pi$ 에서 방정식 $2\\sin^2x-\\sin x-1=0$ 의 서로 다른 실근의 개수를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "roots = solve(2*t**2 - t - 1, t)\nans = sum(len(solveset(Eq(sin(x), r), x, Interval.Ropen(0, 2*pi))) for r in roots if abs(r) <= 1)",
+      "concepts": [
+        "$\\sin x=t$ 로 놓으면 이차방정식이 돼요. 단 $-1\\le t\\le1$.",
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요."
+      ],
+      "steps": [
+        {
+          "title": "치환",
+          "body": "$\\sin x=t$ 로 놓으면 $2t^2-t-1=0$ 이에요."
+        },
+        {
+          "title": "인수분해",
+          "body": "$(2t+1)(t-1)=0$ 이라 $t=-\\frac12$ 또는 $t=1$ 이에요."
+        },
+        {
+          "title": "$\\sin x=1$",
+          "body": "$x=\\frac{\\pi}{2}$ 하나예요."
+        },
+        {
+          "title": "$\\sin x=-\\frac12$",
+          "body": "$x=\\frac{7\\pi}{6},\\ \\frac{11\\pi}{6}$ 두 개예요."
+        },
+        {
+          "title": "개수",
+          "body": "$$1+2=3$$"
+        }
+      ],
+      "tip": "$\\sin x=1$ 은 가장 높은 점이라 해가 하나뿐이에요. 다른 값처럼 두 개로 세면 틀려요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$0\\le x<2\\pi$ 에서 방정식 $2\\cos^2x+3\\sin x-3=0$ 의 모든 해의 합이 $k\\pi$ 일 때, $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "roots = solve(2*(1 - t**2) + 3*t - 3, t)\nans = sum(sum(solveset(Eq(sin(x), r), x, Interval.Ropen(0, 2*pi))) for r in roots if abs(r) <= 1)/pi",
+      "concepts": [
+        "$\\sin^2x+\\cos^2x=1$ 로 한 가지 함수로 맞춰요.",
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요."
+      ],
+      "steps": [
+        {
+          "title": "$\\cos^2x$ 바꾸기",
+          "body": "$\\cos^2x=1-\\sin^2x$ 를 넣으면 $2-2\\sin^2x+3\\sin x-3=0$ 이에요."
+        },
+        {
+          "title": "정리",
+          "body": "$2\\sin^2x-3\\sin x+1=0$, 곧 $(2\\sin x-1)(\\sin x-1)=0$ 이에요."
+        },
+        {
+          "title": "해",
+          "body": "$\\sin x=\\frac12$ 에서 $\\frac{\\pi}{6},\\ \\frac{5\\pi}{6}$, $\\sin x=1$ 에서 $\\frac{\\pi}{2}$ 예요."
+        },
+        {
+          "title": "합",
+          "body": "$$\\frac{\\pi}{6}+\\frac{5\\pi}{6}+\\frac{\\pi}{2}=\\frac{3\\pi}{2}$$ 그래서 $k=\\frac32$ 예요."
+        }
+      ],
+      "tip": "$\\sin$ 과 $\\cos$ 이 섞이면 $\\sin^2x+\\cos^2x=1$ 로 하나로 모아요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$0\\le x<2\\pi$ 에서 부등식 $2\\sin x+1<0$ 의 해가 $\\alpha<x<\\beta$ 일 때, $\\beta-\\alpha=k\\pi$ 예요. $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "s = solveset(2*sin(x) + 1 < 0, x, Interval.Ropen(0, 2*pi))\nans = (s.sup - s.inf)/pi",
+      "concepts": [
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요.",
+        "부등식은 방정식의 해를 경계로 그래프가 위인지 아래인지 봐요."
+      ],
+      "steps": [
+        {
+          "title": "정리",
+          "body": "$$\\sin x<-\\frac12$$"
+        },
+        {
+          "title": "경계",
+          "body": "$\\sin x=-\\frac12$ 인 $x$ 는 $\\frac{7\\pi}{6}$, $\\frac{11\\pi}{6}$ 이에요."
+        },
+        {
+          "title": "아래인 곳",
+          "body": "그래프가 $y=-\\frac12$ 보다 아래인 곳은 두 경계 사이예요.\n$$\\frac{7\\pi}{6}<x<\\frac{11\\pi}{6}$$"
+        },
+        {
+          "title": "차",
+          "body": "$$\\frac{11\\pi}{6}-\\frac{7\\pi}{6}=\\frac{2\\pi}{3}$$ 그래서 $k=\\frac23$ 이에요."
+        }
+      ],
+      "tip": "$x=\\frac{3\\pi}{2}$ 를 넣으면 $\\sin x=-1<-\\frac12$ 라 해 안에 있어요. 방향을 이렇게 확인해요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "함수 $f(x)=3\\tan\\left(2x+\\frac{\\pi}{4}\\right)-1$ 의 주기를 $p\\pi$, $f(0)$ 을 $q$ 라 할 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/2",
+      "answerType": "fraction",
+      "check": "f = 3*tan(2*x + pi/4) - 1\nans = periodicity(f, x)/pi + f.subs(x, 0)",
+      "concepts": [
+        "$y=a\\tan(bx+c)+d$ 의 주기는 $\\dfrac{\\pi}{|b|}$"
+      ],
+      "steps": [
+        {
+          "title": "주기",
+          "body": "$\\tan$ 은 $\\pi$ 를 $|b|$ 로 나눠요. $\\frac{\\pi}{2}$ 라 $p=\\frac12$ 예요."
+        },
+        {
+          "title": "$f(0)$",
+          "body": "$$3\\tan\\frac{\\pi}{4}-1=3-1=2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac12+2=\\frac52$$"
+        }
+      ],
+      "tip": "$\\tan$ 의 주기를 $\\frac{2\\pi}{|b|}$ 로 계산하면 $p=1$ 이 되어 틀려요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "$\\cos(\\pi+\\theta)=\\frac{2\\sqrt2}{3}$ 이고 $\\sin\\theta>0$ 일 때, $\\tan\\theta$ 의 값은?",
+      "choices": [
+        "$-\\frac{\\sqrt2}{2}$",
+        "$-\\frac{\\sqrt2}{4}$",
+        "$\\frac{\\sqrt2}{8}$",
+        "$\\frac{\\sqrt2}{4}$",
+        "$\\frac{\\sqrt2}{2}$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "cc = -2*sqrt(2)/3\nss = sqrt(1 - cc**2)\nans = ss/cc",
+      "choiceChecks": [
+        "-sqrt(2)/2",
+        "-sqrt(2)/4",
+        "sqrt(2)/8",
+        "sqrt(2)/4",
+        "sqrt(2)/2"
+      ],
+      "concepts": [
+        "$\\sin(\\pi\\pm\\theta)=\\mp\\sin\\theta$, $\\cos(\\pi\\pm\\theta)=-\\cos\\theta$, $\\tan(\\pi\\pm\\theta)=\\pm\\tan\\theta$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$, $\\tan\\theta=\\dfrac{\\sin\\theta}{\\cos\\theta}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\theta$ 구하기",
+          "body": "$\\cos(\\pi+\\theta)=-\\cos\\theta$ 이므로 $\\cos\\theta=-\\frac{2\\sqrt2}{3}$ 이에요."
+        },
+        {
+          "title": "$\\sin\\theta$ 구하기",
+          "body": "$\\sin^2\\theta=1-\\frac89=\\frac19$ 이고 $\\sin\\theta>0$ 이라 $\\sin\\theta=\\frac13$ 이에요."
+        },
+        {
+          "title": "$\\tan\\theta$",
+          "body": "$$\\tan\\theta=\\frac{1/3}{-2\\sqrt2/3}=-\\frac{1}{2\\sqrt2}=-\\frac{\\sqrt2}{4}$$"
+        }
+      ],
+      "tip": "$\\cos(\\pi+\\theta)$ 를 그대로 $\\cos\\theta$ 로 쓰면 부호가 반대인 $\\frac{\\sqrt2}{4}$ 를 고르게 돼요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "함수 $f(x)=a\\sin bx+c$ ($a>0$, $b>0$) 의 최댓값이 $4$, 주기가 $\\frac{2\\pi}{3}$ 이고 $f\\left(\\frac{\\pi}{2}\\right)=-1$ 일 때, $a+b+c$ 의 값은?",
+      "choices": [
+        "$5$",
+        "$6$",
+        "$7$",
+        "$8$",
+        "$9$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "bb = solve(Eq(2*pi/b, 2*pi/3), b)[0]\nsol = solve([Eq(a + c, 4), Eq(a*sin(bb*pi/2) + c, -1)], [a, c], dict=True)[0]\nans = sol[a] + bb + sol[c]",
+      "choiceChecks": [
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$ 의 최댓값은 $|a|+d$, 최솟값은 $-|a|+d$",
+        "$y=a\\sin(bx+c)+d$, $y=a\\cos(bx+c)+d$ 의 주기는 $\\dfrac{2\\pi}{|b|}$"
+      ],
+      "steps": [
+        {
+          "title": "주기로 $b$",
+          "body": "$\\frac{2\\pi}{b}=\\frac{2\\pi}{3}$ 이므로 $b=3$ 이에요."
+        },
+        {
+          "title": "함숫값",
+          "body": "$f\\left(\\frac{\\pi}{2}\\right)=a\\sin\\frac{3\\pi}{2}+c=-a+c=-1$ 이에요."
+        },
+        {
+          "title": "최댓값",
+          "body": "$a>0$ 이라 $a+c=4$ 예요."
+        },
+        {
+          "title": "연립",
+          "body": "두 식을 더하면 $2c=3$, $c=\\frac32$, $a=\\frac52$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac52+3+\\frac32=7$$"
+        }
+      ],
+      "tip": "$\\sin\\frac{3\\pi}{2}=-1$ 이라 $f\\left(\\frac{\\pi}{2}\\right)$ 가 바로 최솟값이에요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "$0\\le x<4\\pi$ 에서 방정식 $\\sin x=\\frac13$ 의 모든 해의 합은?",
+      "choices": [
+        "$2\\pi$",
+        "$4\\pi$",
+        "$5\\pi$",
+        "$6\\pi$",
+        "$8\\pi$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "sum(solveset(Eq(sin(x), Rational(1, 3)), x, Interval.Ropen(0, 4*pi)))",
+      "choiceChecks": [
+        "2*pi",
+        "4*pi",
+        "5*pi",
+        "6*pi",
+        "8*pi"
+      ],
+      "concepts": [
+        "$\\sin(\\pi-\\theta)=\\sin\\theta$",
+        "$y=\\sin x$ 의 주기는 $2\\pi$"
+      ],
+      "steps": [
+        {
+          "title": "한 해를 $\\alpha$ 로",
+          "body": "$0<\\alpha<\\frac{\\pi}{2}$ 인 해를 $\\alpha$ 라 하면 $\\sin(\\pi-\\alpha)=\\sin\\alpha$ 라 $\\pi-\\alpha$ 도 해예요."
+        },
+        {
+          "title": "주기만큼 더 가기",
+          "body": "$2\\pi$ 마다 되풀이되니 $2\\pi+\\alpha$, $3\\pi-\\alpha$ 도 해예요."
+        },
+        {
+          "title": "합",
+          "body": "$$\\alpha+(\\pi-\\alpha)+(2\\pi+\\alpha)+(3\\pi-\\alpha)=6\\pi$$"
+        }
+      ],
+      "tip": "$\\alpha$ 의 값은 몰라도 돼요. 마주 보는 두 해의 합이 늘 정해져 있어요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "$0\\le x\\le2\\pi$ 에서 곡선 $y=2\\cos 2x$ 와 직선 $y=1$ 이 만나는 점의 개수는?",
+      "choices": [
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$",
+        "$6$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "len(solveset(Eq(2*cos(2*x), 1), x, Interval(0, 2*pi)))",
+      "choiceChecks": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "concepts": [
+        "$y=a\\sin(bx+c)+d$, $y=a\\cos(bx+c)+d$ 의 주기는 $\\dfrac{2\\pi}{|b|}$",
+        "기준각(예각)을 먼저 찾고, 값의 부호로 사분면을 골라요."
+      ],
+      "steps": [
+        {
+          "title": "주기",
+          "body": "$y=2\\cos2x$ 의 주기는 $\\pi$ 라 $0$ 부터 $2\\pi$ 까지 물결이 두 개예요."
+        },
+        {
+          "title": "한 물결에서",
+          "body": "$\\cos t=\\frac12$ 는 한 주기에 해가 두 개라, 물결 하나에서 두 번 만나요."
+        },
+        {
+          "title": "직접 구하기",
+          "body": "$2x=\\frac{\\pi}{3},\\ \\frac{5\\pi}{3},\\ \\frac{7\\pi}{3},\\ \\frac{11\\pi}{3}$ 이라 $x=\\frac{\\pi}{6},\\ \\frac{5\\pi}{6},\\ \\frac{7\\pi}{6},\\ \\frac{11\\pi}{6}$ 이에요."
+        },
+        {
+          "title": "개수",
+          "body": "모두 4 개예요."
+        }
+      ],
+      "tip": "$2x$ 의 범위가 $0$ 부터 $4\\pi$ 로 두 배가 된다는 걸 놓치면 2 개로 세요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "$0\\le x<2\\pi$ 에서 부등식 $2\\cos^2x-\\sin x-1>0$ 을 만족시키는 $x$ 의 범위의 길이의 합은?",
+      "choices": [
+        "$\\pi$",
+        "$\\frac{7\\pi}{6}$",
+        "$\\frac{4\\pi}{3}$",
+        "$\\frac{3\\pi}{2}$",
+        "$\\frac{5\\pi}{3}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "s = solveset(2*cos(x)**2 - sin(x) - 1 > 0, x, Interval.Ropen(0, 2*pi))\nans = s.measure",
+      "choiceChecks": [
+        "pi",
+        "7*pi/6",
+        "4*pi/3",
+        "3*pi/2",
+        "5*pi/3"
+      ],
+      "concepts": [
+        "$\\sin^2x+\\cos^2x=1$",
+        "부등식은 방정식의 해를 경계로 그래프가 위인지 아래인지 봐요."
+      ],
+      "steps": [
+        {
+          "title": "$\\sin$ 으로 모으기",
+          "body": "$2(1-\\sin^2x)-\\sin x-1>0$ 이므로 $2\\sin^2x+\\sin x-1<0$ 이에요."
+        },
+        {
+          "title": "인수분해",
+          "body": "$(2\\sin x-1)(\\sin x+1)<0$ 이라 $-1<\\sin x<\\frac12$ 예요."
+        },
+        {
+          "title": "$\\sin x<\\frac12$",
+          "body": "$0\\le x<\\frac{\\pi}{6}$ 또는 $\\frac{5\\pi}{6}<x<2\\pi$ 예요."
+        },
+        {
+          "title": "$\\sin x\\ne-1$ 빼기",
+          "body": "$x=\\frac{3\\pi}{2}$ 한 점만 빠지니 길이는 그대로예요."
+        },
+        {
+          "title": "길이의 합",
+          "body": "$$\\frac{\\pi}{6}+\\left(2\\pi-\\frac{5\\pi}{6}\\right)=\\frac{\\pi}{6}+\\frac{7\\pi}{6}=\\frac{4\\pi}{3}$$"
+        }
+      ],
+      "tip": "$-1<\\sin x$ 는 $\\sin x=-1$ 인 한 점만 빼요. 길이에는 영향이 없지만 범위를 적을 때는 꼭 빼야 해요."
+    }
+  ]
+}

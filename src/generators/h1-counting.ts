@@ -5,6 +5,8 @@ const UNIT = 'h1-counting';
 
 // 검산식은 itertools 로 경우를 모두 늘어놓아 센다. 풀이는 공식(nPr·nCr·곱의 법칙)으로 쓰므로,
 // 공식을 잘못 고른 문제(순서가 있는데 조합으로 셈 등)는 늘어놓은 수와 어긋나 검산에서 잡힌다.
+// id 는 모두 'cnt-' 로 시작한다. 생성기 id 는 앱 전체에서 하나뿐이어야 하는데, perm-·comb- 같은 흔한 이름은
+// 확률과 통계의 순열·조합 단원과 겹치기 쉽다(고1 이차방정식 생성기가 중3 것과 겹친 사고가 있었다).
 
 const PRODUCT = '곱의 법칙: 두 일이 잇따라 일어나면 각 경우의 수를 곱해요.';
 const SUM = '합의 법칙: 두 일이 동시에 일어나지 않으면 각 경우의 수를 더해요.';
@@ -25,7 +27,7 @@ const SEATS: Record<number, string> = { 2: '1등과 2등', 3: '1등, 2등, 3등'
 
 export const generators: Generator[] = [
   {
-    id: 'count-sum-product',
+    id: 'cnt-sum-product',
     unitId: UNIT,
     title: '합의 법칙과 곱의 법칙',
     make(rng) {
@@ -71,7 +73,7 @@ export const generators: Generator[] = [
     },
   },
   {
-    id: 'perm-rank',
+    id: 'cnt-perm-rank',
     unitId: UNIT,
     title: '순열의 수',
     make(rng) {
@@ -101,7 +103,7 @@ export const generators: Generator[] = [
     },
   },
   {
-    id: 'comb-choose',
+    id: 'cnt-comb-choose',
     unitId: UNIT,
     title: '조합의 수',
     make(rng) {
@@ -134,7 +136,7 @@ export const generators: Generator[] = [
     },
   },
   {
-    id: 'perm-adjacent',
+    id: 'cnt-perm-adjacent',
     unitId: UNIT,
     title: '이웃하게 줄 세우기',
     make(rng) {
@@ -160,7 +162,7 @@ export const generators: Generator[] = [
     },
   },
   {
-    id: 'comb-symmetry',
+    id: 'cnt-comb-symmetry',
     unitId: UNIT,
     title: '조합의 성질',
     make(rng) {
