@@ -105,3 +105,5 @@
 - coord: 거리 읽기 dist(P,F)·점과 직선 거리(이차곡선 정의를 coord 하나로) — geo-parabola, geo-ellipse, geo-hyperbola
 - shape: 곡선 그리기, 칸 밖 점(곡선 위 점), 두 길이 합·차 표시, 목표("합이 10 인 점"), 점 이름 F′ 등, 따라오는 수선의 발 — geo 이차곡선
 - 검산 주의: (-3+3)/2 는 파이썬 실수 0.0 → Rational 사용 — geo 단원
+- coord: 화살표(벡터)·선분 객체(지금은 Abs(sqrt(u))-sqrt(u) 꼼수, 세로 벡터 불가), 끄는 점 따라오는 선분, xy 둘 다 보는 점 목표, 내적 읽기 dot(P,Q) — geo-vector-ops, geo-vector-dot, geo-conic-tangent
+- unitCircle 각 범위 제한(0°~180°) — geo-vector-dot
