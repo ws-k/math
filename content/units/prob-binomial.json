@@ -1,0 +1,1377 @@
+{
+  "id": "prob-binomial",
+  "course": "확률과 통계",
+  "unit": "통계",
+  "title": "이항분포",
+  "prereq": [
+    "prob-discrete"
+  ],
+  "suneung": [
+    "확통 29"
+  ],
+  "hours": 2.5,
+  "formulas": [
+    "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+    "$E(X)=np$",
+    "$V(X)=np(1-p)$",
+    "$\\sigma(X)=\\sqrt{np(1-p)}$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "c32": {
+        "value": "3",
+        "check": "binomial(3, 2)"
+      },
+      "leaf": {
+        "value": "1/8",
+        "check": "Rational(1, 2)**3"
+      },
+      "p3": {
+        "value": "3/8",
+        "check": "binomial(3, 2)*Rational(1, 2)**3"
+      },
+      "pred": {
+        "value": "1/3",
+        "check": "Rational(1, 1 + 2)"
+      },
+      "bag2": {
+        "value": "2/9",
+        "check": "binomial(3, 2)*Rational(1, 3)**2*Rational(2, 3)"
+      },
+      "e4": {
+        "value": "2",
+        "check": "sum(k*binomial(4, k)*Rational(1, 2)**4 for k in range(5))"
+      },
+      "np4": {
+        "value": "2",
+        "check": "4*Rational(1, 2)"
+      },
+      "e3": {
+        "value": "1",
+        "check": "sum(k*binomial(3, k)*Rational(1, 3)**k*Rational(2, 3)**(3 - k) for k in range(4))"
+      },
+      "v4": {
+        "value": "1",
+        "check": "4*Rational(1, 2)*(1 - Rational(1, 2))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "확률과 통계 · 확률분포",
+        "title": "같은 시행을 여러 번,\n성공 횟수의 분포",
+        "lead": "동전을 여러 번 던지거나 공을 꺼냈다 다시 넣을 때, 원하는 결과가 몇 번 나올지를 확률로 다뤄요. 수형도를 펼치고 직접 던져 보면서 공식을 만들어요.",
+        "meta": [
+          "독립시행의 확률",
+          "이항분포 $\\mathrm{B}(n,\\ p)$",
+          "평균 $np$ · 분산 $np(1-p)$"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "동전을 3번 던질 때\n앞면이 딱 2번 나올 확률은?",
+        "lead": "수형도를 한 단계씩 펼쳐서 끝 가지를 보세요. 앞면이 2번인 가지는 몇 개일까요?",
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "tree",
+            "items": [
+              "앞",
+              "뒤"
+            ],
+            "k": 3,
+            "repeat": true
+          }
+        },
+        "choices": [
+          {
+            "value": "3/8",
+            "check": "binomial(3, 2)*Rational(1, 2)**3"
+          },
+          {
+            "value": "1/8",
+            "check": "Rational(1, 2)**3",
+            "feedback": "앞·앞·뒤 한 가지 순서만 셌어요. 앞·뒤·앞, 뒤·앞·앞도 앞면이 2번이에요."
+          },
+          {
+            "value": "1/4",
+            "check": "Rational(1, 3 + 1)",
+            "feedback": "앞면 수 0, 1, 2, 3 네 가지가 똑같이 나온다고 봤어요. 네 가지는 해당하는 가지 수가 서로 달라요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "binomial(3, 2)*Rational(1, 2)**3",
+        "reveal": "**맞아요.** 끝 가지 8개 중 앞면이 2번인 가지가 {{c32}}개예요.",
+        "thoughts": [
+          "가지 하나의 확률은 $\\frac{1}{2}\\times\\frac{1}{2}\\times\\frac{1}{2}={{leaf}}$ 로 모두 같아요.",
+          "세 번 중 앞면이 나올 두 자리를 고르는 수가 ${}_3\\mathrm{C}_2={{c32}}$ 이에요."
+        ],
+        "conclude": "그래서 ${{c32}}\\times{{leaf}}={{p3}}$. ==자리 고르는 수 × 한 가지 순서의 확률==이에요."
+      },
+      {
+        "kind": "question",
+        "id": "bag",
+        "chip": "손으로 해 보기",
+        "title": "확률이 반반이 아니면\n어떻게 될까요?",
+        "lead": "빨간 공 1개, 파란 공 2개가 든 주머니예요. 먼저 한 번 꺼낼 때 빨강이 얼마나 나오는지 직접 꺼내 보세요. 꺼낸 공은 다시 넣고 3번 꺼낼 때, 빨강이 정확히 2번 나올 확률은 얼마일까요?",
+        "widget": {
+          "type": "simulate",
+          "params": {
+            "device": "bag",
+            "bag": [
+              {
+                "label": "빨강",
+                "count": 1
+              },
+              {
+                "label": "파랑",
+                "count": 2
+              }
+            ],
+            "seed": 13,
+            "goal": 100
+          }
+        },
+        "choices": [
+          {
+            "value": "2/27",
+            "check": "Rational(1, 3)**2*Rational(2, 3)",
+            "feedback": "빨강·빨강·파랑 한 가지 순서만 계산했어요. 빨강이 나올 두 자리를 고르는 수를 곱해야 해요."
+          },
+          {
+            "value": "2/9",
+            "check": "binomial(3, 2)*Rational(1, 3)**2*Rational(2, 3)"
+          },
+          {
+            "value": "3/8",
+            "check": "binomial(3, 2)*Rational(1, 2)**3",
+            "feedback": "동전처럼 반반으로 계산했어요. 실험에서 본 것처럼 빨강은 한 번에 {{pred}} 정도만 나와요."
+          },
+          {
+            "value": "1/3",
+            "check": "binomial(3, 2)*Rational(1, 3)**2",
+            "feedback": "남은 한 번이 파랑일 확률 $\\frac{2}{3}$ 을 곱하지 않았어요. 실패도 확률이 있어요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "binomial(3, 2)*Rational(1, 3)**2*Rational(2, 3)",
+        "reveal": "**맞아요.** {{bag2}} 예요.",
+        "thoughts": [
+          "꺼낸 공을 다시 넣으니 매번 빨강일 확률은 {{pred}}, 파랑일 확률은 $1-\\frac{1}{3}=\\frac{2}{3}$ 으로 그대로예요.",
+          "빨강·빨강·파랑 한 순서의 확률은 $\\left(\\frac{1}{3}\\right)^2\\times\\frac{2}{3}$ 이에요.",
+          "빨강이 나올 자리를 고르는 수 ${}_3\\mathrm{C}_2={{c32}}$ 을 곱해요."
+        ],
+        "conclude": "동전과 같은 틀이에요. 바뀐 건 한 번의 확률뿐이에요: ${}_3\\mathrm{C}_2\\left(\\frac{1}{3}\\right)^2\\left(\\frac{2}{3}\\right)^1$."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 만든 계산에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "독립시행",
+            "body": "같은 시행을 되풀이할 때 매번의 결과가 서로 영향을 주지 않는 것이에요. 동전 던지기, 꺼낸 공을 다시 넣고 꺼내기가 그래요."
+          },
+          {
+            "term": "독립시행의 확률",
+            "body": "한 번에 일어날 확률이 $p$ 인 시행을 $n$ 번 할 때 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$ 이에요. **자리 고르는 수 × 한 순서의 확률**이에요."
+          },
+          {
+            "term": "이항분포 $\\mathrm{B}(n,\\ p)$",
+            "body": "그 횟수 $X$ 의 확률분포예요. $X$ 는 $0$ 부터 $n$ 까지의 값을 가지고, $\\mathrm{B}$ 는 이항(binomial)의 첫 글자예요."
+          }
+        ],
+        "aside": "**왜 '이항'일까요** · $q=1-p$ 라 하면 $(p+q)^n$ 을 이항정리로 전개한 항 하나하나가 $P(X=r)$ 이에요. 그래서 확률을 모두 더하면 $(p+q)^n=1$ 이에요."
+      },
+      {
+        "kind": "question",
+        "id": "mean",
+        "chip": "두 번째 해 보기",
+        "title": "동전 4개를 던지면\n앞면은 평균 몇 개?",
+        "lead": "동전 4개를 한꺼번에 던져 앞면의 개수 $X$ 를 세요. 100번쯤 던져 막대 모양을 보세요. $X$ 는 $\\mathrm{B}\\left(4,\\ \\frac{1}{2}\\right)$ 를 따라요. 기댓값 $E(X)$ 는 얼마일까요?",
+        "widget": {
+          "type": "simulate",
+          "params": {
+            "device": "coin",
+            "n": 4,
+            "seed": 21,
+            "goal": 100
+          }
+        },
+        "choices": [
+          {
+            "value": "3/8",
+            "check": "binomial(4, 2)*Rational(1, 2)**4",
+            "feedback": "가장 높은 막대, 즉 $P(X=2)$ 예요. 물은 것은 $X$ 의 평균이에요."
+          },
+          {
+            "value": "1/2",
+            "check": "Rational(4, 2)/4",
+            "feedback": "동전 하나가 앞면일 확률이에요. 동전이 4개라 평균은 그 4배예요."
+          },
+          {
+            "value": "2",
+            "check": "sum(k*binomial(4, k)*Rational(1, 2)**4 for k in range(5))"
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "sum(k*binomial(4, k)*Rational(1, 2)**4 for k in range(5))",
+        "reveal": "**맞아요.** 막대는 가운데를 기준으로 좌우가 똑같아서 균형점이 {{e4}} 이에요.",
+        "thoughts": [
+          "확률분포표로 $\\sum x\\,P(X=x)$ 를 계산해도 {{e4}} 가 나와요.",
+          "동전 하나가 평균 $\\frac{1}{2}$ 개씩 앞면을 보태니 $4\\times\\frac{1}{2}={{np4}}$ 이에요.",
+          "빨간 공 주머니에서 3번 꺼내면 빨강은 평균 $3\\times\\frac{1}{3}={{e3}}$ 번이에요. 표로 계산해도 같아요."
+        ],
+        "conclude": "이항분포 $\\mathrm{B}(n,\\ p)$ 의 ==평균은 시행 횟수 × 한 번의 확률==, 즉 $np$ 예요. 분산은 $np(1-p)$, 표준편차는 $\\sqrt{np(1-p)}$ 이고, 동전 4개면 분산은 {{v4}} 이에요."
+      },
+      {
+        "kind": "question",
+        "id": "spread",
+        "chip": "지름길",
+        "title": "분산은 언제\n가장 클까요?",
+        "lead": "가로가 $p$, 세로가 분산 $np(1-p)$ 인 그래프예요. 슬라이더로 $n$ 을 바꾸고 점 P 를 끌어 보세요. $n=4$ 일 때 분산이 가장 큰 $p$ 는 얼마일까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 1,
+              "step": "1/10"
+            },
+            "y": {
+              "min": 0,
+              "max": 3,
+              "step": "1/2"
+            },
+            "sliders": [
+              {
+                "id": "n",
+                "min": 1,
+                "max": 10,
+                "step": 1,
+                "value": 4,
+                "label": "시행 횟수 $n$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "V",
+                "curve": "n*x*(1-x)",
+                "label": "$y=np(1-p)$ (분산)"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "V",
+                  "x": 0.2,
+                  "drag": "x",
+                  "snap": "1/10"
+                },
+                "name": "P"
+              },
+              {
+                "readout": "value(n)",
+                "label": "$n$",
+                "digits": 0
+              },
+              {
+                "readout": "x(P)",
+                "label": "성공 확률 $p$",
+                "digits": 1
+              },
+              {
+                "readout": "y(P)",
+                "label": "분산",
+                "digits": 2
+              }
+            ],
+            "intro": "P 를 끌어 곡선의 가장 높은 곳을 찾아보세요."
+          }
+        },
+        "choices": [
+          {
+            "value": "0",
+            "check": "solve(Eq(4*x*(1 - x), 0), x)[0]",
+            "feedback": "$p=0$ 이면 한 번도 성공하지 않아 $X$ 는 늘 $0$ 이에요. 흩어짐이 없어 분산은 가장 작은 $0$ 이에요."
+          },
+          {
+            "value": "1/2",
+            "check": "solve(diff(4*x*(1 - x), x), x)[0]"
+          },
+          {
+            "value": "1",
+            "check": "solve(Eq(4*x*(1 - x), 0), x)[1]",
+            "feedback": "$p=1$ 이면 매번 성공해서 $X$ 는 늘 $n$ 이에요. 이때도 분산은 $0$ 이에요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "solve(diff(4*x*(1 - x), x), x)[0]",
+        "reveal": "**맞아요.** 성공과 실패가 반반일 때 결과가 가장 들쭉날쭉해요.",
+        "thoughts": [
+          "$p$ 와 $1-p$ 는 더하면 1 이에요. 합이 같은 두 수의 곱은 두 수가 같을 때 가장 커요.",
+          "그때 분산은 $4\\times\\frac{1}{2}\\times\\frac{1}{2}={{v4}}$ 이에요."
+        ],
+        "conclude": "$n$ 을 키우면 곡선 전체가 $n$ 배로 높아져요. 그래도 가장 높은 곳은 늘 $p=\\frac{1}{2}$ 이에요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $X$ 가 $\\mathrm{B}\\left(4,\\ \\frac{1}{3}\\right)$ 를 따를 때 $P(X=2)$ 를 구했어요. 왼쪽은 바르게 세운 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "6*(1/3)**2*(2/3)**2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(1/3)**2*(2/3)**2",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "24/81",
+              "body": "성공·성공·실패·실패 한 순서의 확률만 구했어요. 성공 두 번의 자리를 고르는 ${}_4\\mathrm{C}_2$ 가지를 곱해야 해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $X$ 가 $\\mathrm{B}\\left(10,\\ \\frac{1}{5}\\right)$ 를 따를 때 $V(X)$ 를 구했어요. 왼쪽은 바르게 세운 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "10*(1/5)*(1-1/5)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "10*(1/5)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "8/5",
+              "body": "$np$ 는 평균이에요. 분산은 평균에 실패할 확률 $1-p$ 를 한 번 더 곱해요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "dice",
+            "q": "주사위 한 개를 5번 던질 때, 3의 배수의 눈이 정확히 2번 나올 확률을 구하세요.",
+            "hint": "한 번에 3의 배수의 눈이 나올 확률부터 구해요. 3, 6 두 가지예요.",
+            "concepts": [
+              "${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+              "자리 고르는 수 × 한 순서의 확률"
+            ],
+            "steps": [
+              {
+                "title": "한 번의 확률",
+                "body": "$p=\\frac{2}{6}=\\frac{1}{3}$, $1-p=\\frac{2}{3}$ 이에요."
+              },
+              {
+                "title": "자리 고르기",
+                "body": "5번 중 2번의 자리를 고르는 수는 ${}_5\\mathrm{C}_2=10$ 이에요."
+              },
+              {
+                "title": "곱하기",
+                "body": "$$10\\times\\left(\\frac{1}{3}\\right)^2\\times\\left(\\frac{2}{3}\\right)^3=10\\times\\frac{1}{9}\\times\\frac{8}{27}=\\frac{80}{243}$$"
+              }
+            ],
+            "tip": "지수 두 개를 더하면 시행 횟수 5 가 돼야 해요. 확인하는 습관을 들이면 실수가 줄어요.",
+            "answer": "80/243",
+            "answerType": "fraction",
+            "check": "binomial(5, 2)*Rational(2, 6)**2*(1 - Rational(2, 6))**3"
+          },
+          {
+            "id": "findn",
+            "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따르고 $E(X)=6$, $V(X)=4$ 일 때, $n$ 의 값을 구하세요.",
+            "hint": "$V(X)$ 를 $E(X)$ 로 나누면 $1-p$ 만 남아요.",
+            "concepts": [
+              "$E(X)=np$, $V(X)=np(1-p)$"
+            ],
+            "steps": [
+              {
+                "title": "두 식",
+                "body": "$np=6$, $np(1-p)=4$ 예요."
+              },
+              {
+                "title": "나누기",
+                "body": "$1-p=\\frac{4}{6}=\\frac{2}{3}$ 이므로 $p=\\frac{1}{3}$ 이에요."
+              },
+              {
+                "title": "$n$ 구하기",
+                "body": "$$n\\times\\frac{1}{3}=6\\text{ 이므로 }n=18$$"
+              }
+            ],
+            "tip": "$\\frac{V(X)}{E(X)}$ 는 $p$ 가 아니라 $1-p$ 예요. 여기서 거꾸로 쓰면 $n=9$ 가 나와요.",
+            "answer": "18",
+            "answerType": "int",
+            "check": "6/(1 - Rational(4, 6))"
+          },
+          {
+            "id": "ex2",
+            "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(50,\\ \\frac{1}{5}\\right)$ 를 따를 때, $E(X^2)$ 의 값을 구하세요.",
+            "hint": "$V(X)=E(X^2)-\\{E(X)\\}^2$ 을 거꾸로 써요.",
+            "concepts": [
+              "$E(X)=np$, $V(X)=np(1-p)$",
+              "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+            ],
+            "steps": [
+              {
+                "title": "평균",
+                "body": "$$E(X)=50\\times\\frac{1}{5}=10$$"
+              },
+              {
+                "title": "분산",
+                "body": "$$V(X)=50\\times\\frac{1}{5}\\times\\frac{4}{5}=8$$"
+              },
+              {
+                "title": "$E(X^2)$",
+                "body": "$$E(X^2)=V(X)+\\{E(X)\\}^2=8+100=108$$"
+              }
+            ],
+            "tip": "표준편차를 물으면 $\\sigma(X)=\\sqrt{8}=2\\sqrt{2}$ 예요. 분산과 표준편차를 헷갈리지 마세요.",
+            "answer": "108",
+            "answerType": "int",
+            "check": "50*Rational(1, 5)*(1 - Rational(1, 5)) + (50*Rational(1, 5))**2"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "독립시행에서 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$. **자리 고르는 수**를 빠뜨리지 마세요.",
+          "그 횟수 $X$ 는 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따라요.",
+          "$E(X)=np$, $V(X)=np(1-p)$, $\\sigma(X)=\\sqrt{np(1-p)}$. 분산은 $p=\\frac{1}{2}$ 일 때 가장 커요.",
+          "수능에서는 문장 속 시행이 이항분포임을 알아보고 $np$, $np(1-p)$ 로 바로 가는 문제가 나와요. $E(X^2)=V(X)+\\{E(X)\\}^2$ 도 함께 써요."
+        ],
+        "done": "이항분포 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "prob-binomial-pmf",
+    "prob-binomial-mean-var",
+    "prob-binomial-find-np",
+    "prob-binomial-linear"
+  ],
+  "problems": [
+    {
+      "q": "흰 공 3개, 검은 공 1개가 든 주머니에서 공 한 개를 꺼내 색을 확인하고 다시 넣는 시행을 4번 할 때, 흰 공이 정확히 2번 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "27/128",
+      "answerType": "fraction",
+      "check": "binomial(4, 2)*Rational(3, 4)**2*(1 - Rational(3, 4))**2",
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "같은 시행을 독립적으로 반복하면 횟수 $X$ 는 이항분포를 따라요."
+      ],
+      "steps": [
+        {
+          "title": "한 번의 확률",
+          "body": "공을 다시 넣으니 매번 흰 공이 나올 확률은 $\\frac{3}{4}$ 로 같아요. 일어나지 않을 확률은 $1-p=\\frac{1}{4}$ 이에요."
+        },
+        {
+          "title": "자리 고르기",
+          "body": "4번 중 흰 공이 나올 2번의 자리를 고르는 수는 ${}_4\\mathrm{C}_2=6$ 이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$6\\times \\left(\\frac{3}{4}\\right)^{2}\\times \\left(\\frac{1}{4}\\right)^{2}=\\frac{6\\cdot 3^{2}}{4^{4}}=\\frac{54}{256}=\\frac{27}{128}$$"
+        }
+      ],
+      "tip": "자리 고르는 수 ${}_4\\mathrm{C}_2$ 를 빠뜨리면 한 가지 순서의 확률만 구한 셈이에요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prob-binomial-pmf",
+      "seed": 1000
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(9,\\ \\frac{1}{3}\\right)$ 를 따를 때, $V(X)$ 를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "fraction",
+      "check": "9*Rational(1, 3)*(1 - Rational(1, 3))",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$"
+      ],
+      "steps": [
+        {
+          "title": "$n$ 과 $p$ 읽기",
+          "body": "$n=9$, $p=\\frac{1}{3}$, $1-p=\\frac{2}{3}$ 예요."
+        },
+        {
+          "title": "분산",
+          "body": "$$V(X)=np(1-p)=9\\times \\frac{1}{3}\\times \\frac{2}{3}=2$$"
+        }
+      ],
+      "tip": "$1-p$ 를 곱하지 않으면 평균 $np=3$ 이 나와요. 분산은 평균에 $1-p$ 를 한 번 더 곱한 값이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prob-binomial-mean-var",
+      "seed": 1001
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따르고 $E(X)=8$, $V(X)=6$ 일 때, $n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "32",
+      "answerType": "int",
+      "check": "8 / (1 - Rational(6, 8))",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "분산 ÷ 평균 $=1-p$"
+      ],
+      "steps": [
+        {
+          "title": "두 식 세우기",
+          "body": "$np=8$, $np(1-p)=6$ 이에요."
+        },
+        {
+          "title": "나누어 $1-p$ 구하기",
+          "body": "아래 식을 위 식으로 나누면 $1-p=\\frac{6}{8}=\\frac{3}{4}$ 이므로 $p=\\frac{1}{4}$ 이에요."
+        },
+        {
+          "title": "$n$ 구하기",
+          "body": "$$n\\times \\frac{1}{4}=8\\text{ 이므로 }n=32$$"
+        }
+      ],
+      "tip": "확인: $32\\times \\frac{1}{4}\\times \\frac{3}{4}=6$, 분산도 맞아요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prob-binomial-find-np",
+      "seed": 1002
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(12,\\ \\frac{1}{4}\\right)$ 를 따를 때, $V(5X+5)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "225/4",
+      "answerType": "fraction",
+      "check": "(5)**2*(12*Rational(1, 4)*(1 - Rational(1, 4)))",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$E(aX+b)=aE(X)+b$, $V(aX+b)=a^2V(X)$"
+      ],
+      "steps": [
+        {
+          "title": "분산",
+          "body": "$$V(X)=np(1-p)=12\\times \\frac{1}{4}\\times \\frac{3}{4}=\\frac{9}{4}$$"
+        },
+        {
+          "title": "일차식의 분산",
+          "body": "더하거나 뺀 수는 흩어진 정도를 바꾸지 않고, 곱한 수는 제곱으로 들어가요.\n$$V(5X+5)=5^2\\times \\frac{9}{4}=\\frac{225}{4}$$"
+        }
+      ],
+      "tip": "곱한 수를 제곱하지 않거나 더한 수까지 더하는 실수가 많아요. 분산에는 곱한 수의 제곱만 곱해요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prob-binomial-linear",
+      "seed": 1003
+    },
+    {
+      "q": "동전 한 개를 3번 던질 때, 앞면이 정확히 2번 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "3/8",
+      "answerType": "fraction",
+      "check": "binomial(3, 2)*Rational(1, 2)**2*(1 - Rational(1, 2))**1",
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "같은 시행을 독립적으로 반복하면 횟수 $X$ 는 이항분포를 따라요."
+      ],
+      "steps": [
+        {
+          "title": "한 번의 확률",
+          "body": "동전 한 개를 던져 앞면이 나올 확률은 $\\frac{1}{2}$ 이에요. 일어나지 않을 확률은 $1-p=\\frac{1}{2}$ 이에요."
+        },
+        {
+          "title": "자리 고르기",
+          "body": "3번 중 앞면이 나올 2번의 자리를 고르는 수는 ${}_3\\mathrm{C}_2=3$ 이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3\\times \\left(\\frac{1}{2}\\right)^{2}\\times \\left(\\frac{1}{2}\\right)=\\frac{3}{2^{3}}=\\frac{3}{8}$$"
+        }
+      ],
+      "tip": "자리 고르는 수 ${}_3\\mathrm{C}_2$ 를 빠뜨리면 한 가지 순서의 확률만 구한 셈이에요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prob-binomial-pmf",
+      "seed": 1004
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(24,\\ \\frac{1}{4}\\right)$ 를 따를 때, $E(X^2)$ 을 구하세요.",
+      "choices": null,
+      "answer": "81/2",
+      "answerType": "fraction",
+      "check": "24*Rational(1, 4)*(1 - Rational(1, 4)) + (24*Rational(1, 4))**2",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$$E(X)=np=24\\times \\frac{1}{4}=6$$"
+        },
+        {
+          "title": "분산",
+          "body": "$$V(X)=np(1-p)=24\\times \\frac{1}{4}\\times \\frac{3}{4}=\\frac{9}{2}$$"
+        },
+        {
+          "title": "$E(X^2)$ 로 옮기기",
+          "body": "$V(X)=E(X^2)-\\{E(X)\\}^2$ 이므로\n$$E(X^2)=V(X)+\\{E(X)\\}^2=\\frac{9}{2}+6^2=\\frac{81}{2}$$"
+        }
+      ],
+      "tip": "$E(X^2)$ 은 $\\{E(X)\\}^2$ 과 달라요. 분산만큼 더 커요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prob-binomial-mean-var",
+      "seed": 1005
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따르고 $E(X)=4$, $V(X)=3$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/4",
+      "answerType": "fraction",
+      "check": "1 - Rational(3, 4)",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "분산 ÷ 평균 $=1-p$"
+      ],
+      "steps": [
+        {
+          "title": "두 식 세우기",
+          "body": "$np=4$, $np(1-p)=3$ 이에요."
+        },
+        {
+          "title": "나누어 $1-p$ 구하기",
+          "body": "아래 식을 위 식으로 나누면 $1-p=\\frac{3}{4}$ 이므로 $p=\\frac{1}{4}$ 이에요."
+        }
+      ],
+      "tip": "$1-p$ 와 $p$ 를 헷갈리기 쉬워요. $\\frac{V(X)}{E(X)}$ 는 실패할 확률 $1-p$ 예요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prob-binomial-find-np",
+      "seed": 1006
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(15,\\ \\frac{3}{5}\\right)$ 를 따를 때, $E(2X-1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "17",
+      "answerType": "int",
+      "check": "2*(15*Rational(3, 5)) + (-1)",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$E(aX+b)=aE(X)+b$, $V(aX+b)=a^2V(X)$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$$E(X)=np=15\\times \\frac{3}{5}=9$$"
+        },
+        {
+          "title": "일차식의 평균",
+          "body": "$$E(2X-1)=2\\times 9-1=17$$"
+        }
+      ],
+      "tip": "평균은 곱하고 더한 그대로 따라가요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prob-binomial-linear",
+      "seed": 1007
+    },
+    {
+      "q": "흰 공 3개, 검은 공 2개가 든 주머니에서 공 한 개를 꺼내 색을 확인하고 다시 넣는 시행을 4번 할 때, 흰 공이 정확히 1번 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "96/625",
+      "answerType": "fraction",
+      "check": "binomial(4, 1)*Rational(3, 5)**1*(1 - Rational(3, 5))**3",
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "같은 시행을 독립적으로 반복하면 횟수 $X$ 는 이항분포를 따라요."
+      ],
+      "steps": [
+        {
+          "title": "한 번의 확률",
+          "body": "공을 다시 넣으니 매번 흰 공이 나올 확률은 $\\frac{3}{5}$ 로 같아요. 일어나지 않을 확률은 $1-p=\\frac{2}{5}$ 예요."
+        },
+        {
+          "title": "자리 고르기",
+          "body": "4번 중 흰 공이 나올 1번의 자리를 고르는 수는 ${}_4\\mathrm{C}_1=4$ 예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$4\\times \\left(\\frac{3}{5}\\right)\\times \\left(\\frac{2}{5}\\right)^{3}=\\frac{4\\cdot 3\\cdot 2^{3}}{5^{4}}=\\frac{96}{625}$$"
+        }
+      ],
+      "tip": "자리 고르는 수 ${}_4\\mathrm{C}_1$ 를 빠뜨리면 한 가지 순서의 확률만 구한 셈이에요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prob-binomial-pmf",
+      "seed": 1008
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(30,\\ \\frac{2}{5}\\right)$ 를 따를 때, $V(X)$ 를 구하세요.",
+      "choices": null,
+      "answer": "36/5",
+      "answerType": "fraction",
+      "check": "30*Rational(2, 5)*(1 - Rational(2, 5))",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$"
+      ],
+      "steps": [
+        {
+          "title": "$n$ 과 $p$ 읽기",
+          "body": "$n=30$, $p=\\frac{2}{5}$, $1-p=\\frac{3}{5}$ 이에요."
+        },
+        {
+          "title": "분산",
+          "body": "$$V(X)=np(1-p)=30\\times \\frac{2}{5}\\times \\frac{3}{5}=\\frac{36}{5}$$"
+        }
+      ],
+      "tip": "$1-p$ 를 곱하지 않으면 평균 $np=12$ 가 나와요. 분산은 평균에 $1-p$ 를 한 번 더 곱한 값이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prob-binomial-mean-var",
+      "seed": 1009
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따르고 $E(X)=12$, $V(X)=9$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/4",
+      "answerType": "fraction",
+      "check": "1 - Rational(9, 12)",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "분산 ÷ 평균 $=1-p$"
+      ],
+      "steps": [
+        {
+          "title": "두 식 세우기",
+          "body": "$np=12$, $np(1-p)=9$ 예요."
+        },
+        {
+          "title": "나누어 $1-p$ 구하기",
+          "body": "아래 식을 위 식으로 나누면 $1-p=\\frac{9}{12}=\\frac{3}{4}$ 이므로 $p=\\frac{1}{4}$ 이에요."
+        }
+      ],
+      "tip": "$1-p$ 와 $p$ 를 헷갈리기 쉬워요. $\\frac{V(X)}{E(X)}$ 는 실패할 확률 $1-p$ 예요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prob-binomial-find-np",
+      "seed": 1010
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(30,\\ \\frac{1}{6}\\right)$ 를 따를 때, $E(5X+3)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "28",
+      "answerType": "int",
+      "check": "5*(30*Rational(1, 6)) + (3)",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$E(aX+b)=aE(X)+b$, $V(aX+b)=a^2V(X)$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$$E(X)=np=30\\times \\frac{1}{6}=5$$"
+        },
+        {
+          "title": "일차식의 평균",
+          "body": "$$E(5X+3)=5\\times 5+3=28$$"
+        }
+      ],
+      "tip": "평균은 곱하고 더한 그대로 따라가요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prob-binomial-linear",
+      "seed": 1011
+    },
+    {
+      "q": "주사위 한 개를 4번 던질 때, 6의 눈이 정확히 2번 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "25/216",
+      "answerType": "fraction",
+      "check": "binomial(4, 2)*Rational(1, 6)**2*(1 - Rational(1, 6))**2",
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "같은 시행을 독립적으로 반복하면 횟수 $X$ 는 이항분포를 따라요."
+      ],
+      "steps": [
+        {
+          "title": "한 번의 확률",
+          "body": "주사위 한 번에 6의 눈이 나올 확률은 $\\frac{1}{6}$ 이에요. 일어나지 않을 확률은 $1-p=\\frac{5}{6}$ 예요."
+        },
+        {
+          "title": "자리 고르기",
+          "body": "4번 중 6의 눈이 나올 2번의 자리를 고르는 수는 ${}_4\\mathrm{C}_2=6$ 이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$6\\times \\left(\\frac{1}{6}\\right)^{2}\\times \\left(\\frac{5}{6}\\right)^{2}=\\frac{6\\cdot 5^{2}}{6^{4}}=\\frac{150}{1296}=\\frac{25}{216}$$"
+        }
+      ],
+      "tip": "자리 고르는 수 ${}_4\\mathrm{C}_2$ 를 빠뜨리면 한 가지 순서의 확률만 구한 셈이에요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prob-binomial-pmf",
+      "seed": 1012
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(6,\\ \\frac{1}{2}\\right)$ 를 따를 때, $E(X^2)$ 을 구하세요.",
+      "choices": null,
+      "answer": "21/2",
+      "answerType": "fraction",
+      "check": "6*Rational(1, 2)*(1 - Rational(1, 2)) + (6*Rational(1, 2))**2",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$$E(X)=np=6\\times \\frac{1}{2}=3$$"
+        },
+        {
+          "title": "분산",
+          "body": "$$V(X)=np(1-p)=6\\times \\frac{1}{2}\\times \\frac{1}{2}=\\frac{3}{2}$$"
+        },
+        {
+          "title": "$E(X^2)$ 로 옮기기",
+          "body": "$V(X)=E(X^2)-\\{E(X)\\}^2$ 이므로\n$$E(X^2)=V(X)+\\{E(X)\\}^2=\\frac{3}{2}+3^2=\\frac{21}{2}$$"
+        }
+      ],
+      "tip": "$E(X^2)$ 은 $\\{E(X)\\}^2$ 과 달라요. 분산만큼 더 커요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prob-binomial-mean-var",
+      "seed": 1013
+    },
+    {
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따르고 $E(X)=9$, $V(X)=6$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "check": "1 - Rational(6, 9)",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "분산 ÷ 평균 $=1-p$"
+      ],
+      "steps": [
+        {
+          "title": "두 식 세우기",
+          "body": "$np=9$, $np(1-p)=6$ 이에요."
+        },
+        {
+          "title": "나누어 $1-p$ 구하기",
+          "body": "아래 식을 위 식으로 나누면 $1-p=\\frac{6}{9}=\\frac{2}{3}$ 이므로 $p=\\frac{1}{3}$ 이에요."
+        }
+      ],
+      "tip": "$1-p$ 와 $p$ 를 헷갈리기 쉬워요. $\\frac{V(X)}{E(X)}$ 는 실패할 확률 $1-p$ 예요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prob-binomial-find-np",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "주사위 한 개를 4번 던질 때, 6의 눈이 정확히 한 번 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "125/324",
+      "answerType": "fraction",
+      "check": "binomial(4, 1)*Rational(1, 6)*(1 - Rational(1, 6))**3",
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "한 번의 확률",
+          "body": "$p=\\frac{1}{6}$, $1-p=\\frac{5}{6}$ 이에요."
+        },
+        {
+          "title": "자리 고르기",
+          "body": "4번 중 6의 눈이 나올 한 번의 자리는 ${}_4\\mathrm{C}_1=4$ 가지예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$4\\times\\frac{1}{6}\\times\\left(\\frac{5}{6}\\right)^3=\\frac{500}{1296}=\\frac{125}{324}$$"
+        }
+      ],
+      "tip": "'한 번만'은 나머지 세 번이 모두 6이 아니라는 뜻이에요. $(1-p)^3$ 을 빠뜨리지 마세요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "동전 한 개를 6번 던질 때, 앞면이 4번 이상 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "11/32",
+      "answerType": "fraction",
+      "check": "sum(binomial(6, k) for k in range(4, 7))*Rational(1, 2)**6",
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "'이상'은 경우를 나누어 더해요."
+      ],
+      "steps": [
+        {
+          "title": "경우 나누기",
+          "body": "앞면이 4번, 5번, 6번인 경우를 더해요. $p=1-p=\\frac{1}{2}$ 이라 각 확률은 ${}_6\\mathrm{C}_r\\left(\\frac{1}{2}\\right)^6$ 이에요."
+        },
+        {
+          "title": "자리 고르는 수",
+          "body": "${}_6\\mathrm{C}_4=15$, ${}_6\\mathrm{C}_5=6$, ${}_6\\mathrm{C}_6=1$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{15+6+1}{64}=\\frac{22}{64}=\\frac{11}{32}$$"
+        }
+      ],
+      "tip": "동전처럼 $p=\\frac{1}{2}$ 이면 모든 순서의 확률이 같아서 자리 고르는 수만 세면 돼요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "자유투를 넣을 확률이 $\\frac{2}{3}$ 인 선수가 자유투를 3번 던질 때, 적어도 한 번 넣을 확률을 구하세요. (단, 각 시도의 결과는 서로 영향을 주지 않아요.)",
+      "choices": null,
+      "answer": "26/27",
+      "answerType": "fraction",
+      "check": "1 - binomial(3, 0)*(1 - Rational(2, 3))**3",
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "'적어도 한 번'은 여사건(한 번도 못 넣음)을 빼요."
+      ],
+      "steps": [
+        {
+          "title": "여사건",
+          "body": "적어도 한 번 넣는 사건의 여사건은 3번 모두 못 넣는 사건이에요."
+        },
+        {
+          "title": "모두 못 넣을 확률",
+          "body": "$$\\left(1-\\frac{2}{3}\\right)^3=\\frac{1}{27}$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$1-\\frac{1}{27}=\\frac{26}{27}$$"
+        }
+      ],
+      "tip": "1번, 2번, 3번 넣는 경우를 모두 더해도 같지만, 여사건이 훨씬 빨라요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(n,\\ \\frac{1}{4}\\right)$ 를 따르고 $V(X)=6$ 일 때, $n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "32",
+      "answerType": "int",
+      "check": "solve(Eq(n*Rational(1, 4)*(1 - Rational(1, 4)), 6), n)[0]",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$"
+      ],
+      "steps": [
+        {
+          "title": "분산 식",
+          "body": "$$V(X)=n\\times\\frac{1}{4}\\times\\frac{3}{4}=\\frac{3n}{16}$$"
+        },
+        {
+          "title": "방정식",
+          "body": "$\\frac{3n}{16}=6$ 이므로 $n=32$ 예요."
+        }
+      ],
+      "tip": "확인: $32\\times\\frac{1}{4}\\times\\frac{3}{4}=6$ 이에요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따르고 $E(X)=12$, $V(X)=3$ 일 때, $p$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "1 - Rational(3, 12)",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "분산 ÷ 평균 $=1-p$"
+      ],
+      "steps": [
+        {
+          "title": "나누기",
+          "body": "$\\frac{np(1-p)}{np}=1-p$ 이므로 $1-p=\\frac{3}{12}=\\frac{1}{4}$ 이에요."
+        },
+        {
+          "title": "$p$",
+          "body": "$p=1-\\frac{1}{4}=\\frac{3}{4}$ 예요."
+        }
+      ],
+      "tip": "이때 $n=12\\div\\frac{3}{4}=16$ 이에요. $p$ 와 $1-p$ 를 바꿔 쓰지 않았는지 $n$ 이 자연수인지로 확인할 수 있어요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(72,\\ \\frac{1}{3}\\right)$ 를 따를 때, $X$ 의 표준편차 $\\sigma(X)$ 를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "sqrt(72*Rational(1, 3)*(1 - Rational(1, 3)))",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$\\sigma(X)=\\sqrt{V(X)}$"
+      ],
+      "steps": [
+        {
+          "title": "분산",
+          "body": "$$V(X)=72\\times\\frac{1}{3}\\times\\frac{2}{3}=16$$"
+        },
+        {
+          "title": "표준편차",
+          "body": "$$\\sigma(X)=\\sqrt{16}=4$$"
+        }
+      ],
+      "tip": "분산 16 을 답으로 적는 실수가 많아요. 표준편차는 제곱근이에요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(25,\\ \\frac{1}{5}\\right)$ 를 따를 때, $V(2X+5)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "2**2*(25*Rational(1, 5)*(1 - Rational(1, 5)))",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$E(aX+b)=aE(X)+b$, $V(aX+b)=a^2V(X)$"
+      ],
+      "steps": [
+        {
+          "title": "분산",
+          "body": "$$V(X)=25\\times\\frac{1}{5}\\times\\frac{4}{5}=4$$"
+        },
+        {
+          "title": "일차식의 분산",
+          "body": "더한 5 는 흩어진 정도를 바꾸지 않아요.\n$$V(2X+5)=2^2\\times4=16$$"
+        }
+      ],
+      "tip": "$2\\times4+5=13$ 은 평균의 규칙을 분산에 쓴 실수예요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "확률변수 $X$ 의 확률질량함수가 $P(X=x)={}_{10}\\mathrm{C}_x\\left(\\frac{1}{3}\\right)^x\\left(\\frac{2}{3}\\right)^{10-x}$ $(x=0,\\ 1,\\ 2,\\ \\cdots,\\ 10)$ 일 때, $E(X^2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "40/3",
+      "answerType": "fraction",
+      "check": "10*Rational(1, 3)*(1 - Rational(1, 3)) + (10*Rational(1, 3))**2",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "분포 알아보기",
+          "body": "식의 모양이 ${}_n\\mathrm{C}_x\\,p^x(1-p)^{n-x}$ 이므로 $X$ 는 $\\mathrm{B}\\left(10,\\ \\frac{1}{3}\\right)$ 를 따라요."
+        },
+        {
+          "title": "평균·분산",
+          "body": "$E(X)=\\frac{10}{3}$, $V(X)=10\\times\\frac{1}{3}\\times\\frac{2}{3}=\\frac{20}{9}$ 예요."
+        },
+        {
+          "title": "$E(X^2)$",
+          "body": "$$E(X^2)=\\frac{20}{9}+\\left(\\frac{10}{3}\\right)^2=\\frac{20}{9}+\\frac{100}{9}=\\frac{40}{3}$$"
+        }
+      ],
+      "tip": "확률질량함수 식에서 $n$ 과 $p$ 를 읽어 내는 것이 첫걸음이에요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(4,\\ p)$ 를 따르고 $P(X=1)=P(X=2)$ 일 때, $p$ 의 값을 구하세요. (단, $0<p<1$)",
+      "choices": null,
+      "answer": "2/5",
+      "answerType": "fraction",
+      "check": "[s for s in solve(Eq(4*p*(1 - p)**3, 6*p**2*(1 - p)**2), p) if 0 < s < 1][0]",
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "두 확률",
+          "body": "$P(X=1)=4p(1-p)^3$, $P(X=2)=6p^2(1-p)^2$ 이에요."
+        },
+        {
+          "title": "같다고 놓고 나누기",
+          "body": "$p(1-p)^2$ 은 0 이 아니므로 양변을 나누면 $4(1-p)=6p$ 예요."
+        },
+        {
+          "title": "풀기",
+          "body": "$4=10p$ 이므로 $p=\\frac{2}{5}$ 예요."
+        }
+      ],
+      "tip": "$0<p<1$ 이라 $p(1-p)^2$ 으로 나눌 수 있어요. 이 조건이 없으면 $p=0$, $p=1$ 도 따져야 해요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "흰 공 2개, 검은 공 3개가 든 주머니에서 공 한 개를 꺼내 색을 확인하고 다시 넣는 시행을 5번 해요. 흰 공이 나온 횟수를 $X$ 라 할 때, $V(X)$ 를 구하세요.",
+      "choices": null,
+      "answer": "6/5",
+      "answerType": "fraction",
+      "check": "5*Rational(2, 2 + 3)*(1 - Rational(2, 2 + 3))",
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$"
+      ],
+      "steps": [
+        {
+          "title": "이항분포 알아보기",
+          "body": "다시 넣으니 매번 흰 공일 확률이 $\\frac{2}{5}$ 로 같아요. $X$ 는 $\\mathrm{B}\\left(5,\\ \\frac{2}{5}\\right)$ 를 따라요."
+        },
+        {
+          "title": "분산",
+          "body": "$$V(X)=5\\times\\frac{2}{5}\\times\\frac{3}{5}=\\frac{6}{5}$$"
+        }
+      ],
+      "tip": "꺼낸 공을 다시 넣지 않으면 매번 확률이 바뀌어 이항분포가 아니에요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}\\left(n,\\ \\frac{1}{3}\\right)$ 를 따르고 $V(3X)=40$ 일 때, $n$ 의 값은?",
+      "choices": [
+        "$15$",
+        "$18$",
+        "$20$",
+        "$24$",
+        "$30$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "solve(Eq(3**2*(n*Rational(1, 3)*(1 - Rational(1, 3))), 40), n)[0]",
+      "choiceChecks": [
+        "15",
+        "18",
+        "20",
+        "24",
+        "30"
+      ],
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$E(aX+b)=aE(X)+b$, $V(aX+b)=a^2V(X)$"
+      ],
+      "steps": [
+        {
+          "title": "$V(X)$",
+          "body": "$$V(X)=n\\times\\frac{1}{3}\\times\\frac{2}{3}=\\frac{2n}{9}$$"
+        },
+        {
+          "title": "$V(3X)$",
+          "body": "$$V(3X)=3^2\\times\\frac{2n}{9}=2n$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$2n=40$ 이므로 $n=20$ 이에요."
+        }
+      ],
+      "tip": "$V(3X)=3V(X)$ 로 계산하면 $n=60$ 이 나와 보기에 없어요. 분산에는 제곱이 붙어요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따르고 $E(3X+1)=61$, $V(3X+1)=144$ 일 때, $n$ 의 값은?",
+      "choices": [
+        "$70$",
+        "$80$",
+        "$90$",
+        "$100$",
+        "$125$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "e = Rational(61 - 1, 3)\nv = Rational(144, 3**2)\nans = e/(1 - v/e)",
+      "choiceChecks": [
+        "70",
+        "80",
+        "90",
+        "100",
+        "125"
+      ],
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$E(aX+b)=aE(X)+b$, $V(aX+b)=a^2V(X)$",
+        "분산 ÷ 평균 $=1-p$"
+      ],
+      "steps": [
+        {
+          "title": "$E(X)$",
+          "body": "$3E(X)+1=61$ 이므로 $E(X)=20$ 이에요."
+        },
+        {
+          "title": "$V(X)$",
+          "body": "$9V(X)=144$ 이므로 $V(X)=16$ 이에요."
+        },
+        {
+          "title": "$p$",
+          "body": "$1-p=\\frac{16}{20}=\\frac{4}{5}$ 이므로 $p=\\frac{1}{5}$ 이에요."
+        },
+        {
+          "title": "$n$",
+          "body": "$n\\times\\frac{1}{5}=20$ 이므로 $n=100$ 이에요."
+        }
+      ],
+      "tip": "$aX+b$ 꼴에서 먼저 $X$ 의 평균·분산으로 되돌린 뒤 이항분포 공식을 써요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "한 개의 주사위를 던져 4의 약수의 눈이 나오면 2점을 얻고, 그 외의 눈이 나오면 1점을 잃는 시행을 16번 반복해요. 16번 후 얻은 점수의 합을 $Y$ 라 할 때, $V(Y)$ 의 값은?",
+      "choices": [
+        "$24$",
+        "$36$",
+        "$48$",
+        "$64$",
+        "$72$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "pp = Rational(len([1, 2, 4]), 6)\nvx = 16*pp*(1 - pp)\nans = (2 - (-1))**2*vx",
+      "choiceChecks": [
+        "24",
+        "36",
+        "48",
+        "64",
+        "72"
+      ],
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$E(aX+b)=aE(X)+b$, $V(aX+b)=a^2V(X)$"
+      ],
+      "steps": [
+        {
+          "title": "성공 확률",
+          "body": "4의 약수는 1, 2, 4 세 개라 $p=\\frac{3}{6}=\\frac{1}{2}$ 이에요."
+        },
+        {
+          "title": "점수를 $X$ 로",
+          "body": "4의 약수가 나온 횟수를 $X$ 라 하면 $X$ 는 $\\mathrm{B}\\left(16,\\ \\frac{1}{2}\\right)$ 를 따르고\n$$Y=2X-(16-X)=3X-16$$"
+        },
+        {
+          "title": "$V(X)$",
+          "body": "$$V(X)=16\\times\\frac{1}{2}\\times\\frac{1}{2}=4$$"
+        },
+        {
+          "title": "$V(Y)$",
+          "body": "$$V(Y)=3^2\\times4=36$$"
+        }
+      ],
+      "tip": "점수 $Y$ 는 이항분포가 아니에요. 성공 횟수 $X$ 로 $Y$ 를 일차식으로 나타내는 것이 핵심이에요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(5,\\ p)$ 를 따르고 $P(X=5)=32P(X=0)$ 일 때, $E(3X)$ 의 값은? (단, $0<p<1$)",
+      "choices": [
+        "$5$",
+        "$10$",
+        "$15$",
+        "$20$",
+        "$25$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "pp = [s for s in solve(Eq(p**5, 32*(1 - p)**5), p) if s.is_real and 0 < s < 1][0]\nans = 3*5*pp",
+      "choiceChecks": [
+        "5",
+        "10",
+        "15",
+        "20",
+        "25"
+      ],
+      "concepts": [
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "$E(X)=np$, $V(X)=np(1-p)$"
+      ],
+      "steps": [
+        {
+          "title": "두 확률",
+          "body": "$P(X=5)=p^5$, $P(X=0)=(1-p)^5$ 이에요."
+        },
+        {
+          "title": "비로 바꾸기",
+          "body": "$p^5=32(1-p)^5$ 이므로 $\\left(\\frac{p}{1-p}\\right)^5=32=2^5$, 즉 $\\frac{p}{1-p}=2$ 예요."
+        },
+        {
+          "title": "$p$",
+          "body": "$p=2-2p$ 이므로 $p=\\frac{2}{3}$ 이에요."
+        },
+        {
+          "title": "$E(3X)$",
+          "body": "$$E(3X)=3\\times5\\times\\frac{2}{3}=10$$"
+        }
+      ],
+      "tip": "${}_5\\mathrm{C}_5={}_5\\mathrm{C}_0=1$ 이라 두 확률에는 조합이 붙지 않아요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "확률변수 $X$ 가 이항분포 $\\mathrm{B}(n,\\ p)$ 를 따르고 $E(X)=4$, $E(X^2)=18$ 일 때, $P(X=1)$ 의 값은?",
+      "choices": [
+        "$\\frac{1}{128}$",
+        "$\\frac{1}{64}$",
+        "$\\frac{3}{64}$",
+        "$\\frac{1}{32}$",
+        "$\\frac{1}{16}$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "e = 4\nv = 18 - e**2\npp = 1 - Rational(v, e)\nn0 = e/pp\nans = binomial(n0, 1)*pp*(1 - pp)**(n0 - 1)",
+      "choiceChecks": [
+        "Rational(1, 128)",
+        "Rational(1, 64)",
+        "Rational(3, 64)",
+        "Rational(1, 32)",
+        "Rational(1, 16)"
+      ],
+      "concepts": [
+        "$E(X)=np$, $V(X)=np(1-p)$",
+        "$P(X=r)={}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "분산",
+          "body": "$$V(X)=18-4^2=2$$"
+        },
+        {
+          "title": "$p$",
+          "body": "$1-p=\\frac{2}{4}=\\frac{1}{2}$ 이므로 $p=\\frac{1}{2}$ 이에요."
+        },
+        {
+          "title": "$n$",
+          "body": "$n\\times\\frac{1}{2}=4$ 이므로 $n=8$ 이에요."
+        },
+        {
+          "title": "$P(X=1)$",
+          "body": "$$P(X=1)={}_8\\mathrm{C}_1\\left(\\frac{1}{2}\\right)^1\\left(\\frac{1}{2}\\right)^7=\\frac{8}{256}=\\frac{1}{32}$$"
+        }
+      ],
+      "tip": "$E(X^2)$ 에서 분산을 꺼내는 단계가 이 문제의 열쇠예요."
+    }
+  ]
+}

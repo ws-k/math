@@ -1,0 +1,1384 @@
+{
+  "id": "prob-conditional",
+  "course": "확률과 통계",
+  "unit": "확률",
+  "title": "조건부확률과 독립시행",
+  "prereq": [
+    "prob-probability"
+  ],
+  "suneung": [
+    "확통 24",
+    "확통 28"
+  ],
+  "hours": 3.5,
+  "formulas": [
+    "$P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$",
+    "$P(A\\cap B)=P(A)P(B\\mid A)$",
+    "$A$, $B$ 가 독립 $\\iff P(A\\cap B)=P(A)P(B)$",
+    "${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$ (독립시행에서 $n$ 번 중 $r$ 번)"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "g2": {
+        "value": "22",
+        "check": "8 + 14"
+      },
+      "club": {
+        "value": "8",
+        "check": "40 - 12 - 6 - 14"
+      },
+      "sport": {
+        "value": "20",
+        "check": "12 + 8"
+      },
+      "odd": {
+        "value": "3",
+        "check": "len(FiniteSet(2, 4, 6))"
+      },
+      "leaves": {
+        "value": "6",
+        "check": "ff(3, 2)"
+      },
+      "rr": {
+        "value": "2",
+        "check": "ff(2, 2)"
+      },
+      "paths": {
+        "value": "3",
+        "check": "binomial(3, 2)"
+      },
+      "trialLeaves": {
+        "value": "8",
+        "check": "2**3"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "확률과 통계 · 확률",
+        "title": "알고 나면\n확률이 달라져요",
+        "lead": "'2학년이래', '짝수가 나왔대'처럼 정보가 하나 생기면 확률은 어떻게 바뀔까요? 표·벤 다이어그램·수형도를 직접 눌러 보며 따져 봐요.",
+        "meta": [
+          "조건부확률",
+          "곱셈정리",
+          "독립시행"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "뽑은 학생이 2학년이래요.\n운동부일 확률은?",
+        "lead": "동아리를 신청한 학생을 학년과 동아리로 나눈 표예요. 한 명을 뽑았더니 2학년이었어요. 이 학생이 운동부일 확률을 골라 보세요.",
+        "widget": {
+          "type": "table",
+          "params": {
+            "title": "동아리 신청 학생",
+            "unit": "명",
+            "rows": [
+              {
+                "label": "운동부 · 1학년",
+                "value": "12"
+              },
+              {
+                "label": "운동부 · 2학년",
+                "value": "8"
+              },
+              {
+                "label": "미술부 · 1학년",
+                "value": "6"
+              },
+              {
+                "label": "미술부 · 2학년",
+                "value": "14"
+              }
+            ],
+            "total": {
+              "label": "합계",
+              "value": "40"
+            },
+            "sum": true
+          }
+        },
+        "choices": [
+          {
+            "value": "1/5",
+            "check": "Rational(8, 12 + 8 + 6 + 14)",
+            "feedback": "2학년 운동부를 전체 학생으로 나눴어요. 2학년이라는 걸 이미 알았으니 1학년은 지우고 2학년만 전체로 봐요."
+          },
+          {
+            "value": "2/5",
+            "check": "Rational(8, 12 + 8)",
+            "feedback": "운동부 중 2학년의 비율이에요. 조건과 구하는 것이 뒤바뀌었어요. 조건은 '2학년'이니 2학년이 전체예요."
+          },
+          {
+            "value": "4/11",
+            "check": "Rational(8, 8 + 14)"
+          },
+          {
+            "value": "1/2",
+            "check": "Rational(12 + 8, 40)",
+            "feedback": "조건 없이 운동부일 확률이에요. 2학년이라는 정보를 쓰지 않았어요."
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "Rational(8, 8 + 14)",
+        "reveal": "**맞아요.** 2학년 {{g2}}명 중 운동부는 {{club}}명이에요.",
+        "thoughts": [
+          "2학년이라는 걸 알았으니 1학년 줄은 볼 필요가 없어요. 전체가 2학년 {{g2}}명으로 줄어요.",
+          "그중 운동부가 {{club}}명이라 $\\frac{8}{22}=\\frac{4}{11}$ 이에요."
+        ],
+        "conclude": "조건이 붙으면 ==전체가 조건 쪽으로 줄어들어요==. 확률로 쓰면 $\\dfrac{P(\\text{2학년이면서 운동부})}{P(\\text{2학년})}=\\dfrac{8/40}{22/40}$ 이에요."
+      },
+      {
+        "kind": "question",
+        "id": "venn",
+        "chip": "손으로 해 보기",
+        "title": "짝수가 나왔다면\n3의 배수일 확률은?",
+        "lead": "주사위를 던졌더니 짝수가 나왔대요. '짝수에만'과 '둘 다'를 눌러 세어 보세요. 1 과 5 는 어느 쪽도 아니라 그림 밖에 있어요.",
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "venn",
+            "sets": {
+              "names": [
+                "짝수",
+                "3의 배수"
+              ],
+              "a": [
+                "2",
+                "4",
+                "6"
+              ],
+              "b": [
+                "3",
+                "6"
+              ]
+            }
+          }
+        },
+        "choices": [
+          {
+            "value": "1/6",
+            "check": "Rational(len(FiniteSet(2, 4, 6) & FiniteSet(3, 6)), 6)",
+            "feedback": "짝수이면서 3의 배수일 확률 $P(A\\cap B)$ 예요. 짝수가 나온 걸 알았으니 전체는 짝수뿐이에요."
+          },
+          {
+            "value": "1/3",
+            "check": "Rational(len(FiniteSet(2, 4, 6) & FiniteSet(3, 6)), len(FiniteSet(2, 4, 6)))"
+          },
+          {
+            "value": "1/2",
+            "check": "Rational(len(FiniteSet(2, 4, 6) & FiniteSet(3, 6)), len(FiniteSet(3, 6)))",
+            "feedback": "3의 배수 중 짝수의 비율이에요. 조건은 '짝수'라서 짝수가 분모로 가요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "Rational(len(FiniteSet(2, 4, 6) & FiniteSet(3, 6)), len(FiniteSet(2, 4, 6)))",
+        "reveal": "**맞아요.** 짝수 {{odd}}개 중 3의 배수는 6 하나예요.",
+        "thoughts": [
+          "조건 없이 3의 배수일 확률은 눈 6개 중 3, 6 두 개라 $\\frac{2}{6}=\\frac{1}{3}$ 이에요.",
+          "짝수라는 걸 알아도 똑같이 $\\frac{1}{3}$ 이에요. 앞의 동아리 표와 달리 확률이 그대로예요."
+        ],
+        "conclude": "조건을 알아도 확률이 그대로면 두 사건은 서로 영향을 주지 않는 거예요. 이런 두 사건을 ==서로 독립==이라고 해요."
+      },
+      {
+        "kind": "question",
+        "id": "mult",
+        "chip": "곱해서 구하기",
+        "title": "다시 넣지 않고 두 번,\n둘 다 빨강일 확률은?",
+        "lead": "주머니에 빨간 공 두 개(빨1, 빨2)와 파란 공 하나(파)가 있어요. 하나 꺼내고, 다시 넣지 않은 채 하나 더 꺼내요. 수형도를 펼쳐 보세요.",
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "tree",
+            "items": [
+              "빨1",
+              "빨2",
+              "파"
+            ],
+            "k": 2
+          }
+        },
+        "choices": [
+          {
+            "value": "4/9",
+            "check": "Rational(2, 3)**2",
+            "feedback": "꺼낸 공을 다시 넣은 경우예요. 다시 넣지 않았으니 두 번째에는 공이 둘, 그중 빨강은 하나만 남아요."
+          },
+          {
+            "value": "2/3",
+            "check": "Rational(2, 2 + 1)",
+            "feedback": "첫 번째만 따졌어요. 두 번째도 빨강이어야 해요."
+          },
+          {
+            "value": "1/3",
+            "check": "Rational(2, 3)*Rational(2 - 1, 3 - 1)"
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "Rational(2, 3)*Rational(2 - 1, 3 - 1)",
+        "reveal": "**맞아요.** 끝 가지 {{leaves}}개 중 두 번 다 빨강인 가지는 {{rr}}개예요.",
+        "thoughts": [
+          "첫 번째가 빨강일 확률은 $\\frac{2}{3}$ 이에요.",
+          "첫 번째가 빨강이었다는 **조건에서** 두 번째도 빨강일 확률은, 남은 두 개 중 하나라 $\\frac{1}{2}$ 이에요.",
+          "곱하면 $\\frac{2}{3}\\times\\frac{1}{2}=\\frac{1}{3}$, 가지를 센 값과 같아요."
+        ],
+        "conclude": "==확률을 차례로 곱하면 돼요==. $P(A\\cap B)=P(A)P(B\\mid A)$, 조건부확률의 식을 거꾸로 쓴 거예요. 첫 결과가 두 번째 확률을 바꿨으니 이 두 사건은 독립이 아니에요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "조건부확률",
+            "body": "사건 $A$ 가 일어났을 때 사건 $B$ 가 일어날 확률. $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$. $A$ 가 일어난 경우만 **전체로 봐요**. 세로선 오른쪽이 조건이에요."
+          },
+          {
+            "term": "곱셈정리",
+            "body": "$P(A\\cap B)=P(A)P(B\\mid A)$. 앞 일의 확률에 '그 일이 일어난 뒤'의 확률을 곱해요."
+          },
+          {
+            "term": "독립",
+            "body": "$P(B\\mid A)=P(B)$, 곧 $A$ 가 일어나도 $B$ 의 확률이 그대로인 것. 이때 $P(A\\cap B)=P(A)P(B)$ 예요."
+          },
+          {
+            "term": "종속",
+            "body": "독립이 아닌 것. 꺼낸 공을 다시 넣지 않을 때처럼 앞 결과가 뒤 확률을 바꿔요."
+          }
+        ],
+        "aside": "**배반과 독립은 달라요** · 배반은 함께 일어날 수 없는 것($P(A\\cap B)=0$)이고, 독립은 서로 영향을 주지 않는 것이에요. 확률이 0 이 아닌 두 사건이 배반이면, 하나가 일어나면 다른 하나는 절대 안 일어나니 오히려 종속이에요."
+      },
+      {
+        "kind": "question",
+        "id": "trials",
+        "chip": "두 번째 해 보기",
+        "title": "성공률 $\\frac{1}{3}$ 로 세 번,\n딱 두 번 성공할 확률은?",
+        "lead": "자유투 성공률이 $\\frac{1}{3}$ 인 사람이 세 번 던져요. 매번 결과는 서로 영향을 주지 않아요. 수형도를 끝까지 펼쳐 ○ 가 두 개인 가지를 찾아보세요.",
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "tree",
+            "items": [
+              "○",
+              "×"
+            ],
+            "k": 3,
+            "repeat": true
+          }
+        },
+        "choices": [
+          {
+            "value": "2/27",
+            "check": "Rational(1, 3)**2*Rational(2, 3)",
+            "feedback": "○○× 한 가지만 셌어요. 성공 두 번이 몇 번째에 오는지에 따라 ○○×, ○×○, ×○○ 세 가지예요."
+          },
+          {
+            "value": "3/8",
+            "check": "Rational(binomial(3, 2), 2**3)",
+            "feedback": "끝 가지 8개가 모두 같은 확률이라고 봤어요. 성공과 실패의 확률이 달라서 가지마다 확률이 달라요."
+          },
+          {
+            "value": "2/9",
+            "check": "binomial(3, 2)*Rational(1, 3)**2*Rational(2, 3)"
+          },
+          {
+            "value": "1/9",
+            "check": "Rational(1, 3)**2",
+            "feedback": "실패 한 번의 확률 $\\frac{2}{3}$ 을 곱하지 않았어요. 세 번 모두의 결과를 곱해야 해요."
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "binomial(3, 2)*Rational(1, 3)**2*Rational(2, 3)",
+        "reveal": "**맞아요.** 끝 가지 {{trialLeaves}}개 중 ○ 가 두 개인 가지는 {{paths}}개예요.",
+        "thoughts": [
+          "○○× 의 확률은 매번 독립이라 곱해요. $\\frac{1}{3}\\times\\frac{1}{3}\\times\\frac{2}{3}=\\frac{2}{27}$ 이에요.",
+          "○×○, ×○○ 도 순서만 다르고 확률은 같아요.",
+          "그런 가지가 ${}_3\\mathrm{C}_2=3$ 개라 $3\\times\\frac{2}{27}=\\frac{2}{9}$ 예요."
+        ],
+        "conclude": "같은 시행을 독립으로 되풀이하는 것을 ==독립시행==이라고 해요. 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$ 이에요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 동아리 표에서 '2학년일 때 운동부일 확률'을 구했어요. 왼쪽은 바르게 쓴 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(8/40)/(22/40)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "8/20",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "8/22",
+              "body": "분모는 **조건**인 2학년이에요. 운동부 수로 나누면 '운동부일 때 2학년일 확률'이 돼요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 성공률 $\\frac{1}{3}$ 로 세 번 던져 딱 두 번 성공할 확률이에요. 왼쪽은 ○○×, ○×○, ×○○ 를 모두 더한 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(1/3)*(1/3)*(2/3)+(1/3)*(2/3)*(1/3)+(2/3)*(1/3)*(1/3)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(1/3)**2*(2/3)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "3*(1/3)**2*(2/3)",
+              "body": "성공 두 번의 자리를 고르는 ${}_3\\mathrm{C}_2=3$ 가지를 곱해야 해요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "cond",
+            "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac{1}{2}$, $P(B)=\\frac{2}{5}$, $P(A\\cup B)=\\frac{3}{4}$ 일 때, $P(B\\mid A)$ 의 값을 구하세요.",
+            "hint": "먼저 덧셈정리로 겹친 부분 $P(A\\cap B)$ 를 구해요.",
+            "concepts": [
+              "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$",
+              "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요."
+            ],
+            "steps": [
+              {
+                "title": "분모를 20 으로 맞추기",
+                "body": "$$P(A)=\\frac{10}{20},\\quad P(B)=\\frac{8}{20},\\quad P(A\\cup B)=\\frac{15}{20}$$"
+              },
+              {
+                "title": "겹친 부분",
+                "body": "$$P(A\\cap B)=\\frac{10}{20}+\\frac{8}{20}-\\frac{15}{20}=\\frac{3}{20}$$"
+              },
+              {
+                "title": "조건 A 로 나누기",
+                "body": "$$P(B\\mid A)=\\frac{3/20}{10/20}=\\frac{3}{10}$$"
+              }
+            ],
+            "tip": "$P(B)=\\frac{2}{5}$ 와 $P(B\\mid A)=\\frac{3}{10}$ 이 달라요. $A$ 를 알면 $B$ 의 확률이 바뀌니 두 사건은 종속이에요.",
+            "answer": "3/10",
+            "answerType": "fraction",
+            "check": "(Rational(1, 2) + Rational(2, 5) - Rational(3, 4))/Rational(1, 2)"
+          },
+          {
+            "id": "indep",
+            "q": "두 사건 $A$, $B$ 는 서로 독립이고 $P(A)=\\frac{1}{3}$, $P(A\\cup B)=\\frac{3}{5}$ 일 때, $P(B)$ 의 값을 구하세요.",
+            "hint": "$P(B)=t$ 라 두면 독립이라 $P(A\\cap B)=\\frac{1}{3}t$ 예요.",
+            "concepts": [
+              "$A$, $B$ 가 서로 독립이면 $P(A\\cap B)=P(A)P(B)$",
+              "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+            ],
+            "steps": [
+              {
+                "title": "식 세우기",
+                "body": "$$\\frac{1}{3}+t-\\frac{1}{3}t=\\frac{3}{5}$$"
+              },
+              {
+                "title": "정리하기",
+                "body": "$$\\frac{2}{3}t=\\frac{3}{5}-\\frac{1}{3}=\\frac{4}{15}$$"
+              },
+              {
+                "title": "풀기",
+                "body": "$$t=\\frac{4}{15}\\times\\frac{3}{2}=\\frac{2}{5}$$"
+              }
+            ],
+            "tip": "여사건으로도 풀 수 있어요. 독립이면 $A^C$, $B^C$ 도 독립이라 $1-\\frac{3}{5}=\\frac{2}{3}\\times P(B^C)$, $P(B^C)=\\frac{3}{5}$ 예요.",
+            "answer": "2/5",
+            "answerType": "fraction",
+            "check": "solve(Eq(Rational(1, 3) + t - Rational(1, 3)*t, Rational(3, 5)), t)[0]"
+          },
+          {
+            "id": "trial",
+            "q": "주사위 한 개를 $4$ 번 던질 때, 3의 배수의 눈이 정확히 $2$ 번 나올 확률을 구하세요.",
+            "hint": "한 번 던질 때 3의 배수(3, 6)가 나올 확률부터 구해요.",
+            "concepts": [
+              "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+            ],
+            "steps": [
+              {
+                "title": "한 번의 확률",
+                "body": "3의 배수는 3, 6 두 개라 $p=\\frac{2}{6}=\\frac{1}{3}$, 아닐 확률은 $\\frac{2}{3}$ 이에요."
+              },
+              {
+                "title": "자리 고르기",
+                "body": "네 번 중 두 번의 자리를 고르는 방법은 ${}_4\\mathrm{C}_2=6$ 가지예요."
+              },
+              {
+                "title": "독립시행의 확률",
+                "body": "$$6\\times\\left(\\frac{1}{3}\\right)^2\\left(\\frac{2}{3}\\right)^2=6\\times\\frac{4}{81}=\\frac{8}{27}$$"
+              }
+            ],
+            "tip": "${}_4\\mathrm{C}_2$ 를 빠뜨리면 $\\frac{4}{81}$ 이 나와요. 한 가지 순서의 확률일 뿐이에요.",
+            "answer": "8/27",
+            "answerType": "fraction",
+            "check": "from itertools import product\nans = sum(Rational(1, 3)**sum(w)*Rational(2, 3)**(4 - sum(w)) for w in product([0, 1], repeat=4) if sum(w) == 2)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "조건이 붙으면 **전체가 조건 쪽으로 줄어요**. $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$, 분모가 조건이에요.",
+          "**곱셈정리** $P(A\\cap B)=P(A)P(B\\mid A)$. 다시 넣지 않고 꺼내면 두 번째 확률이 바뀌어요.",
+          "**독립**이면 $P(A\\cap B)=P(A)P(B)$. 배반(함께 못 일어남)과는 달라요.",
+          "**독립시행** $n$ 번 중 $r$ 번은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$. 수능에서는 조건부확률 계산(24번)과 독립시행 상황 문제(28번)로 자주 나와요."
+        ],
+        "done": "조건부확률과 독립시행 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "prob-conditional-formula",
+    "prob-conditional-count",
+    "prob-conditional-draw",
+    "prob-conditional-indep",
+    "prob-conditional-trial"
+  ],
+  "problems": [
+    {
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac{1}{3}$, $P(B)=\\frac{1}{3}$, $P(A\\cup B)=\\frac{1}{2}$ 일 때, $P(A\\mid B)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "(Rational(2, 6) + Rational(2, 6) - Rational(3, 6))/Rational(2, 6)",
+      "concepts": [
+        "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$",
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요."
+      ],
+      "steps": [
+        {
+          "title": "분모를 6 으로 맞추기",
+          "body": "$$P(A)=\\frac{2}{6},\\quad P(B)=\\frac{2}{6},\\quad P(A\\cup B)=\\frac{3}{6}$$"
+        },
+        {
+          "title": "덧셈정리로 겹친 부분 구하기",
+          "body": "$$P(A\\cap B)=\\frac{2}{6}+\\frac{2}{6}-\\frac{3}{6}=\\frac{1}{6}$$"
+        },
+        {
+          "title": "조건 B 로 나누기",
+          "body": "$B$ 가 일어났다는 조건이니 $P(B)$ 로 나눠요.\n$$P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)}=\\frac{1/6}{2/6}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "분모가 같으니 분자끼리만 나눠도 돼요: $\\frac{1}{2}$. $P(B\\mid A)$ 와 헷갈리지 않게, 세로선 오른쪽(조건)이 분모로 가요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prob-conditional-formula",
+      "seed": 1000
+    },
+    {
+      "q": "어느 반 남학생 $12$ 명 중 $4$ 명, 여학생 $11$ 명 중 $7$ 명이 안경을 썼어요. 이 반에서 한 명을 뽑았어요. 뽑힌 학생이 안경을 쓴 학생이었을 때, 이 학생이 여학생일 확률을 구하세요.",
+      "choices": null,
+      "answer": "7/11",
+      "answerType": "fraction",
+      "check": "S = [(1, 1)]*4 + [(1, 0)]*8 + [(2, 1)]*7 + [(2, 0)]*4\nT = [s for s in S if s[1] == 1]\nans = Rational(len([s for s in T if s[0] == 2]), len(T))",
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "조건부확률은 전체를 조건에 맞는 사람으로 줄여서 세도 돼요."
+      ],
+      "steps": [
+        {
+          "title": "조건으로 전체 줄이기",
+          "body": "조건은 '안경을 쓴 학생'이에요. 그런 학생은 $4+7=11$ 명이에요."
+        },
+        {
+          "title": "그중 구하는 것 세기",
+          "body": "그중 여학생은 $7$ 명이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{7}{11}$$"
+        }
+      ],
+      "tip": "분모를 여학생 $11$ 명으로 하면 '여학생일 때 안경을 썼을 확률'이 돼요. 조건이 무엇인지 먼저 확인해요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prob-conditional-count",
+      "seed": 1001
+    },
+    {
+      "q": "주머니에 빨간 공 $4$ 개와 파란 공 $4$ 개가 있어요. 공을 하나 꺼내 색을 확인하고 다시 넣지 않은 채 하나를 더 꺼낼 때, 첫 번째에 파란 공, 두 번째에 빨간 공이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "2/7",
+      "answerType": "fraction",
+      "check": "from itertools import permutations\nB = [1]*4 + [0]*4\nL = list(permutations(range(8), 2))\nans = Rational(len([1 for i, j in L if B[i] == 0 and B[j] == 1]), len(L))",
+      "concepts": [
+        "곱셈정리: $P(A\\cap B)=P(A)P(B\\mid A)$",
+        "꺼낸 공을 다시 넣지 않으면 두 번째에는 공이 하나 줄어요."
+      ],
+      "steps": [
+        {
+          "title": "첫 번째",
+          "body": "공 $8$ 개 중 파란 공이 $4$ 개라 $\\frac{4}{8}$ 예요."
+        },
+        {
+          "title": "첫 번째 결과를 안 뒤의 두 번째",
+          "body": "공이 $7$ 개 남고 빨간 공은 그대로 $4$ 개라 $\\frac{4}{7}$ 예요."
+        },
+        {
+          "title": "곱셈정리로 곱하기",
+          "body": "$$\\frac{4}{8}\\times\\frac{4}{7}=\\frac{2}{7}$$"
+        }
+      ],
+      "tip": "다시 넣었다면 두 번째에도 공이 $8$ 개 그대로라 답이 달라져요. 앞 결과가 뒤 확률을 바꾸는 경우(종속)예요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prob-conditional-draw",
+      "seed": 1002
+    },
+    {
+      "q": "두 사건 $A$, $B$ 는 서로 독립이고 $P(A)=\\frac{2}{3}$, $P(A\\cup B)=\\frac{5}{6}$ 일 때, $P(B)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "solve(Eq(Rational(2, 3) + t - Rational(2, 3)*t, Rational(5, 6)), t)[0]",
+      "concepts": [
+        "$A$, $B$ 가 서로 독립이면 $P(A\\cap B)=P(A)P(B)$",
+        "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$P(B)=t$ 라 하면 독립이라 $P(A\\cap B)=\\frac{2}{3}t$ 예요.\n$$\\frac{2}{3}+t-\\frac{2}{3}t=\\frac{5}{6}$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$\\frac{1}{3}t=\\frac{5}{6}-\\frac{2}{3}=\\frac{1}{6}$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$t=\\frac{1}{6}\\div\\frac{1}{3}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "여사건으로 보면 더 빨라요: $P(A^C\\cap B^C)=P(A^C)P(B^C)$ 이므로 $1-\\frac{5}{6}=\\frac{1}{3}\\times P(B^C)$ 예요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prob-conditional-indep",
+      "seed": 1003
+    },
+    {
+      "q": "동전 한 개를 $3$ 번 던질 때, 앞면이 나오는 횟수가 정확히 $2$ 번일 확률을 구하세요.",
+      "choices": null,
+      "answer": "3/8",
+      "answerType": "fraction",
+      "check": "from itertools import product\nP = Rational(1, 2)\nans = sum(P**sum(w)*(1 - P)**(3 - sum(w)) for w in product([0, 1], repeat=3) if sum(w) == 2)",
+      "concepts": [
+        "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 $_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "한 번의 확률",
+          "body": "일어날 확률 $p=\\frac{1}{2}$, 일어나지 않을 확률 $1-p=\\frac{1}{2}$ 이에요."
+        },
+        {
+          "title": "자리 고르기",
+          "body": "$3$ 번 중 일어날 $2$ 번의 자리를 고르는 방법은 ${}_{3}\\mathrm{C}_{2}=3$ 가지예요."
+        },
+        {
+          "title": "독립시행의 확률",
+          "body": "$${}_{3}\\mathrm{C}_{2}\\left(\\frac{1}{2}\\right)^{2}\\left(\\frac{1}{2}\\right)^{1}=3\\times\\frac{1}{8}=\\frac{3}{8}$$"
+        }
+      ],
+      "tip": "자리 고르는 가짓수(${}_{3}\\mathrm{C}_{2}$)를 빠뜨리면 한 가지 순서의 확률만 구한 셈이에요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prob-conditional-trial",
+      "seed": 1004
+    },
+    {
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac{3}{5}$, $P(B)=\\frac{3}{5}$, $P(A\\cup B)=\\frac{9}{10}$ 일 때, $P(A\\mid B)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "(Rational(6, 10) + Rational(6, 10) - Rational(9, 10))/Rational(6, 10)",
+      "concepts": [
+        "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$",
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요."
+      ],
+      "steps": [
+        {
+          "title": "분모를 10 으로 맞추기",
+          "body": "$$P(A)=\\frac{6}{10},\\quad P(B)=\\frac{6}{10},\\quad P(A\\cup B)=\\frac{9}{10}$$"
+        },
+        {
+          "title": "덧셈정리로 겹친 부분 구하기",
+          "body": "$$P(A\\cap B)=\\frac{6}{10}+\\frac{6}{10}-\\frac{9}{10}=\\frac{3}{10}$$"
+        },
+        {
+          "title": "조건 B 로 나누기",
+          "body": "$B$ 가 일어났다는 조건이니 $P(B)$ 로 나눠요.\n$$P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)}=\\frac{3/10}{6/10}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "분모가 같으니 분자끼리만 나눠도 돼요: $\\frac{3}{6}$. $P(B\\mid A)$ 와 헷갈리지 않게, 세로선 오른쪽(조건)이 분모로 가요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prob-conditional-formula",
+      "seed": 1005
+    },
+    {
+      "q": "어느 반 1학년 $12$ 명 중 $10$ 명, 2학년 $20$ 명 중 $16$ 명이 동아리에 가입했어요. 이 반에서 한 명을 뽑았어요. 뽑힌 학생이 동아리에 가입한 학생이었을 때, 이 학생이 2학년일 확률을 구하세요.",
+      "choices": null,
+      "answer": "8/13",
+      "answerType": "fraction",
+      "check": "S = [(1, 1)]*10 + [(1, 0)]*2 + [(2, 1)]*16 + [(2, 0)]*4\nT = [s for s in S if s[1] == 1]\nans = Rational(len([s for s in T if s[0] == 2]), len(T))",
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "조건부확률은 전체를 조건에 맞는 사람으로 줄여서 세도 돼요."
+      ],
+      "steps": [
+        {
+          "title": "조건으로 전체 줄이기",
+          "body": "조건은 '동아리에 가입한 학생'이에요. 그런 학생은 $10+16=26$ 명이에요."
+        },
+        {
+          "title": "그중 구하는 것 세기",
+          "body": "그중 2학년은 $16$ 명이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{16}{26}=\\frac{8}{13}$$"
+        }
+      ],
+      "tip": "분모를 2학년 $20$ 명으로 하면 '2학년일 때 동아리에 가입했을 확률'이 돼요. 조건이 무엇인지 먼저 확인해요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prob-conditional-count",
+      "seed": 1006
+    },
+    {
+      "q": "주머니에 빨간 공 $6$ 개와 파란 공 $3$ 개가 있어요. 공을 하나 꺼내 색을 확인하고 다시 넣지 않은 채 하나를 더 꺼낼 때, 두 번 모두 빨간 공이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "5/12",
+      "answerType": "fraction",
+      "check": "from itertools import permutations\nB = [1]*6 + [0]*3\nL = list(permutations(range(9), 2))\nans = Rational(len([1 for i, j in L if B[i] == 1 and B[j] == 1]), len(L))",
+      "concepts": [
+        "곱셈정리: $P(A\\cap B)=P(A)P(B\\mid A)$",
+        "꺼낸 공을 다시 넣지 않으면 두 번째에는 공이 하나 줄어요."
+      ],
+      "steps": [
+        {
+          "title": "첫 번째",
+          "body": "공 $9$ 개 중 빨간 공이 $6$ 개라 $\\frac{6}{9}$ 이에요."
+        },
+        {
+          "title": "첫 번째 결과를 안 뒤의 두 번째",
+          "body": "공이 $8$ 개 남고 빨간 공은 $5$ 개라 $\\frac{5}{8}$ 예요."
+        },
+        {
+          "title": "곱셈정리로 곱하기",
+          "body": "$$\\frac{6}{9}\\times\\frac{5}{8}=\\frac{5}{12}$$"
+        }
+      ],
+      "tip": "다시 넣었다면 두 번째에도 공이 $9$ 개 그대로라 답이 달라져요. 앞 결과가 뒤 확률을 바꾸는 경우(종속)예요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prob-conditional-draw",
+      "seed": 1007
+    },
+    {
+      "q": "두 사건 $A$, $B$ 는 서로 독립이고 $P(A)=\\frac{3}{5}$, $P(B)=\\frac{3}{4}$ 일 때, $P(A\\cup B)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9/10",
+      "answerType": "fraction",
+      "check": "Rational(3, 5) + Rational(3, 4) - Rational(3, 5)*Rational(3, 4)",
+      "concepts": [
+        "$A$, $B$ 가 서로 독립이면 $P(A\\cap B)=P(A)P(B)$",
+        "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "독립이니 곱하기",
+          "body": "$$P(A\\cap B)=P(A)P(B)=\\frac{3}{5}\\times\\frac{3}{4}=\\frac{9}{20}$$"
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$P(A\\cup B)=\\frac{3}{5}+\\frac{3}{4}-\\frac{9}{20}=\\frac{12}{20}+\\frac{15}{20}-\\frac{9}{20}=\\frac{9}{10}$$"
+        }
+      ],
+      "tip": "여사건으로도 구할 수 있어요: $1-P(A^C)P(B^C)=1-\\frac{2}{5}\\times\\frac{1}{4}=\\frac{9}{10}$. 독립이면 여사건끼리도 독립이에요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prob-conditional-indep",
+      "seed": 1008
+    },
+    {
+      "q": "주사위 한 개를 $4$ 번 던질 때, 5 이상의 눈이 나오는 횟수가 정확히 $2$ 번일 확률을 구하세요.",
+      "choices": null,
+      "answer": "8/27",
+      "answerType": "fraction",
+      "check": "from itertools import product\nP = Rational(1, 3)\nans = sum(P**sum(w)*(1 - P)**(4 - sum(w)) for w in product([0, 1], repeat=4) if sum(w) == 2)",
+      "concepts": [
+        "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 $_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "한 번의 확률",
+          "body": "일어날 확률 $p=\\frac{1}{3}$, 일어나지 않을 확률 $1-p=\\frac{2}{3}$ 예요."
+        },
+        {
+          "title": "자리 고르기",
+          "body": "$4$ 번 중 일어날 $2$ 번의 자리를 고르는 방법은 ${}_{4}\\mathrm{C}_{2}=6$ 가지예요."
+        },
+        {
+          "title": "독립시행의 확률",
+          "body": "$${}_{4}\\mathrm{C}_{2}\\left(\\frac{1}{3}\\right)^{2}\\left(\\frac{2}{3}\\right)^{2}=6\\times\\frac{4}{81}=\\frac{8}{27}$$"
+        }
+      ],
+      "tip": "자리 고르는 가짓수(${}_{4}\\mathrm{C}_{2}$)를 빠뜨리면 한 가지 순서의 확률만 구한 셈이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prob-conditional-trial",
+      "seed": 1009
+    },
+    {
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac{1}{4}$, $P(B)=\\frac{3}{4}$, $P(A\\cup B)=\\frac{7}{8}$ 일 때, $P(A\\mid B)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/6",
+      "answerType": "fraction",
+      "check": "(Rational(2, 8) + Rational(6, 8) - Rational(7, 8))/Rational(6, 8)",
+      "concepts": [
+        "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$",
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요."
+      ],
+      "steps": [
+        {
+          "title": "분모를 8 로 맞추기",
+          "body": "$$P(A)=\\frac{2}{8},\\quad P(B)=\\frac{6}{8},\\quad P(A\\cup B)=\\frac{7}{8}$$"
+        },
+        {
+          "title": "덧셈정리로 겹친 부분 구하기",
+          "body": "$$P(A\\cap B)=\\frac{2}{8}+\\frac{6}{8}-\\frac{7}{8}=\\frac{1}{8}$$"
+        },
+        {
+          "title": "조건 B 로 나누기",
+          "body": "$B$ 가 일어났다는 조건이니 $P(B)$ 로 나눠요.\n$$P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)}=\\frac{1/8}{6/8}=\\frac{1}{6}$$"
+        }
+      ],
+      "tip": "분모가 같으니 분자끼리만 나눠도 돼요: $\\frac{1}{6}$. $P(B\\mid A)$ 와 헷갈리지 않게, 세로선 오른쪽(조건)이 분모로 가요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prob-conditional-formula",
+      "seed": 1010
+    },
+    {
+      "q": "어느 반 남학생 $17$ 명 중 $13$ 명, 여학생 $19$ 명 중 $6$ 명이 방과후 수업을 신청했어요. 이 반에서 한 명을 뽑았어요. 뽑힌 학생이 여학생이었을 때, 이 학생이 방과후 수업을 신청했을 확률을 구하세요.",
+      "choices": null,
+      "answer": "6/19",
+      "answerType": "fraction",
+      "check": "S = [(1, 1)]*13 + [(1, 0)]*4 + [(2, 1)]*6 + [(2, 0)]*13\nT = [s for s in S if s[0] == 2]\nans = Rational(len([s for s in T if s[1] == 1]), len(T))",
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "조건부확률은 전체를 조건에 맞는 사람으로 줄여서 세도 돼요."
+      ],
+      "steps": [
+        {
+          "title": "조건으로 전체 줄이기",
+          "body": "조건은 '여학생'이에요. 전체가 여학생 $19$ 명으로 줄어요."
+        },
+        {
+          "title": "그중 구하는 것 세기",
+          "body": "그중 방과후 수업을 신청한 학생은 $6$ 명이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{6}{19}$$"
+        }
+      ],
+      "tip": "분모를 방과후 수업을 신청한 학생 $19$ 명으로 하면 조건과 구하는 것이 뒤바뀐 확률이 돼요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prob-conditional-count",
+      "seed": 1011
+    },
+    {
+      "q": "주머니에 빨간 공 $3$ 개와 파란 공 $4$ 개가 있어요. 공을 하나 꺼내 색을 확인하고 다시 넣지 않은 채 하나를 더 꺼낼 때, 첫 번째에 파란 공, 두 번째에 빨간 공이 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "2/7",
+      "answerType": "fraction",
+      "check": "from itertools import permutations\nB = [1]*3 + [0]*4\nL = list(permutations(range(7), 2))\nans = Rational(len([1 for i, j in L if B[i] == 0 and B[j] == 1]), len(L))",
+      "concepts": [
+        "곱셈정리: $P(A\\cap B)=P(A)P(B\\mid A)$",
+        "꺼낸 공을 다시 넣지 않으면 두 번째에는 공이 하나 줄어요."
+      ],
+      "steps": [
+        {
+          "title": "첫 번째",
+          "body": "공 $7$ 개 중 파란 공이 $4$ 개라 $\\frac{4}{7}$ 예요."
+        },
+        {
+          "title": "첫 번째 결과를 안 뒤의 두 번째",
+          "body": "공이 $6$ 개 남고 빨간 공은 그대로 $3$ 개라 $\\frac{3}{6}$ 이에요."
+        },
+        {
+          "title": "곱셈정리로 곱하기",
+          "body": "$$\\frac{4}{7}\\times\\frac{3}{6}=\\frac{2}{7}$$"
+        }
+      ],
+      "tip": "다시 넣었다면 두 번째에도 공이 $7$ 개 그대로라 답이 달라져요. 앞 결과가 뒤 확률을 바꾸는 경우(종속)예요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prob-conditional-draw",
+      "seed": 1012
+    },
+    {
+      "q": "두 사건 $A$, $B$ 는 서로 독립이고 $P(A)=\\frac{1}{2}$, $P(B)=\\frac{1}{2}$ 일 때, $P(A\\cup B)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "Rational(1, 2) + Rational(1, 2) - Rational(1, 2)*Rational(1, 2)",
+      "concepts": [
+        "$A$, $B$ 가 서로 독립이면 $P(A\\cap B)=P(A)P(B)$",
+        "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "독립이니 곱하기",
+          "body": "$$P(A\\cap B)=P(A)P(B)=\\frac{1}{2}\\times\\frac{1}{2}=\\frac{1}{4}$$"
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$P(A\\cup B)=\\frac{1}{2}+\\frac{1}{2}-\\frac{1}{4}=\\frac{2}{4}+\\frac{2}{4}-\\frac{1}{4}=\\frac{3}{4}$$"
+        }
+      ],
+      "tip": "여사건으로도 구할 수 있어요: $1-P(A^C)P(B^C)=1-\\frac{1}{2}\\times\\frac{1}{2}=\\frac{3}{4}$. 독립이면 여사건끼리도 독립이에요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prob-conditional-indep",
+      "seed": 1013
+    },
+    {
+      "q": "동전 한 개를 $5$ 번 던질 때, 앞면이 나오는 횟수가 정확히 $4$ 번일 확률을 구하세요.",
+      "choices": null,
+      "answer": "5/32",
+      "answerType": "fraction",
+      "check": "from itertools import product\nP = Rational(1, 2)\nans = sum(P**sum(w)*(1 - P)**(5 - sum(w)) for w in product([0, 1], repeat=5) if sum(w) == 4)",
+      "concepts": [
+        "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 $_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "한 번의 확률",
+          "body": "일어날 확률 $p=\\frac{1}{2}$, 일어나지 않을 확률 $1-p=\\frac{1}{2}$ 이에요."
+        },
+        {
+          "title": "자리 고르기",
+          "body": "$5$ 번 중 일어날 $4$ 번의 자리를 고르는 방법은 ${}_{5}\\mathrm{C}_{4}=5$ 가지예요."
+        },
+        {
+          "title": "독립시행의 확률",
+          "body": "$${}_{5}\\mathrm{C}_{4}\\left(\\frac{1}{2}\\right)^{4}\\left(\\frac{1}{2}\\right)^{1}=5\\times\\frac{1}{32}=\\frac{5}{32}$$"
+        }
+      ],
+      "tip": "자리 고르는 가짓수(${}_{5}\\mathrm{C}_{4}$)를 빠뜨리면 한 가지 순서의 확률만 구한 셈이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prob-conditional-trial",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac{2}{5}$, $P(B\\mid A)=\\frac{3}{4}$ 일 때, $P(A\\cap B)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/10",
+      "answerType": "fraction",
+      "check": "Rational(2, 5)*Rational(3, 4)",
+      "concepts": [
+        "곱셈정리: $P(A\\cap B)=P(A)P(B\\mid A)$"
+      ],
+      "steps": [
+        {
+          "title": "곱셈정리",
+          "body": "$$P(A\\cap B)=P(A)P(B\\mid A)$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$$\\frac{2}{5}\\times\\frac{3}{4}=\\frac{6}{20}=\\frac{3}{10}$$"
+        }
+      ],
+      "tip": "$P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ 의 양변에 $P(A)$ 를 곱한 식이 곱셈정리예요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac{3}{5}$, $P(A^C\\cap B)=\\frac{1}{5}$ 일 때, $P(B\\mid A^C)$ 의 값을 구하세요. (단, $A^C$ 는 $A$ 의 여사건이에요.)",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "Rational(1, 5)/(1 - Rational(3, 5))",
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "$P(A^C)=1-P(A)$"
+      ],
+      "steps": [
+        {
+          "title": "조건의 확률",
+          "body": "$$P(A^C)=1-\\frac{3}{5}=\\frac{2}{5}$$"
+        },
+        {
+          "title": "조건부확률",
+          "body": "$$P(B\\mid A^C)=\\frac{P(A^C\\cap B)}{P(A^C)}=\\frac{1/5}{2/5}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "조건이 $A^C$ 이니 분모도 $P(A^C)$ 예요. $P(A)$ 로 나누지 않게 조심해요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "주사위 두 개를 던졌더니 나온 눈의 합이 $8$ 이었어요. 이때 두 눈이 모두 짝수일 확률을 구하세요.",
+      "choices": null,
+      "answer": "3/5",
+      "answerType": "fraction",
+      "check": "from itertools import product\nL = [w for w in product(range(1, 7), repeat=2) if sum(w) == 8]\nans = Rational(len([w for w in L if w[0] % 2 == 0 and w[1] % 2 == 0]), len(L))",
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "조건부확률은 전체를 조건에 맞는 경우로 줄여서 세도 돼요."
+      ],
+      "steps": [
+        {
+          "title": "조건으로 전체 줄이기",
+          "body": "합이 8 인 경우는 $(2,6)$, $(3,5)$, $(4,4)$, $(5,3)$, $(6,2)$ 로 5가지예요."
+        },
+        {
+          "title": "그중 둘 다 짝수",
+          "body": "$(2,6)$, $(4,4)$, $(6,2)$ 로 3가지예요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{3}{5}$$"
+        }
+      ],
+      "tip": "전체 36가지로 나누면 $\\frac{3}{36}$, 곧 '합이 8 이면서 둘 다 짝수'일 확률이 돼요. 조건이 있으면 전체가 5가지로 줄어요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "동전 세 개를 던졌더니 앞면이 적어도 한 개 나왔어요. 이때 세 개 모두 앞면일 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/7",
+      "answerType": "fraction",
+      "check": "from itertools import product\nL = [w for w in product([0, 1], repeat=3) if sum(w) >= 1]\nans = Rational(len([w for w in L if sum(w) == 3]), len(L))",
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "'적어도 한 개'는 여사건(모두 뒷면)을 빼서 세요."
+      ],
+      "steps": [
+        {
+          "title": "모든 경우",
+          "body": "동전 세 개의 결과는 $2^3=8$ 가지예요."
+        },
+        {
+          "title": "조건으로 전체 줄이기",
+          "body": "모두 뒷면인 1가지를 빼면 앞면이 적어도 한 개인 경우는 $8-1=7$ 가지예요."
+        },
+        {
+          "title": "그중 모두 앞면",
+          "body": "1가지라서 $$\\frac{1}{7}$$"
+        }
+      ],
+      "tip": "조건 없이 모두 앞면일 확률은 $\\frac{1}{8}$ 이에요. '적어도 한 개'라는 정보 때문에 전체가 7가지로 줄어 확률이 조금 커졌어요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "주머니에 흰 공 $3$ 개와 검은 공 $2$ 개가 있어요. 공을 하나씩 두 번 꺼낼 때, 꺼낸 공은 다시 넣지 않아요. 두 번째 꺼낸 공이 흰 공일 확률을 구하세요.",
+      "choices": null,
+      "answer": "3/5",
+      "answerType": "fraction",
+      "check": "from itertools import permutations\nB = [1]*3 + [0]*2\nL = list(permutations(range(5), 2))\nans = Rational(len([1 for i, j in L if B[j] == 1]), len(L))",
+      "concepts": [
+        "곱셈정리: $P(A\\cap B)=P(A)P(B\\mid A)$",
+        "두 번째 결과만 물으면 첫 번째가 흰 공인 경우와 검은 공인 경우로 나눠 더해요."
+      ],
+      "steps": [
+        {
+          "title": "첫 번째가 흰 공",
+          "body": "$$\\frac{3}{5}\\times\\frac{2}{4}=\\frac{6}{20}$$"
+        },
+        {
+          "title": "첫 번째가 검은 공",
+          "body": "$$\\frac{2}{5}\\times\\frac{3}{4}=\\frac{6}{20}$$"
+        },
+        {
+          "title": "두 경우를 더하기",
+          "body": "$$\\frac{6}{20}+\\frac{6}{20}=\\frac{12}{20}=\\frac{3}{5}$$"
+        }
+      ],
+      "tip": "첫 번째 공을 보지 않았다면 두 번째도 처음과 같은 $\\frac{3}{5}$ 이에요. 제비뽑기는 순서와 상관없이 공평하다는 뜻이에요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "두 사건 $A$, $B$ 는 서로 독립이고 $P(A)=\\frac{1}{3}$, $P(B)=\\frac{1}{4}$ 일 때, $P(A\\cap B^C)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/4",
+      "answerType": "fraction",
+      "check": "Rational(1, 3) - Rational(1, 3)*Rational(1, 4)",
+      "concepts": [
+        "$A$, $B$ 가 서로 독립이면 $P(A\\cap B)=P(A)P(B)$",
+        "$A$, $B$ 가 독립이면 $A$ 와 $B^C$ 도 독립이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건의 확률",
+          "body": "$$P(B^C)=1-\\frac{1}{4}=\\frac{3}{4}$$"
+        },
+        {
+          "title": "독립이니 곱하기",
+          "body": "$$P(A\\cap B^C)=\\frac{1}{3}\\times\\frac{3}{4}=\\frac{1}{4}$$"
+        }
+      ],
+      "tip": "$P(A\\cap B^C)=P(A)-P(A\\cap B)=\\frac{1}{3}-\\frac{1}{12}=\\frac{1}{4}$ 로 검산할 수 있어요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "동전 한 개를 $5$ 번 던질 때, 앞면이 정확히 $3$ 번 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "5/16",
+      "answerType": "fraction",
+      "check": "from itertools import product\nans = Rational(len([w for w in product([0, 1], repeat=5) if sum(w) == 3]), 2**5)",
+      "concepts": [
+        "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "자리 고르기",
+          "body": "다섯 번 중 앞면이 나올 세 자리를 고르는 방법은 ${}_5\\mathrm{C}_3=10$ 가지예요."
+        },
+        {
+          "title": "한 가지 순서의 확률",
+          "body": "$$\\left(\\frac{1}{2}\\right)^3\\left(\\frac{1}{2}\\right)^2=\\frac{1}{32}$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$10\\times\\frac{1}{32}=\\frac{10}{32}=\\frac{5}{16}$$"
+        }
+      ],
+      "tip": "동전은 $p=1-p=\\frac{1}{2}$ 이라 모든 순서의 확률이 같아요. 그래서 '경우의 수 ÷ $2^5$' 로 세어도 같아요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "자유투 성공률이 $\\frac{2}{3}$ 인 선수가 자유투를 $4$ 번 던질 때, $3$ 번 이상 성공할 확률을 구하세요. (단, 매번의 결과는 서로 독립이에요.)",
+      "choices": null,
+      "answer": "16/27",
+      "answerType": "fraction",
+      "check": "from itertools import product\nans = sum(Rational(2, 3)**sum(w)*Rational(1, 3)**(4 - sum(w)) for w in product([0, 1], repeat=4) if sum(w) >= 3)",
+      "concepts": [
+        "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$",
+        "'3 번 이상'은 3 번과 4 번으로 나눠 더해요."
+      ],
+      "steps": [
+        {
+          "title": "딱 3 번",
+          "body": "$${}_4\\mathrm{C}_3\\left(\\frac{2}{3}\\right)^3\\left(\\frac{1}{3}\\right)=4\\times\\frac{8}{81}=\\frac{32}{81}$$"
+        },
+        {
+          "title": "4 번 모두",
+          "body": "$$\\left(\\frac{2}{3}\\right)^4=\\frac{16}{81}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{32}{81}+\\frac{16}{81}=\\frac{48}{81}=\\frac{16}{27}$$"
+        }
+      ],
+      "tip": "'3 번 이상'과 '딱 3 번'을 헷갈리지 않게, 문제의 말을 먼저 확인해요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "상자 A 에는 빨간 공 $2$ 개와 파란 공 $3$ 개, 상자 B 에는 빨간 공 $4$ 개와 파란 공 $1$ 개가 있어요. 주사위를 던져 $2$ 이하의 눈이 나오면 상자 A 에서, 그렇지 않으면 상자 B 에서 공을 하나 꺼내요. 꺼낸 공이 빨간 공일 확률을 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([d for d in range(1, 7) if d <= 2]), 6)*Rational(2, 5) + Rational(len([d for d in range(1, 7) if d > 2]), 6)*Rational(4, 5)",
+      "concepts": [
+        "곱셈정리: $P(A\\cap B)=P(A)P(B\\mid A)$",
+        "어느 상자인지로 나눠 각각 곱셈정리를 쓰고 더해요."
+      ],
+      "steps": [
+        {
+          "title": "상자 A 에서 빨강",
+          "body": "$$\\frac{2}{6}\\times\\frac{2}{5}=\\frac{2}{15}$$"
+        },
+        {
+          "title": "상자 B 에서 빨강",
+          "body": "$$\\frac{4}{6}\\times\\frac{4}{5}=\\frac{8}{15}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{2}{15}+\\frac{8}{15}=\\frac{10}{15}=\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "두 경우는 동시에 일어나지 않으니(배반) 더해요. 경우마다 '상자를 고를 확률 × 그 상자에서 빨강일 확률'이에요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "앞 문제와 같은 상황에서, 꺼낸 공이 빨간 공이었을 때 그 공이 상자 A 에서 나왔을 확률을 구하세요. (상자 A: 빨강 $2$, 파랑 $3$ / 상자 B: 빨강 $4$, 파랑 $1$ / 주사위 눈이 $2$ 이하이면 A)",
+      "choices": null,
+      "answer": "1/5",
+      "answerType": "fraction",
+      "check": "pa = Rational(2, 6)*Rational(2, 5)\npb = Rational(4, 6)*Rational(4, 5)\nans = pa/(pa + pb)",
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "곱셈정리: $P(A\\cap B)=P(A)P(B\\mid A)$"
+      ],
+      "steps": [
+        {
+          "title": "조건의 확률",
+          "body": "꺼낸 공이 빨간 공일 확률은 $\\frac{2}{15}+\\frac{8}{15}=\\frac{10}{15}$ 이에요."
+        },
+        {
+          "title": "A 이면서 빨강",
+          "body": "$$\\frac{2}{6}\\times\\frac{2}{5}=\\frac{2}{15}$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{2/15}{10/15}=\\frac{2}{10}=\\frac{1}{5}$$"
+        }
+      ],
+      "tip": "조건이 '빨간 공'이니 빨간 공이 나오는 모든 길이 분모로 가요. 상자 A 를 고를 확률 $\\frac{1}{3}$ 과 헷갈리지 마세요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "두 사건 $A$, $B$ 는 서로 독립이고 $P(A\\cap B)=\\frac{1}{6}$, $P(A\\cap B^C)=\\frac{1}{3}$ 일 때, $P(B)$ 의 값은?",
+      "choices": [
+        "$\\frac{1}{6}$",
+        "$\\frac{1}{4}$",
+        "$\\frac{1}{3}$",
+        "$\\frac{1}{2}$",
+        "$\\frac{2}{3}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "Rational(1, 6)/(Rational(1, 6) + Rational(1, 3))",
+      "choiceChecks": [
+        "1/6",
+        "1/4",
+        "1/3",
+        "1/2",
+        "2/3"
+      ],
+      "concepts": [
+        "$A$, $B$ 가 서로 독립이면 $P(A\\cap B)=P(A)P(B)$",
+        "$P(A)=P(A\\cap B)+P(A\\cap B^C)$"
+      ],
+      "steps": [
+        {
+          "title": "P(A) 구하기",
+          "body": "$A$ 는 $A\\cap B$ 와 $A\\cap B^C$ 로 나뉘어요.\n$$P(A)=\\frac{1}{6}+\\frac{1}{3}=\\frac{1}{2}$$"
+        },
+        {
+          "title": "독립 이용",
+          "body": "$P(A\\cap B)=P(A)P(B)$ 이므로\n$$\\frac{1}{6}=\\frac{1}{2}\\times P(B)$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$P(B)=\\frac{1}{6}\\times 2=\\frac{1}{3}$$"
+        }
+      ],
+      "tip": "독립이면 $P(B)=P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ 로 한 번에 구해도 돼요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(B\\mid A)=\\frac{1}{4}$, $P(A\\mid B)=\\frac{1}{3}$, $P(A\\cup B)=\\frac{3}{5}$ 일 때, $P(A)$ 의 값은?",
+      "choices": [
+        "$\\frac{1}{5}$",
+        "$\\frac{3}{10}$",
+        "$\\frac{2}{5}$",
+        "$\\frac{1}{2}$",
+        "$\\frac{3}{5}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "t0 = solve(Eq(t/Rational(1, 4) + t/Rational(1, 3) - t, Rational(3, 5)), t)[0]\nans = t0/Rational(1, 4)",
+      "choiceChecks": [
+        "1/5",
+        "3/10",
+        "2/5",
+        "1/2",
+        "3/5"
+      ],
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "겹친 부분을 t 로",
+          "body": "$P(A\\cap B)=t$ 라 하면 $P(A)=\\dfrac{t}{1/4}=4t$, $P(B)=\\dfrac{t}{1/3}=3t$ 예요."
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$4t+3t-t=\\frac{3}{5}$$"
+        },
+        {
+          "title": "t 구하기",
+          "body": "$$6t=\\frac{3}{5},\\quad t=\\frac{1}{10}$$"
+        },
+        {
+          "title": "P(A)",
+          "body": "$$P(A)=4t=\\frac{4}{10}=\\frac{2}{5}$$"
+        }
+      ],
+      "tip": "조건부확률이 둘 주어지면 공통인 $P(A\\cap B)$ 를 미지수로 두면 깔끔해요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "주머니에 $1$, $2$, $3$, $4$, $5$ 가 하나씩 적힌 공 $5$ 개가 있어요. 공을 하나 꺼내 적힌 수가 홀수이면 동전 $3$ 개를, 짝수이면 동전 $2$ 개를 동시에 던져요. 앞면이 나온 동전이 $2$ 개였을 때, 꺼낸 공에 적힌 수가 홀수였을 확률은?",
+      "choices": [
+        "$\\frac{7}{13}$",
+        "$\\frac{8}{13}$",
+        "$\\frac{9}{13}$",
+        "$\\frac{10}{13}$",
+        "$\\frac{11}{13}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import product\nnum = Rational(0)\nden = Rational(0)\nfor b in range(1, 6):\n    k = 3 if b % 2 == 1 else 2\n    for w in product([0, 1], repeat=k):\n        pr = Rational(1, 5)*Rational(1, 2**k)\n        if sum(w) == 2:\n            den += pr\n            if b % 2 == 1:\n                num += pr\nans = num/den",
+      "choiceChecks": [
+        "7/13",
+        "8/13",
+        "9/13",
+        "10/13",
+        "11/13"
+      ],
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "곱셈정리: $P(A\\cap B)=P(A)P(B\\mid A)$",
+        "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "홀수이고 앞면 2개",
+          "body": "홀수 공은 3개라 $\\frac{3}{5}$, 동전 3개 중 앞면 2개는 ${}_3\\mathrm{C}_2\\left(\\frac{1}{2}\\right)^3=\\frac{3}{8}$ 이에요.\n$$\\frac{3}{5}\\times\\frac{3}{8}=\\frac{9}{40}$$"
+        },
+        {
+          "title": "짝수이고 앞면 2개",
+          "body": "짝수 공은 2개라 $\\frac{2}{5}$, 동전 2개 모두 앞면은 $\\frac{1}{4}$ 이에요.\n$$\\frac{2}{5}\\times\\frac{1}{4}=\\frac{4}{40}$$"
+        },
+        {
+          "title": "앞면 2개일 확률",
+          "body": "$$\\frac{9}{40}+\\frac{4}{40}=\\frac{13}{40}$$"
+        },
+        {
+          "title": "조건부확률",
+          "body": "$$\\frac{9/40}{13/40}=\\frac{9}{13}$$"
+        }
+      ],
+      "tip": "분모는 '앞면 2개'가 나오는 모든 길(홀수 공·짝수 공)의 합이에요. 분모를 $\\frac{3}{5}$ 로 두지 않게 조심해요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "수직선의 원점에 점 $\\mathrm{P}$ 가 있어요. 주사위 한 개를 던져 3의 배수의 눈이 나오면 $\\mathrm{P}$ 를 양의 방향으로 $2$ 만큼, 그렇지 않으면 음의 방향으로 $1$ 만큼 옮겨요. 주사위를 $5$ 번 던진 뒤 $\\mathrm{P}$ 의 좌표가 $4$ 일 확률은?",
+      "choices": [
+        "$\\frac{10}{243}$",
+        "$\\frac{20}{243}$",
+        "$\\frac{32}{243}$",
+        "$\\frac{40}{243}$",
+        "$\\frac{80}{243}$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "from itertools import product\nans = sum(Rational(1, 3)**sum(w)*Rational(2, 3)**(5 - sum(w)) for w in product([0, 1], repeat=5) if 2*sum(w) - (5 - sum(w)) == 4)",
+      "choiceChecks": [
+        "10/243",
+        "20/243",
+        "32/243",
+        "40/243",
+        "80/243"
+      ],
+      "concepts": [
+        "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "횟수로 식 세우기",
+          "body": "3의 배수가 $r$ 번 나오면 나머지 $5-r$ 번은 음의 방향이라 좌표는 $2r-(5-r)=3r-5$ 예요."
+        },
+        {
+          "title": "r 구하기",
+          "body": "$$3r-5=4,\\quad r=3$$"
+        },
+        {
+          "title": "독립시행의 확률",
+          "body": "$p=\\frac{1}{3}$ 인 시행 5번 중 3번이에요.\n$${}_5\\mathrm{C}_3\\left(\\frac{1}{3}\\right)^3\\left(\\frac{2}{3}\\right)^2=10\\times\\frac{1}{27}\\times\\frac{4}{9}=\\frac{40}{243}$$"
+        }
+      ],
+      "tip": "점 옮기기 문제는 '몇 번 일어났나'를 미지수로 두고 위치 식을 세우면 독립시행으로 바뀌어요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "한 판을 이길 확률이 $\\frac{2}{3}$ 인 게임을 $4$ 판 했어요(매 판의 결과는 서로 독립). $4$ 판 중 $3$ 판 이상 이겼을 때, 첫 판을 이겼을 확률은?",
+      "choices": [
+        "$\\frac{2}{3}$",
+        "$\\frac{3}{4}$",
+        "$\\frac{4}{5}$",
+        "$\\frac{5}{6}$",
+        "$\\frac{7}{8}$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "from itertools import product\nW = lambda w: Rational(2, 3)**sum(w)*Rational(1, 3)**(4 - sum(w))\nden = sum(W(w) for w in product([0, 1], repeat=4) if sum(w) >= 3)\nnum = sum(W(w) for w in product([0, 1], repeat=4) if sum(w) >= 3 and w[0] == 1)\nans = num/den",
+      "choiceChecks": [
+        "2/3",
+        "3/4",
+        "4/5",
+        "5/6",
+        "7/8"
+      ],
+      "concepts": [
+        "조건부확률: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$ — 전체를 $A$ 로 줄여서 봐요.",
+        "독립시행: 확률이 $p$ 인 사건이 $n$ 번 중 $r$ 번 일어날 확률은 ${}_n\\mathrm{C}_r\\,p^r(1-p)^{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "3 판 이상 이길 확률",
+          "body": "$${}_4\\mathrm{C}_3\\left(\\frac{2}{3}\\right)^3\\frac{1}{3}+\\left(\\frac{2}{3}\\right)^4=\\frac{32}{81}+\\frac{16}{81}=\\frac{48}{81}$$"
+        },
+        {
+          "title": "첫 판을 이기고 3 판 이상",
+          "body": "첫 판을 이기면 남은 3판 중 2판 이상 이기면 돼요.\n$$\\frac{2}{3}\\left\\{{}_3\\mathrm{C}_2\\left(\\frac{2}{3}\\right)^2\\frac{1}{3}+\\left(\\frac{2}{3}\\right)^3\\right\\}=\\frac{2}{3}\\times\\frac{20}{27}=\\frac{40}{81}$$"
+        },
+        {
+          "title": "조건부확률",
+          "body": "$$\\frac{40/81}{48/81}=\\frac{40}{48}=\\frac{5}{6}$$"
+        }
+      ],
+      "tip": "거꾸로 '첫 판을 졌는데 3판 이상 이긴' 경우는 남은 3판을 모두 이긴 $\\frac{1}{3}\\times\\frac{8}{27}=\\frac{8}{81}$ 뿐이라, $1-\\frac{8}{48}=\\frac{5}{6}$ 로 검산할 수 있어요."
+    }
+  ]
+}
