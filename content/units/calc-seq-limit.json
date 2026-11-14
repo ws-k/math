@@ -1,0 +1,1323 @@
+{
+  "id": "calc-seq-limit",
+  "course": "미적분",
+  "unit": "수열의 극한",
+  "title": "수열의 극한",
+  "prereq": [
+    "math1-arith-geo",
+    "math2-limit"
+  ],
+  "suneung": [
+    "미적 25"
+  ],
+  "hours": 3.5,
+  "formulas": [
+    "$\\displaystyle\\lim_{n\\to\\infty}\\frac{an+b}{cn+d}=\\frac{a}{c}\\ (c\\ne0)$",
+    "$\\sqrt{A}-\\sqrt{B}=\\frac{A-B}{\\sqrt{A}+\\sqrt{B}}$",
+    "$-1<r<1\\ \\Rightarrow\\ \\displaystyle\\lim_{n\\to\\infty}r^n=0$",
+    "$a_n\\le c_n\\le b_n,\\ \\displaystyle\\lim_{n\\to\\infty}a_n=\\lim_{n\\to\\infty}b_n=\\alpha\\ \\Rightarrow\\ \\lim_{n\\to\\infty}c_n=\\alpha$"
+  ],
+  "lesson": {
+    "minutes": 30,
+    "values": {
+      "one": {
+        "value": "1",
+        "check": "limit(1 + 6/n, n, oo)"
+      },
+      "three": {
+        "value": "3",
+        "check": "limit((3*n + 1)/(n + 2), n, oo)"
+      },
+      "conv": {
+        "value": "3",
+        "check": "len([r for r in [Rational(-1, 2), Integer(-1), Rational(1, 3), Integer(1), Rational(3, 2)] if -1 < r <= 1])"
+      },
+      "two": {
+        "value": "2",
+        "check": "limit(2 - 1/n, n, oo)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "미적분 · 수열의 극한",
+        "title": "끝없이 이어지는 수열,\n어디로 다가갈까요?",
+        "lead": "수열의 항을 한없이 계속 구해 가면 어떤 값에 가까워지기도 하고, 끝없이 커지거나 오락가락하기도 해요. 점을 찍고 끌어 보면서 다가가는 값을 찾는 방법을 만들어요.",
+        "meta": [
+          "수렴과 발산",
+          "$\\frac{\\infty}{\\infty}$ 꼴 · 샌드위치 정리",
+          "등비수열의 극한"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "항을 계속 찍어 가면\n어디로 다가갈까요?",
+        "lead": "수열 $a_n=1+\\frac{6}{n}$ 이에요. $n$ 에 1, 2, 3, … 을 넣은 점 $(n,\\ a_n)$ 을 찍어 보세요. 칸에 딱 맞는 점이 4개 있어요. $n$ 이 한없이 커지면 $a_n$ 은 어떤 값에 다가갈까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": 0,
+              "max": 12,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "g",
+                "curve": "1+6/x",
+                "label": "$y=1+\\frac{6}{x}$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "pointsOn": {
+                "curve": "g",
+                "count": 4
+              }
+            },
+            "intro": "$a_1=1+6$ 처럼 계산해서 빈 칸을 눌러 찍어요. 잘못 찍었으면 눌러서 지워요.",
+            "done": "$n$ 이 커질수록 점이 조금씩 내려가며 한 높이에 다가가요."
+          }
+        },
+        "choices": [
+          {
+            "value": "1",
+            "check": "limit(1 + 6/n, n, oo)"
+          },
+          {
+            "value": "0",
+            "check": "limit(6/n, n, oo)",
+            "feedback": "$\\frac{6}{n}$ 은 0 으로 가지만 앞의 1 은 그대로 남아요."
+          },
+          {
+            "value": "7",
+            "check": "(1 + 6/n).subs(n, 1)",
+            "feedback": "첫째항 $a_1$ 이에요. 다가가는 값은 $n$ 이 아주 클 때의 값이에요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "limit(1 + 6/n, n, oo)",
+        "reveal": "**맞아요.** {{one}} 에 다가가요.",
+        "thoughts": [
+          "$a_6=2$, $a_{60}=1.1$, $a_{600}=1.01$ … 처럼 1 보다 큰 쪽에서 1 로 다가가요.",
+          "$\\frac{6}{n}$ 은 $n$ 이 커지면 얼마든지 0 에 가까워져요.",
+          "그래도 1 과 같아지는 항은 없어요. '같아진다'가 아니라 '한없이 가까워진다'예요."
+        ],
+        "conclude": "이럴 때 수열이 ==1 에 수렴한다==고 하고 $\\displaystyle\\lim_{n\\to\\infty}a_n=1$ 로 써요."
+      },
+      {
+        "kind": "question",
+        "id": "ratio",
+        "chip": "손으로 해 보기",
+        "title": "분자도 분모도\n한없이 커지면?",
+        "lead": "$\\frac{3n+1}{n+2}$ 은 분자와 분모가 둘 다 한없이 커져요. 슬라이더로 $a$ 를 바꾸며 $a_n=\\frac{an+1}{n+2}$ 의 그래프를 보고, P 를 오른쪽 끝까지 끌어 보세요. $\\displaystyle\\lim_{n\\to\\infty}\\frac{3n+1}{n+2}$ 은 얼마일까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 40,
+              "step": 4
+            },
+            "y": {
+              "min": 0,
+              "max": 5,
+              "step": "1/2"
+            },
+            "sliders": [
+              {
+                "id": "a",
+                "min": 1,
+                "max": 4,
+                "step": 1,
+                "value": 1,
+                "label": "분자의 계수 $a$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "f",
+                "curve": "(a*x+1)/(x+2)",
+                "label": "$y=\\frac{ax+1}{x+2}$"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "f",
+                  "x": 4,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "readout": "value(a)",
+                "label": "$a$",
+                "digits": 0
+              },
+              {
+                "readout": "x(P)",
+                "label": "$n$",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "$a_n$",
+                "digits": 3
+              }
+            ],
+            "intro": "$a=3$ 으로 맞추고 P 를 오른쪽으로 끌어 $a_n$ 을 읽어 보세요."
+          }
+        },
+        "choices": [
+          {
+            "value": "3",
+            "check": "limit((3*n + 1)/(n + 2), n, oo)"
+          },
+          {
+            "value": "1/2",
+            "check": "((3*n + 1)/(n + 2)).subs(n, 0)",
+            "feedback": "상수항끼리 나눈 값이에요. $n$ 이 크면 1 과 2 는 $3n$, $n$ 에 비해 거의 보이지 않을 만큼 작아요."
+          },
+          {
+            "value": "1",
+            "check": "limit(n/n, n, oo)",
+            "feedback": "∞ ÷ ∞ 를 1 로 봤어요. 둘 다 커지지만 분자가 분모보다 약 3배 빨리 커져요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "limit((3*n + 1)/(n + 2), n, oo)",
+        "reveal": "**맞아요.** {{three}} 이에요.",
+        "thoughts": [
+          "분자·분모를 $n$ 으로 나누면 $\\frac{3+\\frac{1}{n}}{1+\\frac{2}{n}}$ 이에요.",
+          "$\\frac{1}{n}$, $\\frac{2}{n}$ 은 0 으로 가니 $\\frac{3+0}{1+0}={{three}}$ 이에요.",
+          "슬라이더로 $a$ 를 바꾸면 그래프가 다가가는 높이도 $a$ 로 바뀌어요. 최고차항의 계수끼리의 비예요."
+        ],
+        "conclude": "$\\frac{\\infty}{\\infty}$ 꼴은 ==분모의 최고차항으로 분자·분모를 나눠요==. 0 으로 가는 항이 드러나요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "수렴과 극한값",
+            "body": "$n$ 이 한없이 커질 때 $a_n$ 이 일정한 값 $\\alpha$ 에 한없이 가까워지면 수렴한다고 하고, $\\displaystyle\\lim_{n\\to\\infty}a_n=\\alpha$ 로 써요. $\\alpha$ 가 극한값이에요."
+          },
+          {
+            "term": "발산",
+            "body": "수렴하지 않는 것이에요. 한없이 커지면 양의 무한대로 발산($\\lim a_n=\\infty$), 한없이 작아지면 음의 무한대로 발산, $-1,\\ 1,\\ -1,\\ \\cdots$ 처럼 오락가락하면 진동한다고 해요."
+          },
+          {
+            "term": "극한의 성질",
+            "body": "$\\lim a_n=\\alpha$, $\\lim b_n=\\beta$ 이면 합·차·실수배·곱의 극한은 $\\alpha\\pm\\beta$, $k\\alpha$, $\\alpha\\beta$ 이고, $\\beta\\ne0$ 이면 몫의 극한은 $\\frac{\\alpha}{\\beta}$ 예요."
+          }
+        ],
+        "aside": "**∞ 는 수가 아니에요** · 성질은 두 수열이 모두 수렴할 때만 써요. $\\frac{\\infty}{\\infty}$ 를 1 로, $\\infty-\\infty$ 를 0 으로 계산하면 틀려요. 식을 바꿔 수렴하는 꼴로 만들어야 해요."
+      },
+      {
+        "kind": "question",
+        "id": "geo",
+        "chip": "지름길",
+        "title": "공비가 음수여도\n다가갈까요?",
+        "lead": "$\\left(-\\frac{1}{2}\\right)^n$ 은 곱할 때마다 부호가 바뀌고 크기가 절반이 돼요. '다음 이동 보기'로 처음 값 1 에서 점이 어떻게 뛰는지 보세요. $r=-\\frac{1}{2},\\ -1,\\ \\frac{1}{3},\\ 1,\\ \\frac{3}{2}$ 가운데 등비수열 $\\{r^n\\}$ 이 수렴하는 것은 몇 개일까요?",
+        "widget": {
+          "type": "numberLine",
+          "params": {
+            "min": -1,
+            "max": 1,
+            "step": "1/16",
+            "label": "1/2",
+            "jumps": {
+              "start": "1",
+              "moves": [
+                "-3/2",
+                "3/4",
+                "-3/8",
+                "3/16"
+              ]
+            }
+          }
+        },
+        "choices": [
+          {
+            "value": "3",
+            "check": "len([r for r in [Rational(-1, 2), Integer(-1), Rational(1, 3), Integer(1), Rational(3, 2)] if -1 < r <= 1])"
+          },
+          {
+            "value": "2",
+            "check": "len([r for r in [Rational(-1, 2), Integer(-1), Rational(1, 3), Integer(1), Rational(3, 2)] if 0 < r <= 1])",
+            "feedback": "$-\\frac{1}{2}$ 을 뺐어요. 수직선에서 보듯 0 의 양쪽을 번갈아 뛰지만 거리가 절반씩 줄어 0 에 다가가요."
+          },
+          {
+            "value": "4",
+            "check": "len([r for r in [Rational(-1, 2), Integer(-1), Rational(1, 3), Integer(1), Rational(3, 2)] if -1 <= r <= 1])",
+            "feedback": "$r=-1$ 은 $-1,\\ 1,\\ -1,\\ \\cdots$ 을 끝없이 오가서 한 값에 다가가지 않아요. 진동해요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "len([r for r in [Rational(-1, 2), Integer(-1), Rational(1, 3), Integer(1), Rational(3, 2)] if -1 < r <= 1])",
+        "reveal": "**맞아요.** $-\\frac{1}{2}$, $\\frac{1}{3}$, $1$ 의 {{conv}}개예요.",
+        "thoughts": [
+          "$|r|<1$ 이면 곱할수록 크기가 줄어 $r^n$ 은 0 으로 가요. 부호가 바뀌어도 마찬가지예요.",
+          "$r=1$ 이면 모든 항이 1 이라 1 로 수렴해요.",
+          "$r=\\frac{3}{2}$ 처럼 $r>1$ 이면 한없이 커지고, $r\\le-1$ 이면 진동해요."
+        ],
+        "conclude": "등비수열 $\\{r^n\\}$ 은 ==−1 < r ≤ 1 일 때만 수렴==해요. 그래서 밑이 여럿이면 가장 큰 밑의 거듭제곱으로 나눠 나머지를 $|r|<1$ 꼴로 만들어요."
+      },
+      {
+        "kind": "question",
+        "id": "squeeze",
+        "chip": "두 번째 해 보기",
+        "title": "흔들리면서\n다가가는 수열",
+        "lead": "$a_n=\\frac{2n+(-1)^n}{n}$ 은 홀수 번째는 아래로, 짝수 번째는 위로 번갈아 흔들려요. 연한 두 곡선 $2-\\frac{1}{x}$, $2+\\frac{1}{x}$ 사이에서 P 를 끌어 보세요. $\\displaystyle\\lim_{n\\to\\infty}a_n$ 은 얼마일까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 20,
+              "step": 2
+            },
+            "y": {
+              "min": 0,
+              "max": 4,
+              "step": "1/2"
+            },
+            "objects": [
+              {
+                "id": "lo",
+                "curve": "2-1/x",
+                "label": "$y=2-\\frac{1}{x}$",
+                "tone": "soft"
+              },
+              {
+                "id": "hi",
+                "curve": "2+1/x",
+                "label": "$y=2+\\frac{1}{x}$",
+                "tone": "soft"
+              },
+              {
+                "id": "c",
+                "curve": "2+cos(pi*x)/x",
+                "label": "$n$ 자리에서 $a_n$ 을 지나는 곡선"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "c",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "$n$",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "$a_n$",
+                "digits": 3
+              }
+            ],
+            "intro": "P 를 한 칸씩 옮기면 위아래 곡선에 번갈아 닿아요."
+          }
+        },
+        "choices": [
+          {
+            "value": "2",
+            "check": "lo = limit(2 - 1/n, n, oo)\nhi = limit(2 + 1/n, n, oo)\nans = lo if lo == hi else nan"
+          },
+          {
+            "value": "1",
+            "check": "(2 - 1/n).subs(n, 1)",
+            "feedback": "첫째항 $a_1=\\frac{2-1}{1}$ 이에요. 극한은 $n$ 이 아주 클 때의 값이에요."
+          },
+          {
+            "value": "0",
+            "check": "limit(1/n, n, oo)",
+            "feedback": "흔들리는 부분 $\\frac{(-1)^n}{n}$ 만 봤어요. 그건 0 으로 가지만 앞의 2 가 남아요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "lo = limit(2 - 1/n, n, oo)\nhi = limit(2 + 1/n, n, oo)\nans = lo if lo == hi else nan",
+        "reveal": "**맞아요.** {{two}} 예요.",
+        "thoughts": [
+          "$a_n=2+\\frac{(-1)^n}{n}$ 이고 $(-1)^n$ 은 $-1$ 아니면 $1$ 이라서 $2-\\frac{1}{n}\\le a_n\\le 2+\\frac{1}{n}$ 이에요.",
+          "양쪽 수열 $2-\\frac{1}{n}$, $2+\\frac{1}{n}$ 은 둘 다 {{two}} 로 수렴해요.",
+          "그 사이에 끼인 $a_n$ 도 같은 값으로 갈 수밖에 없어요."
+        ],
+        "conclude": "같은 값으로 가는 두 수열 사이에 끼이면 가운데도 그 값으로 가요. 이것이 ==샌드위치 정리==예요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $\\displaystyle\\lim_{n\\to\\infty}\\frac{3n^2+n}{n^2+1}$ 을 구하려고 분자·분모를 $n^2$ 으로 나눴어요. 왼쪽은 처음 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(3*n**2+n)/(n**2+1)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(3+1/n)/(1+1/n)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "(3+1/n)/(1+1/n**2)",
+              "body": "분모의 1 은 $n^2$ 으로 나누면 $\\frac{1}{n^2}$ 이에요. 항마다 같은 $n^2$ 으로 나눠야 해요. 극한값 3 은 같지만, 식이 같지 않으면 다른 문제에서 답이 틀어져요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $\\displaystyle\\lim_{n\\to\\infty}\\left(\\sqrt{n^2+4n}-n\\right)$ 을 구하려고 유리화했어요. 왼쪽은 처음 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt(n**2+4*n)-n"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "4*n/(sqrt(n**2+4*n)-n)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "4*n/(sqrt(n**2+4*n)+n)",
+              "body": "분자·분모에 곱하는 건 부호를 바꾼 $\\sqrt{n^2+4n}+n$ 이에요. 분모에 빼기를 그대로 두면 다시 $\\infty-\\infty$ 꼴이 돼요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "rat",
+            "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{2n^2-3n}{n^2+5}$ 의 값을 구하세요.",
+            "hint": "분모의 최고차항 $n^2$ 으로 분자·분모를 나눠요.",
+            "concepts": [
+              "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 나눠요."
+            ],
+            "steps": [
+              {
+                "title": "$n^2$ 으로 나누기",
+                "body": "$$\\frac{2n^2-3n}{n^2+5}=\\frac{2-\\frac{3}{n}}{1+\\frac{5}{n^2}}$$"
+              },
+              {
+                "title": "0 으로 가는 항 지우기",
+                "body": "$$\\frac{2-0}{1+0}=2$$"
+              }
+            ],
+            "tip": "차수가 같으면 최고차항의 계수끼리의 비가 극한값이에요.",
+            "answer": "2",
+            "answerType": "int",
+            "check": "limit((2*n**2 - 3*n)/(n**2 + 5), n, oo)"
+          },
+          {
+            "id": "root",
+            "q": "$\\displaystyle\\lim_{n\\to\\infty}\\left(\\sqrt{n^2+6n}-n\\right)$ 의 값을 구하세요.",
+            "hint": "$\\infty-\\infty$ 꼴이에요. $\\sqrt{n^2+6n}+n$ 을 분자·분모에 곱해요.",
+            "concepts": [
+              "$\\sqrt{A}-\\sqrt{B}=\\frac{A-B}{\\sqrt{A}+\\sqrt{B}}$"
+            ],
+            "steps": [
+              {
+                "title": "유리화",
+                "body": "$$\\sqrt{n^2+6n}-n=\\frac{6n}{\\sqrt{n^2+6n}+n}$$"
+              },
+              {
+                "title": "$n$ 으로 나누기",
+                "body": "$$=\\frac{6}{\\sqrt{1+\\frac{6}{n}}+1}\\to\\frac{6}{1+1}=3$$"
+              }
+            ],
+            "tip": "근호 안을 $n$ 으로 나눌 때는 $\\sqrt{n^2}=n$ 이라서 근호 안은 $n^2$ 으로 나눠요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "limit(sqrt(n**2 + 6*n) - n, n, oo)"
+          },
+          {
+            "id": "geo",
+            "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{3^{n+1}+2^n}{3^n+1}$ 의 값을 구하세요.",
+            "hint": "밑이 가장 큰 $3^n$ 으로 분자·분모를 나눠요.",
+            "concepts": [
+              "$-1<r<1$ 이면 $r^n\\to0$"
+            ],
+            "steps": [
+              {
+                "title": "$3^n$ 으로 나누기",
+                "body": "$$\\frac{3^{n+1}+2^n}{3^n+1}=\\frac{3+\\left(\\frac{2}{3}\\right)^n}{1+\\left(\\frac{1}{3}\\right)^n}$$"
+              },
+              {
+                "title": "0 으로 가는 항 지우기",
+                "body": "$$\\frac{3+0}{1+0}=3$$"
+              }
+            ],
+            "tip": "$3^{n+1}=3\\times3^n$ 이에요. 지수에 1 이 붙은 항부터 정리해요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "limit((3**(n + 1) + 2**n)/(3**n + 1), n, oo)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$\\frac{\\infty}{\\infty}$ 꼴은 **분모의 최고차항으로 나누고**, $\\infty-\\infty$ 꼴은 **유리화**해서 0 으로 가는 항을 드러내요.",
+          "등비수열 $\\{r^n\\}$ 은 $-1<r\\le1$ 일 때만 수렴해요. $|r|<1$ 이면 0 이에요. 밑이 여럿이면 가장 큰 밑으로 나눠요.",
+          "같은 값으로 가는 두 수열 사이에 끼인 수열은 그 값으로 가요(샌드위치 정리).",
+          "수능에서는 부등식으로 끼운 수열의 극한, 등비수열이 섞인 분수식, 근호의 $\\infty-\\infty$ 꼴이 한 문제씩 나와요."
+        ],
+        "done": "수열의 극한 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "calc-seq-limit-rational",
+    "calc-seq-limit-sqrt",
+    "calc-seq-limit-geometric",
+    "calc-seq-limit-property",
+    "calc-seq-limit-squeeze"
+  ],
+  "problems": [
+    {
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{-6n^2-2n-4}{5n^2+2n+6}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-6/5",
+      "answerType": "fraction",
+      "check": "limit((-6*n**2 - 2*n - 4)/(5*n**2 + 2*n + 6), n, oo)",
+      "concepts": [
+        "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 분자·분모를 나눠요.",
+        "$n\\to\\infty$ 일 때 $\\frac{1}{n}\\to0$, $\\frac{1}{n^2}\\to0$"
+      ],
+      "steps": [
+        {
+          "title": "분모의 최고차항으로 나누기",
+          "body": "분자·분모를 $n^2$ 으로 나눠요.\n$$\\frac{-6n^2-2n-4}{5n^2+2n+6}=\\frac{-6-\\frac{2}{n}-\\frac{4}{n^2}}{5+\\frac{2}{n}+\\frac{6}{n^2}}$$"
+        },
+        {
+          "title": "0 으로 가는 항 지우기",
+          "body": "$\\frac{1}{n}$ 이 들어 있는 항은 모두 0 으로 가요.\n$$\\frac{-6+0}{5+0}=-\\frac{6}{5}$$"
+        }
+      ],
+      "tip": "차수가 같으면 극한은 최고차항의 계수끼리의 비예요. 상수항끼리 나누지 마세요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "calc-seq-limit-rational",
+      "seed": 1000
+    },
+    {
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\left(\\sqrt{n^2+3n+1}-n\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "limit(sqrt(1*n**2 + 3*n + 1) - n, n, oo)",
+      "concepts": [
+        "$\\sqrt{A}-\\sqrt{B}=\\frac{A-B}{\\sqrt{A}+\\sqrt{B}}$ (유리화)",
+        "$n\\to\\infty$ 일 때 $\\frac{1}{n}\\to0$, $\\frac{1}{n^2}\\to0$"
+      ],
+      "steps": [
+        {
+          "title": "유리화",
+          "body": "$$\\sqrt{n^2+3n+1}-n=\\frac{(n^2+3n+1)-n^2}{\\sqrt{n^2+3n+1}+n}=\\frac{3n+1}{\\sqrt{n^2+3n+1}+n}$$"
+        },
+        {
+          "title": "$n$ 으로 나누기",
+          "body": "$$=\\frac{3+\\frac{1}{n}}{\\sqrt{1+\\frac{3}{n}+\\frac{1}{n^2}}+1}\\to\\frac{3}{1+1}=\\frac{3}{2}$$"
+        }
+      ],
+      "tip": "유리화할 때 분모는 빼기가 아니라 더하기($\\sqrt{\\ }+n$)예요. 부호를 그대로 두면 분모가 다시 $\\infty-\\infty$ 가 돼요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "calc-seq-limit-sqrt",
+      "seed": 1001
+    },
+    {
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{2\\cdot 4^{n}+2^{n+1}}{4^{n+1}+2\\cdot 2^{n}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "limit((2*4**(n) + (1)*2**(n + 1))/(4**(n + 1) + 2*2**(n)), n, oo)",
+      "concepts": [
+        "$-1<r<1$ 이면 $\\displaystyle\\lim_{n\\to\\infty}r^n=0$",
+        "밑이 가장 큰 거듭제곱으로 분자·분모를 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "$4^n$ 으로 나누기",
+          "body": "밑이 가장 큰 $4^n$ 으로 분자·분모를 나눠요.\n$$\\frac{2+2\\left(\\frac{1}{2}\\right)^n}{4+2\\left(\\frac{1}{2}\\right)^n}$$"
+        },
+        {
+          "title": "0 으로 가는 항 지우기",
+          "body": "$0<\\frac{1}{2}<1$ 이라서 $\\left(\\frac{1}{2}\\right)^n\\to0$ 이에요.\n$$\\frac{2+0}{4+0}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "작은 밑으로 나누면 $\\left(2\\right)^n$ 처럼 발산하는 항이 생겨요. 늘 밑이 가장 큰 것으로 나눠요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "calc-seq-limit-geometric",
+      "seed": 1002
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 이 $\\displaystyle\\lim_{n\\to\\infty}(n+5)a_n=-1$ 을 만족시킬 때, $\\displaystyle\\lim_{n\\to\\infty}(5n+3)a_n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5",
+      "answerType": "fraction",
+      "check": "limit(-1*(5*n + 3)/(1*n + 5), n, oo)",
+      "concepts": [
+        "수렴하는 두 수열의 곱의 극한은 극한의 곱이에요."
+      ],
+      "steps": [
+        {
+          "title": "아는 꼴로 쪼개기",
+          "body": "$$(5n+3)a_n=(n+5)a_n\\times\\frac{5n+3}{n+5}$$"
+        },
+        {
+          "title": "각각의 극한",
+          "body": "앞은 $-1$ 로 수렴하고, 뒤는 $\\frac{\\infty}{\\infty}$ 꼴이라 $5$ 로 수렴해요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$-1\\times5=-5$$"
+        }
+      ],
+      "tip": "$a_n$ 자체는 0 으로 가요. $\\lim a_n=0$ 과 $\\lim(\\infty)=\\infty$ 를 따로 곱하면 안 되고, 수렴하는 두 꼴로 묶어야 해요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "calc-seq-limit-property",
+      "seed": 1003
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 이 모든 자연수 $n$ 에 대하여 $\\frac{2n-2}{2n+4}<a_n<\\frac{2n-1}{2n+4}$ 을 만족시킬 때, $\\displaystyle\\lim_{n\\to\\infty}a_n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "fraction",
+      "check": "lo = limit((2*n - 2)/(2*n + 4), n, oo)\nhi = limit((2*n - 1)/(2*n + 4), n, oo)\nans = lo if lo == hi else nan",
+      "concepts": [
+        "$a_n\\le c_n\\le b_n$ 이고 $\\lim a_n=\\lim b_n=\\alpha$ 이면 $\\lim c_n=\\alpha$"
+      ],
+      "steps": [
+        {
+          "title": "양쪽 극한",
+          "body": "두 분수는 차수가 같아 최고차항의 계수의 비 $1$ 로 수렴해요."
+        },
+        {
+          "title": "샌드위치",
+          "body": "$a_n$ 은 같은 값으로 가는 두 수열 사이에 끼어 있으니 $\\displaystyle\\lim_{n\\to\\infty}a_n=1$ 이에요."
+        }
+      ],
+      "tip": "양쪽 극한이 같을 때만 가운데 극한이 정해져요. 다르면 이 정리로는 알 수 없어요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "calc-seq-limit-squeeze",
+      "seed": 1004
+    },
+    {
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{3n^2-3n-4}{4n^2+4}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "limit((3*n**2 - 3*n - 4)/(4*n**2 + 4), n, oo)",
+      "concepts": [
+        "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 분자·분모를 나눠요.",
+        "$n\\to\\infty$ 일 때 $\\frac{1}{n}\\to0$, $\\frac{1}{n^2}\\to0$"
+      ],
+      "steps": [
+        {
+          "title": "분모의 최고차항으로 나누기",
+          "body": "분자·분모를 $n^2$ 으로 나눠요.\n$$\\frac{3n^2-3n-4}{4n^2+4}=\\frac{3-\\frac{3}{n}-\\frac{4}{n^2}}{4+\\frac{4}{n^2}}$$"
+        },
+        {
+          "title": "0 으로 가는 항 지우기",
+          "body": "$\\frac{1}{n}$ 이 들어 있는 항은 모두 0 으로 가요.\n$$\\frac{3+0}{4+0}=\\frac{3}{4}$$"
+        }
+      ],
+      "tip": "차수가 같으면 극한은 최고차항의 계수끼리의 비예요. 상수항끼리 나누지 마세요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "calc-seq-limit-rational",
+      "seed": 1005
+    },
+    {
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\left(\\sqrt{n^2+3n}-\\sqrt{n^2+9n}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3",
+      "answerType": "fraction",
+      "check": "limit(sqrt(1*n**2 + 3*n) - sqrt(1*n**2 + 9*n), n, oo)",
+      "concepts": [
+        "$\\sqrt{A}-\\sqrt{B}=\\frac{A-B}{\\sqrt{A}+\\sqrt{B}}$ (유리화)",
+        "$n\\to\\infty$ 일 때 $\\frac{1}{n}\\to0$, $\\frac{1}{n^2}\\to0$"
+      ],
+      "steps": [
+        {
+          "title": "유리화",
+          "body": "$$\\sqrt{n^2+3n}-\\sqrt{n^2+9n}=\\frac{-6n}{\\sqrt{n^2+3n}+\\sqrt{n^2+9n}}$$"
+        },
+        {
+          "title": "$n$ 으로 나누기",
+          "body": "$$=\\frac{-6}{\\sqrt{1+\\frac{3}{n}}+\\sqrt{1+\\frac{9}{n}}}\\to\\frac{-6}{1+1}=-3$$"
+        }
+      ],
+      "tip": "$\\infty-\\infty$ 를 0 으로 계산하면 틀려요. 유리화해서 $\\frac{\\infty}{\\infty}$ 꼴로 바꿔요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "calc-seq-limit-sqrt",
+      "seed": 1006
+    },
+    {
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{2\\cdot 3^{n}-2\\cdot 2^{n+1}}{3^{n+1}+2^{n}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "limit((2*3**(n) + (-2)*2**(n + 1))/(3**(n + 1) + 1*2**(n)), n, oo)",
+      "concepts": [
+        "$-1<r<1$ 이면 $\\displaystyle\\lim_{n\\to\\infty}r^n=0$",
+        "밑이 가장 큰 거듭제곱으로 분자·분모를 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "$3^n$ 으로 나누기",
+          "body": "밑이 가장 큰 $3^n$ 으로 분자·분모를 나눠요.\n$$\\frac{2-4\\left(\\frac{2}{3}\\right)^n}{3+\\left(\\frac{2}{3}\\right)^n}$$"
+        },
+        {
+          "title": "0 으로 가는 항 지우기",
+          "body": "$0<\\frac{2}{3}<1$ 이라서 $\\left(\\frac{2}{3}\\right)^n\\to0$ 이에요.\n$$\\frac{2+0}{3+0}=\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "작은 밑으로 나누면 $\\left(\\frac{3}{2}\\right)^n$ 처럼 발산하는 항이 생겨요. 늘 밑이 가장 큰 것으로 나눠요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "calc-seq-limit-geometric",
+      "seed": 1007
+    },
+    {
+      "q": "두 수열 $\\{a_n\\}$, $\\{b_n\\}$ 에 대하여 $\\displaystyle\\lim_{n\\to\\infty}a_n=3$, $\\displaystyle\\lim_{n\\to\\infty}b_n=1$ 일 때, $\\displaystyle\\lim_{n\\to\\infty}\\frac{4a_n-b_n}{a_n+2b_n}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "11/5",
+      "answerType": "fraction",
+      "check": "limit((4*(3 + 1/n) - (1 - 1/n))/((3 + 1/n) + 2*(1 - 1/n)), n, oo)",
+      "concepts": [
+        "수렴하는 수열은 합·차·실수배·몫(분모의 극한이 0 이 아닐 때)의 극한을 각각 구해 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "극한값 넣기",
+          "body": "분모의 극한이 $3+2\\times1=5\\ne0$ 이라 극한값을 그대로 넣어요."
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac{4\\times3-1}{5}=\\frac{11}{5}$$"
+        }
+      ],
+      "tip": "몫의 극한은 분모의 극한이 0 이 아닐 때만 이렇게 바로 넣어요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "calc-seq-limit-property",
+      "seed": 1008
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 이 모든 자연수 $n$ 에 대하여 $4n^2-3<na_n<4n^2+3$ 을 만족시킬 때, $\\displaystyle\\lim_{n\\to\\infty}\\frac{a_n}{n}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "lo = limit((4*n**2 - 3)/n**2, n, oo)\nhi = limit((4*n**2 + 3)/n**2, n, oo)\nans = lo if lo == hi else nan",
+      "concepts": [
+        "$a_n\\le c_n\\le b_n$ 이고 $\\lim a_n=\\lim b_n=\\alpha$ 이면 $\\lim c_n=\\alpha$"
+      ],
+      "steps": [
+        {
+          "title": "$\\frac{a_n}{n}$ 꼴 만들기",
+          "body": "각 변을 $n^2$ 으로 나눠요.\n$$4-\\frac{3}{n^2}<\\frac{a_n}{n}<4+\\frac{3}{n^2}$$"
+        },
+        {
+          "title": "샌드위치",
+          "body": "양쪽이 모두 4 로 수렴하니 $\\displaystyle\\lim_{n\\to\\infty}\\frac{a_n}{n}=4$ 예요."
+        }
+      ],
+      "tip": "구하는 꼴($\\frac{a_n}{n}$)이 가운데에 오도록 각 변을 같은 양수로 나눠요. 양수로 나누면 부등호 방향은 그대로예요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "calc-seq-limit-squeeze",
+      "seed": 1009
+    },
+    {
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{-4n^2-5n+5}{5n^2+3n+3}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4/5",
+      "answerType": "fraction",
+      "check": "limit((-4*n**2 - 5*n + 5)/(5*n**2 + 3*n + 3), n, oo)",
+      "concepts": [
+        "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 분자·분모를 나눠요.",
+        "$n\\to\\infty$ 일 때 $\\frac{1}{n}\\to0$, $\\frac{1}{n^2}\\to0$"
+      ],
+      "steps": [
+        {
+          "title": "분모의 최고차항으로 나누기",
+          "body": "분자·분모를 $n^2$ 으로 나눠요.\n$$\\frac{-4n^2-5n+5}{5n^2+3n+3}=\\frac{-4-\\frac{5}{n}+\\frac{5}{n^2}}{5+\\frac{3}{n}+\\frac{3}{n^2}}$$"
+        },
+        {
+          "title": "0 으로 가는 항 지우기",
+          "body": "$\\frac{1}{n}$ 이 들어 있는 항은 모두 0 으로 가요.\n$$\\frac{-4+0}{5+0}=-\\frac{4}{5}$$"
+        }
+      ],
+      "tip": "차수가 같으면 극한은 최고차항의 계수끼리의 비예요. 상수항끼리 나누지 마세요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "calc-seq-limit-rational",
+      "seed": 1010
+    },
+    {
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{1}{\\sqrt{n^2+7n}-n}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/7",
+      "answerType": "fraction",
+      "check": "limit(1/(sqrt(1*n**2 + 7*n) - n), n, oo)",
+      "concepts": [
+        "$\\sqrt{A}-\\sqrt{B}=\\frac{A-B}{\\sqrt{A}+\\sqrt{B}}$ (유리화)",
+        "$n\\to\\infty$ 일 때 $\\frac{1}{n}\\to0$, $\\frac{1}{n^2}\\to0$"
+      ],
+      "steps": [
+        {
+          "title": "분모 유리화",
+          "body": "분자·분모에 $\\sqrt{n^2+7n}+n$ 을 곱해요.\n$$\\frac{1}{\\sqrt{n^2+7n}-n}=\\frac{\\sqrt{n^2+7n}+n}{7n}$$"
+        },
+        {
+          "title": "$n$ 으로 나누기",
+          "body": "$$=\\frac{\\sqrt{1+\\frac{7}{n}}+1}{7}\\to\\frac{1+1}{7}=\\frac{2}{7}$$"
+        }
+      ],
+      "tip": "분모가 $\\infty-\\infty$ 꼴이면 분모를 유리화해요. 근호가 분자로 올라가요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "calc-seq-limit-sqrt",
+      "seed": 1011
+    },
+    {
+      "q": "수열 $\\left\\{\\left(\\frac{x-1}{3}\\right)^n\\right\\}$ 이 수렴하도록 하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "len([t for t in range(-5, 8) if -1 < Rational(t - (1), 3) <= 1])",
+      "concepts": [
+        "등비수열 $\\{r^n\\}$ 이 수렴할 조건은 $-1<r\\le1$"
+      ],
+      "steps": [
+        {
+          "title": "수렴 조건",
+          "body": "$$-1<\\frac{x-1}{3}\\le1$$"
+        },
+        {
+          "title": "$x$ 의 범위",
+          "body": "각 변에 3 을 곱하고 1 을 더하면\n$$-2<x\\le 4$$"
+        },
+        {
+          "title": "개수 세기",
+          "body": "$-1$ 부터 $4$ 까지 정수는 6개예요."
+        }
+      ],
+      "tip": "$r=1$ 이면 모든 항이 1 이라 수렴하고, $r=-1$ 이면 $-1$ 과 $1$ 을 오가며 진동해요. 등호는 오른쪽에만 붙어요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "calc-seq-limit-geometric",
+      "seed": 1012
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 이 $\\displaystyle\\lim_{n\\to\\infty}(n+4)a_n=7$ 을 만족시킬 때, $\\displaystyle\\lim_{n\\to\\infty}(4n-3)a_n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "28",
+      "answerType": "fraction",
+      "check": "limit(7*(4*n - 3)/(1*n + 4), n, oo)",
+      "concepts": [
+        "수렴하는 두 수열의 곱의 극한은 극한의 곱이에요."
+      ],
+      "steps": [
+        {
+          "title": "아는 꼴로 쪼개기",
+          "body": "$$(4n-3)a_n=(n+4)a_n\\times\\frac{4n-3}{n+4}$$"
+        },
+        {
+          "title": "각각의 극한",
+          "body": "앞은 $7$ 로 수렴하고, 뒤는 $\\frac{\\infty}{\\infty}$ 꼴이라 $4$ 로 수렴해요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$7\\times4=28$$"
+        }
+      ],
+      "tip": "$a_n$ 자체는 0 으로 가요. $\\lim a_n=0$ 과 $\\lim(\\infty)=\\infty$ 를 따로 곱하면 안 되고, 수렴하는 두 꼴로 묶어야 해요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "calc-seq-limit-property",
+      "seed": 1013
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 이 모든 자연수 $n$ 에 대하여 $\\frac{5n-2}{4n+5}<a_n<\\frac{5n+4}{4n+5}$ 을 만족시킬 때, $\\displaystyle\\lim_{n\\to\\infty}a_n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/4",
+      "answerType": "fraction",
+      "check": "lo = limit((5*n - 2)/(4*n + 5), n, oo)\nhi = limit((5*n + 4)/(4*n + 5), n, oo)\nans = lo if lo == hi else nan",
+      "concepts": [
+        "$a_n\\le c_n\\le b_n$ 이고 $\\lim a_n=\\lim b_n=\\alpha$ 이면 $\\lim c_n=\\alpha$"
+      ],
+      "steps": [
+        {
+          "title": "양쪽 극한",
+          "body": "두 분수는 차수가 같아 최고차항의 계수의 비 $\\frac{5}{4}$ 로 수렴해요."
+        },
+        {
+          "title": "샌드위치",
+          "body": "$a_n$ 은 같은 값으로 가는 두 수열 사이에 끼어 있으니 $\\displaystyle\\lim_{n\\to\\infty}a_n=\\frac{5}{4}$ 예요."
+        }
+      ],
+      "tip": "양쪽 극한이 같을 때만 가운데 극한이 정해져요. 다르면 이 정리로는 알 수 없어요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "calc-seq-limit-squeeze",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{4n^2-n+3}{2n^2+5}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "limit((4*n**2 - n + 3)/(2*n**2 + 5), n, oo)",
+      "concepts": [
+        "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "$n^2$ 으로 나누기",
+          "body": "$$\\frac{4-\\frac{1}{n}+\\frac{3}{n^2}}{2+\\frac{5}{n^2}}$$"
+        },
+        {
+          "title": "극한값",
+          "body": "$$\\frac{4}{2}=2$$"
+        }
+      ],
+      "tip": "차수가 같으니 최고차항의 계수의 비 $\\frac{4}{2}$ 예요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{n+3}{n^2+1}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerType": "int",
+      "check": "limit((n + 3)/(n**2 + 1), n, oo)",
+      "concepts": [
+        "분자의 차수 < 분모의 차수이면 극한값은 0"
+      ],
+      "steps": [
+        {
+          "title": "$n^2$ 으로 나누기",
+          "body": "$$\\frac{\\frac{1}{n}+\\frac{3}{n^2}}{1+\\frac{1}{n^2}}$$"
+        },
+        {
+          "title": "극한값",
+          "body": "$$\\frac{0+0}{1+0}=0$$"
+        }
+      ],
+      "tip": "분모가 더 빨리 커지면 0 이에요. 반대로 분자의 차수가 더 높으면 발산해요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\left(\\sqrt{n^2+5n}-\\sqrt{n^2+n}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "limit(sqrt(n**2 + 5*n) - sqrt(n**2 + n), n, oo)",
+      "concepts": [
+        "$\\sqrt{A}-\\sqrt{B}=\\frac{A-B}{\\sqrt{A}+\\sqrt{B}}$"
+      ],
+      "steps": [
+        {
+          "title": "유리화",
+          "body": "$$\\frac{(n^2+5n)-(n^2+n)}{\\sqrt{n^2+5n}+\\sqrt{n^2+n}}=\\frac{4n}{\\sqrt{n^2+5n}+\\sqrt{n^2+n}}$$"
+        },
+        {
+          "title": "$n$ 으로 나누기",
+          "body": "$$\\frac{4}{\\sqrt{1+\\frac{5}{n}}+\\sqrt{1+\\frac{1}{n}}}\\to\\frac{4}{1+1}=2$$"
+        }
+      ],
+      "tip": "근호 두 개의 차도 똑같이 유리화해요. 분자에는 근호 안끼리의 차만 남아요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{1}{\\sqrt{n^2+2n}-n}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "limit(1/(sqrt(n**2 + 2*n) - n), n, oo)",
+      "concepts": [
+        "분모가 $\\infty-\\infty$ 꼴이면 분모를 유리화해요."
+      ],
+      "steps": [
+        {
+          "title": "분모 유리화",
+          "body": "$$\\frac{\\sqrt{n^2+2n}+n}{(n^2+2n)-n^2}=\\frac{\\sqrt{n^2+2n}+n}{2n}$$"
+        },
+        {
+          "title": "$n$ 으로 나누기",
+          "body": "$$\\frac{\\sqrt{1+\\frac{2}{n}}+1}{2}\\to\\frac{1+1}{2}=1$$"
+        }
+      ],
+      "tip": "분모의 근호가 분자로 올라가요. 근호가 있는 쪽을 유리화한다고 기억해요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{2^{n+1}+3^n}{3^{n+1}-2^n}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "check": "limit((2**(n + 1) + 3**n)/(3**(n + 1) - 2**n), n, oo)",
+      "concepts": [
+        "$-1<r<1$ 이면 $r^n\\to0$",
+        "밑이 가장 큰 거듭제곱으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "$3^n$ 으로 나누기",
+          "body": "$$\\frac{2\\left(\\frac{2}{3}\\right)^n+1}{3-\\left(\\frac{2}{3}\\right)^n}$$"
+        },
+        {
+          "title": "극한값",
+          "body": "$\\left(\\frac{2}{3}\\right)^n\\to0$ 이므로 $\\frac{0+1}{3-0}=\\frac{1}{3}$ 이에요."
+        }
+      ],
+      "tip": "$2^{n+1}$ 이 지수가 커 보여도 밑은 2 예요. 나누는 기준은 지수가 아니라 밑의 크기예요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "수열 $\\left\\{\\left(\\frac{x-2}{3}\\right)^n\\right\\}$ 이 수렴하도록 하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "len([t for t in range(-10, 20) if -1 < Rational(t - 2, 3) <= 1])",
+      "concepts": [
+        "등비수열 $\\{r^n\\}$ 이 수렴할 조건은 $-1<r\\le1$"
+      ],
+      "steps": [
+        {
+          "title": "수렴 조건",
+          "body": "$$-1<\\frac{x-2}{3}\\le1$$"
+        },
+        {
+          "title": "$x$ 의 범위",
+          "body": "각 변에 3 을 곱하고 2 를 더하면 $-1<x\\le5$ 예요."
+        },
+        {
+          "title": "개수",
+          "body": "정수 $x$ 는 0, 1, 2, 3, 4, 5 의 6개예요."
+        }
+      ],
+      "tip": "$x=5$ 이면 공비가 1 이라 수렴하고, $x=-1$ 이면 공비가 $-1$ 이라 진동해요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "두 수열 $\\{a_n\\}$, $\\{b_n\\}$ 에 대하여 $\\displaystyle\\lim_{n\\to\\infty}a_n=3$, $\\displaystyle\\lim_{n\\to\\infty}b_n=-2$ 일 때, $\\displaystyle\\lim_{n\\to\\infty}\\frac{2a_n-b_n}{a_nb_n+7}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "limit((2*(3 + 1/n) - (-2 - 1/n))/((3 + 1/n)*(-2 - 1/n) + 7), n, oo)",
+      "concepts": [
+        "수렴하는 수열의 합·차·곱·몫(분모의 극한 ≠ 0)의 극한"
+      ],
+      "steps": [
+        {
+          "title": "분모 확인",
+          "body": "분모의 극한은 $3\\times(-2)+7=1\\ne0$ 이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac{2\\times3-(-2)}{1}=8$$"
+        }
+      ],
+      "tip": "몫의 극한을 바로 넣기 전에 분모의 극한이 0 이 아닌지 먼저 봐요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "수열 $\\{a_n\\}$ 이 $\\displaystyle\\lim_{n\\to\\infty}(2n+1)a_n=6$ 을 만족시킬 때, $\\displaystyle\\lim_{n\\to\\infty}(4n-1)a_n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "limit(6*(4*n - 1)/(2*n + 1), n, oo)",
+      "concepts": [
+        "수렴하는 두 수열의 곱의 극한은 극한의 곱이에요."
+      ],
+      "steps": [
+        {
+          "title": "쪼개기",
+          "body": "$$(4n-1)a_n=(2n+1)a_n\\times\\frac{4n-1}{2n+1}$$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$6\\times\\frac{4}{2}=12$$"
+        }
+      ],
+      "tip": "주어진 꼴 $(2n+1)a_n$ 을 그대로 살리고, 남는 부분을 수렴하는 분수로 만들어요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "수열 $\\{a_n\\}$ 이 모든 자연수 $n$ 에 대하여 $\\frac{3n-1}{n+1}<a_n<\\frac{3n+2}{n+1}$ 을 만족시킬 때, $\\displaystyle\\lim_{n\\to\\infty}a_n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "lo = limit((3*n - 1)/(n + 1), n, oo)\nhi = limit((3*n + 2)/(n + 1), n, oo)\nans = lo if lo == hi else nan",
+      "concepts": [
+        "샌드위치 정리"
+      ],
+      "steps": [
+        {
+          "title": "양쪽 극한",
+          "body": "$\\frac{3n-1}{n+1}\\to3$, $\\frac{3n+2}{n+1}\\to3$ 이에요."
+        },
+        {
+          "title": "샌드위치",
+          "body": "같은 값 3 으로 가는 두 수열 사이에 끼었으니 $\\displaystyle\\lim_{n\\to\\infty}a_n=3$ 이에요."
+        }
+      ],
+      "tip": "$a_n$ 의 식을 몰라도 양쪽 극한이 같으면 극한값이 정해져요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{n\\to\\infty}\\frac{1+2+3+\\cdots+n}{n^2+1}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "limit(summation(k, (k, 1, n))/(n**2 + 1), n, oo)",
+      "concepts": [
+        "$1+2+\\cdots+n=\\frac{n(n+1)}{2}$",
+        "$\\frac{\\infty}{\\infty}$ 꼴은 최고차항으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "합 정리",
+          "body": "$$1+2+\\cdots+n=\\frac{n(n+1)}{2}=\\frac{n^2+n}{2}$$"
+        },
+        {
+          "title": "극한",
+          "body": "$$\\frac{n^2+n}{2(n^2+1)}\\to\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "합의 꼴로는 극한을 바로 못 구해요. 먼저 $n$ 의 식으로 바꿔요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "수열 $\\{a_n\\}$ 이 모든 자연수 $n$ 에 대하여 $\\sqrt{4n^2+1}<\\sqrt{n}\\,a_n<2n+3$ 을 만족시킬 때, $\\displaystyle\\lim_{n\\to\\infty}\\frac{a_n}{\\sqrt n}$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "lo = limit(sqrt(4*n**2 + 1)/n, n, oo)\nhi = limit((2*n + 3)/n, n, oo)\nans = lo if lo == hi else nan",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "샌드위치 정리",
+        "구하는 꼴이 가운데 오도록 각 변을 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "$n$ 으로 나누기",
+          "body": "$\\sqrt n\\,a_n\\div n=\\frac{a_n}{\\sqrt n}$ 이라서 각 변을 $n$ 으로 나눠요.\n$$\\frac{\\sqrt{4n^2+1}}{n}<\\frac{a_n}{\\sqrt n}<\\frac{2n+3}{n}$$"
+        },
+        {
+          "title": "양쪽 극한",
+          "body": "$\\frac{\\sqrt{4n^2+1}}{n}=\\sqrt{4+\\frac{1}{n^2}}\\to2$, $\\frac{2n+3}{n}\\to2$ 예요."
+        },
+        {
+          "title": "샌드위치",
+          "body": "그래서 $\\displaystyle\\lim_{n\\to\\infty}\\frac{a_n}{\\sqrt n}=2$ 예요."
+        }
+      ],
+      "tip": "무엇으로 나눌지는 '구하는 꼴'이 정해요. $\\sqrt n\\,a_n$ 을 $\\frac{a_n}{\\sqrt n}$ 으로 만들려면 $n$ 으로 나눠요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "함수 $f(x)=\\displaystyle\\lim_{n\\to\\infty}\\frac{x^{2n+1}+2x}{x^{2n}+1}$ 에 대하여 $f\\left(\\frac{1}{2}\\right)+f(1)+f(3)$ 의 값은?",
+      "choices": [
+        "$\\frac{9}{2}$",
+        "$5$",
+        "$\\frac{11}{2}$",
+        "$6$",
+        "$\\frac{13}{2}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "f = lambda t: limit((t**(2*n + 1) + 2*t)/(t**(2*n) + 1), n, oo)\nans = f(Rational(1, 2)) + f(Integer(1)) + f(Integer(3))",
+      "choiceChecks": [
+        "Rational(9, 2)",
+        "5",
+        "Rational(11, 2)",
+        "6",
+        "Rational(13, 2)"
+      ],
+      "concepts": [
+        "$|x|<1$ 이면 $x^{2n}\\to0$, $|x|>1$ 이면 $x^{2n}\\to\\infty$",
+        "$x=1$ 이면 $x^{2n}=1$"
+      ],
+      "steps": [
+        {
+          "title": "$|x|<1$",
+          "body": "$x^{2n}\\to0$, $x^{2n+1}\\to0$ 이라서 $f(x)=\\frac{0+2x}{0+1}=2x$, $f\\left(\\frac{1}{2}\\right)=1$ 이에요."
+        },
+        {
+          "title": "$x=1$",
+          "body": "$$f(1)=\\frac{1+2}{1+1}=\\frac{3}{2}$$"
+        },
+        {
+          "title": "$|x|>1$",
+          "body": "분자·분모를 $x^{2n}$ 으로 나누면 $\\frac{x+\\frac{2x}{x^{2n}}}{1+\\frac{1}{x^{2n}}}\\to x$ 라서 $f(3)=3$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$1+\\frac{3}{2}+3=\\frac{11}{2}$$"
+        }
+      ],
+      "tip": "$x^n$ 이 든 극한으로 정의된 함수는 $|x|<1$, $x=\\pm1$, $|x|>1$ 로 나눠서 따로 구해요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=2n^2+n$ 일 때, $\\displaystyle\\lim_{n\\to\\infty}\\frac{a_n}{n}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "S = 2*n**2 + n\nan = expand(S - S.subs(n, n - 1))\nans = limit(an/n, n, oo)",
+      "concepts": [
+        "$a_n=S_n-S_{n-1}\\ (n\\ge2)$",
+        "$\\frac{\\infty}{\\infty}$ 꼴은 최고차항으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "$a_n$ 구하기",
+          "body": "$n\\ge2$ 일 때\n$$a_n=S_n-S_{n-1}=(2n^2+n)-\\{2(n-1)^2+(n-1)\\}=4n-1$$"
+        },
+        {
+          "title": "극한",
+          "body": "$$\\frac{4n-1}{n}=4-\\frac{1}{n}\\to4$$"
+        }
+      ],
+      "tip": "극한은 $n$ 이 큰 쪽만 보므로 $n\\ge2$ 에서 구한 식을 그대로 써도 돼요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "수열 $\\left\\{\\left(\\frac{2x-1}{5}\\right)^n\\right\\}$ 이 수렴하도록 하는 정수 $x$ 의 개수는?",
+      "choices": [
+        "$3$",
+        "$4$",
+        "$5$",
+        "$6$",
+        "$7$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "len([t for t in range(-10, 20) if -1 < Rational(2*t - 1, 5) <= 1])",
+      "choiceChecks": [
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "concepts": [
+        "등비수열 $\\{r^n\\}$ 이 수렴할 조건은 $-1<r\\le1$"
+      ],
+      "steps": [
+        {
+          "title": "수렴 조건",
+          "body": "$$-1<\\frac{2x-1}{5}\\le1$$"
+        },
+        {
+          "title": "범위",
+          "body": "$-5<2x-1\\le5$ 에서 $-2<x\\le3$ 이에요."
+        },
+        {
+          "title": "개수",
+          "body": "정수 $x$ 는 $-1,\\ 0,\\ 1,\\ 2,\\ 3$ 의 5개예요."
+        }
+      ],
+      "tip": "$-1<r<1$ 로 풀면 $x=3$ 이 빠져서 4개가 나와요. $r=1$ 도 수렴해요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "두 상수 $a$, $b$ 에 대하여 $\\displaystyle\\lim_{n\\to\\infty}\\frac{an^2+bn+7}{3n+1}=4$ 일 때, $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "bb = solve(Eq(limit((b*n + 7)/(3*n + 1), n, oo), 4), b)[0]\nans = 0 + bb",
+      "concepts": [
+        "분자의 차수가 분모보다 높으면 발산해요.",
+        "차수가 같으면 최고차항의 계수의 비"
+      ],
+      "steps": [
+        {
+          "title": "$a$ 정하기",
+          "body": "$a\\ne0$ 이면 분자가 2차라서 발산해요. 수렴하려면 $a=0$ 이에요."
+        },
+        {
+          "title": "$b$ 정하기",
+          "body": "$\\frac{bn+7}{3n+1}\\to\\frac{b}{3}=4$ 이므로 $b=12$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$a+b=0+12=12$ 예요."
+        }
+      ],
+      "tip": "극한값이 유한하다는 말은 '발산하지 않게' 차수를 맞추라는 뜻이에요. 먼저 차수부터 봐요."
+    }
+  ]
+}
