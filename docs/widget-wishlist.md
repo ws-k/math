@@ -92,3 +92,7 @@
 - coord: 매개변수 곡선 x=f(t), y=g(t) + t 슬라이더, 음함수 곡선(원 전체), sin·√ 곡선 자동 접선 채점 — calc-param-implicit, calc-quotient-chain
 - spot: 극한(lim) 기호, t 로 미분 — calc-trig-limit-diff, calc-param-implicit
 - 기존 생성기 id 접두어 정리(prod-…, ex1-…, ef-…, lg-…, tr-…, complex-…) — 지금은 중복 없음
+- unitCircle: 두 번째 각 손잡이(α, β 따로 끌어 α+β 점 좌표 보기) — calc-trig-addition
+- coord: 수열 점 모드(정수 n 에서만 점, 연속 곡선 숨김) — calc-series, math1-sigma
+- coord line.tangent: ln·e^x 접선 판정 — calc-exp-log-diff
+- 내용 점검: calc-series p107·calc-trig-addition p110 check 가 공식을 그대로 담음(직접 계산 원칙 약함), 등비급수 r 슬라이더 r>1 일 때 화면 확인 필요
