@@ -107,3 +107,7 @@
 - 검산 주의: (-3+3)/2 는 파이썬 실수 0.0 → Rational 사용 — geo 단원
 - coord: 화살표(벡터)·선분 객체(지금은 Abs(sqrt(u))-sqrt(u) 꼼수, 세로 벡터 불가), 끄는 점 따라오는 선분, xy 둘 다 보는 점 목표, 내적 읽기 dot(P,Q) — geo-vector-ops, geo-vector-dot, geo-conic-tangent
 - unitCircle 각 범위 제한(0°~180°) — geo-vector-dot
+- 새 부품: 공간도형판(3D, (x,y,z) 겨냥도·돌려 보기·실제 3D 측정), 이면각 체험(판 접기) — geo-space-figures, geo-space-coord
+- shape: 점선 선분(dashed, 숨은 모서리), 정사영 연동 점(foot) — geo-space-figures
+- 문서 불일치: coord 점 이름은 ASCII A' 만 받는데 docs/widgets.md 예시는 A′ — 고칠 것
+- 작성 주의(문서화 필요): Rational(a,b) 는 '답 그대로 적기'로 막힘 → Integer(8)/20 꼴, ==…== 안에 $…$ 불가
