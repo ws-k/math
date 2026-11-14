@@ -70,3 +70,6 @@
 - spot: 계승(!)·조합(C)·순열(P) 기호 — h1-counting
 - 검산 주의: sympy 가 2sin²x−sin x−1=0 해를 덜 찾음(치환해서 셀 것) — math1-trig-graph
 - lint 가 content/units JSON 을 검사하지 않는 것으로 보임 — 확인 필요
+- coord 할선·접선: 절댓값 곡선(뾰족점) 처리, "접선 없음" 표시 — math2-diff-coefficient
+- coord 직선 그리기 채점: 정답 여러 개 허용(곡선 밖 점에서 접선 2개) — math2-tangent
+- coord 목표 점 숨기기(기울기 12 되는 곳, 평균값 정리) — math2-diff-polynomial, math2-tangent
