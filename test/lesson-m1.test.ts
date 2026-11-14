@@ -25,28 +25,32 @@ function verify(l: Lesson) {
 
 test('부품 모델 결과 스냅샷(저울·항 끌기 검산 항목)', () => {
   const r = validateLesson(unit.id, fresh(), { problems: unit.problems.length });
-  const w = r.items.filter((i) => /lesson:(scale|move):/.test(i.ref));
+  const at = (re: RegExp) =>
+    r.items.filter((i) => re.test(i.ref)).map((i) => ({ ...i, unit: undefined }));
+  // 저울은 끌기로 닿는 모든 상태(36개, 처음 상태 제외 35개)를 검산한다 — 대표 항목과 개수만 고정
+  const scale = at(/lesson:scale:/);
+  assert.equal(scale.length, 35 + 2);
+  const pick = (name: string) => scale.find((i) => i.ref === `m1-linear-eq/lesson:scale:${name}`);
   assert.deepEqual(
-    w.map((i) => ({ ...i, unit: undefined })),
+    ['수평 3*x=12000', '기욺 3*x=13000', '수평 x=4000', '해', '같은 식'].map(pick),
     [
       {
-        ref: 'm1-linear-eq/lesson:scale:연산1',
+        ref: 'm1-linear-eq/lesson:scale:수평 3*x=12000',
         kind: 'equiv',
         before: '3*x+1000=13000',
         after: '3*x=12000',
         expect: true,
       },
       {
-        ref: 'm1-linear-eq/lesson:scale:연산2',
-        kind: 'equiv',
-        before: '3*x+1000=13000',
-        after: '3*x=13000',
-        expect: false,
+        ref: 'm1-linear-eq/lesson:scale:기욺 3*x=13000',
+        answer: '-1',
+        answerType: 'int',
+        check: 'sign((3*x)-(13000)).subs(x, solve(Eq(3*x+1000, 13000), x)[0])',
       },
       {
-        ref: 'm1-linear-eq/lesson:scale:연산3',
+        ref: 'm1-linear-eq/lesson:scale:수평 x=4000',
         kind: 'equiv',
-        before: '3*x=12000',
+        before: '3*x+1000=13000',
         after: 'x=4000',
         expect: true,
       },
@@ -62,6 +66,11 @@ test('부품 모델 결과 스냅샷(저울·항 끌기 검산 항목)', () => {
         a: '3*x+1000=13000',
         b: '3*x+1000=13000',
       },
+    ].map((i) => ({ ...i, unit: undefined })),
+  );
+  assert.deepEqual(
+    at(/lesson:move:/),
+    [
       {
         ref: 'm1-linear-eq/lesson:move:옮기기',
         kind: 'equiv',
