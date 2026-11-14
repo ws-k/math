@@ -60,3 +60,8 @@
 - coord 슬라이더: 특정 값 제외(밑 a≠1) — math1-log-func
 - verify 성능: 로그부등식 생성기가 시드마다 solveset 을 돌려 단원 검산 3분 — math1-log-func
 - 작성 주의: sympy solveset 이 치환형 삼각방정식(2cos²x−cos x−1=0) 해를 덜 찾음 — math1-trig 작성 시
+- shape: 계산값 읽기(AB², BC÷sin A), 회전 이동·점 10개 넘게(계단 두 개로 n×(n+1) 만들기) — math1-sine-cosine-law, math1-sigma
+- coord: pointsOn 정답 곡선을 맞힌 뒤에 보여 주기, 두 점 높이 차 읽기 dy(P,Q) — math1-arith-geo, math1-sigma
+- spot: ∑ 식 읽기 — math1-sigma
+- 끌어서 짝 맞추기 부품(거꾸로 써서 짝짓기) — math1-arith-geo
+- 목표 없는 탐색 장면(shape·점 끌기)이 한 번 만지면 완료됨 → "60°·90°·120° 모두 보기" 같은 목표 필요 — math1-sine-cosine-law, math1-sigma
