@@ -1,0 +1,1423 @@
+{
+  "id": "geo-conic-tangent",
+  "course": "기하",
+  "unit": "이차곡선",
+  "title": "이차곡선과 직선 (접선)",
+  "prereq": [
+    "geo-hyperbola",
+    "h1-quadratic-eq"
+  ],
+  "suneung": [
+    "기하 26"
+  ],
+  "hours": 3,
+  "formulas": [
+    "직선을 대입한 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 안 만남",
+    "타원 위의 점: $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$",
+    "쌍곡선 위의 점: $\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$",
+    "포물선 $y^2=4px$ 위의 점: $y_1y=2p(x+x_1)$",
+    "기울기 $m$: 타원 $y=mx\\pm\\sqrt{a^2m^2+b^2}$, 쌍곡선 $y=mx\\pm\\sqrt{a^2m^2-b^2}$",
+    "기울기 $m$: 포물선 $y^2=4px$ 는 $y=mx+\\frac{p}{m}$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "one": {
+        "value": "1",
+        "check": "len(solveset(Eq(x**2/8+(x+3)**2, 1), x, Reals))"
+      },
+      "tx": {
+        "value": "-8/3",
+        "check": "solve(Eq(x**2/8+(x+3)**2, 1), x)[0]"
+      },
+      "ty": {
+        "value": "1/3",
+        "check": "solve(Eq(x**2/8+(x+3)**2, 1), x)[0]+3"
+      },
+      "n3": {
+        "value": "3",
+        "check": "max(solve(discriminant(x**2+8*(x+n)**2-8, x), n))"
+      },
+      "es": {
+        "value": "-1/2",
+        "check": "idiff(x**2/8+y**2/2-1, y, x).subs({x: 2, y: 1})"
+      },
+      "eb": {
+        "value": "2",
+        "check": "1-(idiff(x**2/8+y**2/2-1, y, x).subs({x: 2, y: 1}))*2"
+      },
+      "hs": {
+        "value": "1",
+        "check": "idiff(x**2/2-y**2-1, y, x).subs({x: 2, y: 1})"
+      },
+      "hb": {
+        "value": "-1",
+        "check": "1-(idiff(x**2/2-y**2-1, y, x).subs({x: 2, y: 1}))*2"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "기하 · 이차곡선",
+        "title": "곡선에 딱 한 점만\n닿는 직선을 찾아요",
+        "lead": "포물선·타원·쌍곡선에 스치듯 닿는 직선이 접선이에요. 직선을 직접 움직이고 그려 보면서, 접선을 한 줄로 쓰는 방법을 찾아요.",
+        "meta": [
+          "판별식",
+          "접선 공식"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "직선 $y=x+3$ 은 타원과\n몇 점에서 만날까요?",
+        "lead": "타원 $\\frac{x^2}{8}+y^2=1$ 과 직선 $y=x+3$ 이에요. 원과 직선이 만나는 점을 셀 때처럼, 직선의 식을 곡선의 식에 넣어 보세요.",
+        "choices": [
+          {
+            "value": "2",
+            "check": "degree(x**2/8+(x+3)**2-1, x)",
+            "feedback": "이차방정식이라 해가 늘 2 개라고 본 거예요. 실수인 해의 개수는 판별식이 정해요."
+          },
+          {
+            "value": "1",
+            "check": "len(solveset(Eq(x**2/8+(x+3)**2, 1), x, Reals))"
+          },
+          {
+            "value": "0",
+            "check": "len(solveset(Eq(x**2/8+x**2+9, 1), x, Reals))",
+            "feedback": "$(x+3)^2$ 을 $x^2+9$ 로 펼쳤을 때 나오는 답이에요. 가운데 $6x$ 를 넣고 다시 세어 보세요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "len(solveset(Eq(x**2/8+(x+3)**2, 1), x, Reals))",
+        "reveal": "**맞아요.** 딱 한 점에서 만나요.",
+        "thoughts": [
+          "$y=x+3$ 을 넣고 양변에 8 을 곱하면 $9x^2+48x+64=0$ 이에요.",
+          "$(3x+8)^2=0$ 이라 해가 $x=${{tx}} 하나뿐(중근)이에요."
+        ],
+        "conclude": "만나는 점이 하나면 직선은 곡선에 ==접해요==. 판별식 $D=0$ 이 그 신호예요."
+      },
+      {
+        "kind": "explore",
+        "id": "slide",
+        "chip": "손으로 해 보기",
+        "title": "직선을 올리고 내리며\n만나는 점을 세어 보세요",
+        "lead": "기울기 1 은 그대로 두고 $y$절편 $n$ 만 바꿔요. 직선이 타원을 가로지르다가, 스치다가, 떨어지는 순간을 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "y": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "sliders": [
+              {
+                "id": "n",
+                "min": -4,
+                "max": 4,
+                "step": "1/2",
+                "value": 0,
+                "label": "$y$절편 $n$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "eu",
+                "curve": "sqrt(1-x**2/8)",
+                "label": "$\\frac{x^2}{8}+y^2=1$"
+              },
+              {
+                "id": "ed",
+                "curve": "-sqrt(1-x**2/8)"
+              },
+              {
+                "id": "l",
+                "curve": "x+n",
+                "label": "$y=x+n$",
+                "tone": "accent"
+              },
+              {
+                "id": "T",
+                "point": {
+                  "on": "eu",
+                  "x": "-8/3",
+                  "snap": "1/3"
+                },
+                "name": "T"
+              },
+              {
+                "readout": "value(n)",
+                "label": "$n$",
+                "digits": 1
+              }
+            ],
+            "intro": "슬라이더로 $n$ 을 바꿔 직선이 점 T 에 닿게 해 보세요.",
+            "done": "$n=${{n3}} 이면 직선이 T 에서만 닿아요. 그보다 크면 떨어지고, 작으면 두 점에서 만나요."
+          }
+        },
+        "after": "두 점에서 만나다가 → 한 점에서 스치고 → 떨어져요. 판별식으로는 $D>0$ → $D=0$ → $D<0$ 이에요. ==판별식이 0 인 순간이 접하는 순간==이에요. 아래쪽 $n=-3$ 에서도 한 번 더 스쳐요."
+      },
+      {
+        "kind": "explore",
+        "id": "ellipse",
+        "chip": "직접 그려 보기",
+        "title": "타원 위의 점에서\n접선을 그려 보세요",
+        "lead": "타원 $\\frac{x^2}{8}+\\frac{y^2}{2}=1$ 위의 점 $A(2,1)$ 에서 곡선에 스치기만 하는 직선을 그려요. 두 손잡이를 끌어 맞춘 뒤 '확인하기'를 누르세요. 끌기 어려우면 격자를 눌러 가까운 손잡이를 옮길 수 있어요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "line",
+            "x": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "y": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "eu",
+                "curve": "sqrt(2-x**2/4)",
+                "label": "$\\frac{x^2}{8}+\\frac{y^2}{2}=1$"
+              },
+              {
+                "id": "ed",
+                "curve": "-sqrt(2-x**2/4)"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "on": "eu",
+                  "x": 2
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "line": {
+                "slope": {
+                  "value": "-1/2",
+                  "check": "idiff(x**2/8+y**2/2-1, y, x).subs({x: 2, y: 1})"
+                },
+                "through": {
+                  "x": {
+                    "value": "2",
+                    "check": "sqrt(8*(1-Rational(1, 2)))"
+                  },
+                  "y": {
+                    "value": "1",
+                    "check": "sqrt(2*(1-Rational(2**2, 8)))"
+                  }
+                }
+              }
+            },
+            "intro": "A 를 지나면서 타원 안으로 파고들지 않는 기울기를 찾아요.",
+            "done": "맞아요. 기울기 {{es}}, $y$절편 {{eb}}인 직선이에요. 식으로 쓰면 $\\frac{2x}{8}+\\frac{1\\cdot y}{2}=1$ 이에요."
+          }
+        },
+        "after": "타원의 식 $\\frac{x^2}{8}+\\frac{y^2}{2}=1$ 과 접선 $\\frac{2x}{8}+\\frac{1\\cdot y}{2}=1$ 을 나란히 보세요. $x^2$ 가 $2x$ 로, $y^2$ 이 $1\\cdot y$ 로 바뀌었어요. ==제곱 하나를 접점 좌표로== 바꾼 셈이에요. 2 와 1 은 접점 A 의 좌표예요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "판별식과 위치 관계",
+            "body": "직선의 식을 곡선에 넣은 이차방정식의 판별식 $D$ 가 $D>0$ 이면 두 점, $D=0$ 이면 **접한다**, $D<0$ 이면 만나지 않아요."
+          },
+          {
+            "term": "곡선 위의 점에서의 접선",
+            "body": "접점 $(x_1,y_1)$ 에서 $x^2\\to x_1x$, $y^2\\to y_1y$ 로 바꿔요. 타원 $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$, 쌍곡선 $\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$, 포물선 $y^2=4px$ 는 $y_1y=2p(x+x_1)$."
+          },
+          {
+            "term": "기울기가 주어진 접선",
+            "body": "타원 $y=mx\\pm\\sqrt{a^2m^2+b^2}$, 쌍곡선 $y=mx\\pm\\sqrt{a^2m^2-b^2}$, 포물선 $y^2=4px$ 는 $y=mx+\\frac{p}{m}$. 모두 $D=0$ 을 정리한 결과예요."
+          }
+        ],
+        "aside": "**확인** · 오늘의 질문에서 $a^2=8$, $b^2=1$, $m=1$ 이라 $n^2=8+1$, 슬라이더로 찾은 $n=${{n3}} 과 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "hyperbola",
+        "chip": "한 번 더",
+        "title": "쌍곡선은 공식으로\n먼저 구하고 그려요",
+        "lead": "쌍곡선 $\\frac{x^2}{2}-y^2=1$ 위의 점 $B(2,1)$ 에서의 접선이에요. 공식으로 식을 먼저 구하고, 그 직선을 그려 확인해요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "line",
+            "x": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "y": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "hu",
+                "curve": "sqrt(x**2/2-1)",
+                "label": "$\\frac{x^2}{2}-y^2=1$"
+              },
+              {
+                "id": "hd",
+                "curve": "-sqrt(x**2/2-1)"
+              },
+              {
+                "id": "B",
+                "point": {
+                  "on": "hu",
+                  "x": 2
+                },
+                "name": "B"
+              }
+            ],
+            "task": {
+              "line": {
+                "slope": {
+                  "value": "1",
+                  "check": "idiff(x**2/2-y**2-1, y, x).subs({x: 2, y: 1})"
+                },
+                "through": {
+                  "x": {
+                    "value": "2",
+                    "check": "sqrt(2*(1+1**2))"
+                  },
+                  "y": {
+                    "value": "1",
+                    "check": "sqrt(Rational(2**2, 2)-1)"
+                  }
+                }
+              }
+            },
+            "intro": "$\\frac{2x}{2}-1\\cdot y=1$ 을 $y=\\cdots$ 꼴로 바꿔 보세요.",
+            "done": "맞아요. 기울기 {{hs}}, $y$절편 {{hb}}이에요. 가운데 빼기는 그대로 두고 $x^2$, $y^2$ 만 바꿨어요."
+          }
+        }
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 직선 $y=2x+n$ 이 쌍곡선 $\\frac{x^2}{4}-\\frac{y^2}{9}=1$ 에 접해요. 판별식 $\\frac{D}{4}=0$ 에서 $n^2$ 을 구하다 틀린 곳은?",
+            "mode": "equivalent",
+            "from": "(8*n)**2-7*(4*n**2+36)=0",
+            "tokens": [
+              {
+                "sym": "n**2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "4*2**2+9",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "4*2**2-9",
+              "body": "쌍곡선은 $a^2m^2-b^2$ 예요. 타원 공식의 더하기를 그대로 가져오면 안 돼요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $y=x+3$ 을 타원 $\\frac{x^2}{8}+y^2=1$ 에 넣었더니 실수 해가 없어서 '안 만난다'고 했어요. 틀린 곳은?",
+            "mode": "equivalent",
+            "from": "x**2/8+(x+3)**2=1",
+            "tokens": [
+              {
+                "sym": "x**2/8"
+              },
+              {
+                "sym": "+x**2+9",
+                "bad": true
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "1"
+              }
+            ],
+            "fix": {
+              "sym": "+x**2+6*x+9",
+              "body": "$(x+3)^2=x^2+6x+9$ 예요. 가운데 $6x$ 를 빠뜨리면 판별식이 엉뚱하게 나와요. 바르게 풀면 한 점에서 접해요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "ell",
+            "q": "타원 $\\frac{x^2}{12}+\\frac{y^2}{4}=1$ 위의 점 $(3,1)$ 에서의 접선의 $y$절편을 구하세요.",
+            "hint": "$x^2$ 을 $3x$ 로, $y^2$ 을 $1\\cdot y$ 로 바꿔요.",
+            "concepts": [
+              "타원 위의 점 $(x_1,y_1)$ 에서의 접선: $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$"
+            ],
+            "steps": [
+              {
+                "title": "접선 공식에 넣기",
+                "body": "$$\\frac{3x}{12}+\\frac{1\\cdot y}{4}=1$$"
+              },
+              {
+                "title": "정리하기",
+                "body": "양변에 4 를 곱하면 $x+y=4$ 예요."
+              },
+              {
+                "title": "$x=0$ 넣기",
+                "body": "$$y={{answer}}$$"
+              }
+            ],
+            "tip": "$y$절편은 공식에서 바로 $\\frac{b^2}{y_1}=\\frac{4}{1}$ 로도 나와요.",
+            "answer": "4",
+            "answerType": "int",
+            "check": "m0 = idiff(x**2/12+y**2/4-1, y, x).subs({x: 3, y: 1})\nans = 1 - m0*3"
+          },
+          {
+            "id": "hyp",
+            "q": "기울기가 $\\frac{3}{2}$ 이고 쌍곡선 $\\frac{x^2}{4}-\\frac{y^2}{5}=1$ 에 접하는 직선 $y=\\frac{3}{2}x+n$ 에서 양수 $n$ 의 값을 구하세요.",
+            "hint": "쌍곡선은 $n^2=a^2m^2-b^2$, 빼기예요.",
+            "concepts": [
+              "쌍곡선에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2-b^2}$"
+            ],
+            "steps": [
+              {
+                "title": "값 읽기",
+                "body": "$a^2=4$, $b^2=5$, $m=\\frac{3}{2}$ 이에요."
+              },
+              {
+                "title": "공식에 넣기",
+                "body": "$$n^2=4\\cdot\\frac{9}{4}-5=9-5=4$$"
+              },
+              {
+                "title": "양수 고르기",
+                "body": "$$n={{answer}}$$"
+              }
+            ],
+            "tip": "$y=\\frac{3}{2}x+n$ 을 직접 넣어 판별식을 0 으로 놓아도 같은 값이 나와요.",
+            "answer": "2",
+            "answerType": "int",
+            "check": "ans = max(solve(discriminant(5*x**2-4*(Rational(3, 2)*x+n)**2-20, x), n))"
+          },
+          {
+            "id": "par",
+            "q": "포물선 $y^2=8x$ 위의 점 $(2,4)$ 에서의 접선이 $x$축과 만나는 점의 $x$좌표를 구하세요.",
+            "hint": "포물선은 $y^2\\to y_1y$, $x\\to\\frac{x+x_1}{2}$ 예요.",
+            "concepts": [
+              "포물선 $y^2=4px$ 위의 점 $(x_1,y_1)$ 에서의 접선: $y_1y=2p(x+x_1)$"
+            ],
+            "steps": [
+              {
+                "title": "$p$ 읽기",
+                "body": "$4p=8$ 이라 $p=2$, $2p=4$ 예요."
+              },
+              {
+                "title": "접선 공식에 넣기",
+                "body": "$$4y=4(x+2)$$"
+              },
+              {
+                "title": "$y=0$ 넣기",
+                "body": "$$0=x+2,\\quad x={{answer}}$$"
+              }
+            ],
+            "tip": "포물선의 접선이 $x$축과 만나는 점은 늘 $(-x_1,0)$ 이에요.",
+            "answer": "-2",
+            "answerType": "int",
+            "check": "m0 = idiff(y**2-8*x, y, x).subs({x: 2, y: 4})\nans = 2 - 4/m0"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "직선을 곡선에 넣은 이차방정식의 판별식: $D>0$ 두 점, $D=0$ 접함, $D<0$ 안 만남.",
+          "곡선 위의 점 $(x_1,y_1)$ 에서의 접선은 $x^2\\to x_1x$, $y^2\\to y_1y$. 포물선은 $x\\to\\frac{x+x_1}{2}$.",
+          "기울기 $m$ 인 접선: 타원 $n^2=a^2m^2+b^2$, 쌍곡선 $n^2=a^2m^2-b^2$. 쌍곡선은 **빼기**예요.",
+          "수능에서는 쌍곡선 위의 점에서의 접선을 구해 절편·넓이를 묻는 문제로 자주 나와요."
+        ],
+        "done": "이차곡선의 접선 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "geo-conic-tangent-ellipse-point",
+    "geo-conic-tangent-hyperbola-point",
+    "geo-conic-tangent-slope",
+    "geo-conic-tangent-parabola",
+    "geo-conic-tangent-count"
+  ],
+  "problems": [
+    {
+      "q": "타원 $\\frac{x^2}{18}+\\frac{y^2}{2}=1$ 위의 점 $(3,1)$ 에서의 접선의 $x$절편을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "m0 = idiff(x**2/18 + y**2/2 - 1, y, x).subs({x: 3, y: 1})\nans = 3 - (1)/m0",
+      "concepts": [
+        "타원 $\\frac{x^2}{a^2}+\\frac{y^2}{b^2}=1$ 위의 점 $(x_1,y_1)$ 에서의 접선: $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$",
+        "곡선의 식에서 $x^2\\to x_1x$, $y^2\\to y_1y$ 로 바꾸면 접선이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "점이 타원 위에 있는지 확인",
+          "body": "$\\frac{3^2}{18}+\\frac{1^2}{2}=1$ 이라 타원 위의 점이에요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$x^2$ 을 $3x$ 로, $y^2$ 을 $1y$ 로 바꿔요.\n$$\\frac{3x}{18}+\\frac{1y}{2}=1$$"
+        },
+        {
+          "title": "$y=0$ 넣기",
+          "body": "$x$절편은 $y=0$ 일 때의 $x$ 값이에요.\n$$\\frac{3x}{18}=1,\\quad x=6$$"
+        }
+      ],
+      "tip": "절편은 바로 나와요. 접선 $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$ 의 $y$절편은 $\\frac{b^2}{y_1}$, $x$절편은 $\\frac{a^2}{x_1}$ 이에요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "geo-conic-tangent-ellipse-point",
+      "seed": 1000
+    },
+    {
+      "q": "쌍곡선 $\\frac{x^2}{2}-\\frac{y^2}{9}=1$ 위의 점 $(-2,-3)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "idiff(x**2/2 - y**2/9 - 1, y, x).subs({x: -2, y: -3})",
+      "concepts": [
+        "쌍곡선 $\\frac{x^2}{a^2}-\\frac{y^2}{b^2}=1$ 위의 점 $(x_1,y_1)$ 에서의 접선: $\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$",
+        "곡선의 식에서 $x^2\\to x_1x$, $y^2\\to y_1y$ 로 바꾸면 접선이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "점이 쌍곡선 위에 있는지 확인",
+          "body": "$\\frac{(-2)^2}{2}-\\frac{(-3)^2}{9}=1$ 이라 쌍곡선 위의 점이에요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "가운데 빼기는 그대로 두고 $x^2\\to(-2)x$, $y^2\\to(-3)y$ 로 바꿔요.\n$$\\frac{(-2)x}{2}-\\frac{(-3)y}{9}=1$$"
+        },
+        {
+          "title": "$y=\\cdots$ 꼴로 정리",
+          "body": "$y$ 에 대해 풀면 $x$ 앞의 수가 기울기예요.\n$$y=3x+3$$"
+        }
+      ],
+      "tip": "타원 공식과 모양이 같고 가운데 부호만 빼기예요. 빼기를 더하기로 쓰는 실수가 가장 많아요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "geo-conic-tangent-hyperbola-point",
+      "seed": 1001
+    },
+    {
+      "q": "직선 $y=2x+n$ 이 쌍곡선 $\\frac{x^2}{5}-\\frac{y^2}{4}=1$ 에 접할 때, $n^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "ans = expand(solve(discriminant(4*x**2 - 5*(2*x + n)**2 - 20, x), n)[0]**2)",
+      "concepts": [
+        "직선의 식을 곡선의 식에 대입한 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 만나지 않음",
+        "쌍곡선에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2-b^2}$"
+      ],
+      "steps": [
+        {
+          "title": "공식의 $a^2$, $b^2$, $m$ 읽기",
+          "body": "$a^2=5$, $b^2=4$, 기울기 $m=2$ 이에요."
+        },
+        {
+          "title": "쌍곡선은 빼기",
+          "body": "접할 조건(판별식 $=0$)을 정리하면 $n^2=a^2m^2-b^2$ 이에요."
+        },
+        {
+          "title": "계산하기",
+          "body": "$$n^2=5\\cdot2^2-4=16$$"
+        }
+      ],
+      "tip": "공식이 헷갈리면 $y=2x+n$ 을 곡선의 식에 직접 넣고 판별식이 0 이 되는 $n$ 을 구해도 돼요. 결과는 같아요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "geo-conic-tangent-slope",
+      "seed": 1002
+    },
+    {
+      "q": "포물선 $y^2=8x$ 위의 점 $(2,4)$ 에서의 접선의 $y$절편을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "m0 = idiff(y**2 - 8*x, y, x).subs({x: 2, y: 4})\nans = 4 - m0*2",
+      "concepts": [
+        "포물선 $y^2=4px$ 위의 점 $(x_1,y_1)$ 에서의 접선: $y_1y=2p(x+x_1)$",
+        "$y^2\\to y_1y$, $x\\to\\frac{x+x_1}{2}$ 로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "$p$ 읽기",
+          "body": "$4p=8$ 이니까 $p=2$, $2p=4$ 예요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$$4y=4(x+2)$$"
+        },
+        {
+          "title": "$x=0$ 넣기",
+          "body": "$$4y=4\\cdot2,\\quad y=2$$"
+        }
+      ],
+      "tip": "포물선의 접선은 $x$절편이 늘 $-x_1$ 이에요. 이 문제에서도 $y=0$ 을 넣으면 $x=-2$ 이 나와요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "geo-conic-tangent-parabola",
+      "seed": 1003
+    },
+    {
+      "q": "직선 $y=2x+k$ 가 타원 $\\frac{x^2}{2}+\\frac{y^2}{3}=1$ 와 서로 다른 두 점에서 만나도록 하는 정수 $k$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "ans = len([k0 for k0 in range(-40, 41) if discriminant(3*x**2 + 2*(2*x + k0)**2 - 6, x) > 0])",
+      "concepts": [
+        "직선의 식을 곡선의 식에 대입한 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 만나지 않음",
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$"
+      ],
+      "steps": [
+        {
+          "title": "접할 때의 $k$",
+          "body": "접선이 되는 것은 $k^2=a^2m^2+b^2=2\\cdot2^2+3=11$ 일 때예요."
+        },
+        {
+          "title": "두 점에서 만날 조건",
+          "body": "직선이 두 접선 사이에 있어야 해요. 판별식 $D>0$ 을 정리하면\n$$k^2<11$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$k^2<11$ 인 정수는 $-3$ 부터 $3$ 까지예요. 개수는 $2\\times3+1$ 이에요."
+        }
+      ],
+      "tip": "$k^2=11$ 인 두 값에서는 접하고, 그보다 바깥이면 만나지 않아요. 등호가 들어가는지 꼭 확인해요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "geo-conic-tangent-count",
+      "seed": 1004
+    },
+    {
+      "q": "타원 $\\frac{x^2}{8}+\\frac{y^2}{18}=1$ 위의 점 $(2,3)$ 에서의 접선의 $x$절편을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "m0 = idiff(x**2/8 + y**2/18 - 1, y, x).subs({x: 2, y: 3})\nans = 2 - (3)/m0",
+      "concepts": [
+        "타원 $\\frac{x^2}{a^2}+\\frac{y^2}{b^2}=1$ 위의 점 $(x_1,y_1)$ 에서의 접선: $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$",
+        "곡선의 식에서 $x^2\\to x_1x$, $y^2\\to y_1y$ 로 바꾸면 접선이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "점이 타원 위에 있는지 확인",
+          "body": "$\\frac{2^2}{8}+\\frac{3^2}{18}=1$ 이라 타원 위의 점이에요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$x^2$ 을 $2x$ 로, $y^2$ 을 $3y$ 로 바꿔요.\n$$\\frac{2x}{8}+\\frac{3y}{18}=1$$"
+        },
+        {
+          "title": "$y=0$ 넣기",
+          "body": "$x$절편은 $y=0$ 일 때의 $x$ 값이에요.\n$$\\frac{2x}{8}=1,\\quad x=4$$"
+        }
+      ],
+      "tip": "절편은 바로 나와요. 접선 $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$ 의 $y$절편은 $\\frac{b^2}{y_1}$, $x$절편은 $\\frac{a^2}{x_1}$ 이에요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "geo-conic-tangent-ellipse-point",
+      "seed": 1005
+    },
+    {
+      "q": "쌍곡선 $\\frac{x^2}{3}-\\frac{y^2}{12}=1$ 위의 점 $(-2,2)$ 에서의 접선의 $y$절편을 구하세요.",
+      "choices": null,
+      "answer": "-6",
+      "answerType": "int",
+      "check": "m0 = idiff(x**2/3 - y**2/12 - 1, y, x).subs({x: -2, y: 2})\nans = 2 - m0*(-2)",
+      "concepts": [
+        "쌍곡선 $\\frac{x^2}{a^2}-\\frac{y^2}{b^2}=1$ 위의 점 $(x_1,y_1)$ 에서의 접선: $\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$",
+        "곡선의 식에서 $x^2\\to x_1x$, $y^2\\to y_1y$ 로 바꾸면 접선이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "점이 쌍곡선 위에 있는지 확인",
+          "body": "$\\frac{(-2)^2}{3}-\\frac{2^2}{12}=1$ 이라 쌍곡선 위의 점이에요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "가운데 빼기는 그대로 두고 $x^2\\to(-2)x$, $y^2\\to2y$ 로 바꿔요.\n$$\\frac{(-2)x}{3}-\\frac{2y}{12}=1$$"
+        },
+        {
+          "title": "$x=0$ 넣기",
+          "body": "$y$절편은 $x=0$ 일 때의 $y$ 값이에요.\n$$-\\frac{2y}{12}=1,\\quad y=-6$$"
+        }
+      ],
+      "tip": "타원 공식과 모양이 같고 가운데 부호만 빼기예요. 빼기를 더하기로 쓰는 실수가 가장 많아요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "geo-conic-tangent-hyperbola-point",
+      "seed": 1006
+    },
+    {
+      "q": "직선 $y=3x+n$ 이 타원 $\\frac{x^2}{3}+y^2=1$ 에 접할 때, $n^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "28",
+      "answerType": "int",
+      "check": "ans = expand(solve(discriminant(1*x**2 + 3*(3*x + n)**2 - 3, x), n)[0]**2)",
+      "concepts": [
+        "직선의 식을 곡선의 식에 대입한 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 만나지 않음",
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$"
+      ],
+      "steps": [
+        {
+          "title": "공식의 $a^2$, $b^2$, $m$ 읽기",
+          "body": "$a^2=3$, $b^2=1$, 기울기 $m=3$ 이에요."
+        },
+        {
+          "title": "타원은 더하기",
+          "body": "접할 조건(판별식 $=0$)을 정리하면 $n^2=a^2m^2+b^2$ 이에요."
+        },
+        {
+          "title": "계산하기",
+          "body": "$$n^2=3\\cdot3^2+1=28$$"
+        }
+      ],
+      "tip": "공식이 헷갈리면 $y=3x+n$ 을 곡선의 식에 직접 넣고 판별식이 0 이 되는 $n$ 을 구해도 돼요. 결과는 같아요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "geo-conic-tangent-slope",
+      "seed": 1007
+    },
+    {
+      "q": "포물선 $y^2=12x$ 위의 점 $(27,18)$ 에서의 접선의 $y$절편을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "m0 = idiff(y**2 - 12*x, y, x).subs({x: 27, y: 18})\nans = 18 - m0*27",
+      "concepts": [
+        "포물선 $y^2=4px$ 위의 점 $(x_1,y_1)$ 에서의 접선: $y_1y=2p(x+x_1)$",
+        "$y^2\\to y_1y$, $x\\to\\frac{x+x_1}{2}$ 로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "$p$ 읽기",
+          "body": "$4p=12$ 이니까 $p=3$, $2p=6$ 예요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$$18y=6(x+27)$$"
+        },
+        {
+          "title": "$x=0$ 넣기",
+          "body": "$$18y=6\\cdot27,\\quad y=9$$"
+        }
+      ],
+      "tip": "포물선의 접선은 $x$절편이 늘 $-x_1$ 이에요. 이 문제에서도 $y=0$ 을 넣으면 $x=-27$ 이 나와요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "geo-conic-tangent-parabola",
+      "seed": 1008
+    },
+    {
+      "q": "직선 $y=2x+k$ 가 타원 $\\frac{x^2}{7}+\\frac{y^2}{6}=1$ 와 서로 다른 두 점에서 만나도록 하는 정수 $k$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "ans = len([k0 for k0 in range(-40, 41) if discriminant(6*x**2 + 7*(2*x + k0)**2 - 42, x) > 0])",
+      "concepts": [
+        "직선의 식을 곡선의 식에 대입한 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 만나지 않음",
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$"
+      ],
+      "steps": [
+        {
+          "title": "접할 때의 $k$",
+          "body": "접선이 되는 것은 $k^2=a^2m^2+b^2=7\\cdot2^2+6=34$ 일 때예요."
+        },
+        {
+          "title": "두 점에서 만날 조건",
+          "body": "직선이 두 접선 사이에 있어야 해요. 판별식 $D>0$ 을 정리하면\n$$k^2<34$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$k^2<34$ 인 정수는 $-5$ 부터 $5$ 까지예요. 개수는 $2\\times5+1$ 이에요."
+        }
+      ],
+      "tip": "$k^2=34$ 인 두 값에서는 접하고, 그보다 바깥이면 만나지 않아요. 등호가 들어가는지 꼭 확인해요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "geo-conic-tangent-count",
+      "seed": 1009
+    },
+    {
+      "q": "타원 $\\frac{x^2}{8}+\\frac{y^2}{18}=1$ 위의 점 $(2,3)$ 에서의 접선의 $y$절편을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "m0 = idiff(x**2/8 + y**2/18 - 1, y, x).subs({x: 2, y: 3})\nans = 3 - m0*(2)",
+      "concepts": [
+        "타원 $\\frac{x^2}{a^2}+\\frac{y^2}{b^2}=1$ 위의 점 $(x_1,y_1)$ 에서의 접선: $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$",
+        "곡선의 식에서 $x^2\\to x_1x$, $y^2\\to y_1y$ 로 바꾸면 접선이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "점이 타원 위에 있는지 확인",
+          "body": "$\\frac{2^2}{8}+\\frac{3^2}{18}=1$ 이라 타원 위의 점이에요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$x^2$ 을 $2x$ 로, $y^2$ 을 $3y$ 로 바꿔요.\n$$\\frac{2x}{8}+\\frac{3y}{18}=1$$"
+        },
+        {
+          "title": "$x=0$ 넣기",
+          "body": "$y$절편은 $x=0$ 일 때의 $y$ 값이에요.\n$$\\frac{3y}{18}=1,\\quad y=6$$"
+        }
+      ],
+      "tip": "절편은 바로 나와요. 접선 $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$ 의 $y$절편은 $\\frac{b^2}{y_1}$, $x$절편은 $\\frac{a^2}{x_1}$ 이에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "geo-conic-tangent-ellipse-point",
+      "seed": 1010
+    },
+    {
+      "q": "쌍곡선 $\\frac{x^2}{12}-\\frac{y^2}{12}=1$ 위의 점 $(4,2)$ 에서의 접선의 $y$절편을 구하세요.",
+      "choices": null,
+      "answer": "-6",
+      "answerType": "int",
+      "check": "m0 = idiff(x**2/12 - y**2/12 - 1, y, x).subs({x: 4, y: 2})\nans = 2 - m0*(4)",
+      "concepts": [
+        "쌍곡선 $\\frac{x^2}{a^2}-\\frac{y^2}{b^2}=1$ 위의 점 $(x_1,y_1)$ 에서의 접선: $\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$",
+        "곡선의 식에서 $x^2\\to x_1x$, $y^2\\to y_1y$ 로 바꾸면 접선이 돼요."
+      ],
+      "steps": [
+        {
+          "title": "점이 쌍곡선 위에 있는지 확인",
+          "body": "$\\frac{4^2}{12}-\\frac{2^2}{12}=1$ 이라 쌍곡선 위의 점이에요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "가운데 빼기는 그대로 두고 $x^2\\to4x$, $y^2\\to2y$ 로 바꿔요.\n$$\\frac{4x}{12}-\\frac{2y}{12}=1$$"
+        },
+        {
+          "title": "$x=0$ 넣기",
+          "body": "$y$절편은 $x=0$ 일 때의 $y$ 값이에요.\n$$-\\frac{2y}{12}=1,\\quad y=-6$$"
+        }
+      ],
+      "tip": "타원 공식과 모양이 같고 가운데 부호만 빼기예요. 빼기를 더하기로 쓰는 실수가 가장 많아요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "geo-conic-tangent-hyperbola-point",
+      "seed": 1011
+    },
+    {
+      "q": "직선 $y=x+n$ 이 타원 $\\frac{x^2}{4}+\\frac{y^2}{3}=1$ 에 접할 때, $n^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "ans = expand(solve(discriminant(3*x**2 + 4*(1*x + n)**2 - 12, x), n)[0]**2)",
+      "concepts": [
+        "직선의 식을 곡선의 식에 대입한 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 만나지 않음",
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$"
+      ],
+      "steps": [
+        {
+          "title": "공식의 $a^2$, $b^2$, $m$ 읽기",
+          "body": "$a^2=4$, $b^2=3$, 기울기 $m=1$ 이에요."
+        },
+        {
+          "title": "타원은 더하기",
+          "body": "접할 조건(판별식 $=0$)을 정리하면 $n^2=a^2m^2+b^2$ 이에요."
+        },
+        {
+          "title": "계산하기",
+          "body": "$$n^2=4\\cdot1^2+3=7$$"
+        }
+      ],
+      "tip": "공식이 헷갈리면 $y=x+n$ 을 곡선의 식에 직접 넣고 판별식이 0 이 되는 $n$ 을 구해도 돼요. 결과는 같아요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "geo-conic-tangent-slope",
+      "seed": 1012
+    },
+    {
+      "q": "포물선 $y^2=4x$ 위의 점 $(1,2)$ 에서의 접선의 $y$절편을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "m0 = idiff(y**2 - 4*x, y, x).subs({x: 1, y: 2})\nans = 2 - m0*1",
+      "concepts": [
+        "포물선 $y^2=4px$ 위의 점 $(x_1,y_1)$ 에서의 접선: $y_1y=2p(x+x_1)$",
+        "$y^2\\to y_1y$, $x\\to\\frac{x+x_1}{2}$ 로 바꿔요."
+      ],
+      "steps": [
+        {
+          "title": "$p$ 읽기",
+          "body": "$4p=4$ 이니까 $p=1$, $2p=2$ 예요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$$2y=2(x+1)$$"
+        },
+        {
+          "title": "$x=0$ 넣기",
+          "body": "$$2y=2\\cdot1,\\quad y=1$$"
+        }
+      ],
+      "tip": "포물선의 접선은 $x$절편이 늘 $-x_1$ 이에요. 이 문제에서도 $y=0$ 을 넣으면 $x=-1$ 이 나와요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "geo-conic-tangent-parabola",
+      "seed": 1013
+    },
+    {
+      "q": "직선 $y=-2x+k$ 가 타원 $\\frac{x^2}{2}+\\frac{y^2}{8}=1$ 와 서로 다른 두 점에서 만나도록 하는 정수 $k$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "ans = len([k0 for k0 in range(-40, 41) if discriminant(8*x**2 + 2*(-2*x + k0)**2 - 16, x) > 0])",
+      "concepts": [
+        "직선의 식을 곡선의 식에 대입한 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 만나지 않음",
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$"
+      ],
+      "steps": [
+        {
+          "title": "접할 때의 $k$",
+          "body": "접선이 되는 것은 $k^2=a^2m^2+b^2=2\\cdot(-2)^2+8=16$ 일 때예요."
+        },
+        {
+          "title": "두 점에서 만날 조건",
+          "body": "직선이 두 접선 사이에 있어야 해요. 판별식 $D>0$ 을 정리하면\n$$k^2<16$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "$k^2<16$ 인 정수는 $-3$ 부터 $3$ 까지예요. 개수는 $2\\times3+1$ 이에요."
+        }
+      ],
+      "tip": "$k^2=16$ 인 두 값에서는 접하고, 그보다 바깥이면 만나지 않아요. 등호가 들어가는지 꼭 확인해요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "geo-conic-tangent-count",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "직선 $y=x+k$ 가 타원 $\\frac{x^2}{5}+\\frac{y^2}{4}=1$ 에 접할 때, 양수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "ans = max(solve(discriminant(4*x**2+5*(x+k)**2-20, x), k))",
+      "concepts": [
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$",
+        "직선을 곡선에 넣은 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 안 만남"
+      ],
+      "steps": [
+        {
+          "title": "값 읽기",
+          "body": "$a^2=5$, $b^2=4$, $m=1$ 이에요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$k^2=5\\cdot1^2+4=9$$"
+        },
+        {
+          "title": "양수 고르기",
+          "body": "$$k=3$$"
+        }
+      ],
+      "tip": "직접 대입하면 $9x^2+10kx+5k^2-20=0$ 이고 $\\frac{D}{4}=25k^2-9(5k^2-20)=0$ 에서도 $k^2=9$ 예요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "직선 $y=x+k$ 가 타원 $\\frac{x^2}{6}+\\frac{y^2}{3}=1$ 과 만나지 않도록 하는 자연수 $k$ 의 최솟값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "ans = min([k0 for k0 in range(1, 20) if discriminant(3*x**2+6*(x+k0)**2-18, x) < 0])",
+      "concepts": [
+        "직선을 곡선에 넣은 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 안 만남",
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$"
+      ],
+      "steps": [
+        {
+          "title": "접할 때",
+          "body": "$k^2=6\\cdot1^2+3=9$ 일 때 접해요."
+        },
+        {
+          "title": "만나지 않을 조건",
+          "body": "직선이 두 접선 바깥에 있어야 하니 $k^2>9$ 예요."
+        },
+        {
+          "title": "자연수 고르기",
+          "body": "$k>3$ 인 가장 작은 자연수는 $4$ 예요."
+        }
+      ],
+      "tip": "$k=3$ 은 접하는 경우라서 \"만나지 않는다\"에 들어가지 않아요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "쌍곡선 $\\frac{x^2}{8}-\\frac{y^2}{4}=1$ 위의 점 $(4,2)$ 에서의 접선과 $x$축, $y$축으로 둘러싸인 삼각형의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "m0 = idiff(x**2/8-y**2/4-1, y, x).subs({x: 4, y: 2})\nb0 = 2 - m0*4\nx0 = 4 - 2/m0\nans = Abs(b0*x0)/2",
+      "concepts": [
+        "쌍곡선 위의 점에서의 접선: $\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$"
+      ],
+      "steps": [
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$$\\frac{4x}{8}-\\frac{2y}{4}=1$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "양변에 2 를 곱하면 $x-y=2$, 곧 $y=x-2$ 예요."
+        },
+        {
+          "title": "절편 구하기",
+          "body": "$x$절편은 $2$, $y$절편은 $-2$ 예요."
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac{1}{2}\\times2\\times2=2$$"
+        }
+      ],
+      "tip": "쌍곡선 접선의 $y$절편은 $-\\frac{b^2}{y_1}$ 이라 음수가 나와요. 넓이는 길이로 계산해요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "포물선 $y^2=12x$ 위의 점 $(3,6)$ 에서의 접선이 $y=ax+b$ 일 때, $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "m0 = idiff(y**2-12*x, y, x).subs({x: 3, y: 6})\nans = m0 + (6 - m0*3)",
+      "concepts": [
+        "포물선 $y^2=4px$ 위의 점에서의 접선: $y_1y=2p(x+x_1)$"
+      ],
+      "steps": [
+        {
+          "title": "$p$ 읽기",
+          "body": "$4p=12$ 라 $p=3$, $2p=6$ 이에요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$$6y=6(x+3)$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$y=x+3$ 이라 $a=1$, $b=3$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=4$$"
+        }
+      ],
+      "tip": "$y_1y=2p(x+x_1)$ 에서 $x$ 쪽은 $x$ 와 $x_1$ 의 평균에 $4p$ 를 곱한 꼴이에요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "포물선 $y^2=8x$ 에 접하고 기울기가 $2$ 인 직선의 $y$절편을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "ans = solve(discriminant((2*x+n)**2-8*x, x), n)[0]",
+      "concepts": [
+        "포물선 $y^2=4px$ 에 기울기 $m$ 인 접선: $y=mx+\\frac{p}{m}$",
+        "직선을 곡선에 넣은 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 안 만남"
+      ],
+      "steps": [
+        {
+          "title": "$p$ 읽기",
+          "body": "$4p=8$ 이라 $p=2$ 예요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$y=2x+\\frac{2}{2}$$"
+        },
+        {
+          "title": "답",
+          "body": "$y$절편은 $1$ 이에요."
+        }
+      ],
+      "tip": "판별식으로 확인: $(2x+n)^2=8x$ 에서 $4x^2+(4n-8)x+n^2=0$, $\\frac{D}{4}=(2n-4)^2-4n^2=16-16n=0$ 이라 $n=1$ 이에요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "타원 $\\frac{x^2}{18}+\\frac{y^2}{2}=1$ 위의 점 $(a,b)$ ($a>0$, $b>0$) 에서의 접선의 기울기가 $-\\frac{1}{3}$ 일 때, $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "ans = [s[0]+s[1] for s in solve([x**2/18+y**2/2-1, idiff(x**2/18+y**2/2-1, y, x)+Rational(1, 3)], [x, y]) if s[0] > 0 and s[1] > 0][0]",
+      "concepts": [
+        "타원 위의 점에서의 접선: $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$"
+      ],
+      "steps": [
+        {
+          "title": "접선의 기울기",
+          "body": "접선 $\\frac{ax}{18}+\\frac{by}{2}=1$ 의 기울기는 $-\\frac{a/18}{b/2}=-\\frac{a}{9b}$ 예요."
+        },
+        {
+          "title": "조건 세우기",
+          "body": "$-\\frac{a}{9b}=-\\frac{1}{3}$ 이라 $a=3b$ 예요."
+        },
+        {
+          "title": "타원에 넣기",
+          "body": "$\\frac{9b^2}{18}+\\frac{b^2}{2}=1$, $b^2=1$ 이라 $b=1$, $a=3$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$a+b=4$$"
+        }
+      ],
+      "tip": "기울기가 $m$ 인 접선 공식으로 접선을 먼저 구하고 접점을 찾아도 돼요. 이 문제는 접점이 미지수라 점 공식이 편해요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "쌍곡선 $\\frac{x^2}{4}-y^2=1$ 에 접하고 기울기가 $1$ 인 두 직선 사이의 거리를 $d$ 라 할 때, $d^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "n0 = max(solve(discriminant(x**2-4*(x+n)**2-4, x), n))\nans = (2*n0)**2/2",
+      "concepts": [
+        "쌍곡선에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2-b^2}$",
+        "평행한 두 직선 $y=mx+n_1$, $y=mx+n_2$ 사이 거리: $\\frac{|n_1-n_2|}{\\sqrt{m^2+1}}$"
+      ],
+      "steps": [
+        {
+          "title": "공식에 넣기",
+          "body": "$n^2=4\\cdot1^2-1=3$ 이라 두 접선은 $y=x\\pm\\sqrt3$ 예요."
+        },
+        {
+          "title": "두 직선 사이 거리",
+          "body": "$$d=\\frac{2\\sqrt3}{\\sqrt{1^2+1}}=\\frac{2\\sqrt3}{\\sqrt2}$$"
+        },
+        {
+          "title": "제곱하기",
+          "body": "$$d^2=\\frac{12}{2}=6$$"
+        }
+      ],
+      "tip": "쌍곡선은 $a^2m^2-b^2$ 예요. 더하기로 하면 $n^2=5$ 가 나와 틀려요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "타원 $\\frac{x^2}{9}+\\frac{y^2}{5}=1$ 위의 점 $\\left(2,\\frac{5}{3}\\right)$ 에서의 접선이 $x$축과 만나는 점의 $x$좌표를 구하세요.",
+      "choices": null,
+      "answer": "9/2",
+      "answerType": "fraction",
+      "check": "m0 = idiff(x**2/9+y**2/5-1, y, x).subs({x: 2, y: Rational(5, 3)})\nans = 2 - Rational(5, 3)/m0",
+      "answerTex": "$\\frac{9}{2}$",
+      "concepts": [
+        "타원 위의 점에서의 접선: $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$"
+      ],
+      "steps": [
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$$\\frac{2x}{9}+\\frac{\\frac{5}{3}y}{5}=1,\\quad \\frac{2x}{9}+\\frac{y}{3}=1$$"
+        },
+        {
+          "title": "$y=0$ 넣기",
+          "body": "$$\\frac{2x}{9}=1,\\quad x=\\frac{9}{2}$$"
+        }
+      ],
+      "tip": "$x$절편은 공식에서 바로 $\\frac{a^2}{x_1}=\\frac{9}{2}$ 예요. $y_1$ 이 분수여도 $x$절편에는 영향이 없어요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "점 $(0,3)$ 에서 타원 $\\frac{x^2}{2}+y^2=1$ 에 그은 접선 가운데 기울기가 양수인 것의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "ans = max(solve(discriminant(x**2+2*(m*x+3)**2-2, x), m))",
+      "concepts": [
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$",
+        "직선을 곡선에 넣은 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 안 만남"
+      ],
+      "steps": [
+        {
+          "title": "접선 놓기",
+          "body": "$(0,3)$ 을 지나니 접선은 $y=mx+3$ 이에요."
+        },
+        {
+          "title": "접할 조건",
+          "body": "기울기 공식에서 $3^2=2m^2+1$ 이에요."
+        },
+        {
+          "title": "풀기",
+          "body": "$m^2=4$ 라 양수인 기울기는 $2$ 예요."
+        }
+      ],
+      "tip": "곡선 밖의 점에서 그은 접선은 \"기울기를 $m$ 으로 두고 접할 조건\"으로 풀어요. 접선이 두 개 나와요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "쌍곡선 $x^2-\\frac{y^2}{3}=1$ 위의 점 $(2,3)$ 에서의 접선이 $x$축과 만나는 점을 $Q$, 이 쌍곡선의 초점 중 $x$좌표가 양수인 점을 $F$ 라 할 때, 선분 $QF$ 의 길이를 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "m0 = idiff(x**2-y**2/3-1, y, x).subs({x: 2, y: 3})\nq0 = 2 - 3/m0\nans = sqrt(1+3) - q0",
+      "answerTex": "$\\frac{3}{2}$",
+      "concepts": [
+        "쌍곡선 위의 점에서의 접선: $\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$",
+        "쌍곡선의 초점: $c^2=a^2+b^2$"
+      ],
+      "steps": [
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$$2x-\\frac{3y}{3}=1,\\quad y=2x-1$$"
+        },
+        {
+          "title": "$Q$ 구하기",
+          "body": "$y=0$ 이면 $x=\\frac{1}{2}$ 이라 $Q\\left(\\frac{1}{2},0\\right)$ 예요."
+        },
+        {
+          "title": "$F$ 구하기",
+          "body": "$c^2=1+3=4$ 라 $F(2,0)$ 이에요."
+        },
+        {
+          "title": "길이",
+          "body": "$$\\overline{QF}=2-\\frac{1}{2}=\\frac{3}{2}$$"
+        }
+      ],
+      "tip": "쌍곡선의 초점은 $c^2=a^2+b^2$, 타원은 $c^2=a^2-b^2$ 예요. 앞 단원 공식을 섞지 않게 조심해요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "양수 $b$ 에 대하여 쌍곡선 $\\frac{x^2}{8}-\\frac{y^2}{b^2}=1$ 위의 점 $(4,2)$ 에서의 접선의 $y$절편은?",
+      "choices": [
+        "$-4$",
+        "$-2$",
+        "$-1$",
+        "$2$",
+        "$4$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "b2 = solve(Eq(Rational(16, 8) - 4/k, 1), k)[0]\nm0 = idiff(x**2/8 - y**2/b2 - 1, y, x).subs({x: 4, y: 2})\nans = 2 - m0*4",
+      "choiceChecks": [
+        "-4",
+        "-2",
+        "-1",
+        "2",
+        "4"
+      ],
+      "concepts": [
+        "쌍곡선 위의 점에서의 접선: $\\frac{x_1x}{a^2}-\\frac{y_1y}{b^2}=1$"
+      ],
+      "steps": [
+        {
+          "title": "$b^2$ 구하기",
+          "body": "점 $(4,2)$ 가 쌍곡선 위에 있으니 $\\frac{16}{8}-\\frac{4}{b^2}=1$, $b^2=4$ 예요."
+        },
+        {
+          "title": "접선 공식에 넣기",
+          "body": "$$\\frac{4x}{8}-\\frac{2y}{4}=1$$"
+        },
+        {
+          "title": "$x=0$ 넣기",
+          "body": "$$-\\frac{y}{2}=1,\\quad y=-2$$"
+        }
+      ],
+      "tip": "$y$절편은 $-\\frac{b^2}{y_1}=-\\frac{4}{2}$ 로 바로 나와요. 빼기를 더하기로 쓰면 보기 ④ $2$ 를 고르게 돼요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "포물선 $y^2=4x$ 위의 점 $P(4,4)$ 에서의 접선이 $x$축과 만나는 점을 $Q$, 포물선의 초점을 $F$ 라 할 때, 삼각형 $PQF$ 의 넓이는?",
+      "choices": [
+        "$6$",
+        "$8$",
+        "$10$",
+        "$12$",
+        "$16$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "m0 = idiff(y**2-4*x, y, x).subs({x: 4, y: 4})\nq0 = 4 - 4/m0\nans = (1 - q0)*4/2",
+      "choiceChecks": [
+        "6",
+        "8",
+        "10",
+        "12",
+        "16"
+      ],
+      "concepts": [
+        "포물선 $y^2=4px$ 위의 점에서의 접선: $y_1y=2p(x+x_1)$",
+        "포물선 $y^2=4px$ 의 초점: $(p,0)$"
+      ],
+      "steps": [
+        {
+          "title": "접선 구하기",
+          "body": "$p=1$ 이라 접선은 $4y=2(x+4)$, 곧 $y=\\frac{1}{2}x+2$ 예요."
+        },
+        {
+          "title": "$Q$, $F$",
+          "body": "$y=0$ 이면 $x=-4$ 라 $Q(-4,0)$, 초점은 $F(1,0)$ 이에요."
+        },
+        {
+          "title": "넓이",
+          "body": "밑변 $\\overline{QF}=5$, 높이는 $P$ 의 $y$좌표 $4$ 라\n$$\\frac{1}{2}\\times5\\times4=10$$"
+        }
+      ],
+      "tip": "$\\overline{PF}=4+1=5$(준선까지 거리)이고 $\\overline{QF}=5$ 라 삼각형 $PQF$ 는 이등변삼각형이에요. 수능에서 자주 쓰는 성질이에요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "타원 $\\frac{x^2}{3}+y^2=1$ 에 접하고 기울기가 $1$ 인 두 직선 사이의 거리는?",
+      "choices": [
+        "$\\sqrt2$",
+        "$2$",
+        "$2\\sqrt2$",
+        "$4$",
+        "$4\\sqrt2$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "n0 = max(solve(discriminant(x**2+3*(x+n)**2-3, x), n))\nans = 2*n0/sqrt(2)",
+      "choiceChecks": [
+        "sqrt(2)",
+        "2",
+        "2*sqrt(2)",
+        "4",
+        "4*sqrt(2)"
+      ],
+      "concepts": [
+        "타원에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2+b^2}$",
+        "평행한 두 직선 사이 거리: $\\frac{|n_1-n_2|}{\\sqrt{m^2+1}}$"
+      ],
+      "steps": [
+        {
+          "title": "공식에 넣기",
+          "body": "$n^2=3\\cdot1^2+1=4$ 라 두 접선은 $y=x+2$, $y=x-2$ 예요."
+        },
+        {
+          "title": "거리",
+          "body": "$$\\frac{|2-(-2)|}{\\sqrt{1^2+1}}=\\frac{4}{\\sqrt2}=2\\sqrt2$$"
+        }
+      ],
+      "tip": "$y$절편의 차 $4$ 를 그대로 거리로 쓰면 보기 ④ 를 고르게 돼요. 기울어진 두 직선의 거리는 $\\sqrt{m^2+1}$ 로 나눠야 해요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "직선 $y=mx+2$ 가 쌍곡선 $x^2-\\frac{y^2}{5}=1$ 에 접하도록 하는 모든 실수 $m$ 의 값의 곱은?",
+      "choices": [
+        "$-9$",
+        "$-3$",
+        "$3$",
+        "$6$",
+        "$9$"
+      ],
+      "answer": "1",
+      "answerType": "choice",
+      "check": "ans = prod(solve(discriminant(5*x**2-(m*x+2)**2-5, x), m))",
+      "choiceChecks": [
+        "-9",
+        "-3",
+        "3",
+        "6",
+        "9"
+      ],
+      "concepts": [
+        "쌍곡선에 기울기 $m$ 인 접선: $y=mx\\pm\\sqrt{a^2m^2-b^2}$",
+        "직선을 곡선에 넣은 이차방정식의 판별식 $D$: $D>0$ 두 점, $D=0$ 접함, $D<0$ 안 만남"
+      ],
+      "steps": [
+        {
+          "title": "접할 조건",
+          "body": "기울기 공식에서 $2^2=1\\cdot m^2-5$ 예요."
+        },
+        {
+          "title": "풀기",
+          "body": "$m^2=9$ 라 $m=3$ 또는 $m=-3$ 이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3\\times(-3)=-9$$"
+        }
+      ],
+      "tip": "$m^2=5$ 이면 직선이 점근선과 평행해서 쌍곡선과 한 점에서 만나지만 접선은 아니에요. 이차방정식이 일차방정식이 되기 때문이에요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "제1사분면에 있는 타원 $\\frac{x^2}{8}+\\frac{y^2}{2}=1$ 위의 점에서 그은 접선과 $x$축, $y$축으로 둘러싸인 삼각형의 넓이의 최솟값은?",
+      "choices": [
+        "$2$",
+        "$2\\sqrt2$",
+        "$4$",
+        "$4\\sqrt2$",
+        "$8$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "f = 16/(2*x*sqrt(2-x**2/4))\nc0 = [s for s in solve(diff(f, x), x) if s > 0][0]\nans = f.subs(x, c0)",
+      "choiceChecks": [
+        "2",
+        "2*sqrt(2)",
+        "4",
+        "4*sqrt(2)",
+        "8"
+      ],
+      "concepts": [
+        "타원 위의 점에서의 접선: $\\frac{x_1x}{a^2}+\\frac{y_1y}{b^2}=1$"
+      ],
+      "steps": [
+        {
+          "title": "절편 구하기",
+          "body": "접점을 $(x_1,y_1)$ 이라 하면 접선 $\\frac{x_1x}{8}+\\frac{y_1y}{2}=1$ 의 $x$절편 $\\frac{8}{x_1}$, $y$절편 $\\frac{2}{y_1}$ 이에요."
+        },
+        {
+          "title": "넓이 식",
+          "body": "$$S=\\frac{1}{2}\\cdot\\frac{8}{x_1}\\cdot\\frac{2}{y_1}=\\frac{8}{x_1y_1}$$"
+        },
+        {
+          "title": "$x_1y_1$ 의 최댓값",
+          "body": "산술·기하 평균에서 $1=\\frac{x_1^2}{8}+\\frac{y_1^2}{2}\\ge2\\cdot\\frac{x_1y_1}{4}$ 이라 $x_1y_1\\le2$ 예요(등호는 $x_1=2$, $y_1=1$)."
+        },
+        {
+          "title": "최솟값",
+          "body": "$$S\\ge\\frac{8}{2}=4$$"
+        }
+      ],
+      "tip": "접점이 $(2,1)$ 일 때 최소예요. 레슨에서 그린 바로 그 접선이에요."
+    }
+  ]
+}

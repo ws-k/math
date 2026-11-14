@@ -1,0 +1,1428 @@
+{
+  "id": "geo-vector-ops",
+  "course": "기하",
+  "unit": "평면벡터",
+  "title": "벡터의 연산",
+  "prereq": [
+    "h1-coord-line",
+    "m2-similarity"
+  ],
+  "suneung": [
+    "기하 30"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$\\overrightarrow{AB}=\\overrightarrow{OB}-\\overrightarrow{OA}$",
+    "$\\vec a+\\vec b$: $\\vec b$ 의 시작점을 $\\vec a$ 의 끝점에 이어 붙여요(평행사변형의 대각선)",
+    "$\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$",
+    "$\\vec a\\parallel\\vec b$ 이면 $\\vec a=t\\vec b$ ($t\\ne0$)",
+    "$m:n$ 내분점 $P$: $\\overrightarrow{OP}=\\dfrac{n\\overrightarrow{OA}+m\\overrightarrow{OB}}{m+n}$",
+    "중점 $M$: $\\overrightarrow{PA}+\\overrightarrow{PB}=2\\overrightarrow{PM}$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "walk": {
+        "value": "5",
+        "check": "sqrt(3**2+4**2)"
+      },
+      "walkSum": {
+        "value": "7",
+        "check": "3+4"
+      },
+      "cx": {
+        "value": "5",
+        "check": "4+1"
+      },
+      "cy": {
+        "value": "4",
+        "check": "1+3"
+      },
+      "dx": {
+        "value": "7",
+        "check": "1+(5-1)+(3-1)"
+      },
+      "dy": {
+        "value": "5",
+        "check": "1+(1-1)+(5-1)"
+      },
+      "pmx": {
+        "value": "3",
+        "check": "4-1"
+      },
+      "pmy": {
+        "value": "2",
+        "check": "3-1"
+      },
+      "pdx": {
+        "value": "6",
+        "check": "(5-1)+(3-1)"
+      },
+      "pdy": {
+        "value": "4",
+        "check": "(1-1)+(5-1)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "기하 · 평면벡터",
+        "title": "화살표 두 개를 이으면\n어디에 도착할까요?",
+        "lead": "길이만이 아니라 방향까지 함께 가진 양이 벡터예요. 좌표평면에서 끝점을 직접 찍으며 더하기·실수배·내분점을 알아내고, 이름은 마지막에 붙여요.",
+        "meta": [
+          "벡터의 덧셈",
+          "실수배",
+          "위치벡터"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "동쪽으로 3 km, 북쪽으로 4 km.\n출발점에서 얼마나 멀까요?",
+        "lead": "공원에서 동쪽으로 3 km 걸은 뒤, 거기서 북쪽으로 4 km 더 걸었어요. 지금 자리는 출발점에서 곧게 몇 km 떨어져 있을까요?",
+        "format": {
+          "unit": " km"
+        },
+        "choices": [
+          {
+            "value": "7",
+            "check": "3+4",
+            "feedback": "걸은 길이를 더한 값이에요. 두 번 걷는 방향이 달라서 출발점에서 떨어진 거리는 더 짧아요."
+          },
+          {
+            "value": "5",
+            "check": "sqrt(3**2+4**2)"
+          },
+          {
+            "value": "1",
+            "check": "4-3",
+            "feedback": "두 길이를 뺀 값은 서로 반대 방향으로 걸었을 때의 거리예요. 동쪽과 북쪽은 직각이에요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "sqrt(3**2+4**2)",
+        "reveal": "**맞아요.** 두 이동을 꼬리에 머리를 잇듯 붙이면 직각삼각형이 생겨요.",
+        "thoughts": [
+          "동쪽 3 km 와 북쪽 4 km 가 직각을 이루는 두 변이에요.",
+          "출발점에서 지금 자리까지의 거리는 빗변이라 {{walk}} km 예요."
+        ],
+        "conclude": "걸은 길이의 합 {{walkSum}} km 와 달라요. ==방향이 있는 양은 길이만 더해서는 안 돼요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "tiptotail",
+        "chip": "손으로 해 보기",
+        "title": "두 화살표를 이어 붙인\n끝점을 찍어 보세요",
+        "lead": "원점 $O$ 에서 $A$ 로 가는 이동이 $\\vec a$, $O$ 에서 $B$ 로 가는 이동이 $\\vec b$ 예요. $\\vec a$ 만큼 간 다음 $\\vec b$ 만큼 더 가면 어디에 도착할까요? 빈 칸을 눌러 점을 찍고, 끌어서 옮길 수 있어요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -1,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": -1,
+              "max": 5,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "va",
+                "curve": "x/4+Abs(sqrt(x*(4-x)))-sqrt(x*(4-x))",
+                "label": "$\\vec a$: $O$ 에서 $A$ 로"
+              },
+              {
+                "id": "vb",
+                "curve": "3*x+Abs(sqrt(x*(1-x)))-sqrt(x*(1-x))",
+                "label": "$\\vec b$: $O$ 에서 $B$ 로",
+                "tone": "accent"
+              },
+              {
+                "id": "O",
+                "point": {
+                  "x": 0,
+                  "y": 0
+                },
+                "name": "O"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "x": 4,
+                  "y": 1
+                },
+                "name": "A"
+              },
+              {
+                "id": "B",
+                "point": {
+                  "x": 1,
+                  "y": 3
+                },
+                "name": "B"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "5",
+                  "check": "4+1"
+                },
+                "y": {
+                  "value": "4",
+                  "check": "1+3"
+                }
+              }
+            },
+            "intro": "$\\vec b$ 의 꼬리를 $A$ 에 옮겨 붙인다고 생각해요. $A$ 에서 오른쪽으로 1 칸, 위로 3 칸이에요.",
+            "done": "맞아요. 도착점은 $({{cx}},{{cy}})$ 예요. $O,\\ A,\\ B$ 와 이 점은 **평행사변형**의 네 꼭짓점이고, $\\vec a+\\vec b$ 는 그 대각선이에요."
+          }
+        },
+        "after": "도착점의 좌표는 $A$ 와 $B$ 의 $x$좌표끼리, $y$좌표끼리 더한 값이에요. ==벡터의 덧셈은 성분끼리 더하기==예요."
+      },
+      {
+        "kind": "explore",
+        "id": "scale",
+        "chip": "손으로 해 보기",
+        "title": "$k$ 를 바꾸며\n$k\\vec a$ 를 늘여 보세요",
+        "lead": "$\\vec a=(2,1)$ 이에요. 슬라이더로 $k$ 를 바꾸면 선분 $k\\vec a$ 가 어떻게 변하는지 보세요. $k$ 를 음수로도 내려 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -5,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": -3,
+              "max": 4,
+              "step": 1
+            },
+            "sliders": [
+              {
+                "id": "k",
+                "min": -2,
+                "max": 3,
+                "step": "1/2",
+                "value": 2,
+                "label": "$k$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "O",
+                "point": {
+                  "x": 0,
+                  "y": 0
+                },
+                "name": "O"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "x": 2,
+                  "y": 1
+                },
+                "name": "A"
+              },
+              {
+                "secant": [
+                  "O",
+                  "A"
+                ]
+              },
+              {
+                "id": "va",
+                "curve": "x/2+Abs(sqrt(x*(2-x)))-sqrt(x*(2-x))",
+                "label": "$\\vec a=(2,1)$",
+                "tone": "soft"
+              },
+              {
+                "id": "ka",
+                "curve": "x/2+Abs(sqrt(x*(2*k-x)))-sqrt(x*(2*k-x))",
+                "label": "$k\\vec a$",
+                "tone": "accent"
+              },
+              {
+                "readout": "value(k)",
+                "label": "$k$",
+                "digits": 1
+              }
+            ],
+            "intro": "$k$ 를 $-2$ 부터 $3$ 까지 움직여 보세요.",
+            "done": "$k$ 가 커지면 길이가 $k$ 배로 늘고, 음수가 되면 방향이 반대로 뒤집혀요. 그래도 늘 직선 $OA$ **위에** 있어요."
+          }
+        },
+        "after": "$k\\vec a=(2k,\\ k)$ 예요. 성분마다 $k$ 를 곱하니 방향은 그대로이거나 정반대예요. 그래서 ==평행한 두 벡터는 한쪽이 다른 쪽의 실수배==예요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "벡터",
+            "body": "크기와 방향을 함께 가진 양이에요. 시작점 $A$, 끝점 $B$ 이면 $\\overrightarrow{AB}$, 한 글자로는 $\\vec a$ 로 써요. 크기는 $|\\vec a|$ 예요."
+          },
+          {
+            "term": "벡터의 덧셈",
+            "body": "$\\vec b$ 의 시작점을 $\\vec a$ 의 끝점에 이어 붙여요. 두 벡터로 만든 **평행사변형의 대각선**과 같아요. 성분으로는 성분끼리 더해요."
+          },
+          {
+            "term": "실수배와 평행",
+            "body": "$k\\vec a$ 는 길이가 $|k|$ 배, $k<0$ 이면 방향이 반대예요. $\\vec a=t\\vec b$ ($t\\ne0$) 이면 두 벡터는 **평행**해요."
+          },
+          {
+            "term": "위치벡터",
+            "body": "원점 $O$ 를 시작점으로 하는 $\\overrightarrow{OA}$ 예요. 끝점 좌표가 곧 성분이라서 $\\overrightarrow{AB}=\\overrightarrow{OB}-\\overrightarrow{OA}$ (**끝점 빼기 시작점**)로 계산해요."
+          }
+        ],
+        "aside": "**확인** · 앞 장면의 도착점 $({{cx}},{{cy}})$ 는 위치벡터 $\\overrightarrow{OA}+\\overrightarrow{OB}$ 의 성분과 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "midpoint",
+        "chip": "두 번째 해 보기",
+        "title": "$\\overrightarrow{PA}+\\overrightarrow{PB}$ 의\n끝점을 찍어 보세요",
+        "lead": "점 $P$ 에서 $A$, $B$ 로 가는 두 벡터를 더해요. 덧셈은 이어 붙이기였죠. $P$ 에서 출발해 $\\overrightarrow{PA}+\\overrightarrow{PB}$ 만큼 간 점 $D$ 를 찍어 보세요. $M$ 은 선분 $AB$ 의 중점이에요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "pa",
+                "curve": "1+Abs(sqrt((x-1)*(5-x)))-sqrt((x-1)*(5-x))",
+                "label": "$\\overrightarrow{PA}$"
+              },
+              {
+                "id": "pb",
+                "curve": "2*x-1+Abs(sqrt((x-1)*(3-x)))-sqrt((x-1)*(3-x))",
+                "label": "$\\overrightarrow{PB}$",
+                "tone": "accent"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "x": 1,
+                  "y": 1
+                },
+                "name": "P"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "x": 5,
+                  "y": 1
+                },
+                "name": "A"
+              },
+              {
+                "id": "B",
+                "point": {
+                  "x": 3,
+                  "y": 5
+                },
+                "name": "B"
+              },
+              {
+                "id": "M",
+                "point": {
+                  "x": 4,
+                  "y": 3
+                },
+                "name": "M"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "7",
+                  "check": "1+(5-1)+(3-1)"
+                },
+                "y": {
+                  "value": "5",
+                  "check": "1+(1-1)+(5-1)"
+                }
+              }
+            },
+            "intro": "$A$ 에서 $\\overrightarrow{PB}$ 만큼(오른쪽 2 칸, 위로 4 칸) 더 가요.",
+            "done": "맞아요. $D({{dx}},{{dy}})$ 예요. $\\overrightarrow{PD}=({{pdx}},{{pdy}})$ 는 $\\overrightarrow{PM}=({{pmx}},{{pmy}})$ 의 **두 배**이고, $D$ 는 직선 $PM$ 위에 있어요."
+          }
+        },
+        "after": "평행사변형 $PADB$ 의 두 대각선은 서로를 이등분해요. 그래서 대각선 $PD$ 의 중점이 $M$ 이고 $\\overrightarrow{PA}+\\overrightarrow{PB}=2\\overrightarrow{PM}$, 곧 ==두 벡터의 합은 중점으로 가는 벡터의 두 배==예요. 수능 마지막 문항에서도 자주 쓰는 식이에요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $A(1,4)$, $B(5,2)$ 일 때 $\\overrightarrow{AB}$ 의 $x$성분을 $x$ 라 했어요. $\\overrightarrow{OA}+\\overrightarrow{AB}=\\overrightarrow{OB}$ 의 $x$성분 식에서 틀린 곳은?",
+            "mode": "equivalent",
+            "from": "1+x=5",
+            "tokens": [
+              {
+                "sym": "x"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "1-5",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "5-1",
+              "body": "$\\overrightarrow{AB}=\\overrightarrow{OB}-\\overrightarrow{OA}$, **끝점 빼기 시작점**이에요. 거꾸로 빼면 방향이 정반대인 $\\overrightarrow{BA}$ 가 돼요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $\\overrightarrow{OA}$, $\\overrightarrow{OB}$ 의 $x$성분이 1, 7 이에요. 선분 $AB$ 를 $2:1$ 로 내분하는 점 $P$ 의 $x$성분 $x$ 는 $AP=2PB$ 에서 구해요. 틀린 곳은?",
+            "mode": "equivalent",
+            "from": "x-1=2*(7-x)",
+            "tokens": [
+              {
+                "sym": "x"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(2*1+1*7)/(2+1)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "(1*1+2*7)/(2+1)",
+              "body": "비가 큰 쪽($B$ 쪽 2)에 가까워야 하니 $B$ 에 2 를 곱해요. $\\overrightarrow{OP}=\\dfrac{n\\overrightarrow{OA}+m\\overrightarrow{OB}}{m+n}$, 비와 **엇갈려** 곱해요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "size",
+            "q": "두 벡터 $\\vec a=(2,1)$, $\\vec b=(-1,2)$ 에 대하여 $|2\\vec a+\\vec b|$ 의 값을 구하세요.",
+            "hint": "먼저 $2\\vec a+\\vec b$ 를 성분으로 구하고, 그다음 크기를 재요.",
+            "concepts": [
+              "$m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$",
+              "$|(v_1,v_2)|=\\sqrt{v_1^2+v_2^2}$"
+            ],
+            "steps": [
+              {
+                "title": "실수배",
+                "body": "$2\\vec a=(4,2)$ 예요."
+              },
+              {
+                "title": "덧셈",
+                "body": "$2\\vec a+\\vec b=(4-1,\\ 2+2)=(3,4)$ 예요."
+              },
+              {
+                "title": "크기",
+                "body": "$$\\sqrt{3^2+4^2}=\\sqrt{25}={{answer}}$$"
+              }
+            ],
+            "tip": "$|2\\vec a|+|\\vec b|=2\\sqrt5+\\sqrt5$ 처럼 크기를 따로 더하면 틀려요. 합친 벡터의 크기를 재야 해요.",
+            "answer": "5",
+            "answerType": "int",
+            "check": "sqrt((2*2+(-1))**2+(2*1+2)**2)"
+          },
+          {
+            "id": "parallel",
+            "q": "두 벡터 $\\vec a=(2,-1)$, $\\vec b=(-1,3)$ 에 대하여 $\\vec a+t\\vec b$ 가 $\\vec c=(1,1)$ 과 평행할 때, 실수 $t$ 의 값을 구하세요.",
+            "hint": "$\\vec c$ 의 두 성분이 같으니, 평행한 벡터도 두 성분이 같아야 해요.",
+            "concepts": [
+              "$\\vec u\\parallel\\vec c$ 이면 $\\vec u=s\\vec c$"
+            ],
+            "steps": [
+              {
+                "title": "성분으로 쓰기",
+                "body": "$\\vec a+t\\vec b=(2-t,\\ -1+3t)$ 예요."
+              },
+              {
+                "title": "평행 조건",
+                "body": "$(2-t,\\ -1+3t)=s(1,1)$ 이니 두 성분이 같아요.\n$$2-t=-1+3t$$"
+              },
+              {
+                "title": "풀기",
+                "body": "$4t=3$ 이므로 $t={{answer}}$ 예요."
+              }
+            ],
+            "tip": "$t$ 대신 성분의 비 $(2-t):(-1+3t)=1:1$ 로 세워도 같은 식이 나와요.",
+            "answer": "3/4",
+            "answerType": "fraction",
+            "check": "solve(Eq(2-t, -1+3*t), t)[0]"
+          },
+          {
+            "id": "median",
+            "q": "세 점 $A(-1,-1)$, $B(4,0)$, $C(0,6)$ 에 대하여 $|\\overrightarrow{AB}+\\overrightarrow{AC}|$ 의 값을 구하세요.",
+            "hint": "$\\overrightarrow{AB}+\\overrightarrow{AC}=2\\overrightarrow{AM}$ ($M$ 은 $BC$ 의 중점)을 써도 되고, 성분으로 바로 더해도 돼요.",
+            "concepts": [
+              "$\\overrightarrow{AB}=\\overrightarrow{OB}-\\overrightarrow{OA}$",
+              "중점 $M$: $\\overrightarrow{AB}+\\overrightarrow{AC}=2\\overrightarrow{AM}$"
+            ],
+            "steps": [
+              {
+                "title": "끝점 빼기 시작점",
+                "body": "$\\overrightarrow{AB}=(4+1,\\ 0+1)=(5,1)$, $\\overrightarrow{AC}=(0+1,\\ 6+1)=(1,7)$ 이에요."
+              },
+              {
+                "title": "더하기",
+                "body": "$\\overrightarrow{AB}+\\overrightarrow{AC}=(6,8)$ 이에요."
+              },
+              {
+                "title": "크기",
+                "body": "$$\\sqrt{6^2+8^2}=\\sqrt{100}={{answer}}$$"
+              }
+            ],
+            "tip": "중점 $M(2,3)$ 으로 검산할 수 있어요. $\\overrightarrow{AM}=(3,4)$, $|\\overrightarrow{AM}|=5$ 이니 두 배는 10 이에요.",
+            "answer": "10",
+            "answerType": "int",
+            "check": "sqrt(((4-(-1))+(0-(-1)))**2+((0-(-1))+(6-(-1)))**2)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "벡터의 덧셈은 **이어 붙이기**(평행사변형의 대각선), 성분으로는 성분끼리 더해요.",
+          "$k\\vec a$ 는 길이 $|k|$ 배, $k<0$ 이면 방향이 반대예요. 평행하면 한쪽이 다른 쪽의 실수배예요.",
+          "$\\overrightarrow{AB}=\\overrightarrow{OB}-\\overrightarrow{OA}$, 내분점은 비와 엇갈려 곱해요.",
+          "수능에서는 $\\overrightarrow{PA}+\\overrightarrow{PB}=2\\overrightarrow{PM}$ 으로 두 벡터의 합을 한 벡터로 바꾸는 문제가 자주 나와요."
+        ],
+        "done": "벡터의 연산 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "geo-vector-ops-combo",
+    "geo-vector-ops-length",
+    "geo-vector-ops-parallel",
+    "geo-vector-ops-section"
+  ],
+  "problems": [
+    {
+      "q": "두 벡터 $\\vec a=(3,3)$, $\\vec b=(2,3)$ 에 대하여 $2\\vec a+3\\vec b=(p,q)$ 일 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "27",
+      "answerType": "int",
+      "check": "(2)*(3)+(3)*(2)+(2)*(3)+(3)*(3)",
+      "concepts": [
+        "성분으로 계산: $\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$"
+      ],
+      "steps": [
+        {
+          "title": "$x$성분끼리",
+          "body": "$$p=2\\cdot3+3\\cdot2=6+6=12$$"
+        },
+        {
+          "title": "$y$성분끼리",
+          "body": "$$q=2\\cdot3+3\\cdot3=6+9=15$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p+q=12+15=27$"
+        }
+      ],
+      "tip": "벡터의 덧셈·실수배는 $x$성분은 $x$성분끼리, $y$성분은 $y$성분끼리 따로 계산하면 돼요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "geo-vector-ops-combo",
+      "seed": 1000
+    },
+    {
+      "q": "두 벡터 $\\vec a=(3,1)$, $\\vec b=(6,5)$ 에 대하여 $|\\vec a-\\vec b|$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt(((1)*(3)+(-1)*(6))**2+((1)*(1)+(-1)*(5))**2)",
+      "concepts": [
+        "성분으로 계산: $\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$",
+        "$\\vec v=(v_1,v_2)$ 의 크기는 $|\\vec v|=\\sqrt{v_1^2+v_2^2}$"
+      ],
+      "steps": [
+        {
+          "title": "성분으로 계산",
+          "body": "$$\\vec a-\\vec b=(3-6,\\ 1-5)=(-3,-4)$$"
+        },
+        {
+          "title": "크기",
+          "body": "$$\\sqrt{(-3)^2+(-4)^2}=\\sqrt{25}=5$$"
+        }
+      ],
+      "tip": "$|\\vec a|$ 와 $|\\vec b|$ 를 따로 구해 더하면 안 돼요. 먼저 벡터를 합친 다음 크기를 재요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "geo-vector-ops-length",
+      "seed": 1001
+    },
+    {
+      "q": "두 벡터 $\\vec a=(k,-3)$, $\\vec b=(-1,-1)$ 가 서로 평행할 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3",
+      "answerType": "int",
+      "check": "solve(Eq(k*(-1) - (-3)*(-1), 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\parallel\\vec b$ 이면 $\\vec a=t\\vec b$ ($t\\ne0$ 인 실수)"
+      ],
+      "steps": [
+        {
+          "title": "평행이면 실수배",
+          "body": "$\\vec a=t\\vec b$ 라 하면 $(k,-3)=(-t,\\ -t)$ 예요."
+        },
+        {
+          "title": "$y$성분으로 $t$ 구하기",
+          "body": "$-t=-3$ 에서 $t=3$ 이에요."
+        },
+        {
+          "title": "$x$성분",
+          "body": "$$k=-1\\cdot3=-3$$"
+        }
+      ],
+      "tip": "거꾸로 확인해요. $3\\vec b=(-3,-3)$ 가 $\\vec a$ 와 같으니 맞아요. 평행에는 방향이 반대인 경우($t<0$)도 들어가요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "geo-vector-ops-parallel",
+      "seed": 1002
+    },
+    {
+      "q": "원점 $O$ 에 대하여 $\\overrightarrow{OA}=(-3,5)$, $\\overrightarrow{OB}=(5,13)$ 예요. 선분 $AB$ 를 $1:3$ 으로 내분하는 점 $P$ 에 대하여 $\\overrightarrow{OP}=(p,q)$ 일 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "Rational(3*(-3)+1*5, 4) + Rational(3*5+1*13, 4)",
+      "concepts": [
+        "$\\overline{AB}$ 를 $m:n$ 으로 내분하는 점 $P$: $\\overrightarrow{OP}=\\dfrac{n\\overrightarrow{OA}+m\\overrightarrow{OB}}{m+n}$"
+      ],
+      "steps": [
+        {
+          "title": "공식 세우기",
+          "body": "$A$ 쪽에 $3$, $B$ 쪽에 $1$ 을 곱해요. 비와 엇갈려 곱하니 가까운 점 쪽에 큰 수가 곱해져요.\n$$\\overrightarrow{OP}=\\frac{3\\overrightarrow{OA}+\\overrightarrow{OB}}{4}$$"
+        },
+        {
+          "title": "$x$성분",
+          "body": "$$p=\\frac{3\\cdot(-3)+1\\cdot5}{4}=\\frac{-4}{4}=-1$$"
+        },
+        {
+          "title": "$y$성분",
+          "body": "$$q=\\frac{3\\cdot5+1\\cdot13}{4}=\\frac{28}{4}=7$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p+q=-1+7=6$"
+        }
+      ],
+      "tip": "$A$ 에서 $B$ 쪽으로 $\\overrightarrow{AB}$ 의 $\\frac{1}{4}$ 만큼 간 점이라고 보고 $\\overrightarrow{OA}+\\frac{1}{4}\\overrightarrow{AB}$ 로 검산할 수 있어요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "geo-vector-ops-section",
+      "seed": 1003
+    },
+    {
+      "q": "두 벡터 $\\vec a=(-3,-2)$, $\\vec b=(1,-4)$ 에 대하여 $-\\vec a-\\vec b=(p,q)$ 일 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "(-1)*(-3)+(-1)*(1)+(-1)*(-2)+(-1)*(-4)",
+      "concepts": [
+        "성분으로 계산: $\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$"
+      ],
+      "steps": [
+        {
+          "title": "$x$성분끼리",
+          "body": "$$p=-1\\cdot(-3)+(-1)\\cdot1=3+(-1)=2$$"
+        },
+        {
+          "title": "$y$성분끼리",
+          "body": "$$q=-1\\cdot(-2)+(-1)\\cdot(-4)=2+4=6$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p+q=2+6=8$"
+        }
+      ],
+      "tip": "벡터의 덧셈·실수배는 $x$성분은 $x$성분끼리, $y$성분은 $y$성분끼리 따로 계산하면 돼요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "geo-vector-ops-combo",
+      "seed": 1004
+    },
+    {
+      "q": "두 벡터 $\\vec a=(3,-1)$, $\\vec b=(-3,-2)$ 에 대하여 $|2\\vec a+\\vec b|$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt(((2)*(3)+(1)*(-3))**2+((2)*(-1)+(1)*(-2))**2)",
+      "concepts": [
+        "성분으로 계산: $\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$",
+        "$\\vec v=(v_1,v_2)$ 의 크기는 $|\\vec v|=\\sqrt{v_1^2+v_2^2}$"
+      ],
+      "steps": [
+        {
+          "title": "성분으로 계산",
+          "body": "$$2\\vec a+\\vec b=(6-3,\\ -2-2)=(3,-4)$$"
+        },
+        {
+          "title": "크기",
+          "body": "$$\\sqrt{3^2+(-4)^2}=\\sqrt{25}=5$$"
+        }
+      ],
+      "tip": "$|\\vec a|$ 와 $|\\vec b|$ 를 따로 구해 더하면 안 돼요. 먼저 벡터를 합친 다음 크기를 재요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "geo-vector-ops-length",
+      "seed": 1005
+    },
+    {
+      "q": "두 벡터 $\\vec a=(k,9)$, $\\vec b=(-1,-3)$ 가 서로 평행할 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "solve(Eq(k*(-3) - (9)*(-1), 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\parallel\\vec b$ 이면 $\\vec a=t\\vec b$ ($t\\ne0$ 인 실수)"
+      ],
+      "steps": [
+        {
+          "title": "평행이면 실수배",
+          "body": "$\\vec a=t\\vec b$ 라 하면 $(k,9)=(-t,\\ -3t)$ 예요."
+        },
+        {
+          "title": "$y$성분으로 $t$ 구하기",
+          "body": "$-3t=9$ 에서 $t=-3$ 이에요."
+        },
+        {
+          "title": "$x$성분",
+          "body": "$$k=-1\\cdot(-3)=3$$"
+        }
+      ],
+      "tip": "거꾸로 확인해요. $-3\\vec b=(3,9)$ 가 $\\vec a$ 와 같으니 맞아요. 평행에는 방향이 반대인 경우($t<0$)도 들어가요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "geo-vector-ops-parallel",
+      "seed": 1006
+    },
+    {
+      "q": "원점 $O$ 에 대하여 $\\overrightarrow{OA}=(-3,-4)$, $\\overrightarrow{OB}=(-13,-14)$ 예요. 선분 $AB$ 를 $3:2$ 로 내분하는 점 $P$ 에 대하여 $\\overrightarrow{OP}=(p,q)$ 일 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-19",
+      "answerType": "int",
+      "check": "Rational(2*(-3)+3*(-13), 5) + Rational(2*(-4)+3*(-14), 5)",
+      "concepts": [
+        "$\\overline{AB}$ 를 $m:n$ 으로 내분하는 점 $P$: $\\overrightarrow{OP}=\\dfrac{n\\overrightarrow{OA}+m\\overrightarrow{OB}}{m+n}$"
+      ],
+      "steps": [
+        {
+          "title": "공식 세우기",
+          "body": "$A$ 쪽에 $2$, $B$ 쪽에 $3$ 을 곱해요. 비와 엇갈려 곱하니 가까운 점 쪽에 큰 수가 곱해져요.\n$$\\overrightarrow{OP}=\\frac{2\\overrightarrow{OA}+3\\overrightarrow{OB}}{5}$$"
+        },
+        {
+          "title": "$x$성분",
+          "body": "$$p=\\frac{2\\cdot(-3)+3\\cdot(-13)}{5}=\\frac{-45}{5}=-9$$"
+        },
+        {
+          "title": "$y$성분",
+          "body": "$$q=\\frac{2\\cdot(-4)+3\\cdot(-14)}{5}=\\frac{-50}{5}=-10$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p+q=-9+(-10)=-19$"
+        }
+      ],
+      "tip": "$A$ 에서 $B$ 쪽으로 $\\overrightarrow{AB}$ 의 $\\frac{3}{5}$ 만큼 간 점이라고 보고 $\\overrightarrow{OA}+\\frac{3}{5}\\overrightarrow{AB}$ 로 검산할 수 있어요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "geo-vector-ops-section",
+      "seed": 1007
+    },
+    {
+      "q": "두 벡터 $\\vec a=(2,2)$, $\\vec b=(3,1)$ 에 대하여 $2\\vec a+3\\vec b=(p,q)$ 일 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "20",
+      "answerType": "int",
+      "check": "(2)*(2)+(3)*(3)+(2)*(2)+(3)*(1)",
+      "concepts": [
+        "성분으로 계산: $\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$"
+      ],
+      "steps": [
+        {
+          "title": "$x$성분끼리",
+          "body": "$$p=2\\cdot2+3\\cdot3=4+9=13$$"
+        },
+        {
+          "title": "$y$성분끼리",
+          "body": "$$q=2\\cdot2+3\\cdot1=4+3=7$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p+q=13+7=20$"
+        }
+      ],
+      "tip": "벡터의 덧셈·실수배는 $x$성분은 $x$성분끼리, $y$성분은 $y$성분끼리 따로 계산하면 돼요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "geo-vector-ops-combo",
+      "seed": 1008
+    },
+    {
+      "q": "두 벡터 $\\vec a=(2,1)$, $\\vec b=(-1,-3)$ 에 대하여 $|\\vec a-\\vec b|$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt(((1)*(2)+(-1)*(-1))**2+((1)*(1)+(-1)*(-3))**2)",
+      "concepts": [
+        "성분으로 계산: $\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$",
+        "$\\vec v=(v_1,v_2)$ 의 크기는 $|\\vec v|=\\sqrt{v_1^2+v_2^2}$"
+      ],
+      "steps": [
+        {
+          "title": "성분으로 계산",
+          "body": "$$\\vec a-\\vec b=(2+1,\\ 1+3)=(3,4)$$"
+        },
+        {
+          "title": "크기",
+          "body": "$$\\sqrt{3^2+4^2}=\\sqrt{25}=5$$"
+        }
+      ],
+      "tip": "$|\\vec a|$ 와 $|\\vec b|$ 를 따로 구해 더하면 안 돼요. 먼저 벡터를 합친 다음 크기를 재요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "geo-vector-ops-length",
+      "seed": 1009
+    },
+    {
+      "q": "두 벡터 $\\vec a=(k,-9)$, $\\vec b=(-1,3)$ 가 서로 평행할 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "solve(Eq(k*(3) - (-9)*(-1), 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\parallel\\vec b$ 이면 $\\vec a=t\\vec b$ ($t\\ne0$ 인 실수)"
+      ],
+      "steps": [
+        {
+          "title": "평행이면 실수배",
+          "body": "$\\vec a=t\\vec b$ 라 하면 $(k,-9)=(-t,\\ 3t)$ 예요."
+        },
+        {
+          "title": "$y$성분으로 $t$ 구하기",
+          "body": "$3t=-9$ 에서 $t=-3$ 이에요."
+        },
+        {
+          "title": "$x$성분",
+          "body": "$$k=-1\\cdot(-3)=3$$"
+        }
+      ],
+      "tip": "거꾸로 확인해요. $-3\\vec b=(3,-9)$ 가 $\\vec a$ 와 같으니 맞아요. 평행에는 방향이 반대인 경우($t<0$)도 들어가요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "geo-vector-ops-parallel",
+      "seed": 1010
+    },
+    {
+      "q": "원점 $O$ 에 대하여 $\\overrightarrow{OA}=(2,4)$, $\\overrightarrow{OB}=(12,-1)$ 예요. 선분 $AB$ 를 $3:2$ 로 내분하는 점 $P$ 에 대하여 $\\overrightarrow{OP}=(p,q)$ 일 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "Rational(2*2+3*12, 5) + Rational(2*4+3*(-1), 5)",
+      "concepts": [
+        "$\\overline{AB}$ 를 $m:n$ 으로 내분하는 점 $P$: $\\overrightarrow{OP}=\\dfrac{n\\overrightarrow{OA}+m\\overrightarrow{OB}}{m+n}$"
+      ],
+      "steps": [
+        {
+          "title": "공식 세우기",
+          "body": "$A$ 쪽에 $2$, $B$ 쪽에 $3$ 을 곱해요. 비와 엇갈려 곱하니 가까운 점 쪽에 큰 수가 곱해져요.\n$$\\overrightarrow{OP}=\\frac{2\\overrightarrow{OA}+3\\overrightarrow{OB}}{5}$$"
+        },
+        {
+          "title": "$x$성분",
+          "body": "$$p=\\frac{2\\cdot2+3\\cdot12}{5}=\\frac{40}{5}=8$$"
+        },
+        {
+          "title": "$y$성분",
+          "body": "$$q=\\frac{2\\cdot4+3\\cdot(-1)}{5}=\\frac{5}{5}=1$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p+q=8+1=9$"
+        }
+      ],
+      "tip": "$A$ 에서 $B$ 쪽으로 $\\overrightarrow{AB}$ 의 $\\frac{3}{5}$ 만큼 간 점이라고 보고 $\\overrightarrow{OA}+\\frac{3}{5}\\overrightarrow{AB}$ 로 검산할 수 있어요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "geo-vector-ops-section",
+      "seed": 1011
+    },
+    {
+      "q": "두 벡터 $\\vec a=(-2,2)$, $\\vec b=(3,-1)$ 에 대하여 $3\\vec a+\\vec b=(p,q)$ 일 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "(3)*(-2)+(1)*(3)+(3)*(2)+(1)*(-1)",
+      "concepts": [
+        "성분으로 계산: $\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$"
+      ],
+      "steps": [
+        {
+          "title": "$x$성분끼리",
+          "body": "$$p=3\\cdot(-2)+1\\cdot3=-6+3=-3$$"
+        },
+        {
+          "title": "$y$성분끼리",
+          "body": "$$q=3\\cdot2+1\\cdot(-1)=6+(-1)=5$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$p+q=-3+5=2$"
+        }
+      ],
+      "tip": "벡터의 덧셈·실수배는 $x$성분은 $x$성분끼리, $y$성분은 $y$성분끼리 따로 계산하면 돼요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "geo-vector-ops-combo",
+      "seed": 1012
+    },
+    {
+      "q": "두 벡터 $\\vec a=(3,-1)$, $\\vec b=(-9,6)$ 에 대하여 $|2\\vec a+\\vec b|$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt(((2)*(3)+(1)*(-9))**2+((2)*(-1)+(1)*(6))**2)",
+      "concepts": [
+        "성분으로 계산: $\\vec a=(a_1,a_2)$, $\\vec b=(b_1,b_2)$ 이면 $m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$",
+        "$\\vec v=(v_1,v_2)$ 의 크기는 $|\\vec v|=\\sqrt{v_1^2+v_2^2}$"
+      ],
+      "steps": [
+        {
+          "title": "성분으로 계산",
+          "body": "$$2\\vec a+\\vec b=(6-9,\\ -2+6)=(-3,4)$$"
+        },
+        {
+          "title": "크기",
+          "body": "$$\\sqrt{(-3)^2+4^2}=\\sqrt{25}=5$$"
+        }
+      ],
+      "tip": "$|\\vec a|$ 와 $|\\vec b|$ 를 따로 구해 더하면 안 돼요. 먼저 벡터를 합친 다음 크기를 재요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "geo-vector-ops-length",
+      "seed": 1013
+    },
+    {
+      "q": "두 벡터 $\\vec a=(k,-8)$, $\\vec b=(3,4)$ 가 서로 평행할 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-6",
+      "answerType": "int",
+      "check": "solve(Eq(k*(4) - (-8)*(3), 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\parallel\\vec b$ 이면 $\\vec a=t\\vec b$ ($t\\ne0$ 인 실수)"
+      ],
+      "steps": [
+        {
+          "title": "평행이면 실수배",
+          "body": "$\\vec a=t\\vec b$ 라 하면 $(k,-8)=(3t,\\ 4t)$ 예요."
+        },
+        {
+          "title": "$y$성분으로 $t$ 구하기",
+          "body": "$4t=-8$ 에서 $t=-2$ 예요."
+        },
+        {
+          "title": "$x$성분",
+          "body": "$$k=3\\cdot(-2)=-6$$"
+        }
+      ],
+      "tip": "거꾸로 확인해요. $-2\\vec b=(-6,-8)$ 가 $\\vec a$ 와 같으니 맞아요. 평행에는 방향이 반대인 경우($t<0$)도 들어가요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "geo-vector-ops-parallel",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a=(3,-2)$, $\\vec b=(-1,4)$ 에 대하여 $2\\vec a-3\\vec b=(p,q)$ 일 때, $p-q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "25",
+      "answerType": "int",
+      "check": "(2*3-3*(-1)) - (2*(-2)-3*4)",
+      "concepts": [
+        "$m\\vec a+n\\vec b=(ma_1+nb_1,\\ ma_2+nb_2)$"
+      ],
+      "steps": [
+        {
+          "title": "$x$성분",
+          "body": "$p=2\\cdot3-3\\cdot(-1)=6+3=9$ 예요."
+        },
+        {
+          "title": "$y$성분",
+          "body": "$q=2\\cdot(-2)-3\\cdot4=-4-12=-16$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$p-q=9-(-16)=25$ 예요."
+        }
+      ],
+      "tip": "빼는 벡터의 성분이 음수면 부호가 두 번 바뀌어요. 괄호를 꼭 씌워요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a=(4,1)$, $\\vec b=(1,5)$ 에 대하여 $|\\vec a-\\vec b|$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt((4-1)**2+(1-5)**2)",
+      "concepts": [
+        "$|(v_1,v_2)|=\\sqrt{v_1^2+v_2^2}$"
+      ],
+      "steps": [
+        {
+          "title": "빼기",
+          "body": "$\\vec a-\\vec b=(4-1,\\ 1-5)=(3,-4)$ 예요."
+        },
+        {
+          "title": "크기",
+          "body": "$$\\sqrt{3^2+(-4)^2}=\\sqrt{25}=5$$"
+        }
+      ],
+      "tip": "$\\vec a-\\vec b$ 는 $\\vec b$ 의 끝점에서 $\\vec a$ 의 끝점으로 가는 벡터예요. 두 끝점 사이 거리와 같아요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a=(2,k)$, $\\vec b=(k,8)$ 이 서로 평행할 때, 양수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "Max(*solve(Eq(2*8, k*k), k))",
+      "concepts": [
+        "$\\vec a\\parallel\\vec b$ 이면 성분의 비가 같아요: $a_1:a_2=b_1:b_2$"
+      ],
+      "steps": [
+        {
+          "title": "성분의 비",
+          "body": "$2:k=k:8$ 이에요."
+        },
+        {
+          "title": "식 세우기",
+          "body": "안쪽끼리 곱과 바깥쪽끼리 곱이 같아서 $k^2=16$ 이에요."
+        },
+        {
+          "title": "양수 고르기",
+          "body": "$k=\\pm4$ 중 양수는 $k=4$ 예요."
+        }
+      ],
+      "tip": "$k=-4$ 이면 $\\vec a=(2,-4)$, $\\vec b=(-4,8)$ 로 방향이 반대인 평행이에요. 평행에는 반대 방향도 들어가요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "세 벡터 $\\vec a=(1,2)$, $\\vec b=(3,-1)$, $\\vec c=(5,3)$ 에 대하여 $\\vec c=x\\vec a+y\\vec b$ 를 만족시키는 실수 $x$, $y$ 의 합 $x+y$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "s = solve([Eq(x+3*y, 5), Eq(2*x-y, 3)], [x, y])\nans = s[x] + s[y]",
+      "concepts": [
+        "두 벡터가 같으면 성분끼리 같아요"
+      ],
+      "steps": [
+        {
+          "title": "성분 비교",
+          "body": "$x(1,2)+y(3,-1)=(x+3y,\\ 2x-y)=(5,3)$ 이에요.\n$$x+3y=5,\\quad 2x-y=3$$"
+        },
+        {
+          "title": "연립하기",
+          "body": "둘째 식에서 $y=2x-3$ 을 첫째 식에 넣으면 $7x-9=5$, $x=2$ 예요."
+        },
+        {
+          "title": "합",
+          "body": "$y=1$ 이므로 $x+y=3$ 이에요."
+        }
+      ],
+      "tip": "평행하지 않은 두 벡터로는 평면의 어떤 벡터든 딱 한 가지 방법으로 나타낼 수 있어요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "점 $A(-1,2)$ 와 점 $B(p,q)$ 에 대하여 $\\overrightarrow{AB}=(3,-4)$ 일 때, $p-q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "(-1+3) - (2+(-4))",
+      "concepts": [
+        "$\\overrightarrow{AB}=\\overrightarrow{OB}-\\overrightarrow{OA}$, 곧 $\\overrightarrow{OB}=\\overrightarrow{OA}+\\overrightarrow{AB}$"
+      ],
+      "steps": [
+        {
+          "title": "끝점 = 시작점 + 이동",
+          "body": "$\\overrightarrow{OB}=(-1+3,\\ 2-4)=(2,-2)$ 예요."
+        },
+        {
+          "title": "빼기",
+          "body": "$p-q=2-(-2)=4$ 예요."
+        }
+      ],
+      "tip": "$\\overrightarrow{AB}$ 는 $A$ 에서 $B$ 로 가는 이동이라서 $A$ 의 좌표에 더하면 $B$ 가 나와요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "원점 $O$ 에 대하여 $\\overrightarrow{OA}=(-2,5)$, $\\overrightarrow{OB}=(7,-1)$ 이에요. 선분 $AB$ 를 $1:2$ 로 내분하는 점 $P$ 에 대하여 $\\overrightarrow{OP}=(p,q)$ 일 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "Rational(2*(-2)+1*7, 3) + Rational(2*5+1*(-1), 3)",
+      "concepts": [
+        "$\\overrightarrow{OP}=\\dfrac{n\\overrightarrow{OA}+m\\overrightarrow{OB}}{m+n}$"
+      ],
+      "steps": [
+        {
+          "title": "공식",
+          "body": "$m=1$, $n=2$ 이므로 $\\overrightarrow{OP}=\\dfrac{2\\overrightarrow{OA}+\\overrightarrow{OB}}{3}$ 이에요."
+        },
+        {
+          "title": "$x$성분",
+          "body": "$p=\\dfrac{-4+7}{3}=1$ 이에요."
+        },
+        {
+          "title": "$y$성분과 합",
+          "body": "$q=\\dfrac{10-1}{3}=3$ 이므로 $p+q=4$ 예요."
+        }
+      ],
+      "tip": "$1:2$ 이면 $A$ 에 더 가까우니 $\\overrightarrow{OA}$ 쪽에 2 를 곱해요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "세 점 $A(1,4)$, $B(-3,2)$, $C(5,-3)$ 을 꼭짓점으로 하는 삼각형 $ABC$ 의 무게중심을 $G$ 라 할 때, $\\overrightarrow{OG}=(p,q)$ 이면 $p+q$ 의 값을 구하세요. (단, $O$ 는 원점)",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "Rational(1+(-3)+5, 3) + Rational(4+2+(-3), 3)",
+      "concepts": [
+        "무게중심: $\\overrightarrow{OG}=\\dfrac{\\overrightarrow{OA}+\\overrightarrow{OB}+\\overrightarrow{OC}}{3}$"
+      ],
+      "steps": [
+        {
+          "title": "세 위치벡터 더하기",
+          "body": "$(1-3+5,\\ 4+2-3)=(3,3)$ 이에요."
+        },
+        {
+          "title": "3 으로 나누기",
+          "body": "$\\overrightarrow{OG}=(1,1)$ 이므로 $p+q=2$ 예요."
+        }
+      ],
+      "tip": "무게중심은 중선을 $2:1$ 로 내분하는 점이에요. 내분점 공식을 두 번 써도 같은 결과가 나와요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "네 점 $A(1,1)$, $B(4,2)$, $C(6,5)$, $D$ 를 꼭짓점으로 하는 사각형 $ABCD$ 가 평행사변형일 때, $|\\overrightarrow{OD}|$ 의 값을 구하세요. (단, $O$ 는 원점)",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt((1+6-4)**2+(1+5-2)**2)",
+      "concepts": [
+        "평행사변형 $ABCD$ 이면 $\\overrightarrow{AD}=\\overrightarrow{BC}$"
+      ],
+      "steps": [
+        {
+          "title": "같은 벡터",
+          "body": "$\\overrightarrow{BC}=(6-4,\\ 5-2)=(2,3)$ 이고 $\\overrightarrow{AD}$ 도 같아요."
+        },
+        {
+          "title": "$D$ 구하기",
+          "body": "$\\overrightarrow{OD}=\\overrightarrow{OA}+\\overrightarrow{AD}=(1+2,\\ 1+3)=(3,4)$ 예요."
+        },
+        {
+          "title": "크기",
+          "body": "$$|\\overrightarrow{OD}|=\\sqrt{3^2+4^2}=5$$"
+        }
+      ],
+      "tip": "크기와 방향이 같으면 위치가 달라도 같은 벡터예요. 평행사변형의 마주 보는 변이 그래요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "벡터 $\\vec a=(3,4)$ 와 방향이 같고 크기가 10 인 벡터를 $(p,q)$ 라 할 때, $p+q$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "14",
+      "answerType": "int",
+      "check": "10/sqrt(3**2+4**2)*(3+4)",
+      "concepts": [
+        "$\\vec a$ 와 같은 방향이면 $t\\vec a$ ($t>0$)",
+        "$|t\\vec a|=|t||\\vec a|$"
+      ],
+      "steps": [
+        {
+          "title": "크기 재기",
+          "body": "$|\\vec a|=\\sqrt{9+16}=5$ 예요."
+        },
+        {
+          "title": "몇 배인가",
+          "body": "크기가 10 이 되려면 $t=2$ 예요."
+        },
+        {
+          "title": "성분",
+          "body": "$2\\vec a=(6,8)$ 이므로 $p+q=14$ 예요."
+        }
+      ],
+      "tip": "방향이 반대인 벡터라면 $t=-2$ 를 써서 $(-6,-8)$ 이 돼요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "두 점 $A(1,5)$, $B(7,1)$ 과 점 $P(1,-1)$ 에 대하여 $|\\overrightarrow{PA}+\\overrightarrow{PB}|$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "10",
+      "answerType": "int",
+      "check": "sqrt(((1-1)+(7-1))**2+((5+1)+(1+1))**2)",
+      "concepts": [
+        "중점 $M$: $\\overrightarrow{PA}+\\overrightarrow{PB}=2\\overrightarrow{PM}$"
+      ],
+      "steps": [
+        {
+          "title": "중점",
+          "body": "선분 $AB$ 의 중점은 $M(4,3)$ 이에요."
+        },
+        {
+          "title": "한 벡터로",
+          "body": "$\\overrightarrow{PM}=(4-1,\\ 3+1)=(3,4)$ 이고 $|\\overrightarrow{PM}|=5$ 예요."
+        },
+        {
+          "title": "두 배",
+          "body": "$|\\overrightarrow{PA}+\\overrightarrow{PB}|=2\\times5=10$ 이에요."
+        }
+      ],
+      "tip": "성분으로 바로 더해도 $\\overrightarrow{PA}+\\overrightarrow{PB}=(0,6)+(6,2)=(6,8)$ 이라 크기 10 이 나와요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "두 벡터 $\\vec a=(k,-1)$, $\\vec b=(2,3)$ 에 대하여 $2\\vec a-\\vec b=(4,-5)$ 일 때, $k$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "solve(Eq(2*k-2, 4), k)[0]",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "두 벡터가 같으면 성분끼리 같아요"
+      ],
+      "steps": [
+        {
+          "title": "성분으로",
+          "body": "$2\\vec a-\\vec b=(2k-2,\\ -2-3)=(2k-2,\\ -5)$ 예요."
+        },
+        {
+          "title": "$x$성분 비교",
+          "body": "$2k-2=4$ 이므로 $k=3$ 이에요."
+        }
+      ],
+      "tip": "$y$성분 $-5$ 가 맞는지도 확인하면 계산 실수를 잡을 수 있어요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "두 벡터 $\\vec a=(1,2)$, $\\vec b=(2,-1)$ 에 대하여 벡터 $\\vec a+t\\vec b$ 와 벡터 $2\\vec a-\\vec b$ 가 서로 평행할 때, 실수 $t$ 의 값은?",
+      "choices": [
+        "$-1$",
+        "$-\\frac{1}{2}$",
+        "$0$",
+        "$\\frac{1}{2}$",
+        "$1$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "solve(Eq((1+2*t)*(2*2-(-1)) - (2+t*(-1))*(2*1-2), 0), t)[0]",
+      "choiceChecks": [
+        "-1",
+        "-1/2",
+        "0",
+        "1/2",
+        "1"
+      ],
+      "concepts": [
+        "$\\vec u\\parallel\\vec v$ 이면 성분의 비가 같아요: $u_1v_2-u_2v_1=0$"
+      ],
+      "steps": [
+        {
+          "title": "두 벡터",
+          "body": "$\\vec a+t\\vec b=(1+2t,\\ 2-t)$, $2\\vec a-\\vec b=(0,5)$ 예요."
+        },
+        {
+          "title": "평행 조건",
+          "body": "$(0,5)$ 는 $y$축 방향이라, 평행하려면 $x$성분이 0 이어야 해요.\n$$1+2t=0$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$t=-\\frac{1}{2}$ 이에요."
+        }
+      ],
+      "tip": "한 벡터의 성분에 0 이 있으면 비례식 대신 '그 성분도 0' 으로 보는 게 빨라요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "원점 $O$ 와 두 점 $A(-1,-2)$, $B(8,10)$ 에 대하여 선분 $AB$ 를 $1:2$ 로 내분하는 점을 $P$ 라 할 때, $|\\overrightarrow{OP}|$ 의 값은?",
+      "choices": [
+        "$\\sqrt{2}$",
+        "$2$",
+        "$2\\sqrt{2}$",
+        "$3$",
+        "$2\\sqrt{3}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "sqrt(Rational(2*(-1)+8, 3)**2 + Rational(2*(-2)+10, 3)**2)",
+      "choiceChecks": [
+        "sqrt(2)",
+        "2",
+        "2*sqrt(2)",
+        "3",
+        "2*sqrt(3)"
+      ],
+      "concepts": [
+        "$\\overrightarrow{OP}=\\dfrac{n\\overrightarrow{OA}+m\\overrightarrow{OB}}{m+n}$"
+      ],
+      "steps": [
+        {
+          "title": "공식",
+          "body": "$\\overrightarrow{OP}=\\dfrac{2\\overrightarrow{OA}+\\overrightarrow{OB}}{3}$ 이에요."
+        },
+        {
+          "title": "성분",
+          "body": "$\\overrightarrow{OP}=\\left(\\dfrac{-2+8}{3},\\ \\dfrac{-4+10}{3}\\right)=(2,2)$ 예요."
+        },
+        {
+          "title": "크기",
+          "body": "$|\\overrightarrow{OP}|=\\sqrt{4+4}=2\\sqrt2$ 예요."
+        }
+      ],
+      "tip": "비를 거꾸로 곱하면 $\\overrightarrow{OP}=(5,6)$ 이 나와요. $A$ 에 더 가까운 점인데 $B$ 쪽으로 가 버린 거예요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "삼각형 $OAB$ 에서 $\\overrightarrow{OA}=(5,-1)$, $\\overrightarrow{OB}=(1,7)$ 이에요. 선분 $AB$ 의 중점을 $M$ 이라 할 때, $|\\overrightarrow{OM}|$ 의 값은?",
+      "choices": [
+        "$3$",
+        "$3\\sqrt{2}$",
+        "$2\\sqrt{5}$",
+        "$5$",
+        "$6$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "sqrt(Rational(5+1, 2)**2 + Rational(-1+7, 2)**2)",
+      "choiceChecks": [
+        "3",
+        "3*sqrt(2)",
+        "2*sqrt(5)",
+        "5",
+        "6"
+      ],
+      "concepts": [
+        "중점: $\\overrightarrow{OM}=\\dfrac{\\overrightarrow{OA}+\\overrightarrow{OB}}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "더하기",
+          "body": "$\\overrightarrow{OA}+\\overrightarrow{OB}=(6,6)$ 이에요."
+        },
+        {
+          "title": "반으로",
+          "body": "$\\overrightarrow{OM}=(3,3)$ 이에요."
+        },
+        {
+          "title": "크기",
+          "body": "$|\\overrightarrow{OM}|=\\sqrt{9+9}=3\\sqrt2$ 예요."
+        }
+      ],
+      "tip": "$|\\overrightarrow{OA}+\\overrightarrow{OB}|=6\\sqrt2$ 를 구하고 반으로 나눠도 돼요. $\\overrightarrow{OA}+\\overrightarrow{OB}=2\\overrightarrow{OM}$ 이에요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "좌표평면 위의 두 점 $A(1,2)$, $B(5,-2)$ 에 대하여 $|\\overrightarrow{PA}+\\overrightarrow{PB}|=6$ 을 만족시키는 점 $P$ 가 나타내는 도형의 넓이는?",
+      "choices": [
+        "$4\\pi$",
+        "$6\\pi$",
+        "$9\\pi$",
+        "$12\\pi$",
+        "$36\\pi$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "pi*(6*Rational(1, 2))**2",
+      "choiceChecks": [
+        "4*pi",
+        "6*pi",
+        "9*pi",
+        "12*pi",
+        "36*pi"
+      ],
+      "concepts": [
+        "중점 $M$: $\\overrightarrow{PA}+\\overrightarrow{PB}=2\\overrightarrow{PM}$",
+        "한 점에서 거리가 일정한 점들은 원을 그려요"
+      ],
+      "steps": [
+        {
+          "title": "한 벡터로 바꾸기",
+          "body": "$AB$ 의 중점 $M(3,0)$ 에 대하여 $\\overrightarrow{PA}+\\overrightarrow{PB}=2\\overrightarrow{PM}$ 이에요."
+        },
+        {
+          "title": "거리 조건",
+          "body": "$2|\\overrightarrow{PM}|=6$ 이므로 $|\\overrightarrow{PM}|=3$ 이에요."
+        },
+        {
+          "title": "도형",
+          "body": "$P$ 는 $M$ 을 중심으로 하는 반지름 3 인 원 위에 있어요. 넓이는 $9\\pi$ 예요."
+        }
+      ],
+      "tip": "반지름을 6 으로 잡아 $36\\pi$ 를 고르기 쉬워요. 두 벡터의 합은 $\\overrightarrow{PM}$ 의 **두 배**라는 걸 잊지 마세요."
+    }
+  ]
+}
