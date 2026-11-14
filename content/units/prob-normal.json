@@ -1,0 +1,1489 @@
+{
+  "id": "prob-normal",
+  "course": "확률과 통계",
+  "unit": "통계",
+  "title": "정규분포",
+  "prereq": [
+    "prob-binomial"
+  ],
+  "suneung": [
+    "확통 29"
+  ],
+  "hours": 3.5,
+  "formulas": [
+    "$Z=\\frac{X-m}{\\sigma}$",
+    "$X\\sim\\mathrm{N}(m,\\ \\sigma^2)\\ \\Rightarrow\\ Z\\sim\\mathrm{N}(0,\\ 1)$",
+    "$P(Z\\ge z)=0.5-P(0\\le Z\\le z)\\ (z>0)$",
+    "$\\mathrm{B}(n,\\ p)\\ \\approx\\ \\mathrm{N}(np,\\ np(1-p))$"
+  ],
+  "lesson": {
+    "minutes": 30,
+    "values": {
+      "p3": {
+        "value": "3/10",
+        "check": "3*Rational(1, 10)"
+      },
+      "half": {
+        "value": "1/2",
+        "check": "(1/(2*sqrt(2*pi)))/(1/(1*sqrt(2*pi)))"
+      },
+      "z70": {
+        "value": "2",
+        "check": "(70 - 50)/Integer(10)"
+      },
+      "m100": {
+        "value": "50",
+        "check": "100*Rational(1, 2)"
+      },
+      "sd100": {
+        "value": "5",
+        "check": "sqrt(100*Rational(1, 2)*(1 - Rational(1, 2)))"
+      },
+      "z60": {
+        "value": "2",
+        "check": "(60 - 100*Rational(1, 2))/sqrt(100*Rational(1, 2)*(1 - Rational(1, 2)))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "확률과 통계 · 확률분포",
+        "title": "셀 수 없는 값의 확률,\n넓이로 읽어요",
+        "lead": "기다리는 시간이나 키처럼 끝없이 잘게 나뉘는 값은 하나하나 셀 수 없어요. 그래프 아래 넓이로 확률을 읽고, 종 모양 곡선 하나로 모든 정규분포를 다루는 법을 만들어요.",
+        "meta": [
+          "확률밀도함수",
+          "정규분포 $\\mathrm{N}(m,\\ \\sigma^2)$",
+          "표준화 $Z=\\frac{X-m}{\\sigma}$"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "버스가 10분 안에\n아무 때나 온다면?",
+        "lead": "정류장에서 버스를 기다리는 시간 $X$ 분은 $0$ 부터 $10$ 사이의 어떤 값이든 될 수 있고, 어느 때든 똑같이 그럴듯해요. 점 P 를 끌어 보세요. 3분 안에 버스가 올 확률은 얼마일까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 10,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 1,
+              "step": "1/10"
+            },
+            "objects": [
+              {
+                "id": "f",
+                "curve": "1/10",
+                "label": "$y=f(x)=\\frac{1}{10}$ (높이)"
+              },
+              {
+                "id": "A",
+                "curve": "x/10",
+                "label": "P 왼쪽 직사각형의 넓이",
+                "tone": "soft"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "A",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "기다린 시간 $x$ (분)",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "$0$ 부터 $x$ 까지 넓이",
+                "digits": 1
+              }
+            ],
+            "intro": "P 를 끌면 $0$ 부터 $x$ 까지, 높이 $\\frac{1}{10}$ 인 직사각형의 넓이가 보여요."
+          }
+        },
+        "choices": [
+          {
+            "value": "3/10",
+            "check": "3*Rational(1, 10)"
+          },
+          {
+            "value": "1/10",
+            "check": "Integer(1)/(10 - 0)",
+            "feedback": "그래프의 높이만 읽었어요. 높이는 확률이 아니에요. 가로 3 만큼의 넓이가 확률이에요."
+          },
+          {
+            "value": "3/7",
+            "check": "Rational(3, 10 - 3)",
+            "feedback": "3분 이하와 3분 초과를 견주었어요. 전체 10분 가운데 3분이라서 분모는 10 이에요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "3*Rational(1, 10)",
+        "reveal": "**맞아요.** {{p3}} 이에요.",
+        "thoughts": [
+          "기다리는 시간은 $2.5$분, $2.51$분 … 처럼 끝없이 잘게 나뉘어서 경우를 셀 수 없어요.",
+          "높이 $\\frac{1}{10}$ 인 직사각형 전체 넓이는 $10\\times\\frac{1}{10}=1$ 이에요. 확률을 모두 더하면 1 인 것과 같아요.",
+          "$0$ 부터 $3$ 까지의 넓이가 $3\\times\\frac{1}{10}={{p3}}$ 이에요."
+        ],
+        "conclude": "셀 수 없는 값의 확률은 ==그래프 아래 넓이==로 읽어요. 전체 넓이는 늘 1 이에요."
+      },
+      {
+        "kind": "question",
+        "id": "shape",
+        "chip": "손으로 해 보기",
+        "title": "종 모양 곡선을\n직접 바꿔 보세요",
+        "lead": "시험 점수, 키처럼 평균 근처에 많이 모이는 자료는 종 모양 곡선을 따라요. 슬라이더로 평균 $m$ 과 표준편차 $\\sigma$ 를 바꾸고, P 를 꼭대기로 끌어 높이를 읽어 보세요. $\\sigma$ 를 1 에서 2 로 키우면 꼭대기 높이는 몇 배가 될까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 1,
+              "step": "1/10"
+            },
+            "sliders": [
+              {
+                "id": "m",
+                "min": -2,
+                "max": 2,
+                "step": 1,
+                "value": 0,
+                "label": "평균 $m$"
+              },
+              {
+                "id": "s",
+                "min": "1/2",
+                "max": 2,
+                "step": "1/4",
+                "value": 1,
+                "label": "표준편차 $\\sigma$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "N",
+                "curve": "exp(-(x-m)**2/(2*s**2))/(s*sqrt(2*pi))",
+                "label": "정규분포 곡선 $y=f(x)$"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "N",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": "1/4"
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "P 의 $x$",
+                "digits": 2
+              },
+              {
+                "readout": "y(P)",
+                "label": "P 의 높이",
+                "digits": 3
+              }
+            ],
+            "intro": "P 를 끌어 곡선의 꼭대기를 찾고, $\\sigma$ 를 바꿔 보세요."
+          }
+        },
+        "choices": [
+          {
+            "value": "1/2",
+            "check": "(1/(2*sqrt(2*pi)))/(1/(1*sqrt(2*pi)))"
+          },
+          {
+            "value": "2",
+            "check": "(2*sqrt(2*pi))/(1*sqrt(2*pi))",
+            "feedback": "퍼지는 폭이 2배라 높이도 2배라고 봤어요. 곡선이 넓어지면 꼭대기는 내려가요."
+          },
+          {
+            "value": "1/4",
+            "check": "(1/(2**2*sqrt(2*pi)))/(1/(1**2*sqrt(2*pi)))",
+            "feedback": "분산 $\\sigma^2$ 이 4배라서 높이가 $\\frac{1}{4}$ 이 된다고 봤어요. 높이는 분산이 아니라 $\\sigma$ 에 반비례해요."
+          },
+          {
+            "value": "1",
+            "check": "(1/sqrt(2*pi))/(1/sqrt(2*pi))",
+            "feedback": "높이가 그대로인 건 $m$ 을 바꿀 때예요. $\\sigma$ 를 바꾸면 모양이 달라져요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "(1/(2*sqrt(2*pi)))/(1/(1*sqrt(2*pi)))",
+        "reveal": "**맞아요.** 꼭대기 높이가 {{half}} 배가 돼요.",
+        "thoughts": [
+          "$m$ 을 바꾸면 곡선이 모양 그대로 옆으로 옮겨 가요. 꼭대기는 늘 $x=m$ 에 있고, 그 선을 기준으로 좌우 대칭이에요.",
+          "곡선 아래 전체 넓이는 확률을 모두 더한 것이라 $\\sigma$ 를 바꿔도 늘 1 이에요.",
+          "$\\sigma$ 가 2배면 옆으로 2배 넓게 퍼지니, 넓이 1 을 지키려고 높이가 절반이 돼요."
+        ],
+        "conclude": "==평균은 자리, 표준편차는 퍼짐==을 정해요. $\\sigma$ 가 클수록 낮고 넓게, 작을수록 높고 뾰족해져요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 다룬 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "연속확률변수",
+            "body": "기다리는 시간, 키처럼 어떤 범위의 모든 실수 값을 가질 수 있는 확률변수예요."
+          },
+          {
+            "term": "확률밀도함수 $f(x)$",
+            "body": "$f(x)\\ge0$ 이고 그래프 아래 전체 넓이가 1 인 함수예요. $P(a\\le X\\le b)$ 는 $x=a$ 부터 $x=b$ 까지 그래프 아래 넓이예요."
+          },
+          {
+            "term": "정규분포 $\\mathrm{N}(m,\\ \\sigma^2)$",
+            "body": "평균 $m$, 표준편차 $\\sigma$ 인 종 모양 분포예요. 곡선은 $x=m$ 을 기준으로 대칭이에요. 괄호 안 둘째 자리는 표준편차가 아니라 **분산**이에요."
+          }
+        ],
+        "aside": "**한 점의 확률은 0** · 넓이로 재니 폭이 없는 한 점은 넓이가 0, 즉 $P(X=a)=0$ 이에요. 그래서 $P(X\\le a)$ 와 $P(X<a)$ 는 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "std",
+        "chip": "지름길",
+        "title": "모든 정규분포를\n하나로 모으는 직선",
+        "lead": "점수 $X$ 가 $\\mathrm{N}(50,\\ 10^2)$ 을 따라요. 평균을 빼고 표준편차로 나눈 $Z=\\frac{X-50}{10}$ 은 '평균에서 표준편차 몇 개만큼 떨어졌나'예요. $X=50$ 이면 $Z=0$, $X=60$ 이면 $Z=1$ 이에요. 이 관계를 직선으로 그려 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "line",
+            "x": {
+              "min": 20,
+              "max": 80,
+              "step": 5
+            },
+            "y": {
+              "min": -3,
+              "max": 3,
+              "step": "1/2"
+            },
+            "objects": [
+              {
+                "id": "M",
+                "point": {
+                  "x": 50,
+                  "y": 0
+                },
+                "name": "M"
+              }
+            ],
+            "task": {
+              "line": {
+                "slope": {
+                  "value": "1/10",
+                  "check": "diff((x - 50)/10, x)"
+                },
+                "through": {
+                  "x": {
+                    "value": "50",
+                    "check": "solve(Eq((x - 50)/10, 0), x)[0]"
+                  },
+                  "y": {
+                    "value": "0",
+                    "check": "((x - 50)/10).subs(x, 50)"
+                  }
+                }
+              }
+            },
+            "intro": "가로는 점수 $X$, 세로는 $Z$ 예요. 두 손잡이를 끌어 $Z=\\frac{X-50}{10}$ 의 그래프를 만드세요.",
+            "done": "맞아요. 점수가 10점 오를 때마다 $Z$ 가 1 씩 올라요. $X=70$ 은 $Z={{z70}}$ 이에요."
+          }
+        },
+        "gate": true,
+        "after": "이렇게 바꾼 $Z$ 는 평균 0, 표준편차 1 인 **표준정규분포** $\\mathrm{N}(0,\\ 1)$ 을 따라요. 표준정규분포표에는 $P(0\\le Z\\le z)$ 의 넓이가 적혀 있어서, 어떤 정규분포든 $Z$ 로 바꾸면 표 하나로 확률을 구해요."
+      },
+      {
+        "kind": "question",
+        "id": "binom",
+        "chip": "두 번째 해 보기",
+        "title": "동전 100개, 앞면이\n60개 이상일 확률은?",
+        "lead": "앞 단원의 이항분포예요. 동전 수 $n$ 이 커질수록 앞면 수의 막대그래프는 이 종 모양 곡선과 거의 겹쳐요. 슬라이더로 $n$ 을 100 까지 올려 보세요. 앞면 수 $X$ 가 60 이상일 확률을 정규분포로 어림하면 얼마일까요? (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$, $P(0\\le Z\\le 2)=0.4772$)",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 100,
+              "step": 10
+            },
+            "y": {
+              "min": 0,
+              "max": "2/5",
+              "step": "1/20"
+            },
+            "sliders": [
+              {
+                "id": "n",
+                "min": 4,
+                "max": 100,
+                "step": 4,
+                "value": 20,
+                "label": "동전 수 $n$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "N",
+                "curve": "exp(-(x-n/2)**2/(n/2))/sqrt(pi*n/2)",
+                "label": "평균 $\\frac{n}{2}$, 분산 $\\frac{n}{4}$ 인 정규분포 곡선"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "N",
+                  "x": 60,
+                  "drag": "x",
+                  "snap": 5
+                },
+                "name": "P"
+              },
+              {
+                "readout": "value(n)",
+                "label": "동전 수 $n$",
+                "digits": 0
+              },
+              {
+                "readout": "x(P)",
+                "label": "앞면 수",
+                "digits": 0
+              }
+            ],
+            "intro": "$n$ 을 키우면 곡선의 가운데는 $\\frac{n}{2}$ 로 옮겨 가고, 폭은 천천히 넓어져요."
+          }
+        },
+        "format": {
+          "digits": 4,
+          "approx": true
+        },
+        "choices": [
+          {
+            "value": "0.0228",
+            "check": "m = 100*Rational(1, 2)\ns = sqrt(100*Rational(1, 2)*(1 - Rational(1, 2)))\nT = {Integer(1): Rational(3413, 10000), Integer(2): Rational(4772, 10000)}\nans = Rational(1, 2) - T[(60 - m)/s]"
+          },
+          {
+            "value": "0.4772",
+            "check": "m = 100*Rational(1, 2)\ns = sqrt(100*Rational(1, 2)*(1 - Rational(1, 2)))\nT = {Integer(1): Rational(3413, 10000), Integer(2): Rational(4772, 10000)}\nans = T[(60 - m)/s]",
+            "feedback": "표의 값을 그대로 골랐어요. $0.4772$ 는 50개부터 60개까지의 넓이예요. 60개 이상은 그 바깥쪽이에요."
+          },
+          {
+            "value": "0.9772",
+            "check": "m = 100*Rational(1, 2)\ns = sqrt(100*Rational(1, 2)*(1 - Rational(1, 2)))\nT = {Integer(1): Rational(3413, 10000), Integer(2): Rational(4772, 10000)}\nans = Rational(1, 2) + T[(60 - m)/s]",
+            "feedback": "$Z\\le2$ 쪽, 즉 60개 이하의 넓이를 구했어요. 이상이면 오른쪽 끝의 좁은 꼬리예요."
+          },
+          {
+            "value": "0.1587",
+            "check": "m = 100*Rational(1, 2)\nT = {Integer(1): Rational(3413, 10000), Integer(2): Rational(4772, 10000)}\nans = Rational(1, 2) - T[(60 - m)/sqrt(100)]",
+            "feedback": "표준편차를 $\\sqrt{100}=10$ 으로 봤어요. 이항분포의 표준편차는 $\\sqrt{np(1-p)}={{sd100}}$ 이에요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "m = 100*Rational(1, 2)\ns = sqrt(100*Rational(1, 2)*(1 - Rational(1, 2)))\nT = {Integer(1): Rational(3413, 10000), Integer(2): Rational(4772, 10000)}\nans = Rational(1, 2) - T[(60 - m)/s]",
+        "reveal": "**맞아요.** 100번 해 보면 2번 남짓 일어나는 드문 일이에요.",
+        "thoughts": [
+          "$X$ 는 $\\mathrm{B}\\left(100,\\ \\frac{1}{2}\\right)$ 를 따라서 평균은 $np={{m100}}$, 표준편차는 $\\sqrt{np(1-p)}={{sd100}}$ 이에요.",
+          "$n$ 이 크니 $X$ 는 근사적으로 평균 {{m100}}, 표준편차 {{sd100}} 인 정규분포를 따라요.",
+          "$Z=\\frac{60-50}{5}={{z60}}$ 이고, $P(Z\\ge2)=0.5-0.4772$ 예요."
+        ],
+        "conclude": "이항분포는 $n$ 이 크면 ==평균과 분산이 같은 정규분포로 어림==해요. $\\mathrm{B}(n,\\ p)$ 는 $\\mathrm{N}(np,\\ np(1-p))$ 에 가까워요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $X$ 가 $\\mathrm{N}(50,\\ 16)$ 을 따를 때 $X=58$ 을 표준화했어요. 왼쪽은 바르게 세운 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(58-50)/sqrt(16)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(58-50)/16",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "2",
+              "body": "$\\mathrm{N}(m,\\ \\sigma^2)$ 의 둘째 자리 16 은 분산이에요. 표준편차 $\\sqrt{16}=4$ 로 나눠야 해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $X$ 가 $\\mathrm{B}\\left(400,\\ \\frac{1}{5}\\right)$ 를 따를 때, 정규분포로 어림하려고 표준편차를 구했어요. 왼쪽은 바르게 세운 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt(400*(1/5)*(4/5))"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sqrt(400*(1/5))",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "8",
+              "body": "$np$ 는 평균이에요. 분산은 실패할 확률 $1-p$ 를 한 번 더 곱한 $np(1-p)$ 이고, 그 제곱근이 표준편차예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "dens",
+            "q": "연속확률변수 $X$ 가 갖는 값의 범위는 $0\\le X\\le 4$ 이고, 확률밀도함수가 $f(x)=kx$ 예요. $P(0\\le X\\le 2)$ 를 구하세요.",
+            "hint": "먼저 전체 넓이가 1 이 되게 $k$ 를 정해요. 그래프 아래는 삼각형이에요.",
+            "concepts": [
+              "확률밀도함수의 그래프 아래 전체 넓이는 1",
+              "확률 = 그래프 아래 넓이"
+            ],
+            "steps": [
+              {
+                "title": "전체 넓이는 1",
+                "body": "밑변 4, 높이 $f(4)=4k$ 인 삼각형이에요.\n$$\\frac{1}{2}\\times4\\times4k=8k=1,\\quad k=\\frac{1}{8}$$"
+              },
+              {
+                "title": "구하는 넓이",
+                "body": "밑변 2, 높이 $f(2)=\\frac{2}{8}=\\frac{1}{4}$ 인 삼각형이에요.\n$$\\frac{1}{2}\\times2\\times\\frac{1}{4}=\\frac{1}{4}$$"
+              }
+            ],
+            "tip": "가로가 절반이라고 확률이 절반은 아니에요. 높이도 절반이라 넓이는 $\\frac{1}{4}$ 이에요.",
+            "answer": "1/4",
+            "answerType": "fraction",
+            "check": "kk = solve(Eq(integrate(k*x, (x, 0, 4)), 1), k)[0]\nans = integrate(kk*x, (x, 0, 2))"
+          },
+          {
+            "id": "count",
+            "q": "어느 도시 학생 10000명의 키 $X$(cm)가 정규분포 $\\mathrm{N}(160,\\ 5^2)$ 을 따른다고 해요. 키가 155 cm 이상 170 cm 이하인 학생은 약 몇 명인지 구하세요. (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$, $P(0\\le Z\\le 2)=0.4772$)",
+            "hint": "155 와 170 을 각각 $Z$ 로 바꿔요. 평균을 사이에 두고 양쪽에 있어요.",
+            "concepts": [
+              "$Z=\\frac{X-m}{\\sigma}$",
+              "평균을 사이에 두면 두 넓이를 더해요"
+            ],
+            "steps": [
+              {
+                "title": "표준화",
+                "body": "$$\\frac{155-160}{5}=-1,\\quad \\frac{170-160}{5}=2$$"
+              },
+              {
+                "title": "넓이 더하기",
+                "body": "$$P(-1\\le Z\\le 2)=0.3413+0.4772=0.8185$$"
+              },
+              {
+                "title": "사람 수",
+                "body": "$$10000\\times0.8185=8185$$"
+              }
+            ],
+            "tip": "$Z=-1$ 쪽 넓이도 대칭이라 $P(0\\le Z\\le1)$ 과 같아요. 음수 $Z$ 는 표에 없으니 대칭으로 옮겨 읽어요.",
+            "answer": "8185",
+            "answerType": "int",
+            "check": "T = {Integer(1): Rational(3413, 10000), Integer(2): Rational(4772, 10000)}\nans = 10000*(T[-(155 - 160)/Integer(5)] + T[(170 - 160)/Integer(5)])"
+          },
+          {
+            "id": "findm",
+            "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(m,\\ 4^2)$ 을 따르고 $P(X\\ge 58)=0.0228$ 일 때, $m$ 의 값을 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+            "hint": "$0.5-0.4772=0.0228$ 이에요. 58 은 $Z$ 로 얼마일까요?",
+            "concepts": [
+              "$Z=\\frac{X-m}{\\sigma}$",
+              "$P(Z\\ge z)=0.5-P(0\\le Z\\le z)$"
+            ],
+            "steps": [
+              {
+                "title": "표에서 $z$ 찾기",
+                "body": "$P(Z\\ge 2)=0.5-0.4772=0.0228$ 이므로 58 은 $Z=2$ 에 해당해요."
+              },
+              {
+                "title": "식 세우기",
+                "body": "$$\\frac{58-m}{4}=2$$"
+              },
+              {
+                "title": "풀기",
+                "body": "$58-m=8$ 이므로 $m=50$ 이에요."
+              }
+            ],
+            "tip": "거꾸로 푸는 문제는 '확률 → 표 → $z$ → 식' 순서예요. 확률 0.0228 이 0.5 보다 작으니 58 은 평균보다 오른쪽이에요.",
+            "answer": "50",
+            "answerType": "int",
+            "check": "solve(Eq((58 - m)/4, 2), m)[0]"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "연속확률변수의 확률은 **확률밀도함수 그래프 아래 넓이**예요. 전체 넓이는 1 이에요.",
+          "정규분포 $\\mathrm{N}(m,\\ \\sigma^2)$ 의 곡선은 $x=m$ 대칭이고, $\\sigma$ 가 클수록 낮고 넓어요. 둘째 자리는 분산이에요.",
+          "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 표준정규분포표 하나로 확률을 구해요. 대칭과 '한쪽 넓이 0.5' 로 더하고 빼요.",
+          "수능에서는 표준화한 두 값을 대칭으로 맞추거나, 이항분포를 $\\mathrm{N}(np,\\ np(1-p))$ 로 어림하는 문제가 나와요."
+        ],
+        "done": "정규분포 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "prob-normal-standardize",
+    "prob-normal-table",
+    "prob-normal-binomial-approx",
+    "prob-normal-density"
+  ],
+  "problems": [
+    {
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}\\left(70,\\ 10^2\\right)$ 을 따를 때, $P(X\\ge 50)=P(Z\\ge k)$ 를 만족시키는 상수 $k$ 의 값을 구하세요. (단, $Z$ 는 표준정규분포를 따르는 확률변수예요.)",
+      "choices": null,
+      "answer": "-2",
+      "answerTex": "$-2$",
+      "answerType": "fraction",
+      "check": "(50 - 70)/sqrt(100)",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요."
+      ],
+      "steps": [
+        {
+          "title": "평균과 표준편차 읽기",
+          "body": "평균 $m=70$, 표준편차 $\\sigma=10$ 이에요."
+        },
+        {
+          "title": "표준화",
+          "body": "$X=50$ 은 $Z=\\frac{50-70}{10}=-2$ 로 바뀌어요."
+        }
+      ],
+      "tip": "평균을 빼고 표준편차로 나눠요. 빼기만 하거나 나누기만 하면 다른 값이 나와요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prob-normal-standardize",
+      "seed": 1000
+    },
+    {
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}\\left(25,\\ 4^2\\right)$ 을 따를 때, $P(X\\le 33)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "2443/2500",
+      "answerTex": "$0.9772$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000), Rational(5, 2): Rational(4938, 10000), Rational(6, 2): Rational(4987, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nans = F(Rational(33 - 25, 4))",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요.",
+        "표준정규분포 곡선은 $z=0$ 을 기준으로 좌우 대칭이고, 한쪽 넓이가 $0.5$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "평균과 표준편차",
+          "body": "$m=25$, $\\sigma=4$ 예요."
+        },
+        {
+          "title": "표준화",
+          "body": "$X=33$ 은 $Z=\\frac{33-25}{4}=2$ 로 바뀌어요."
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "왼쪽 절반 $0.5$ 에 $0$ 부터 $2$ 까지를 더해요.\n$$P(Z\\le 2)=0.5+0.4772=0.9772$$"
+        }
+      ],
+      "tip": "표의 값 $0.4772$ 는 $0$ 부터 $2$ 까지의 넓이예요. 구하는 넓이가 그보다 큰지 작은지 그림으로 먼저 어림해요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prob-normal-table",
+      "seed": 1001
+    },
+    {
+      "q": "주사위 한 개를 720번 던질 때 1의 눈이 나오는 횟수를 확률변수 $X$ 라 할 때, $P(X\\le 135)$ 의 값을 정규분포를 이용해 어림하세요. (표준정규분포표: $P(0\\le Z\\le 1.5)=0.4332$)",
+      "choices": null,
+      "answer": "2333/2500",
+      "answerTex": "$0.9332$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000), Rational(5, 2): Rational(4938, 10000), Rational(6, 2): Rational(4987, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nm = 720*Rational(1, 6)\ns = sqrt(720*Rational(1, 6)*(1 - Rational(1, 6)))\nans = F((135 - m)/s)",
+      "concepts": [
+        "$n$ 이 충분히 크면 $\\mathrm{B}(n,\\ p)$ 는 근사적으로 $\\mathrm{N}(np,\\ np(1-p))$ 를 따라요.",
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요."
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$X$ 는 이항분포 $\\mathrm{B}\\left(720,\\ \\frac{1}{6}\\right)$ 를 따라요.\n$$E(X)=720\\times \\frac{1}{6}=120$$"
+        },
+        {
+          "title": "표준편차",
+          "body": "$$V(X)=720\\times \\frac{1}{6}\\times \\frac{5}{6}=100,\\quad \\sigma(X)=10$$"
+        },
+        {
+          "title": "표준화",
+          "body": "근사적으로 $\\mathrm{N}\\left(120,\\ 10^2\\right)$ 이라서 $X=135$ 는 $Z=\\frac{135-120}{10}=1.5$ 로 바뀌어요."
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\le 1.5)=0.5+0.4332=0.9332$$"
+        }
+      ],
+      "tip": "이항분포의 평균 $np$, 표준편차 $\\sqrt{np(1-p)}$ 를 그대로 정규분포의 $m$, $\\sigma$ 로 써요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prob-normal-binomial-approx",
+      "seed": 1002
+    },
+    {
+      "q": "연속확률변수 $X$ 가 갖는 값의 범위는 $0\\le X\\le 3$ 이고, 확률밀도함수가 $f(x)=kx$ 예요. 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/9",
+      "answerType": "fraction",
+      "check": "solve(Eq(integrate(k*x, (x, 0, 3)), 1), k)[0]",
+      "concepts": [
+        "확률밀도함수의 그래프와 $x$축 사이의 넓이는 $1$ 이에요.",
+        "$P(\\alpha\\le X\\le\\beta)$ 는 $x=\\alpha$ 부터 $x=\\beta$ 까지 그래프 아래 넓이예요."
+      ],
+      "steps": [
+        {
+          "title": "전체 넓이는 1",
+          "body": "그래프와 $x$축 사이는 밑변 3, 높이 $f(3)=3k$ 인 삼각형이에요.\n$$\\frac{1}{2}\\times 3\\times 3k=\\frac{9}{2}k=1$$\n그래서 $k=\\frac{2}{9}$ 예요."
+        }
+      ],
+      "tip": "높이 $f(x)$ 가 확률이 아니에요. 넓이가 확률이라서 전체 넓이를 1 로 맞춰요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prob-normal-density",
+      "seed": 1003
+    },
+    {
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}\\left(30,\\ 16\\right)$ 을 따를 때, $P(X\\le 24)=P(Z\\le k)$ 를 만족시키는 상수 $k$ 의 값을 구하세요. (단, $Z$ 는 표준정규분포를 따르는 확률변수예요.)",
+      "choices": null,
+      "answer": "-3/2",
+      "answerTex": "$-1.5$",
+      "answerType": "fraction",
+      "check": "(24 - 30)/sqrt(16)",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요."
+      ],
+      "steps": [
+        {
+          "title": "평균과 표준편차 읽기",
+          "body": "$\\mathrm{N}\\left(30,\\ 16\\right)$ 의 둘째 자리는 분산이에요. 표준편차는 $\\sigma=\\sqrt{16}=4$ 예요."
+        },
+        {
+          "title": "표준화",
+          "body": "$X=24$ 는 $Z=\\frac{24-30}{4}=-1.5$ 로 바뀌어요."
+        }
+      ],
+      "tip": "분산으로 나누면 틀려요. 표준화는 늘 표준편차로 나눠요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prob-normal-standardize",
+      "seed": 1004
+    },
+    {
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}\\left(45,\\ 64\\right)$ 을 따를 때, $P(X\\le 29)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "57/2500",
+      "answerTex": "$0.0228$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000), Rational(5, 2): Rational(4938, 10000), Rational(6, 2): Rational(4987, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nans = F(Rational(29 - 45, 8))",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요.",
+        "표준정규분포 곡선은 $z=0$ 을 기준으로 좌우 대칭이고, 한쪽 넓이가 $0.5$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "평균과 표준편차",
+          "body": "$m=45$, $\\sigma=\\sqrt{64}=8$ 이에요."
+        },
+        {
+          "title": "표준화",
+          "body": "$X=29$ 는 $Z=\\frac{29-45}{8}=-2$ 로 바뀌어요."
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "대칭이라 $P(Z\\le -2)=P(Z\\ge 2)$ 이고, 오른쪽 절반에서 빼요.\n$$0.5-0.4772=0.0228$$"
+        }
+      ],
+      "tip": "표의 값 $0.4772$ 는 $0$ 부터 $2$ 까지의 넓이예요. 구하는 넓이가 그보다 큰지 작은지 그림으로 먼저 어림해요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prob-normal-table",
+      "seed": 1005
+    },
+    {
+      "q": "주사위 한 개를 180번 던질 때 1의 눈이 나오는 횟수를 확률변수 $X$ 라 할 때, $X$ 는 근사적으로 정규분포 $\\mathrm{N}(m,\\ \\sigma^2)$ 을 따라요. $m+\\sigma$ 의 값을 구하세요. (단, $\\sigma>0$)",
+      "choices": null,
+      "answer": "35",
+      "answerType": "int",
+      "check": "180*Rational(1, 6) + sqrt(180*Rational(1, 6)*(1 - Rational(1, 6)))",
+      "concepts": [
+        "$n$ 이 충분히 크면 $\\mathrm{B}(n,\\ p)$ 는 근사적으로 $\\mathrm{N}(np,\\ np(1-p))$ 를 따라요."
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$X$ 는 이항분포 $\\mathrm{B}\\left(180,\\ \\frac{1}{6}\\right)$ 를 따라요.\n$$E(X)=180\\times \\frac{1}{6}=30$$"
+        },
+        {
+          "title": "표준편차",
+          "body": "$$V(X)=180\\times \\frac{1}{6}\\times \\frac{5}{6}=25,\\quad \\sigma(X)=5$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$m+\\sigma=30+5=35$ 예요."
+        }
+      ],
+      "tip": "분산을 $\\sigma$ 자리에 넣지 마세요. $\\mathrm{N}(m,\\ \\sigma^2)$ 의 둘째 자리는 분산이에요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prob-normal-binomial-approx",
+      "seed": 1006
+    },
+    {
+      "q": "연속확률변수 $X$ 가 갖는 값의 범위는 $0\\le X\\le 6$ 이고, 확률밀도함수가 $f(x)=kx$ 예요. 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/18",
+      "answerType": "fraction",
+      "check": "solve(Eq(integrate(k*x, (x, 0, 6)), 1), k)[0]",
+      "concepts": [
+        "확률밀도함수의 그래프와 $x$축 사이의 넓이는 $1$ 이에요.",
+        "$P(\\alpha\\le X\\le\\beta)$ 는 $x=\\alpha$ 부터 $x=\\beta$ 까지 그래프 아래 넓이예요."
+      ],
+      "steps": [
+        {
+          "title": "전체 넓이는 1",
+          "body": "그래프와 $x$축 사이는 밑변 6, 높이 $f(6)=6k$ 인 삼각형이에요.\n$$\\frac{1}{2}\\times 6\\times 6k=18k=1$$\n그래서 $k=\\frac{1}{18}$ 이에요."
+        }
+      ],
+      "tip": "높이 $f(x)$ 가 확률이 아니에요. 넓이가 확률이라서 전체 넓이를 1 로 맞춰요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prob-normal-density",
+      "seed": 1007
+    },
+    {
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}\\left(70,\\ 10^2\\right)$ 을 따를 때, $P(X\\ge 55)=P(Z\\ge k)$ 를 만족시키는 상수 $k$ 의 값을 구하세요. (단, $Z$ 는 표준정규분포를 따르는 확률변수예요.)",
+      "choices": null,
+      "answer": "-3/2",
+      "answerTex": "$-1.5$",
+      "answerType": "fraction",
+      "check": "(55 - 70)/sqrt(100)",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요."
+      ],
+      "steps": [
+        {
+          "title": "평균과 표준편차 읽기",
+          "body": "평균 $m=70$, 표준편차 $\\sigma=10$ 이에요."
+        },
+        {
+          "title": "표준화",
+          "body": "$X=55$ 는 $Z=\\frac{55-70}{10}=-1.5$ 로 바뀌어요."
+        }
+      ],
+      "tip": "평균을 빼고 표준편차로 나눠요. 빼기만 하거나 나누기만 하면 다른 값이 나와요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prob-normal-standardize",
+      "seed": 1008
+    },
+    {
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}\\left(65,\\ 8^2\\right)$ 을 따를 때, $P(X\\le 49)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "57/2500",
+      "answerTex": "$0.0228$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000), Rational(5, 2): Rational(4938, 10000), Rational(6, 2): Rational(4987, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nans = F(Rational(49 - 65, 8))",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요.",
+        "표준정규분포 곡선은 $z=0$ 을 기준으로 좌우 대칭이고, 한쪽 넓이가 $0.5$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "평균과 표준편차",
+          "body": "$m=65$, $\\sigma=8$ 이에요."
+        },
+        {
+          "title": "표준화",
+          "body": "$X=49$ 는 $Z=\\frac{49-65}{8}=-2$ 로 바뀌어요."
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "대칭이라 $P(Z\\le -2)=P(Z\\ge 2)$ 이고, 오른쪽 절반에서 빼요.\n$$0.5-0.4772=0.0228$$"
+        }
+      ],
+      "tip": "표의 값 $0.4772$ 는 $0$ 부터 $2$ 까지의 넓이예요. 구하는 넓이가 그보다 큰지 작은지 그림으로 먼저 어림해요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prob-normal-table",
+      "seed": 1009
+    },
+    {
+      "q": "주사위 한 개를 720번 던질 때 1의 눈이 나오는 횟수를 확률변수 $X$ 라 할 때, $P(X\\le 140)$ 의 값을 정규분포를 이용해 어림하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "2443/2500",
+      "answerTex": "$0.9772$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000), Rational(5, 2): Rational(4938, 10000), Rational(6, 2): Rational(4987, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nm = 720*Rational(1, 6)\ns = sqrt(720*Rational(1, 6)*(1 - Rational(1, 6)))\nans = F((140 - m)/s)",
+      "concepts": [
+        "$n$ 이 충분히 크면 $\\mathrm{B}(n,\\ p)$ 는 근사적으로 $\\mathrm{N}(np,\\ np(1-p))$ 를 따라요.",
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요."
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$X$ 는 이항분포 $\\mathrm{B}\\left(720,\\ \\frac{1}{6}\\right)$ 를 따라요.\n$$E(X)=720\\times \\frac{1}{6}=120$$"
+        },
+        {
+          "title": "표준편차",
+          "body": "$$V(X)=720\\times \\frac{1}{6}\\times \\frac{5}{6}=100,\\quad \\sigma(X)=10$$"
+        },
+        {
+          "title": "표준화",
+          "body": "근사적으로 $\\mathrm{N}\\left(120,\\ 10^2\\right)$ 이라서 $X=140$ 은 $Z=\\frac{140-120}{10}=2$ 로 바뀌어요."
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\le 2)=0.5+0.4772=0.9772$$"
+        }
+      ],
+      "tip": "이항분포의 평균 $np$, 표준편차 $\\sqrt{np(1-p)}$ 를 그대로 정규분포의 $m$, $\\sigma$ 로 써요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prob-normal-binomial-approx",
+      "seed": 1010
+    },
+    {
+      "q": "연속확률변수 $X$ 가 갖는 값의 범위는 $0\\le X\\le 6$ 이고, 확률밀도함수가 $f(x)=kx$ 예요. $P(5\\le X\\le 6)$ 를 구하세요.",
+      "choices": null,
+      "answer": "11/36",
+      "answerType": "fraction",
+      "check": "kk = solve(Eq(integrate(k*x, (x, 0, 6)), 1), k)[0]\nans = integrate(kk*x, (x, 5, 6))",
+      "concepts": [
+        "확률밀도함수의 그래프와 $x$축 사이의 넓이는 $1$ 이에요.",
+        "$P(\\alpha\\le X\\le\\beta)$ 는 $x=\\alpha$ 부터 $x=\\beta$ 까지 그래프 아래 넓이예요."
+      ],
+      "steps": [
+        {
+          "title": "전체 넓이는 1",
+          "body": "그래프와 $x$축 사이는 밑변 6, 높이 $f(6)=6k$ 인 삼각형이에요.\n$$\\frac{1}{2}\\times 6\\times 6k=18k=1$$\n그래서 $k=\\frac{1}{18}$ 이에요."
+        },
+        {
+          "title": "$0$ 부터 5 까지의 넓이",
+          "body": "밑변 5, 높이 $f(5)=\\frac{5}{18}$ 인 삼각형이에요.\n$$\\frac{1}{2}\\times 5\\times \\frac{5}{18}=\\frac{25}{36}$$"
+        },
+        {
+          "title": "나머지 넓이",
+          "body": "전체 넓이 1 에서 빼요.\n$$1-\\frac{25}{36}=\\frac{11}{36}$$"
+        }
+      ],
+      "tip": "오른쪽 사다리꼴 넓이를 바로 구해도 되지만, 전체 1 에서 왼쪽 삼각형을 빼는 쪽이 빨라요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prob-normal-density",
+      "seed": 1011
+    },
+    {
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}\\left(35,\\ 36\\right)$ 을 따를 때, $P(X\\ge 26)=P(Z\\ge k)$ 를 만족시키는 상수 $k$ 의 값을 구하세요. (단, $Z$ 는 표준정규분포를 따르는 확률변수예요.)",
+      "choices": null,
+      "answer": "-3/2",
+      "answerTex": "$-1.5$",
+      "answerType": "fraction",
+      "check": "(26 - 35)/sqrt(36)",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요."
+      ],
+      "steps": [
+        {
+          "title": "평균과 표준편차 읽기",
+          "body": "$\\mathrm{N}\\left(35,\\ 36\\right)$ 의 둘째 자리는 분산이에요. 표준편차는 $\\sigma=\\sqrt{36}=6$ 이에요."
+        },
+        {
+          "title": "표준화",
+          "body": "$X=26$ 은 $Z=\\frac{26-35}{6}=-1.5$ 로 바뀌어요."
+        }
+      ],
+      "tip": "분산으로 나누면 틀려요. 표준화는 늘 표준편차로 나눠요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prob-normal-standardize",
+      "seed": 1012
+    },
+    {
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}\\left(20,\\ 16\\right)$ 을 따를 때, $P(18\\le X\\le 30)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 0.5)=0.1915$, $P(0\\le Z\\le 2.5)=0.4938$)",
+      "choices": null,
+      "answer": "6853/10000",
+      "answerTex": "$0.6853$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000), Rational(5, 2): Rational(4938, 10000), Rational(6, 2): Rational(4987, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nans = F(Rational(30 - 20, 4)) - F(Rational(18 - 20, 4))",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요.",
+        "표준정규분포 곡선은 $z=0$ 을 기준으로 좌우 대칭이고, 한쪽 넓이가 $0.5$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "평균과 표준편차",
+          "body": "$m=20$, $\\sigma=\\sqrt{16}=4$ 예요."
+        },
+        {
+          "title": "표준화",
+          "body": "$X=18$ 은 $Z=\\frac{18-20}{4}=-0.5$, $X=30$ 은 $Z=\\frac{30-20}{4}=2.5$ 로 바뀌어요."
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$z=0$ 을 사이에 두고 양쪽 넓이를 더해요.\n$$P(-0.5\\le Z\\le 2.5)=P(0\\le Z\\le 0.5)+P(0\\le Z\\le 2.5)=0.1915+0.4938=0.6853$$"
+        }
+      ],
+      "tip": "평균을 사이에 두면 더하고, 같은 쪽에 있으면 빼요. 그림을 그리면 헷갈리지 않아요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prob-normal-table",
+      "seed": 1013
+    },
+    {
+      "q": "동전 한 개를 256번 던질 때 앞면이 나오는 횟수를 확률변수 $X$ 라 할 때, $P(X\\ge 144)$ 의 값을 정규분포를 이용해 어림하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "57/2500",
+      "answerTex": "$0.0228$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000), Rational(5, 2): Rational(4938, 10000), Rational(6, 2): Rational(4987, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nm = 256*Rational(1, 2)\ns = sqrt(256*Rational(1, 2)*(1 - Rational(1, 2)))\nans = 1 - F((144 - m)/s)",
+      "concepts": [
+        "$n$ 이 충분히 크면 $\\mathrm{B}(n,\\ p)$ 는 근사적으로 $\\mathrm{N}(np,\\ np(1-p))$ 를 따라요.",
+        "$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요."
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$X$ 는 이항분포 $\\mathrm{B}\\left(256,\\ \\frac{1}{2}\\right)$ 를 따라요.\n$$E(X)=256\\times \\frac{1}{2}=128$$"
+        },
+        {
+          "title": "표준편차",
+          "body": "$$V(X)=256\\times \\frac{1}{2}\\times \\frac{1}{2}=64,\\quad \\sigma(X)=8$$"
+        },
+        {
+          "title": "표준화",
+          "body": "근사적으로 $\\mathrm{N}\\left(128,\\ 8^2\\right)$ 이라서 $X=144$ 는 $Z=\\frac{144-128}{8}=2$ 로 바뀌어요."
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\ge 2)=0.5-0.4772=0.0228$$"
+        }
+      ],
+      "tip": "이항분포의 평균 $np$, 표준편차 $\\sqrt{np(1-p)}$ 를 그대로 정규분포의 $m$, $\\sigma$ 로 써요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prob-normal-binomial-approx",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(20,\\ 4^2)$ 을 따를 때, $P(X\\ge 26)$ 을 구하세요. (표준정규분포표: $P(0\\le Z\\le 1.5)=0.4332$)",
+      "choices": null,
+      "answer": "167/2500",
+      "answerTex": "$0.0668$",
+      "answerType": "fraction",
+      "check": "T = {Rational(3, 2): Rational(4332, 10000)}\nans = Rational(1, 2) - T[Rational(26 - 20, 4)]",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$",
+        "$P(Z\\ge z)=0.5-P(0\\le Z\\le z)$"
+      ],
+      "steps": [
+        {
+          "title": "표준화",
+          "body": "$$Z=\\frac{26-20}{4}=1.5$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\ge1.5)=0.5-0.4332=0.0668$$"
+        }
+      ],
+      "tip": "표의 값 0.4332 는 평균부터 $Z=1.5$ 까지예요. 그보다 오른쪽은 절반 0.5 에서 빼요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(20,\\ 4^2)$ 을 따를 때, $P(16\\le X\\le 28)$ 을 구하세요. (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$, $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "1637/2000",
+      "answerTex": "$0.8185$",
+      "answerType": "fraction",
+      "check": "T = {Integer(1): Rational(3413, 10000), Integer(2): Rational(4772, 10000)}\nans = T[Rational(20 - 16, 4)] + T[Rational(28 - 20, 4)]",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$",
+        "평균을 사이에 두면 두 넓이를 더해요"
+      ],
+      "steps": [
+        {
+          "title": "표준화",
+          "body": "$$\\frac{16-20}{4}=-1,\\quad \\frac{28-20}{4}=2$$"
+        },
+        {
+          "title": "넓이 더하기",
+          "body": "$$P(-1\\le Z\\le 2)=0.3413+0.4772=0.8185$$"
+        }
+      ],
+      "tip": "$Z=-1$ 쪽은 대칭으로 $P(0\\le Z\\le 1)$ 과 넓이가 같아요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "연속확률변수 $X$ 가 갖는 값의 범위는 $0\\le X\\le 2$ 이고, 확률밀도함수가 $f(x)=k(x+1)$ 이에요. $P(1\\le X\\le 2)$ 를 구하세요.",
+      "choices": null,
+      "answer": "5/8",
+      "answerType": "fraction",
+      "check": "kk = solve(Eq(integrate(k*(x + 1), (x, 0, 2)), 1), k)[0]\nans = integrate(kk*(x + 1), (x, 1, 2))",
+      "concepts": [
+        "확률밀도함수의 그래프 아래 전체 넓이는 1",
+        "확률 = 그래프 아래 넓이"
+      ],
+      "steps": [
+        {
+          "title": "전체 넓이는 1",
+          "body": "그래프 아래는 윗변 $f(0)=k$, 아랫변 $f(2)=3k$, 높이 2 인 사다리꼴이에요.\n$$\\frac{k+3k}{2}\\times2=4k=1,\\quad k=\\frac{1}{4}$$"
+        },
+        {
+          "title": "구하는 넓이",
+          "body": "$f(1)=\\frac{2}{4}$, $f(2)=\\frac{3}{4}$ 인 폭 1 의 사다리꼴이에요.\n$$\\frac{1}{2}\\left(\\frac{2}{4}+\\frac{3}{4}\\right)\\times1=\\frac{5}{8}$$"
+        }
+      ],
+      "tip": "넓이를 구할 땐 그래프 모양(삼각형·사다리꼴)부터 그려 봐요. 적분 없이도 풀려요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(m,\\ \\sigma^2)$ 을 따르고 $P(X\\le 10)=P(X\\ge 30)$ 일 때, $m$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "20",
+      "answerType": "int",
+      "check": "solve(Eq(m - 10, 30 - m), m)[0]",
+      "concepts": [
+        "정규분포 곡선은 $x=m$ 을 기준으로 대칭"
+      ],
+      "steps": [
+        {
+          "title": "대칭 읽기",
+          "body": "왼쪽 꼬리와 오른쪽 꼬리의 넓이가 같으니 10 과 30 은 $m$ 에서 같은 거리에 있어요."
+        },
+        {
+          "title": "가운데",
+          "body": "$$m=\\frac{10+30}{2}=20$$"
+        }
+      ],
+      "tip": "$\\sigma$ 를 몰라도 풀려요. 대칭인 두 꼬리는 평균을 가운데에 둬요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(m,\\ 4^2)$ 을 따르고 $P(X\\le 64)=0.8413$ 일 때, $m$ 의 값을 구하세요. (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$)",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "check": "solve(Eq((64 - m)/4, 1), m)[0]",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$",
+        "$P(Z\\le z)=0.5+P(0\\le Z\\le z)\\ (z>0)$"
+      ],
+      "steps": [
+        {
+          "title": "표에서 $z$ 찾기",
+          "body": "$0.8413=0.5+0.3413$ 이라서 $P(Z\\le1)=0.8413$ 이에요."
+        },
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{64-m}{4}=1$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$64-m=4$ 이므로 $m=60$ 이에요."
+        }
+      ],
+      "tip": "확률이 0.5 보다 크면 그 점은 평균보다 오른쪽이에요. 그래서 $z$ 가 양수예요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(10,\\ 2^2)$ 을 따를 때, 확률변수 $Y=2X+3$ 에 대하여 $P(Y\\ge 31)$ 을 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "57/2500",
+      "answerTex": "$0.0228$",
+      "answerType": "fraction",
+      "check": "T = {Integer(2): Rational(4772, 10000)}\nm = 2*10 + 3\ns = 2*2\nans = Rational(1, 2) - T[Rational(31 - m, s)]",
+      "concepts": [
+        "$E(aX+b)=aE(X)+b$, $\\sigma(aX+b)=|a|\\sigma(X)$",
+        "$Z=\\frac{X-m}{\\sigma}$"
+      ],
+      "steps": [
+        {
+          "title": "$Y$ 의 평균과 표준편차",
+          "body": "$E(Y)=2\\times10+3=23$, $\\sigma(Y)=2\\times2=4$ 이고, $Y$ 도 정규분포를 따라요."
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{31-23}{4}=2$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\ge2)=0.5-0.4772=0.0228$$"
+        }
+      ],
+      "tip": "$Y\\ge31$ 을 $X\\ge14$ 로 바꿔 풀어도 $Z=\\frac{14-10}{2}=2$ 로 같아요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "동전 한 개를 400번 던질 때 앞면이 나오는 횟수를 $X$ 라 해요. $P(X\\ge 210)$ 의 값을 정규분포를 이용해 어림하세요. (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$)",
+      "choices": null,
+      "answer": "1587/10000",
+      "answerTex": "$0.1587$",
+      "answerType": "fraction",
+      "check": "T = {Integer(1): Rational(3413, 10000)}\nm = 400*Rational(1, 2)\ns = sqrt(400*Rational(1, 2)*(1 - Rational(1, 2)))\nans = Rational(1, 2) - T[(210 - m)/s]",
+      "concepts": [
+        "$\\mathrm{B}(n,\\ p)\\approx\\mathrm{N}(np,\\ np(1-p))$",
+        "$Z=\\frac{X-m}{\\sigma}$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$$E(X)=400\\times\\frac{1}{2}=200$$"
+        },
+        {
+          "title": "표준편차",
+          "body": "$$\\sigma(X)=\\sqrt{400\\times\\frac{1}{2}\\times\\frac{1}{2}}=10$$"
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{210-200}{10}=1$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\ge1)=0.5-0.3413=0.1587$$"
+        }
+      ],
+      "tip": "400번 중 210번은 평균보다 10번 많을 뿐이지만, 표준편차가 10 이라 꽤 일어날 만한 일이에요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "한 번 던져 넣을 확률이 $\\frac{1}{5}$ 인 공 던지기를 100번 할 때 넣은 횟수를 $X$ 라 해요. $P(X\\le 24)$ 의 값을 정규분포를 이용해 어림하세요. (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$)",
+      "choices": null,
+      "answer": "8413/10000",
+      "answerTex": "$0.8413$",
+      "answerType": "fraction",
+      "check": "T = {Integer(1): Rational(3413, 10000)}\nm = 100*Rational(1, 5)\ns = sqrt(100*Rational(1, 5)*(1 - Rational(1, 5)))\nans = Rational(1, 2) + T[(24 - m)/s]",
+      "concepts": [
+        "$\\mathrm{B}(n,\\ p)\\approx\\mathrm{N}(np,\\ np(1-p))$",
+        "$P(Z\\le z)=0.5+P(0\\le Z\\le z)\\ (z>0)$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$$E(X)=100\\times\\frac{1}{5}=20$$"
+        },
+        {
+          "title": "표준편차",
+          "body": "$$\\sigma(X)=\\sqrt{100\\times\\frac{1}{5}\\times\\frac{4}{5}}=\\sqrt{16}=4$$"
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{24-20}{4}=1$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\le1)=0.5+0.3413=0.8413$$"
+        }
+      ],
+      "tip": "'이하'는 왼쪽 절반 0.5 를 통째로 포함해요. 0.3413 만 답하면 반쪽만 센 거예요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "어느 지역 성인 10000명의 키 $X$(cm)가 정규분포 $\\mathrm{N}(170,\\ 5^2)$ 을 따른다고 해요. 키가 180 cm 이상인 사람은 약 몇 명인지 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "228",
+      "answerType": "int",
+      "check": "T = {Integer(2): Rational(4772, 10000)}\nans = 10000*(Rational(1, 2) - T[Rational(180 - 170, 5)])",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$",
+        "사람 수 = 전체 × 확률"
+      ],
+      "steps": [
+        {
+          "title": "표준화",
+          "body": "$$\\frac{180-170}{5}=2$$"
+        },
+        {
+          "title": "확률",
+          "body": "$$P(Z\\ge2)=0.5-0.4772=0.0228$$"
+        },
+        {
+          "title": "사람 수",
+          "body": "$$10000\\times0.0228=228$$"
+        }
+      ],
+      "tip": "확률을 구한 뒤 전체 수를 곱하는 것을 빠뜨리지 마세요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(50,\\ \\sigma^2)$ 을 따르고 $P(X\\ge 62)=0.0668$ 일 때, $\\sigma$ 의 값을 구하세요. (단, $\\sigma>0$ 이고, 표준정규분포표: $P(0\\le Z\\le 1.5)=0.4332$)",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "solve(Eq((62 - 50)/s, Rational(3, 2)), s)[0]",
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$",
+        "$P(Z\\ge z)=0.5-P(0\\le Z\\le z)$"
+      ],
+      "steps": [
+        {
+          "title": "표에서 $z$ 찾기",
+          "body": "$0.5-0.4332=0.0668$ 이라서 62 는 $Z=1.5$ 예요."
+        },
+        {
+          "title": "식 세우기",
+          "body": "$$\\frac{62-50}{\\sigma}=1.5$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$$\\sigma=\\frac{12}{1.5}=8$$"
+        }
+      ],
+      "tip": "62 는 평균에서 12 떨어져 있고, 그게 표준편차 1.5개만큼이에요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "확률변수 $X$ 는 정규분포 $\\mathrm{N}(10,\\ 2^2)$, 확률변수 $Y$ 는 정규분포 $\\mathrm{N}(m,\\ 4^2)$ 을 따라요. $P(X\\le 12)=P(Y\\ge 26)$ 일 때, $m$ 의 값은?",
+      "choices": [
+        "$22$",
+        "$26$",
+        "$28$",
+        "$30$",
+        "$34$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "solve(Eq((26 - m)/4, -Rational(12 - 10, 2)), m)[0]",
+      "choiceChecks": [
+        "22",
+        "26",
+        "28",
+        "30",
+        "34"
+      ],
+      "concepts": [
+        "$Z=\\frac{X-m}{\\sigma}$",
+        "$P(Z\\le a)=P(Z\\ge -a)$ (대칭)"
+      ],
+      "steps": [
+        {
+          "title": "$X$ 표준화",
+          "body": "$$P(X\\le12)=P\\left(Z\\le\\frac{12-10}{2}\\right)=P(Z\\le1)$$"
+        },
+        {
+          "title": "$Y$ 표준화",
+          "body": "$$P(Y\\ge26)=P\\left(Z\\ge\\frac{26-m}{4}\\right)$$"
+        },
+        {
+          "title": "대칭으로 맞추기",
+          "body": "$P(Z\\le1)=P(Z\\ge-1)$ 이므로 $\\frac{26-m}{4}=-1$ 이에요."
+        },
+        {
+          "title": "풀기",
+          "body": "$26-m=-4$ 이므로 $m=30$ 이에요."
+        }
+      ],
+      "tip": "$\\le$ 와 $\\ge$ 가 서로 다르면 $z$ 의 부호가 바뀌어요. 그대로 $\\frac{26-m}{4}=1$ 로 놓으면 22 가 나와요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "주사위 한 개를 720번 던질 때 1의 눈이 나오는 횟수를 $X$ 라 해요. $P(X\\ge 130)$ 의 값을 표준정규분포표를 이용해 구한 것은?\n\n$P(0\\le Z\\le 0.5)=0.1915$, $P(0\\le Z\\le 1)=0.3413$, $P(0\\le Z\\le 1.5)=0.4332$, $P(0\\le Z\\le 2)=0.4772$",
+      "choices": [
+        "$0.0228$",
+        "$0.0668$",
+        "$0.1587$",
+        "$0.3085$",
+        "$0.8413$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "T = {Integer(1): Rational(3413, 10000)}\nm = 720*Rational(1, 6)\ns = sqrt(720*Rational(1, 6)*(1 - Rational(1, 6)))\nans = Rational(1, 2) - T[(130 - m)/s]",
+      "choiceChecks": [
+        "Rational(228, 10000)",
+        "Rational(668, 10000)",
+        "Rational(1587, 10000)",
+        "Rational(3085, 10000)",
+        "Rational(8413, 10000)"
+      ],
+      "concepts": [
+        "$\\mathrm{B}(n,\\ p)\\approx\\mathrm{N}(np,\\ np(1-p))$",
+        "$Z=\\frac{X-m}{\\sigma}$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$$E(X)=720\\times\\frac{1}{6}=120$$"
+        },
+        {
+          "title": "표준편차",
+          "body": "$$V(X)=720\\times\\frac{1}{6}\\times\\frac{5}{6}=100,\\quad\\sigma(X)=10$$"
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{130-120}{10}=1$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\ge1)=0.5-0.3413=0.1587$$"
+        }
+      ],
+      "tip": "분산 100 을 표준편차로 쓰면 $Z=0.1$ 이 되어 표에 없어요. 표에 없는 값이 나오면 계산을 의심해 보세요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "연속확률변수 $X$ 가 갖는 값의 범위는 $0\\le X\\le 4$ 이고, 확률밀도함수가 $0\\le x\\le 2$ 에서 $f(x)=kx$, $2\\le x\\le 4$ 에서 $f(x)=k(4-x)$ 예요. $P(1\\le X\\le 3)$ 의 값은?",
+      "choices": [
+        "$\\frac{1}{2}$",
+        "$\\frac{5}{8}$",
+        "$\\frac{3}{4}$",
+        "$\\frac{7}{8}$",
+        "$\\frac{15}{16}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "kk = solve(Eq(integrate(k*x, (x, 0, 2)) + integrate(k*(4 - x), (x, 2, 4)), 1), k)[0]\nans = integrate(kk*x, (x, 1, 2)) + integrate(kk*(4 - x), (x, 2, 3))",
+      "choiceChecks": [
+        "Rational(1, 2)",
+        "Rational(5, 8)",
+        "Rational(3, 4)",
+        "Rational(7, 8)",
+        "Rational(15, 16)"
+      ],
+      "concepts": [
+        "확률밀도함수의 그래프 아래 전체 넓이는 1",
+        "확률 = 그래프 아래 넓이"
+      ],
+      "steps": [
+        {
+          "title": "전체 넓이는 1",
+          "body": "밑변 4, 높이 $f(2)=2k$ 인 삼각형이에요.\n$$\\frac{1}{2}\\times4\\times2k=4k=1,\\quad k=\\frac{1}{4}$$"
+        },
+        {
+          "title": "양 끝 삼각형",
+          "body": "$0\\le x\\le1$ 부분은 밑변 1, 높이 $f(1)=\\frac{1}{4}$ 이라 넓이 $\\frac{1}{8}$ 이고, $3\\le x\\le4$ 도 대칭이라 $\\frac{1}{8}$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$P(1\\le X\\le3)=1-\\frac{1}{8}-\\frac{1}{8}=\\frac{3}{4}$$"
+        }
+      ],
+      "tip": "가운데 넓이를 바로 구하기보다 전체 1 에서 양 끝 작은 삼각형을 빼는 쪽이 빨라요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(m,\\ \\sigma^2)$ 을 따르고 다음 두 조건을 만족시킬 때, $m+\\sigma$ 의 값을 구하세요. (단, $\\sigma>0$)\n\n(가) $P(X\\le 3)=P(X\\ge 11)$\n(나) $P(X\\le 11)=0.9772$\n\n(표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "mm = solve(Eq(m - 3, 11 - m), m)[0]\nss = solve(Eq((11 - mm)/s, 2), s)[0]\nans = mm + ss",
+      "concepts": [
+        "정규분포 곡선은 $x=m$ 을 기준으로 대칭",
+        "$Z=\\frac{X-m}{\\sigma}$"
+      ],
+      "steps": [
+        {
+          "title": "(가)에서 평균",
+          "body": "두 꼬리 넓이가 같으니 $m=\\frac{3+11}{2}=7$ 이에요."
+        },
+        {
+          "title": "(나)에서 $z$",
+          "body": "$0.9772=0.5+0.4772$ 라서 11 은 $Z=2$ 예요."
+        },
+        {
+          "title": "표준편차",
+          "body": "$\\frac{11-7}{\\sigma}=2$ 이므로 $\\sigma=2$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$m+\\sigma=7+2=9$ 예요."
+        }
+      ],
+      "tip": "조건 (가)는 대칭으로 평균을, (나)는 표로 표준편차를 정해요. 한 조건이 한 미지수를 맡아요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "확률변수 $X$ 가 정규분포 $\\mathrm{N}(m,\\ \\sigma^2)$ 을 따르고, $X$ 의 확률밀도함수 $f(x)$ 가 $f(10)=f(20)$ 을 만족시켜요. $P(X\\ge 21)=0.1587$ 일 때, $P(X\\le 3)$ 의 값은? (단, $\\sigma>0$)\n\n$P(0\\le Z\\le 1)=0.3413$, $P(0\\le Z\\le 1.5)=0.4332$, $P(0\\le Z\\le 2)=0.4772$",
+      "choices": [
+        "$0.0228$",
+        "$0.0668$",
+        "$0.1587$",
+        "$0.3085$",
+        "$0.4772$"
+      ],
+      "answer": "1",
+      "answerType": "choice",
+      "check": "T = {Integer(1): Rational(3413, 10000), Integer(2): Rational(4772, 10000)}\nmm = Rational(10 + 20, 2)\nss = solve(Eq((21 - mm)/s, 1), s)[0]\nans = Rational(1, 2) - T[-(3 - mm)/ss]",
+      "choiceChecks": [
+        "Rational(228, 10000)",
+        "Rational(668, 10000)",
+        "Rational(1587, 10000)",
+        "Rational(3085, 10000)",
+        "Rational(4772, 10000)"
+      ],
+      "concepts": [
+        "정규분포 곡선은 $x=m$ 을 기준으로 대칭",
+        "$Z=\\frac{X-m}{\\sigma}$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "곡선이 $x=m$ 대칭이고 $f(10)=f(20)$ 이니 $m=\\frac{10+20}{2}=15$ 예요."
+        },
+        {
+          "title": "표준편차",
+          "body": "$0.5-0.3413=0.1587$ 이라 21 은 $Z=1$ 이에요. $\\frac{21-15}{\\sigma}=1$ 에서 $\\sigma=6$ 이에요."
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{3-15}{6}=-2$$"
+        },
+        {
+          "title": "대칭으로 읽기",
+          "body": "$$P(Z\\le-2)=P(Z\\ge2)=0.5-0.4772=0.0228$$"
+        }
+      ],
+      "tip": "높이가 같은 두 점의 가운데가 평균이에요. 확률밀도함수의 값이 같다는 조건은 대칭을 말해요."
+    }
+  ]
+}

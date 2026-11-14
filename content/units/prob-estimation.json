@@ -1,0 +1,1400 @@
+{
+  "id": "prob-estimation",
+  "course": "확률과 통계",
+  "unit": "통계",
+  "title": "통계적 추정",
+  "prereq": [
+    "prob-normal"
+  ],
+  "suneung": [
+    "확통 26"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$E(\\bar X)=m$",
+    "$V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+    "$\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$ (신뢰도 95%)",
+    "$\\bar x-2.58\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+2.58\\frac{\\sigma}{\\sqrt n}$ (신뢰도 99%)"
+  ],
+  "lesson": {
+    "minutes": 30,
+    "values": {
+      "one": {
+        "value": "2/3",
+        "check": "Rational(len([v for v in range(1, 7) if 2 <= v <= 5]), 6)"
+      },
+      "two": {
+        "value": "5/6",
+        "check": "Rational(sum(1 for a in range(1, 7) for b in range(1, 7) if 2 <= Rational(a + b, 2) <= 5), 36)"
+      },
+      "sd25": {
+        "value": "2",
+        "check": "10/sqrt(25)"
+      },
+      "v25": {
+        "value": "4",
+        "check": "10**2/Integer(25)"
+      },
+      "four": {
+        "value": "4",
+        "check": "solve(Eq(1/sqrt(k), Rational(1, 2)), k)[0]"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "확률과 통계 · 통계적 추정",
+        "title": "일부만 보고\n전체를 어림하기",
+        "lead": "전국 학생의 키를 모두 잴 수는 없어요. 몇 명만 뽑아 잰 평균으로 전체 평균을 어림해요. 뽑아서 평균을 내면 값이 어떻게 모이는지 직접 보고, 그 범위를 식으로 만들어요.",
+        "meta": [
+          "표본평균의 분포",
+          "$\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+          "모평균의 신뢰구간"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "두 번 던져 평균을 내면\n어디에 모일까요?",
+        "lead": "주사위 한 개를 던지면 1부터 6까지 고르게 나와요. 이번엔 두 번 던져 두 눈의 평균을 구해요. 막대는 두 눈의 합이고, 합을 2 로 나누면 평균이에요. 100번쯤 던져 모양을 보세요. 평균이 2 이상 5 이하일 확률은 얼마일까요?",
+        "widget": {
+          "type": "simulate",
+          "params": {
+            "device": "die",
+            "n": 2,
+            "seed": 7,
+            "goal": 100
+          }
+        },
+        "choices": [
+          {
+            "value": "2/3",
+            "check": "Rational(len([v for v in range(1, 7) if 2 <= v <= 5]), 6)",
+            "feedback": "주사위를 한 번만 던질 때의 확률이에요. 두 번의 평균은 큰 눈과 작은 눈이 섞여 가운데로 더 잘 모여요."
+          },
+          {
+            "value": "5/6",
+            "check": "Rational(sum(1 for a in range(1, 7) for b in range(1, 7) if 2 <= Rational(a + b, 2) <= 5), 36)"
+          },
+          {
+            "value": "7/11",
+            "check": "Rational(len(range(4, 11)), len(range(2, 13)))",
+            "feedback": "합 2 부터 12 까지 11가지가 똑같이 나온다고 봤어요. 막대에서 보듯 합 7 은 자주, 합 2 는 드물게 나와요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "Rational(sum(1 for a in range(1, 7) for b in range(1, 7) if 2 <= Rational(a + b, 2) <= 5), 36)",
+        "reveal": "**맞아요.** {{two}} 예요. 한 번 던질 때의 {{one}} 보다 커요.",
+        "thoughts": [
+          "평균이 2 이상 5 이하이려면 두 눈의 합이 4 이상 10 이하여야 해요.",
+          "합이 2, 3 인 경우는 3가지, 11, 12 인 경우도 3가지라서 36가지 중 6가지만 빠져요.",
+          "평균이 1 이나 6 이 되려면 두 번 다 같은 끝 눈이 나와야 해서 아주 드물어요."
+        ],
+        "conclude": "여러 개를 뽑아 평균을 내면 ==모집단보다 가운데로 좁게 모여요==. 많이 뽑을수록 더 좁게 모여요."
+      },
+      {
+        "kind": "question",
+        "id": "narrow",
+        "chip": "손으로 해 보기",
+        "title": "표본이 커지면\n얼마나 좁아질까요?",
+        "lead": "점수가 $\\mathrm{N}(50,\\ 10^2)$ 을 따르는 집단에서 $n$ 명을 뽑아 평균 $\\bar X$ 를 내요. 연한 곡선은 한 명의 점수, 진한 곡선은 평균 $\\bar X$ 의 분포예요. 슬라이더로 $n$ 을 25 까지 올리고 P 의 높이를 읽어 보세요. $n=25$ 일 때 $\\bar X$ 의 표준편차는 얼마일까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 30,
+              "max": 70,
+              "step": 5
+            },
+            "y": {
+              "min": 0,
+              "max": "1/4",
+              "step": "1/20"
+            },
+            "sliders": [
+              {
+                "id": "n",
+                "min": 1,
+                "max": 25,
+                "step": 1,
+                "value": 1,
+                "label": "표본 크기 $n$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "pop",
+                "curve": "exp(-(x-50)**2/200)/(10*sqrt(2*pi))",
+                "label": "한 명의 점수 $\\mathrm{N}(50,\\ 10^2)$",
+                "tone": "soft"
+              },
+              {
+                "id": "bar",
+                "curve": "sqrt(n)*exp(-n*(x-50)**2/200)/(10*sqrt(2*pi))",
+                "label": "표본평균 $\\bar X$ 의 분포"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "bar",
+                  "x": 50,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "readout": "value(n)",
+                "label": "표본 크기 $n$",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "P 의 높이",
+                "digits": 3
+              }
+            ],
+            "intro": "$n=1$ 이면 두 곡선이 겹쳐요. $n$ 을 키우며 꼭대기 높이를 견줘 보세요."
+          }
+        },
+        "choices": [
+          {
+            "value": "2",
+            "check": "10/sqrt(25)"
+          },
+          {
+            "value": "2/5",
+            "check": "10/Integer(25)",
+            "feedback": "표준편차를 $n$ 으로 나눴어요. $n$ 으로 나누는 건 분산이고, 표준편차는 $\\sqrt n$ 으로 나눠요."
+          },
+          {
+            "value": "4",
+            "check": "10**2/Integer(25)",
+            "feedback": "$\\frac{100}{25}=4$ 는 분산 $V(\\bar X)$ 예요. 표준편차는 그 제곱근이에요."
+          },
+          {
+            "value": "10",
+            "check": "sqrt(10**2)",
+            "feedback": "한 명의 표준편차 그대로예요. 슬라이더를 올리면 진한 곡선이 좁아지는 게 보여요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "10/sqrt(25)",
+        "reveal": "**맞아요.** 표준편차가 10 에서 {{sd25}} 로 줄어요.",
+        "thoughts": [
+          "가운데는 그대로 50 이에요. 표본평균의 평균은 모집단의 평균과 같아요.",
+          "$n=25$ 에서 꼭대기 높이가 연한 곡선의 5배예요. 앞 단원에서 본 것처럼 높이는 표준편차에 반비례하니 표준편차는 $\\frac{1}{5}$ 배예요.",
+          "식으로는 분산이 $\\frac{10^2}{25}={{v25}}$ 이고, 표준편차는 $\\sqrt{4}={{sd25}}$ 예요."
+        ],
+        "conclude": "표본평균의 ==분산은 n 으로, 표준편차는 √n 으로== 나눠요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 다룬 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "모집단과 표본",
+            "body": "알고 싶은 전체가 모집단, 그중 뽑아서 실제로 조사한 일부가 표본이에요. 모두 같은 가능성으로 뽑는 것을 임의추출이라 해요."
+          },
+          {
+            "term": "모평균 $m$ · 모표준편차 $\\sigma$",
+            "body": "모집단의 평균과 표준편차예요. 보통은 모르는 값이라 표본으로 어림해요."
+          },
+          {
+            "term": "표본평균 $\\bar X$",
+            "body": "크기 $n$ 인 표본의 평균이에요. 뽑을 때마다 달라지는 확률변수이고, $E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$ 이에요."
+          }
+        ],
+        "aside": "**표본평균도 정규분포** · 모집단이 $\\mathrm{N}(m,\\ \\sigma^2)$ 이면 $\\bar X$ 는 $\\mathrm{N}\\left(m,\\ \\frac{\\sigma^2}{n}\\right)$ 을 따라요. 모집단이 정규분포가 아니어도 $n$ 이 크면 근사적으로 그래요."
+      },
+      {
+        "kind": "explore",
+        "id": "plot",
+        "chip": "지름길",
+        "title": "표준편차를 절반으로\n줄이려면?",
+        "lead": "모표준편차가 12 인 모집단에서 크기 $n$ 인 표본을 뽑으면 $\\sigma(\\bar X)=\\frac{12}{\\sqrt n}$ 이에요. 가로가 $n$, 세로가 $\\sigma(\\bar X)$ 예요. 칸에 딱 맞는 점 3개를 모두 찍어 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": 0,
+              "max": 12,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 12,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "g",
+                "curve": "12/sqrt(x)",
+                "label": "$y=\\frac{12}{\\sqrt x}$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "pointsOn": {
+                "curve": "g",
+                "count": 3
+              }
+            },
+            "intro": "$\\sqrt n$ 이 자연수가 되는 $n$ 부터 넣어 보세요.",
+            "done": "$n$ 이 4배가 될 때마다 표준편차가 절반이 돼요. 어림을 2배 정밀하게 하려면 표본이 4배 필요해요."
+          }
+        },
+        "gate": true
+      },
+      {
+        "kind": "question",
+        "id": "interval",
+        "chip": "두 번째 해 보기",
+        "title": "모평균이 있을 만한\n범위 좁히기",
+        "lead": "모표준편차가 10 인 모집단에서 표본평균 50 을 얻었어요. 표준정규분포에서 $P(|Z|\\le1.96)=0.95$ 이므로, 모평균 $m$ 은 95% 의 신뢰도로 $50-1.96\\frac{10}{\\sqrt n}\\le m\\le 50+1.96\\frac{10}{\\sqrt n}$ 에 있다고 말해요. 이 범위가 신뢰구간이에요. P 를 끌어 $n=25$ 와 $n=100$ 의 위 끝을 견줘 보세요. 구간 길이를 절반으로 줄이려면 표본 크기를 몇 배로 해야 할까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 100,
+              "step": 10
+            },
+            "y": {
+              "min": 40,
+              "max": 60,
+              "step": 2
+            },
+            "objects": [
+              {
+                "id": "U",
+                "curve": "50+1.96*10/sqrt(x)",
+                "label": "위 끝 $50+1.96\\frac{10}{\\sqrt n}$"
+              },
+              {
+                "id": "L",
+                "curve": "50-1.96*10/sqrt(x)",
+                "label": "아래 끝 $50-1.96\\frac{10}{\\sqrt n}$"
+              },
+              {
+                "id": "C",
+                "curve": "50",
+                "label": "표본평균 50",
+                "tone": "soft"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "U",
+                  "x": 25,
+                  "drag": "x",
+                  "snap": 5
+                },
+                "name": "P"
+              },
+              {
+                "readout": "x(P)",
+                "label": "표본 크기 $n$",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "위 끝",
+                "digits": 2
+              }
+            ],
+            "intro": "가로는 표본 크기 $n$ 이에요. 두 곡선 사이의 폭이 신뢰구간이에요."
+          }
+        },
+        "choices": [
+          {
+            "value": "4",
+            "check": "solve(Eq(1/sqrt(k), Rational(1, 2)), k)[0]"
+          },
+          {
+            "value": "2",
+            "check": "solve(Eq(1/k, Rational(1, 2)), k)[0]",
+            "feedback": "길이는 $n$ 이 아니라 $\\sqrt n$ 에 반비례해요. $n$ 을 2배 하면 길이는 약 0.71배밖에 안 줄어요."
+          },
+          {
+            "value": "1/4",
+            "check": "solve(Eq(sqrt(k), Rational(1, 2)), k)[0]",
+            "feedback": "표본을 줄이면 구간이 넓어져요. P 를 왼쪽으로 끌면 위 끝이 올라가요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "solve(Eq(1/sqrt(k), Rational(1, 2)), k)[0]",
+        "reveal": "**맞아요.** {{four}} 배예요.",
+        "thoughts": [
+          "$n=25$ 면 위 끝이 $50+3.92$, $n=100$ 이면 $50+1.96$ 이에요. 50 에서 떨어진 거리가 절반이 됐어요.",
+          "구간 길이 $2\\times1.96\\times\\frac{\\sigma}{\\sqrt n}$ 은 $\\sqrt n$ 에 반비례해요.",
+          "$\\sqrt n$ 이 2배가 되려면 $n$ 은 4배여야 해요."
+        ],
+        "conclude": "==구간을 좁히려면 표본은 제곱으로== 늘려야 해요. 신뢰도 99% 로 높이면 1.96 대신 2.58 을 써서 구간이 넓어져요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 모표준편차가 6 인 모집단에서 크기 9 인 표본을 뽑을 때 $\\sigma(\\bar X)$ 를 구했어요. 왼쪽은 바르게 세운 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "6/sqrt(9)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "6/9",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "2",
+              "body": "표준편차는 $\\sqrt n$ 으로 나눠요. $n$ 으로 나누는 건 분산 $\\frac{\\sigma^2}{n}$ 일 때예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 표본평균 50, 모표준편차 10, 표본 크기 25 로 얻은 신뢰구간 $50-k\\frac{10}{\\sqrt{25}}\\le m\\le 50+k\\frac{10}{\\sqrt{25}}$ 의 길이를 구했어요. ($k$ 는 신뢰도 95% 면 1.96, 99% 면 2.58) 왼쪽은 바르게 세운 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(50+k*10/sqrt(25))-(50-k*10/sqrt(25))"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "k*10/sqrt(25)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "4*k",
+              "body": "가운데에서 위 끝까지만 셌어요. 신뢰구간은 표본평균 양쪽으로 펼쳐지니 길이는 그 2배예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "pop",
+            "q": "모집단의 확률변수 $X$ 의 확률분포가 아래와 같아요. 이 모집단에서 크기가 4 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 의 분산 $V(\\bar X)$ 를 구하세요.\n$$\\begin{array}{c|ccc|c} X & 1 & 3 & 5 & \\text{합계}\\\\ \\hline P(X=x) & \\frac{1}{4} & \\frac{1}{2} & \\frac{1}{4} & 1 \\end{array}$$",
+            "hint": "먼저 모집단의 분산 $V(X)$ 를 구하고, 표본 크기로 나눠요.",
+            "concepts": [
+              "$V(\\bar X)=\\frac{\\sigma^2}{n}$",
+              "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+            ],
+            "steps": [
+              {
+                "title": "모평균",
+                "body": "$$E(X)=1\\times\\frac{1}{4}+3\\times\\frac{1}{2}+5\\times\\frac{1}{4}=3$$"
+              },
+              {
+                "title": "모분산",
+                "body": "$$E(X^2)=\\frac{1}{4}+\\frac{9}{2}+\\frac{25}{4}=11,\\quad V(X)=11-3^2=2$$"
+              },
+              {
+                "title": "표본평균의 분산",
+                "body": "$$V(\\bar X)=\\frac{2}{4}=\\frac{1}{2}$$"
+              }
+            ],
+            "tip": "$E(\\bar X)$ 를 물으면 모평균 3 그대로예요. 표본 크기로 나누는 건 분산뿐이에요.",
+            "answer": "1/2",
+            "answerType": "fraction",
+            "check": "vals = [(1, Rational(1, 4)), (3, Rational(1, 2)), (5, Rational(1, 4))]\nE = sum(v*p for v, p in vals)\nV = sum(v**2*p for v, p in vals) - E**2\nans = V/4"
+          },
+          {
+            "id": "prob",
+            "q": "정규분포 $\\mathrm{N}(60,\\ 8^2)$ 을 따르는 모집단에서 크기가 16 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $P(\\bar X\\ge c)=0.0228$ 을 만족시키는 상수 $c$ 의 값을 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+            "hint": "$\\bar X$ 의 표준편차부터 구해요. $0.5-0.4772=0.0228$ 이에요.",
+            "concepts": [
+              "$\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+              "$Z=\\frac{\\bar X-m}{\\sigma/\\sqrt n}$"
+            ],
+            "steps": [
+              {
+                "title": "$\\bar X$ 의 표준편차",
+                "body": "$$\\sigma(\\bar X)=\\frac{8}{\\sqrt{16}}=2$$"
+              },
+              {
+                "title": "표에서 $z$ 찾기",
+                "body": "$P(Z\\ge2)=0.0228$ 이라서 $c$ 는 $Z=2$ 에 해당해요."
+              },
+              {
+                "title": "식 풀기",
+                "body": "$$\\frac{c-60}{2}=2,\\quad c=64$$"
+              }
+            ],
+            "tip": "모표준편차 8 로 표준화하면 $c=76$ 이 나와요. 표본평균은 $\\frac{\\sigma}{\\sqrt n}$ 으로 표준화해요.",
+            "answer": "64",
+            "answerType": "int",
+            "check": "solve(Eq((c - 60)/(8/sqrt(16)), 2), c)[0]"
+          },
+          {
+            "id": "sigma",
+            "q": "정규분포를 따르는 모집단에서 크기가 64 인 표본을 임의추출해 모평균 $m$ 에 대한 신뢰도 95% 의 신뢰구간을 구했더니 $46.08\\le m\\le 53.92$ 였어요. 모표준편차 $\\sigma$ 를 구하세요. (단, $P(|Z|\\le1.96)=0.95$ 로 계산하세요.)",
+            "hint": "구간의 가운데가 표본평균이고, 길이의 절반이 $1.96\\frac{\\sigma}{\\sqrt{64}}$ 예요.",
+            "concepts": [
+              "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$"
+            ],
+            "steps": [
+              {
+                "title": "반폭",
+                "body": "$$\\frac{53.92-46.08}{2}=3.92$$"
+              },
+              {
+                "title": "식 세우기",
+                "body": "$$1.96\\times\\frac{\\sigma}{8}=3.92$$"
+              },
+              {
+                "title": "풀기",
+                "body": "$\\frac{\\sigma}{8}=2$ 이므로 $\\sigma=16$ 이에요."
+              }
+            ],
+            "tip": "표본평균은 $\\frac{46.08+53.92}{2}=50$ 이에요. 구간의 양 끝을 더해 2 로 나누면 가운데가 나와요.",
+            "answer": "16",
+            "answerType": "int",
+            "check": "solve(Eq(Rational(196, 100)*s/sqrt(64), (Rational(5392, 100) - Rational(4608, 100))/2), s)[0]"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "표본평균 $\\bar X$ 는 $E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$ 이에요. **표준편차는 √n 으로** 나눠요.",
+          "모집단이 정규분포면 $\\bar X$ 도 정규분포라서, $\\frac{\\sigma}{\\sqrt n}$ 으로 표준화해 표로 확률을 구해요.",
+          "모평균의 신뢰구간은 $\\bar x\\pm1.96\\frac{\\sigma}{\\sqrt n}$ (95%), $\\bar x\\pm2.58\\frac{\\sigma}{\\sqrt n}$ (99%) 이에요. 길이를 $\\frac{1}{k}$ 로 줄이려면 표본은 $k^2$ 배예요.",
+          "수능에서는 확률분포표에서 $V(\\bar X)$ 를 구하거나, 신뢰구간의 끝값·길이에서 $n$ 이나 $\\sigma$ 를 거꾸로 찾는 문제가 나와요."
+        ],
+        "done": "통계적 추정 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "prob-estimation-mean-var",
+    "prob-estimation-prob",
+    "prob-estimation-interval",
+    "prob-estimation-sample-size"
+  ],
+  "problems": [
+    {
+      "q": "평균이 11, 표준편차가 10 인 모집단에서 크기가 100 인 표본을 임의추출할 때, 표본평균을 $\\bar X$ 라 해요. $E(\\bar X^2)$ 을 구하세요.",
+      "choices": null,
+      "answer": "122",
+      "answerType": "fraction",
+      "check": "10**2/Integer(100) + 11**2",
+      "concepts": [
+        "$E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+        "$E(\\bar X^2)=V(\\bar X)+\\{E(\\bar X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$E(\\bar X)=m=11$ 이에요."
+        },
+        {
+          "title": "분산",
+          "body": "$$V(\\bar X)=\\frac{10^2}{100}=1$$"
+        },
+        {
+          "title": "$E(\\bar X^2)$",
+          "body": "$$E(\\bar X^2)=V(\\bar X)+\\{E(\\bar X)\\}^2=1+121=122$$"
+        }
+      ],
+      "tip": "$E(\\bar X^2)$ 은 평균의 제곱보다 분산만큼 커요. $V=E(X^2)-\\{E(X)\\}^2$ 을 거꾸로 써요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prob-estimation-mean-var",
+      "seed": 1000
+    },
+    {
+      "q": "정규분포 $\\mathrm{N}\\left(50,\\ 6^2\\right)$ 을 따르는 모집단에서 크기가 9 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $P(\\bar X\\le 48)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$)",
+      "choices": null,
+      "answer": "1587/10000",
+      "answerTex": "$0.1587$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nsx = 6/sqrt(9)\nans = F((48 - 50)/sx)",
+      "concepts": [
+        "모집단이 $\\mathrm{N}(m,\\ \\sigma^2)$ 이면 $\\bar X$ 는 $\\mathrm{N}\\left(m,\\ \\frac{\\sigma^2}{n}\\right)$",
+        "$Z=\\frac{\\bar X-m}{\\sigma/\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\bar X$ 의 분포",
+          "body": "$\\sigma(\\bar X)=\\frac{6}{\\sqrt{9}}=2$ 이라서 $\\bar X$ 는 $\\mathrm{N}\\left(50,\\ 2^2\\right)$ 을 따라요."
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{48-50}{2}=-1$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\le -1)=0.5-0.3413=0.1587$$"
+        }
+      ],
+      "tip": "모표준편차 6 으로 표준화하면 틀려요. 표본평균은 $\\frac{\\sigma}{\\sqrt n}=2$ 로 나눠요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prob-estimation-prob",
+      "seed": 1001
+    },
+    {
+      "q": "모표준편차가 9 인 정규분포를 따르는 모집단에서 크기가 36 인 표본을 임의추출했더니 표본평균이 129 였어요. 이 결과로 모평균 $m$ 에 대한 신뢰도 95% 의 신뢰구간 $a\\le m\\le b$ 를 구할 때, $b$ 의 값을 구하세요. (단, $P(|Z|\\le 1.96)=0.95$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "6597/50",
+      "answerTex": "$131.94$",
+      "answerType": "fraction",
+      "check": "129 + Rational(196, 100)*9/sqrt(36)",
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$ (99% 는 2.58)"
+      ],
+      "steps": [
+        {
+          "title": "반폭",
+          "body": "$$1.96\\times\\frac{9}{\\sqrt{36}}=1.96\\times \\frac{3}{2}=2.94$$"
+        },
+        {
+          "title": "위 끝",
+          "body": "$$b=129+2.94=131.94$$"
+        }
+      ],
+      "tip": "$\\frac{\\sigma}{n}$ 으로 나누면 틀려요. 표본평균의 표준편차는 $\\frac{\\sigma}{\\sqrt n}$ 이에요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prob-estimation-interval",
+      "seed": 1002
+    },
+    {
+      "q": "모표준편차가 6 인 정규분포를 따르는 모집단에서 크기가 $n$ 인 표본을 임의추출해 모평균에 대한 신뢰도 95% 의 신뢰구간을 구하려고 해요. 신뢰구간의 길이가 1.96 이하가 되게 하는 $n$ 의 최솟값을 구하세요. (단, $P(|Z|\\le 1.96)=0.95$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "144",
+      "answerType": "int",
+      "check": "ceiling(solve(Eq(2*Rational(196, 100)*6/sqrt(n), Rational(196, 100)), n)[0])",
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$ (99% 는 2.58)",
+        "신뢰구간의 길이 $=2\\times(\\text{계수})\\times\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "부등식 세우기",
+          "body": "$$2\\times1.96\\times\\frac{6}{\\sqrt n}\\le 1.96$$"
+        },
+        {
+          "title": "$\\sqrt n$ 구하기",
+          "body": "$$\\sqrt n\\ge\\frac{2\\times1.96\\times6}{1.96}=12$$"
+        },
+        {
+          "title": "제곱하기",
+          "body": "$n\\ge 144$ 이므로 최솟값은 144 예요."
+        }
+      ],
+      "tip": "마지막에 $\\sqrt n$ 을 제곱하는 걸 잊지 마세요. 구간을 좁히려면 표본이 제곱으로 늘어나요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prob-estimation-sample-size",
+      "seed": 1003
+    },
+    {
+      "q": "모집단의 확률변수 $X$ 의 확률분포가 아래와 같아요. 이 모집단에서 크기가 4 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 의 분산 $V(\\bar X)$ 를 구하세요.\n$$\\begin{array}{c|ccc|c} X & 0 & 1 & 2 & \\text{합계}\\\\ \\hline P(X=x) & \\frac{1}{4} & \\frac{1}{4} & \\frac{1}{2} & 1 \\end{array}$$",
+      "choices": null,
+      "answer": "11/64",
+      "answerType": "fraction",
+      "check": "vals = [(0, Rational(1, 4)), (1, Rational(1, 4)), (2, Rational(2, 4))]\nE = sum(v*p for v, p in vals)\nV = sum(v**2*p for v, p in vals) - E**2\nans = V/4",
+      "concepts": [
+        "$E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+        "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "모평균",
+          "body": "$$E(X)=0\\times \\frac{1}{4}+1\\times \\frac{1}{4}+2\\times \\frac{1}{2}=\\frac{5}{4}$$"
+        },
+        {
+          "title": "모분산",
+          "body": "$$E(X^2)=0\\times \\frac{1}{4}+1\\times \\frac{1}{4}+4\\times \\frac{1}{2}=\\frac{9}{4}$$\n$$V(X)=\\frac{9}{4}-\\left(\\frac{5}{4}\\right)^2=\\frac{11}{16}$$"
+        },
+        {
+          "title": "표본평균의 분산",
+          "body": "$$V(\\bar X)=\\frac{V(X)}{4}=\\frac{11}{64}$$"
+        }
+      ],
+      "tip": "표본평균의 분산은 모분산을 표본 크기로 나눠요. 모평균 $E(X)$ 는 그대로 $E(\\bar X)$ 예요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prob-estimation-mean-var",
+      "seed": 1004
+    },
+    {
+      "q": "정규분포 $\\mathrm{N}\\left(100,\\ 36^2\\right)$ 을 따르는 모집단에서 크기가 36 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $P(\\bar X\\le 91)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 1.5)=0.4332$)",
+      "choices": null,
+      "answer": "167/2500",
+      "answerTex": "$0.0668$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nsx = 36/sqrt(36)\nans = F((91 - 100)/sx)",
+      "concepts": [
+        "모집단이 $\\mathrm{N}(m,\\ \\sigma^2)$ 이면 $\\bar X$ 는 $\\mathrm{N}\\left(m,\\ \\frac{\\sigma^2}{n}\\right)$",
+        "$Z=\\frac{\\bar X-m}{\\sigma/\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\bar X$ 의 분포",
+          "body": "$\\sigma(\\bar X)=\\frac{36}{\\sqrt{36}}=6$ 이라서 $\\bar X$ 는 $\\mathrm{N}\\left(100,\\ 6^2\\right)$ 을 따라요."
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{91-100}{6}=-1.5$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\le -1.5)=0.5-0.4332=0.0668$$"
+        }
+      ],
+      "tip": "모표준편차 36 으로 표준화하면 틀려요. 표본평균은 $\\frac{\\sigma}{\\sqrt n}=6$ 으로 나눠요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prob-estimation-prob",
+      "seed": 1005
+    },
+    {
+      "q": "모표준편차가 $\\sigma$ 인 정규분포를 따르는 모집단에서 크기가 25 인 표본을 임의추출해 얻은 표본평균으로 모평균 $m$ 을 추정했더니, 신뢰도 95% 의 신뢰구간이 $188.12\\le m\\le 199.88$ 이었어요. $\\sigma$ 의 값을 구하세요. (단, $P(|Z|\\le 1.96)=0.95$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "solve(Eq(2*Rational(196, 100)*s/sqrt(25), Rational(19988 - 18812, 100)), s)[0]",
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$ (99% 는 2.58)"
+      ],
+      "steps": [
+        {
+          "title": "구간 길이",
+          "body": "$$199.88-188.12=11.76$$"
+        },
+        {
+          "title": "식 세우기",
+          "body": "길이는 $2\\times1.96\\times\\frac{\\sigma}{\\sqrt{25}}$ 이에요.\n$$2\\times1.96\\times\\frac{\\sigma}{5}=11.76$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$\\frac{\\sigma}{5}=3$ 이므로 $\\sigma=15$ 예요."
+        }
+      ],
+      "tip": "구간의 가운데가 표본평균, 길이의 절반이 반폭이에요. 길이를 반폭으로 착각하면 $\\sigma$ 가 2배로 나와요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prob-estimation-interval",
+      "seed": 1006
+    },
+    {
+      "q": "모표준편차가 6 인 정규분포를 따르는 모집단에서 크기가 $n$ 인 표본을 임의추출해 모평균에 대한 신뢰도 99% 의 신뢰구간을 구하려고 해요. 신뢰구간의 길이가 10.32 이하가 되게 하는 $n$ 의 최솟값을 구하세요. (단, $P(|Z|\\le 2.58)=0.99$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "ceiling(solve(Eq(2*Rational(258, 100)*6/sqrt(n), Rational(1032, 100)), n)[0])",
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$ (99% 는 2.58)",
+        "신뢰구간의 길이 $=2\\times(\\text{계수})\\times\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "부등식 세우기",
+          "body": "$$2\\times2.58\\times\\frac{6}{\\sqrt n}\\le 10.32$$"
+        },
+        {
+          "title": "$\\sqrt n$ 구하기",
+          "body": "$$\\sqrt n\\ge\\frac{2\\times2.58\\times6}{10.32}=3$$"
+        },
+        {
+          "title": "제곱하기",
+          "body": "$n\\ge 9$ 이므로 최솟값은 9 예요."
+        }
+      ],
+      "tip": "마지막에 $\\sqrt n$ 을 제곱하는 걸 잊지 마세요. 구간을 좁히려면 표본이 제곱으로 늘어나요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prob-estimation-sample-size",
+      "seed": 1007
+    },
+    {
+      "q": "평균이 9, 표준편차가 16 인 모집단에서 크기가 64 인 표본을 임의추출할 때, 표본평균을 $\\bar X$ 라 해요. $E(\\bar X^2)$ 을 구하세요.",
+      "choices": null,
+      "answer": "85",
+      "answerType": "fraction",
+      "check": "16**2/Integer(64) + 9**2",
+      "concepts": [
+        "$E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+        "$E(\\bar X^2)=V(\\bar X)+\\{E(\\bar X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "평균",
+          "body": "$E(\\bar X)=m=9$ 예요."
+        },
+        {
+          "title": "분산",
+          "body": "$$V(\\bar X)=\\frac{16^2}{64}=4$$"
+        },
+        {
+          "title": "$E(\\bar X^2)$",
+          "body": "$$E(\\bar X^2)=V(\\bar X)+\\{E(\\bar X)\\}^2=4+81=85$$"
+        }
+      ],
+      "tip": "$E(\\bar X^2)$ 은 평균의 제곱보다 분산만큼 커요. $V=E(X^2)-\\{E(X)\\}^2$ 을 거꾸로 써요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prob-estimation-mean-var",
+      "seed": 1008
+    },
+    {
+      "q": "정규분포 $\\mathrm{N}\\left(150,\\ 24^2\\right)$ 을 따르는 모집단에서 크기가 36 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $P(\\bar X\\le 146)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$)",
+      "choices": null,
+      "answer": "1587/10000",
+      "answerTex": "$0.1587$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nsx = 24/sqrt(36)\nans = F((146 - 150)/sx)",
+      "concepts": [
+        "모집단이 $\\mathrm{N}(m,\\ \\sigma^2)$ 이면 $\\bar X$ 는 $\\mathrm{N}\\left(m,\\ \\frac{\\sigma^2}{n}\\right)$",
+        "$Z=\\frac{\\bar X-m}{\\sigma/\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\bar X$ 의 분포",
+          "body": "$\\sigma(\\bar X)=\\frac{24}{\\sqrt{36}}=4$ 이라서 $\\bar X$ 는 $\\mathrm{N}\\left(150,\\ 4^2\\right)$ 을 따라요."
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{146-150}{4}=-1$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\le -1)=0.5-0.3413=0.1587$$"
+        }
+      ],
+      "tip": "모표준편차 24 로 표준화하면 틀려요. 표본평균은 $\\frac{\\sigma}{\\sqrt n}=4$ 로 나눠요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prob-estimation-prob",
+      "seed": 1009
+    },
+    {
+      "q": "모표준편차가 30 인 정규분포를 따르는 모집단에서 크기가 100 인 표본을 임의추출했더니 표본평균이 82 였어요. 이 결과로 모평균 $m$ 에 대한 신뢰도 95% 의 신뢰구간 $a\\le m\\le b$ 를 구할 때, $a$ 의 값을 구하세요. (단, $P(|Z|\\le 1.96)=0.95$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "1903/25",
+      "answerTex": "$76.12$",
+      "answerType": "fraction",
+      "check": "82 - Rational(196, 100)*30/sqrt(100)",
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$ (99% 는 2.58)"
+      ],
+      "steps": [
+        {
+          "title": "반폭",
+          "body": "$$1.96\\times\\frac{30}{\\sqrt{100}}=1.96\\times 3=5.88$$"
+        },
+        {
+          "title": "아래 끝",
+          "body": "$$a=82-5.88=76.12$$"
+        }
+      ],
+      "tip": "$\\frac{\\sigma}{n}$ 으로 나누면 틀려요. 표본평균의 표준편차는 $\\frac{\\sigma}{\\sqrt n}$ 이에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prob-estimation-interval",
+      "seed": 1010
+    },
+    {
+      "q": "모표준편차가 14 인 정규분포를 따르는 모집단에서 크기가 $n$ 인 표본을 임의추출해 모평균에 대한 신뢰도 99% 의 신뢰구간을 구하려고 해요. 신뢰구간의 길이가 6.02 이하가 되게 하는 $n$ 의 최솟값을 구하세요. (단, $P(|Z|\\le 2.58)=0.99$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "144",
+      "answerType": "int",
+      "check": "ceiling(solve(Eq(2*Rational(258, 100)*14/sqrt(n), Rational(602, 100)), n)[0])",
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$ (99% 는 2.58)",
+        "신뢰구간의 길이 $=2\\times(\\text{계수})\\times\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "부등식 세우기",
+          "body": "$$2\\times2.58\\times\\frac{14}{\\sqrt n}\\le 6.02$$"
+        },
+        {
+          "title": "$\\sqrt n$ 구하기",
+          "body": "$$\\sqrt n\\ge\\frac{2\\times2.58\\times14}{6.02}=12$$"
+        },
+        {
+          "title": "제곱하기",
+          "body": "$n\\ge 144$ 이므로 최솟값은 144 예요."
+        }
+      ],
+      "tip": "마지막에 $\\sqrt n$ 을 제곱하는 걸 잊지 마세요. 구간을 좁히려면 표본이 제곱으로 늘어나요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prob-estimation-sample-size",
+      "seed": 1011
+    },
+    {
+      "q": "모집단의 확률변수 $X$ 의 확률분포가 아래와 같아요. 이 모집단에서 크기가 6 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 의 분산 $V(\\bar X)$ 를 구하세요.\n$$\\begin{array}{c|ccc|c} X & 1 & 2 & 3 & \\text{합계}\\\\ \\hline P(X=x) & \\frac{1}{4} & \\frac{1}{4} & \\frac{1}{2} & 1 \\end{array}$$",
+      "choices": null,
+      "answer": "11/96",
+      "answerType": "fraction",
+      "check": "vals = [(1, Rational(1, 4)), (2, Rational(1, 4)), (3, Rational(2, 4))]\nE = sum(v*p for v, p in vals)\nV = sum(v**2*p for v, p in vals) - E**2\nans = V/6",
+      "concepts": [
+        "$E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+        "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "모평균",
+          "body": "$$E(X)=1\\times \\frac{1}{4}+2\\times \\frac{1}{4}+3\\times \\frac{1}{2}=\\frac{9}{4}$$"
+        },
+        {
+          "title": "모분산",
+          "body": "$$E(X^2)=1\\times \\frac{1}{4}+4\\times \\frac{1}{4}+9\\times \\frac{1}{2}=\\frac{23}{4}$$\n$$V(X)=\\frac{23}{4}-\\left(\\frac{9}{4}\\right)^2=\\frac{11}{16}$$"
+        },
+        {
+          "title": "표본평균의 분산",
+          "body": "$$V(\\bar X)=\\frac{V(X)}{6}=\\frac{11}{96}$$"
+        }
+      ],
+      "tip": "표본평균의 분산은 모분산을 표본 크기로 나눠요. 모평균 $E(X)$ 는 그대로 $E(\\bar X)$ 예요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prob-estimation-mean-var",
+      "seed": 1012
+    },
+    {
+      "q": "정규분포 $\\mathrm{N}\\left(30,\\ 18^2\\right)$ 을 따르는 모집단에서 크기가 9 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $P(\\bar X\\ge 42)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "57/2500",
+      "answerTex": "$0.0228$",
+      "answerType": "fraction",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000), Rational(2, 2): Rational(3413, 10000), Rational(3, 2): Rational(4332, 10000), Rational(4, 2): Rational(4772, 10000)}\ndef F(z):\n    return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))\nsx = 18/sqrt(9)\nans = 1 - F((42 - 30)/sx)",
+      "concepts": [
+        "모집단이 $\\mathrm{N}(m,\\ \\sigma^2)$ 이면 $\\bar X$ 는 $\\mathrm{N}\\left(m,\\ \\frac{\\sigma^2}{n}\\right)$",
+        "$Z=\\frac{\\bar X-m}{\\sigma/\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\bar X$ 의 분포",
+          "body": "$\\sigma(\\bar X)=\\frac{18}{\\sqrt{9}}=6$ 이라서 $\\bar X$ 는 $\\mathrm{N}\\left(30,\\ 6^2\\right)$ 을 따라요."
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{42-30}{6}=2$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\ge 2)=0.5-0.4772=0.0228$$"
+        }
+      ],
+      "tip": "모표준편차 18 로 표준화하면 틀려요. 표본평균은 $\\frac{\\sigma}{\\sqrt n}=6$ 으로 나눠요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prob-estimation-prob",
+      "seed": 1013
+    },
+    {
+      "q": "모표준편차가 30 인 정규분포를 따르는 모집단에서 크기가 100 인 표본을 임의추출했더니 표본평균이 187 이었어요. 이 결과로 모평균 $m$ 에 대한 신뢰도 95% 의 신뢰구간 $a\\le m\\le b$ 를 구할 때, $b-a$ 의 값을 구하세요. (단, $P(|Z|\\le 1.96)=0.95$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "294/25",
+      "answerTex": "$11.76$",
+      "answerType": "fraction",
+      "check": "2*Rational(196, 100)*30/sqrt(100)",
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$ (99% 는 2.58)"
+      ],
+      "steps": [
+        {
+          "title": "반폭",
+          "body": "$$1.96\\times\\frac{30}{\\sqrt{100}}=1.96\\times 3=5.88$$"
+        },
+        {
+          "title": "길이",
+          "body": "$$b-a=2\\times5.88=11.76$$"
+        }
+      ],
+      "tip": "길이는 표본평균과 상관없이 $2\\times(\\text{계수})\\times\\frac{\\sigma}{\\sqrt n}$ 이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prob-estimation-interval",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "모집단의 확률변수 $X$ 의 확률분포가 아래와 같아요. 이 모집단에서 크기가 8 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 의 분산을 구하세요.\n$$\\begin{array}{c|ccc|c} X & 0 & 2 & 4 & \\text{합계}\\\\ \\hline P(X=x) & \\frac{1}{4} & \\frac{1}{2} & \\frac{1}{4} & 1 \\end{array}$$",
+      "choices": null,
+      "answer": "1/4",
+      "answerType": "fraction",
+      "check": "vals = [(0, Rational(1, 4)), (2, Rational(1, 2)), (4, Rational(1, 4))]\nE = sum(v*p for v, p in vals)\nV = sum(v**2*p for v, p in vals) - E**2\nans = V/8",
+      "concepts": [
+        "$V(\\bar X)=\\frac{\\sigma^2}{n}$",
+        "$V(X)=E(X^2)-\\{E(X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "모평균",
+          "body": "$$E(X)=0+2\\times\\frac{1}{2}+4\\times\\frac{1}{4}=2$$"
+        },
+        {
+          "title": "모분산",
+          "body": "$$E(X^2)=0+4\\times\\frac{1}{2}+16\\times\\frac{1}{4}=6,\\quad V(X)=6-2^2=2$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$V(\\bar X)=\\frac{2}{8}=\\frac{1}{4}$$"
+        }
+      ],
+      "tip": "표가 대칭이면 모평균은 가운데 값이에요. 계산 전에 어림해 두면 검산이 쉬워요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "평균이 10, 표준편차가 6 인 모집단에서 크기가 9 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $E(\\bar X^2)$ 을 구하세요.",
+      "choices": null,
+      "answer": "104",
+      "answerType": "int",
+      "check": "6**2/Integer(9) + 10**2",
+      "concepts": [
+        "$E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$",
+        "$E(\\bar X^2)=V(\\bar X)+\\{E(\\bar X)\\}^2$"
+      ],
+      "steps": [
+        {
+          "title": "평균과 분산",
+          "body": "$E(\\bar X)=10$, $V(\\bar X)=\\frac{36}{9}=4$ 예요."
+        },
+        {
+          "title": "$E(\\bar X^2)$",
+          "body": "$$E(\\bar X^2)=4+10^2=104$$"
+        }
+      ],
+      "tip": "$E(\\bar X^2)$ 은 $\\{E(\\bar X)\\}^2=100$ 보다 분산만큼 커요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "정규분포 $\\mathrm{N}(50,\\ 12^2)$ 을 따르는 모집단에서 크기가 36 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $P(\\bar X\\le 52)$ 를 구하세요. (표준정규분포표: $P(0\\le Z\\le 1)=0.3413$)",
+      "choices": null,
+      "answer": "8413/10000",
+      "answerTex": "$0.8413$",
+      "answerType": "fraction",
+      "check": "T = {Integer(1): Rational(3413, 10000)}\nsx = 12/sqrt(36)\nans = Rational(1, 2) + T[(52 - 50)/sx]",
+      "concepts": [
+        "$\\bar X\\sim\\mathrm{N}\\left(m,\\ \\frac{\\sigma^2}{n}\\right)$",
+        "$Z=\\frac{\\bar X-m}{\\sigma/\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\bar X$ 의 표준편차",
+          "body": "$$\\sigma(\\bar X)=\\frac{12}{\\sqrt{36}}=2$$"
+        },
+        {
+          "title": "표준화",
+          "body": "$$\\frac{52-50}{2}=1$$"
+        },
+        {
+          "title": "넓이 구하기",
+          "body": "$$P(Z\\le1)=0.5+0.3413=0.8413$$"
+        }
+      ],
+      "tip": "한 명의 점수라면 $Z=\\frac{2}{12}$ 로 평균 근처지만, 36명의 평균에서는 표준편차 하나만큼이나 떨어진 값이에요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "정규분포 $\\mathrm{N}(m,\\ 10^2)$ 을 따르는 모집단에서 크기가 25 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $P(\\bar X\\ge 54)=0.0228$ 이에요. $m$ 의 값을 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "50",
+      "answerType": "int",
+      "check": "solve(Eq((54 - m)/(10/sqrt(25)), 2), m)[0]",
+      "concepts": [
+        "$\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+        "$P(Z\\ge z)=0.5-P(0\\le Z\\le z)$"
+      ],
+      "steps": [
+        {
+          "title": "$\\bar X$ 의 표준편차",
+          "body": "$$\\sigma(\\bar X)=\\frac{10}{\\sqrt{25}}=2$$"
+        },
+        {
+          "title": "표에서 $z$",
+          "body": "$0.5-0.4772=0.0228$ 이라서 54 는 $Z=2$ 에 해당해요."
+        },
+        {
+          "title": "식 풀기",
+          "body": "$$\\frac{54-m}{2}=2,\\quad m=50$$"
+        }
+      ],
+      "tip": "모표준편차 10 으로 나누면 $m=34$ 가 나와요. 표본평균에는 늘 $\\frac{\\sigma}{\\sqrt n}$ 을 써요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "모표준편차가 4 인 정규분포를 따르는 모집단에서 크기가 $n$ 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 와 모평균 $m$ 의 차가 1 이하일 확률 $P(|\\bar X-m|\\le 1)$ 이 $0.9544$ 이상이 되게 하는 $n$ 의 최솟값을 구하세요. (표준정규분포표: $P(0\\le Z\\le 2)=0.4772$)",
+      "choices": null,
+      "answer": "64",
+      "answerType": "int",
+      "check": "ceiling(solve(Eq(1/(4/sqrt(n)), 2), n)[0])",
+      "concepts": [
+        "$\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+        "$P(|Z|\\le 2)=2\\times0.4772=0.9544$"
+      ],
+      "steps": [
+        {
+          "title": "표준화",
+          "body": "$$P(|\\bar X-m|\\le1)=P\\left(|Z|\\le\\frac{1}{4/\\sqrt n}\\right)=P\\left(|Z|\\le\\frac{\\sqrt n}{4}\\right)$$"
+        },
+        {
+          "title": "조건",
+          "body": "$P(|Z|\\le2)=0.9544$ 이므로 $\\frac{\\sqrt n}{4}\\ge2$ 여야 해요."
+        },
+        {
+          "title": "풀기",
+          "body": "$\\sqrt n\\ge8$ 이므로 $n\\ge64$, 최솟값은 64 예요."
+        }
+      ],
+      "tip": "$|\\bar X-m|\\le1$ 은 양쪽을 합친 넓이라서 표의 값을 2배 해요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "모표준편차가 8 인 정규분포를 따르는 모집단에서 크기가 64 인 표본을 임의추출했더니 표본평균이 100 이었어요. 모평균 $m$ 에 대한 신뢰도 95% 의 신뢰구간이 $a\\le m\\le b$ 일 때, $a$ 의 값을 구하세요. (단, $P(|Z|\\le1.96)=0.95$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "2451/25",
+      "answerTex": "$98.04$",
+      "answerType": "fraction",
+      "check": "100 - Rational(196, 100)*8/sqrt(64)",
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "반폭",
+          "body": "$$1.96\\times\\frac{8}{\\sqrt{64}}=1.96$$"
+        },
+        {
+          "title": "아래 끝",
+          "body": "$$a=100-1.96=98.04$$"
+        }
+      ],
+      "tip": "$\\frac{\\sigma}{\\sqrt n}=1$ 이면 반폭이 계수 그대로예요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "모표준편차가 12 인 정규분포를 따르는 모집단에서 크기가 36 인 표본을 임의추출했더니 표본평균이 50 이었어요. 모평균 $m$ 에 대한 신뢰도 99% 의 신뢰구간이 $a\\le m\\le b$ 일 때, $b$ 의 값을 구하세요. (단, $P(|Z|\\le2.58)=0.99$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "1379/25",
+      "answerTex": "$55.16$",
+      "answerType": "fraction",
+      "check": "50 + Rational(258, 100)*12/sqrt(36)",
+      "concepts": [
+        "신뢰도 99%: $\\bar x-2.58\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+2.58\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "반폭",
+          "body": "$$2.58\\times\\frac{12}{\\sqrt{36}}=2.58\\times2=5.16$$"
+        },
+        {
+          "title": "위 끝",
+          "body": "$$b=50+5.16=55.16$$"
+        }
+      ],
+      "tip": "신뢰도 99% 는 계수 2.58 을 써요. 95% 의 1.96 과 헷갈리지 마세요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "모표준편차가 $\\sigma$ 인 정규분포를 따르는 모집단에서 크기가 16 인 표본을 임의추출해 얻은 모평균에 대한 신뢰도 95% 의 신뢰구간의 길이가 3.92 였어요. $\\sigma$ 의 값을 구하세요. (단, $P(|Z|\\le1.96)=0.95$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "solve(Eq(2*Rational(196, 100)*s/sqrt(16), Rational(392, 100)), s)[0]",
+      "concepts": [
+        "신뢰구간의 길이 $=2\\times1.96\\times\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "$$2\\times1.96\\times\\frac{\\sigma}{4}=3.92$$"
+        },
+        {
+          "title": "풀기",
+          "body": "$0.98\\sigma=3.92$ 이므로 $\\sigma=4$ 예요."
+        }
+      ],
+      "tip": "길이에는 2 가 곱해져 있어요. 반폭으로 착각하면 $\\sigma=8$ 이 나와요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "모표준편차가 10 인 정규분포를 따르는 모집단에서 크기가 100 인 표본을 임의추출했어요. 이 표본으로 구한 모평균에 대한 신뢰도 99% 의 신뢰구간의 길이와 신뢰도 95% 의 신뢰구간의 길이의 차를 구하세요. (단, $P(|Z|\\le1.96)=0.95$, $P(|Z|\\le2.58)=0.99$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "31/25",
+      "answerTex": "$1.24$",
+      "answerType": "fraction",
+      "check": "2*Rational(258, 100)*10/sqrt(100) - 2*Rational(196, 100)*10/sqrt(100)",
+      "concepts": [
+        "신뢰구간의 길이 $=2\\times(\\text{계수})\\times\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\frac{\\sigma}{\\sqrt n}$",
+          "body": "$$\\frac{10}{\\sqrt{100}}=1$$"
+        },
+        {
+          "title": "두 길이",
+          "body": "99% 는 $2\\times2.58=5.16$, 95% 는 $2\\times1.96=3.92$ 예요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$5.16-3.92=1.24$$"
+        }
+      ],
+      "tip": "같은 표본이면 신뢰도를 높일수록 구간이 넓어져요. 더 확실히 말하려면 범위를 넓게 잡아야 해요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "크기가 16 인 표본으로 구한 모평균의 신뢰구간이 있어요. 같은 모집단에서 같은 신뢰도로 구간의 길이를 $\\frac{1}{3}$ 로 줄이려면 표본의 크기를 얼마로 해야 하는지 구하세요.",
+      "choices": null,
+      "answer": "144",
+      "answerType": "int",
+      "check": "solve(Eq(sqrt(16)/sqrt(n), Rational(1, 3)), n)[0]",
+      "concepts": [
+        "신뢰구간의 길이는 $\\sqrt n$ 에 반비례"
+      ],
+      "steps": [
+        {
+          "title": "비례 관계",
+          "body": "길이는 $\\frac{1}{\\sqrt n}$ 에 비례하니 $\\sqrt n$ 이 3배가 되어야 해요."
+        },
+        {
+          "title": "구하기",
+          "body": "$\\sqrt n=3\\times\\sqrt{16}=12$ 이므로 $n=144$ 예요."
+        }
+      ],
+      "tip": "길이를 $\\frac{1}{3}$ 로 하려면 표본은 3배가 아니라 $3^2=9$ 배예요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "숫자 1 이 적힌 공 1개, 숫자 2 가 적힌 공 2개, 숫자 3 이 적힌 공 1개가 들어 있는 주머니가 있어요. 이 주머니에서 공 한 개를 꺼내 숫자를 확인하고 다시 넣는 시행을 2번 할 때, 꺼낸 공에 적힌 수의 평균을 $\\bar X$ 라 해요. $P(\\bar X=2)$ 의 값은?",
+      "choices": [
+        "$\\frac{1}{4}$",
+        "$\\frac{5}{16}$",
+        "$\\frac{3}{8}$",
+        "$\\frac{7}{16}$",
+        "$\\frac{1}{2}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "balls = [1, 2, 2, 3]\nans = Rational(sum(1 for a in balls for b in balls if a + b == 4), len(balls)**2)",
+      "choiceChecks": [
+        "Rational(1, 4)",
+        "Rational(5, 16)",
+        "Rational(3, 8)",
+        "Rational(7, 16)",
+        "Rational(1, 2)"
+      ],
+      "concepts": [
+        "복원추출이면 매번 같은 확률분포",
+        "$\\bar X=2$ 는 두 수의 합이 4"
+      ],
+      "steps": [
+        {
+          "title": "합으로 바꾸기",
+          "body": "평균이 2 이려면 두 수의 합이 4 예요. (1, 3), (3, 1), (2, 2) 가 있어요."
+        },
+        {
+          "title": "각 확률",
+          "body": "$$P(1,3)=P(3,1)=\\frac{1}{4}\\times\\frac{1}{4}=\\frac{1}{16},\\quad P(2,2)=\\frac{2}{4}\\times\\frac{2}{4}=\\frac{1}{4}$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{1}{16}+\\frac{1}{16}+\\frac{1}{4}=\\frac{3}{8}$$"
+        }
+      ],
+      "tip": "(1, 3) 과 (3, 1) 은 다른 경우예요. 하나로 세면 $\\frac{5}{16}$ 이 나와요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "모집단의 확률변수 $X$ 의 확률분포가 아래와 같아요. 이 모집단에서 크기가 11 인 표본을 임의추출할 때, 표본평균 $\\bar X$ 에 대하여 $E(\\bar X)=\\frac{3}{2}$ 이에요. $V(\\bar X)$ 의 값은?\n$$\\begin{array}{c|ccc|c} X & 0 & 2 & 4 & \\text{합계}\\\\ \\hline P(X=x) & \\frac{1}{2} & a & b & 1 \\end{array}$$",
+      "choices": [
+        "$\\frac{1}{8}$",
+        "$\\frac{1}{4}$",
+        "$\\frac{1}{2}$",
+        "$\\frac{3}{4}$",
+        "$1$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "sol = solve([Eq(Rational(1, 2) + a + b, 1), Eq(2*a + 4*b, Rational(3, 2))], [a, b])\nE = Rational(3, 2)\nV = 4*sol[a] + 16*sol[b] - E**2\nans = V/11",
+      "choiceChecks": [
+        "Rational(1, 8)",
+        "Rational(1, 4)",
+        "Rational(1, 2)",
+        "Rational(3, 4)",
+        "Integer(1)"
+      ],
+      "concepts": [
+        "$E(\\bar X)=E(X)$, $V(\\bar X)=\\frac{V(X)}{n}$",
+        "확률의 합은 1"
+      ],
+      "steps": [
+        {
+          "title": "두 식",
+          "body": "$\\frac{1}{2}+a+b=1$ 이고, $E(X)=E(\\bar X)$ 라서 $2a+4b=\\frac{3}{2}$ 이에요."
+        },
+        {
+          "title": "풀기",
+          "body": "$a+b=\\frac{1}{2}$, $a+2b=\\frac{3}{4}$ 에서 $b=\\frac{1}{4}$, $a=\\frac{1}{4}$ 예요."
+        },
+        {
+          "title": "모분산",
+          "body": "$$E(X^2)=4\\times\\frac{1}{4}+16\\times\\frac{1}{4}=5,\\quad V(X)=5-\\left(\\frac{3}{2}\\right)^2=\\frac{11}{4}$$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$V(\\bar X)=\\frac{11}{4}\\div11=\\frac{1}{4}$$"
+        }
+      ],
+      "tip": "$E(\\bar X)$ 가 주어지면 그대로 모평균이에요. 표본 크기로 나누는 건 분산뿐이에요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "모표준편차가 5 인 정규분포를 따르는 모집단에서 크기가 25 인 표본을 임의추출해 얻은 표본평균 $\\bar x$ 로 모평균 $m$ 에 대한 신뢰도 95% 의 신뢰구간을 구했더니 $a\\le m\\le 81.96$ 이었어요. $a$ 의 값은? (단, $P(|Z|\\le1.96)=0.95$ 로 계산해요.)",
+      "choices": [
+        "$76.08$",
+        "$77.04$",
+        "$78.04$",
+        "$79.02$",
+        "$80.04$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "xb = solve(Eq(x + Rational(196, 100)*5/sqrt(25), Rational(8196, 100)), x)[0]\nans = xb - Rational(196, 100)*5/sqrt(25)",
+      "choiceChecks": [
+        "Rational(7608, 100)",
+        "Rational(7704, 100)",
+        "Rational(7804, 100)",
+        "Rational(7902, 100)",
+        "Rational(8004, 100)"
+      ],
+      "concepts": [
+        "신뢰도 95%: $\\bar x-1.96\\frac{\\sigma}{\\sqrt n}\\le m\\le\\bar x+1.96\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "반폭",
+          "body": "$$1.96\\times\\frac{5}{\\sqrt{25}}=1.96$$"
+        },
+        {
+          "title": "표본평균",
+          "body": "$\\bar x+1.96=81.96$ 이므로 $\\bar x=80$ 이에요."
+        },
+        {
+          "title": "아래 끝",
+          "body": "$$a=80-1.96=78.04$$"
+        }
+      ],
+      "tip": "위 끝에서 반폭을 빼면 가운데(표본평균), 한 번 더 빼면 아래 끝이에요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "모표준편차가 8 인 정규분포를 따르는 모집단이 있어요. 이 모집단에서 크기가 $n$ 인 표본으로 구한 모평균에 대한 신뢰도 99% 의 신뢰구간의 길이를 $l_1$, 크기가 $4n$ 인 표본으로 구한 신뢰도 95% 의 신뢰구간의 길이를 $l_2$ 라 할 때, $l_1-l_2=3.2$ 예요. $n$ 의 값을 구하세요. (단, $P(|Z|\\le1.96)=0.95$, $P(|Z|\\le2.58)=0.99$ 로 계산하세요.)",
+      "choices": null,
+      "answer": "64",
+      "answerType": "int",
+      "check": "solve(Eq(2*Rational(258, 100)*8/sqrt(n) - 2*Rational(196, 100)*8/sqrt(4*n), Rational(32, 10)), n)[0]",
+      "concepts": [
+        "신뢰구간의 길이 $=2\\times(\\text{계수})\\times\\frac{\\sigma}{\\sqrt n}$"
+      ],
+      "steps": [
+        {
+          "title": "$l_1$",
+          "body": "$$l_1=2\\times2.58\\times\\frac{8}{\\sqrt n}=\\frac{41.28}{\\sqrt n}$$"
+        },
+        {
+          "title": "$l_2$",
+          "body": "$\\sqrt{4n}=2\\sqrt n$ 이라서\n$$l_2=2\\times1.96\\times\\frac{8}{2\\sqrt n}=\\frac{15.68}{\\sqrt n}$$"
+        },
+        {
+          "title": "식 풀기",
+          "body": "$$\\frac{25.6}{\\sqrt n}=3.2,\\quad \\sqrt n=8,\\quad n=64$$"
+        }
+      ],
+      "tip": "표본이 $4n$ 이면 $\\sqrt{4n}=2\\sqrt n$ 이에요. 길이는 절반이 돼요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "정규분포 $\\mathrm{N}(m,\\ 4^2)$ 을 따르는 모집단에서 임의로 뽑은 하나의 값을 $X$, 크기가 4 인 표본의 표본평균을 $\\bar X$ 라 해요. $P(\\bar X\\le 50)=P(X\\ge 56)$ 일 때, $P(\\bar X\\ge 53)$ 의 값은?\n\n$P(0\\le Z\\le 0.5)=0.1915$, $P(0\\le Z\\le 1)=0.3413$, $P(0\\le Z\\le 1.5)=0.4332$",
+      "choices": [
+        "$0.0668$",
+        "$0.1587$",
+        "$0.3085$",
+        "$0.6915$",
+        "$0.8413$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "T = {Rational(1, 2): Rational(1915, 10000)}\nmm = solve(Eq((50 - m)/(4/sqrt(4)), -(56 - m)/4), m)[0]\nans = Rational(1, 2) - T[(53 - mm)/(4/sqrt(4))]",
+      "choiceChecks": [
+        "Rational(668, 10000)",
+        "Rational(1587, 10000)",
+        "Rational(3085, 10000)",
+        "Rational(6915, 10000)",
+        "Rational(8413, 10000)"
+      ],
+      "concepts": [
+        "$\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$",
+        "$P(Z\\le a)=P(Z\\ge -a)$ (대칭)"
+      ],
+      "steps": [
+        {
+          "title": "두 표준편차",
+          "body": "$\\sigma(X)=4$, $\\sigma(\\bar X)=\\frac{4}{\\sqrt4}=2$ 예요."
+        },
+        {
+          "title": "대칭으로 맞추기",
+          "body": "$P\\left(Z\\le\\frac{50-m}{2}\\right)=P\\left(Z\\ge\\frac{56-m}{4}\\right)$ 이므로 $\\frac{50-m}{2}=-\\frac{56-m}{4}$ 이에요."
+        },
+        {
+          "title": "평균",
+          "body": "양변에 4 를 곱하면 $100-2m=-56+m$ 이므로 $m=52$ 예요."
+        },
+        {
+          "title": "구하는 확률",
+          "body": "$$P(\\bar X\\ge53)=P\\left(Z\\ge\\frac{53-52}{2}\\right)=0.5-0.1915=0.3085$$"
+        }
+      ],
+      "tip": "$X$ 와 $\\bar X$ 는 평균은 같고 표준편차만 달라요. 둘을 각자의 표준편차로 표준화해요."
+    }
+  ]
+}
