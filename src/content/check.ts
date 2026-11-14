@@ -111,9 +111,29 @@ export type CheckItem =
   | PlotCheck;
 
 const TYPES = new Set(['int', 'fraction', 'expr', 'choice']);
-/** 계산 없이 숫자만 적은 검산식 (예: "8", "5/3", "Rational(5,3)") */
-export const LITERAL =
-  /^\s*(-?\d+(\s*\/\s*\d+)?|Rational\(\s*-?\d+\s*,\s*\d+\s*\)|Integer\(\s*-?\d+\s*\))\s*$/;
+/** 숫자만 적은 식: 정수 · a/b · Rational(a,b) · Integer(a). 분자·분모를 꺼낸다 */
+const NUM_ONLY =
+  /^\s*(?:(-?\d+)(?:\s*\/\s*(\d+))?|Rational\(\s*(-?\d+)\s*,\s*(\d+)\s*\)|Integer\(\s*(-?\d+)\s*\))\s*$/;
+const gcdN = (a: bigint, b: bigint): bigint => (b === 0n ? (a < 0n ? -a : a) : gcdN(b, a % b));
+
+/**
+ * 계산 없이 답을 그대로 적은 검산식 (예: "8", "5/3", "Rational(5,3)", "8/1").
+ * 약분이 남은 분수("Rational(360,8)", "20/8")는 계산으로 본다 — 생성기가 Rational(360, n) 에 n 을 넣은
+ * 꼴이라 답(45)을 베낀 것이 아니다(요청 24·113). 정규식이 아니라 test 를 가진 객체인 까닭: 약분 여부는
+ * 정규식으로 못 가려서. 부르는 곳(LITERAL.test)은 그대로 둔다.
+ */
+export const LITERAL = {
+  test(s: string): boolean {
+    const m = s.match(NUM_ONLY);
+    if (!m) return false;
+    const n = m[1] ?? m[3] ?? m[5];
+    const d = m[2] ?? m[4];
+    if (d === undefined) return true;
+    const dn = BigInt(d);
+    if (dn === 0n) return false;
+    return gcdN(BigInt(n as string), dn) === 1n;
+  },
+};
 
 export function texOk(where: string, s: string | undefined | null, errors: string[], emph = false) {
   if (s == null) return;
