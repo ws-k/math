@@ -84,3 +84,8 @@
 - 이항분포 막대그래프 + n·p 슬라이더 — prob-binomial
 - numberLine 점 무게(지금 최대 12점) — prob-discrete
 - table: 단위 칸 비우기, 분수 칸 검산(9.0≠9), 칸 직접 입력 — prob-discrete
+- 원탁 부품(사람 끌어 앉히고 원판 돌리기) — prob-permutation
+- count: 같은 물건 여러 개(빨강 2·파랑 3), 중복조합 모드, 공·칸막이 줄 그림(●●|●|), pick 조건 맞는 경우 강조 — prob-permutation, prob-combination-binomial, prob-probability
+- spot: 중복조합(H) 기호 — prob-combination-binomial
+- gen-content 시드 배치: 가까운 시드(1000·1008)가 비슷한 문제를 냄 — prob 단원
+- 글 속 숫자 검사가 "고1"·"함정 1"·물건 이름(빨1)까지 셈 — 검사 다듬기
