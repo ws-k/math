@@ -1,7 +1,9 @@
 // 도형판 화면. 상태 → 그릴 것은 shape.ts(shDraw)가 정하고 여기서는 그리기만 한다.
 // 꼭짓점·잘라 낸 조각을 끄는 동안은 SVG 직접 고치기, 놓을 때 한 번 상태를 바꾼다.
 // 탭 대체: 고른 점을 화살표 버튼으로 한 칸씩, 잘라 옮기기는 '조각 옮기기' 버튼.
+// 목표(goal)는 놓을 때(commit)만 판정한다 — 끄는 도중 지나간 자리는 세지 않는다(원칙 P3).
 import { useRef, useState } from 'react';
+import { type GoalProgress, goalLine, goalRelease, goalStart } from '../goal.ts';
 import { LRich } from '../ui.tsx';
 import { DragHandle } from './DragHandle.tsx';
 import type { WidgetProps } from './index.tsx';
@@ -13,6 +15,8 @@ import {
   shDrag,
   shDraw,
   shGeom,
+  shGoalHits,
+  shGoalNeed,
   shInit,
   shKey,
   W,
@@ -26,9 +30,22 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
   const done = useRef(false);
   const root = useRef<HTMLDivElement>(null);
   const draw = (x: ShState) => shDraw(p, x);
+  const [prog, setProg] = useState<GoalProgress>(goalStart);
+  const progRef = useRef(prog);
+  const need = shGoalNeed(p);
   const commit = (n: ShState) => {
     setS(n);
-    // 잘라 옮기기는 조각이 제자리에 가야, 나머지는 한 번 만져 보면 목표를 이룬 것으로 본다
+    if (p.goal) {
+      const g = goalRelease(progRef.current, shGoalHits(p, n), need);
+      progRef.current = g;
+      setProg(g);
+      if (g.done && !done.current) {
+        done.current = true;
+        onDone();
+      }
+      return n;
+    }
+    // 잘라 옮기기는 조각이 제자리에 가야, 목표가 없으면 한 번 만져 보면 목표를 이룬 것으로 본다
     if (!done.current && (p.cut ? shDone(p, n) : true)) {
       done.current = true;
       onDone();
@@ -126,6 +143,7 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
           </span>
         ))}
       </div>
+      {p.goal && <GoalLine p={p} prog={prog} need={need} />}
       <div className="wgt-ctl">
         {sel &&
           free &&
@@ -172,5 +190,18 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
         )}
       </div>
     </div>
+  );
+}
+
+/** 목표 줄: 진행("3곳 중 2곳")과 완료·힌트 글. 처음 안내는 위쪽 note 가 맡는다 */
+function GoalLine({ p, prog, need }: { p: ShapeParams; prog: GoalProgress; need: number }) {
+  const line = goalLine(prog, need, { done: p.done, hint: p.goal?.hint });
+  return (
+    <>
+      {line.progress && <p className="gprog num">{line.progress}</p>}
+      <div className={`toast ${line.cls}`} aria-live="polite">
+        {line.text && <LRich inline src={line.text} />}
+      </div>
+    </>
   );
 }

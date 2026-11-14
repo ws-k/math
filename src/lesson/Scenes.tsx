@@ -158,13 +158,23 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
 }
 
 function Explore({ s, env }: { s: ExploreScene; env: SceneEnv }) {
+  // afterGoal 이면 결론 글은 목표를 이룬 뒤에(이어 보기로 이미 끝낸 장면이면 바로)
+  const [reached, setReached] = useState(false);
+  const showAfter = !s.afterGoal || reached || env.done.includes(s.id);
   return (
     <>
       <Head s={s} />
       <div className="card">
-        <Widget spec={s.widget} onDone={() => env.onDone(s.id)} onMiss={() => {}} />
+        <Widget
+          spec={s.widget}
+          onDone={() => {
+            setReached(true);
+            env.onDone(s.id);
+          }}
+          onMiss={() => {}}
+        />
       </div>
-      <After s={s} />
+      {showAfter && <After s={s} />}
     </>
   );
 }

@@ -2,7 +2,8 @@
 // 실제 코드는 coord/ 폴더에 객체 종류별로 나뉘어 있다 — 그림 객체가 늘어날 때 종류 하나가 파일 하나가 되게.
 //   types(타입) · common(형식 검사 도우미) · frame(px 변환·눈금) ← 아래층
 //   curve · point · line(할선·접선) · readout ← 객체 종류마다 형식 검사·그리기·검산 몫
-//   kinds(종류 표) · task(과제) · model(상태·손 조작) · parse · draw · checks ← 나눠 주는 곳
+//   kinds(종류 표) · task(과제) · goal(목표) · model(상태·손 조작) · parse · draw · checks ← 나눠 주는 곳
+//   slider(슬라이더) · poly(다항식·실근 개수) ← 목표가 값을 분수로 정확히 견주려고 쓰는 도우미
 //
 // 매개변수는 "이름 붙은 객체 + 참조" 목록이다:
 //   {id:'f', curve:'x**2'} · {id:'P', point:{on:'f', x:1}} · {secant:['P','Q']} ·
@@ -10,6 +11,7 @@
 import { compareAnswer } from '../../lib/answer.ts';
 import { parseSym } from '../sym.ts';
 import { coordChecks } from './coord/checks.ts';
+import { goalTexts } from './coord/goal.ts';
 import { kindOf } from './coord/kinds.ts';
 import { parseCoord } from './coord/parse.ts';
 import type { CoordParams } from './coord/types.ts';
@@ -29,11 +31,11 @@ export {
   toPx,
   toWorld,
 } from './coord/frame.ts';
+export { goalHits, goalMet, goalNeed } from './coord/goal.ts';
 export {
   addUser,
   dragPoint,
   freeSpot,
-  goalMet,
   gridAt,
   initial,
   keyMove,
@@ -42,7 +44,9 @@ export {
 } from './coord/model.ts';
 export { parseCoord } from './coord/parse.ts';
 export { pointXY } from './coord/point.ts';
-export { readout } from './coord/readout.ts';
+export { polyOf, rootCount } from './coord/poly.ts';
+export { readout, readoutVal } from './coord/readout.ts';
+export { sliderSnap } from './coord/slider.ts';
 export { grade, lineTarget, userSlope } from './coord/task.ts';
 export type {
   Axis,
@@ -54,10 +58,12 @@ export type {
   Drawing,
   Frame,
   Goal,
+  GoalIs,
   Grid,
   HandleItem,
   Item,
   Mode,
+  NewGoal,
   PointObj,
   ReadoutExpr,
   ReadoutObj,
@@ -82,8 +88,11 @@ export const coordDef: WidgetDef<CoordParams> = {
     if (p.done) out.push(p.done);
     for (const s of p.sliders) out.push(s.label);
     for (const o of p.objects) out.push(...(kindOf(o).texts?.(o) ?? []));
+    out.push(...goalTexts(p));
     return out;
   },
+  // 결론 글을 목표 뒤로 미룰 수 있는 부품인가(장면 afterGoal). 과제 모드는 '확인하기'가 목표다
+  hasGoal: (p) => p.goal !== undefined || p.task !== undefined,
 };
 
 /** 범례 등에서 식 글자를 다시 읽을 때 */

@@ -3,8 +3,24 @@
 // 길이·각·넓이는 앱이 부동소수로 계산해 digits 자리로 반올림해 보이고, checks 가 같은 점에서 sympy 로
 // 정확한 값을 계산해 반올림이 맞는지 대조한다(approx). 격자점만 쓰는 넓이는 분수로 정확히 대조한다.
 // 잘라 옮기기(cut): 조각(piece)을 끌어 by 만큼 옮기면 다른 모양(result)이 되고 넓이는 그대로임을 보인다.
+// 목표(goal, 조각 ②): 측정값 하나를 목표값으로("넓이를 20으로") 또는 여러 값에 한 번씩("60°·90°·120°").
+// 공통 규칙(손을 뗀 자리만 판정·진행 표시·힌트)은 src/lesson/goal.ts.
+import {
+  checkHitTable,
+  checkNotAtStart,
+  type GoalCommon,
+  type GoalNum,
+  type GoalShape,
+  goalNum,
+  growStates,
+  hitTable,
+  needHint,
+  parseGoalShape,
+  sameVal,
+  type Val,
+} from '../goal.ts';
 import { arr, fail, int, obj, optStr, str } from '../parse.ts';
-import { reduce } from '../sym.ts';
+import { type Rational, reduce } from '../sym.ts';
 import { type Drawing, type Mark, r2 } from './draw.ts';
 import { ratStr } from './q.ts';
 import type { WidgetCheck, WidgetDef } from './specs.ts';
@@ -23,6 +39,9 @@ export type ShMeasure =
   | { len: [string, string] }
   | { angle: [string, string, string] }
   | { area: number };
+/** 목표: of 는 measures 의 번호(보이는 측정값만 목표로 — 학습자가 읽을 수 있어야 맞출 수 있다) */
+export type ShGoal = GoalShape<number, GoalNum> & GoalCommon;
+
 export interface ShapeParams {
   grid: { w: number; h: number };
   points: ShPoint[];
@@ -34,6 +53,9 @@ export interface ShapeParams {
   cut?: { piece: string[]; rest: string[]; by: [number, number]; result: [number, number][] };
   /** 화면 위 안내 한 줄(선택) */
   note?: string;
+  goal?: ShGoal;
+  /** 목표를 이뤘을 때 글(Rich) */
+  done?: string;
 }
 export interface ShState {
   pts: Record<string, { x: number; y: number; deg?: number }>;
@@ -212,6 +234,121 @@ export function shMeasures(p: ShapeParams, s: ShState): string[] {
 
 const cutArea = (s: ShState, ids: string[]) => shoelace(ids.map((id) => P(s, id)));
 
+// ---- 목표 ----
+
+const isLattice = (p: ShapeParams, ids: string[]) =>
+  ids.every((id) => p.points.find((x) => x.id === id)?.deg === undefined);
+const isqrt = (n: bigint) => {
+  if (n < 0n) return null;
+  let r = BigInt(Math.round(Math.sqrt(Number(n))));
+  while (r * r > n) r--;
+  while ((r + 1n) * (r + 1n) <= n) r++;
+  return r * r === n ? r : null;
+};
+const ints = (s: ShState, id: string) => {
+  const a = P(s, id);
+  return [BigInt(Math.round(a.x)), BigInt(Math.round(a.y))] as const;
+};
+
+/**
+ * 판정용 측정값: 수와, 분수로 정확히 구해지면 그 분수. 격자점만 쓰면 넓이는 늘 분수, 길이는 제곱수일 때,
+ * 각은 직각일 때(내적 0)만 분수로 — 나머지(원 위 점·무리수)는 상대오차로 견주고 sympy 가 정확히 다시 판정한다.
+ */
+function measureVal(p: ShapeParams, s: ShState, m: ShMeasure): Val {
+  const n = measureValue(p, s, m) ?? Number.NaN;
+  let q: Rational | null = null;
+  if ('area' in m) {
+    const ids = p.polygons[m.area] ?? [];
+    if (isLattice(p, ids)) {
+      let t = 0n;
+      ids.forEach((id, i) => {
+        const [ax, ay] = ints(s, id);
+        const [bx, by] = ints(s, ids[(i + 1) % ids.length] as string);
+        t += ax * by - bx * ay;
+      });
+      q = reduce(t < 0n ? -t : t, 2n);
+    }
+  } else if ('len' in m && isLattice(p, m.len)) {
+    const [ax, ay] = ints(s, m.len[0]);
+    const [bx, by] = ints(s, m.len[1]);
+    const r = isqrt((ax - bx) ** 2n + (ay - by) ** 2n);
+    if (r !== null) q = [r, 1n];
+  } else if ('angle' in m && isLattice(p, m.angle) && Number.isFinite(n)) {
+    const [ax, ay] = ints(s, m.angle[0]);
+    const [bx, by] = ints(s, m.angle[1]);
+    const [cx, cy] = ints(s, m.angle[2]);
+    if ((ax - bx) * (cx - bx) + (ay - by) * (cy - by) === 0n) q = [90n, 1n];
+  }
+  return { n, q };
+}
+
+/** 손을 뗀 상태 하나에서 닿은 목표 열쇠들(여러 곳 가 보기는 곳 번호, 여러 자리는 그 자리, 나머지 '0') */
+export function shGoalHits(p: ShapeParams, s: ShState): string[] {
+  const g = p.goal;
+  if (!g) return [];
+  const v = measureVal(p, s, p.measures[g.of] as ShMeasure);
+  if (g.kind === 'visit')
+    return g.at.flatMap((t, k) => (sameVal(v, t, g.tol.n) ? [String(k)] : []));
+  if (!sameVal(v, g.is, g.tol.n)) return [];
+  if (g.places === 1) return ['0'];
+  return [
+    goalMovers(p, g)
+      .map((id) => `${id}:${P(s, id).x},${P(s, id).y}`)
+      .join(' '),
+  ];
+}
+
+/** 모아야 할 열쇠 수 */
+export const shGoalNeed = (p: ShapeParams) =>
+  !p.goal ? 1 : p.goal.kind === 'visit' ? p.goal.at.length : p.goal.places;
+
+/** 측정이 쓰는 점들 */
+function measurePoints(p: ShapeParams, m: ShMeasure): string[] {
+  if ('len' in m) return m.len;
+  if ('angle' in m) return m.angle;
+  return p.polygons[m.area] ?? [];
+}
+
+/** 목표가 바라보는 끄는 점(선분 끝·원 중심은 고정이라 끄는 점끼리는 서로 기대지 않는다) */
+function goalMovers(p: ShapeParams, g: ShGoal): string[] {
+  const ids = new Set(measurePoints(p, p.measures[g.of] as ShMeasure));
+  return p.points.filter((x) => x.drag && ids.has(x.id)).map((x) => x.id);
+}
+
+/** 끄는 점이 닿는 모든 자리(상태)와 검산용 상태 기호 */
+function goalStates(p: ShapeParams, g: ShGoal) {
+  let acc: { s: ShState; sym: Record<string, string> }[] = [{ s: shInit(p), sym: {} }];
+  for (const id of goalMovers(p, g)) {
+    const pt = p.points.find((x) => x.id === id) as ShPoint;
+    const opts: { patch: (s: ShState) => ShState; sym: Record<string, string> }[] = [];
+    const set = (pos: { x: number; y: number; deg?: number }, sym: Record<string, string>) =>
+      opts.push({ patch: (s) => ({ ...s, pts: { ...s.pts, [id]: pos } }), sym });
+    if (pt.on && 'circle' in pt.on) {
+      const on = pt.on;
+      for (let d = 0; d < 360; d += CIRCLE_STEP)
+        set(circlePos(shInit(p), on, d), { [`pt_${id}_d`]: String(d) });
+    } else if (pt.on && 'seg' in pt.on) {
+      const s0 = shInit(p);
+      const a = P(s0, pt.on.seg[0]);
+      const b = P(s0, pt.on.seg[1]);
+      const N = gcd(b.x - a.x, b.y - a.y);
+      for (let k = 0; k <= N; k++) {
+        const x = a.x + (k * (b.x - a.x)) / N;
+        const y = a.y + (k * (b.y - a.y)) / N;
+        set({ x, y }, { [`pt_${id}_x`]: String(x), [`pt_${id}_y`]: String(y) });
+      }
+    } else
+      for (let x = 0; x <= p.grid.w; x++)
+        for (let y = 0; y <= p.grid.h; y++)
+          set({ x, y }, { [`pt_${id}_x`]: String(x), [`pt_${id}_y`]: String(y) });
+    acc = growStates(acc, opts, '도형판 goal');
+  }
+  return acc;
+}
+
+const goalTable = (p: ShapeParams, g: ShGoal, states: ShState[]) =>
+  hitTable(states, (s) => shGoalHits(p, s), g.kind === 'visit' ? g.at.length : null);
+
 // ---- 그릴 목록 ----
 
 const pts = (p: ShapeParams, ps: { x: number; y: number }[]) =>
@@ -340,18 +477,23 @@ const shoelaceSym = (ps: string[]) =>
     })
     .join(' + ')})/2`;
 
+/** 측정값의 sympy 식. ps 는 점 id → sympy 점 글자(고정 점은 값, 목표 검산에서 끄는 점은 상태 기호) */
+function measureSym(p: ShapeParams, m: ShMeasure, ps: (id: string) => string): string {
+  if ('len' in m) return `${ps(m.len[0])}.distance(${ps(m.len[1])})`;
+  if ('angle' in m) {
+    const [a, b, c] = m.angle.map(ps) as [string, string, string];
+    return `deg(acos((${a} - ${b}).dot(${c} - ${b}) / (${a}.distance(${b})*${c}.distance(${b}))))`;
+  }
+  return shoelaceSym((p.polygons[m.area] ?? []).map(ps));
+}
+
 function measureChecks(p: ShapeParams, s: ShState, tag: string): WidgetCheck[] {
   const out: WidgetCheck[] = [];
   const ps = (id: string) => pointSym(p, s, id);
   p.measures.forEach((m, i) => {
     const v = measureValue(p, s, m);
     if (v === null) return;
-    let expr: string;
-    if ('len' in m) expr = `${ps(m.len[0])}.distance(${ps(m.len[1])})`;
-    else if ('angle' in m) {
-      const [a, b, c] = m.angle.map(ps) as [string, string, string];
-      expr = `deg(acos((${a} - ${b}).dot(${c} - ${b}) / (${a}.distance(${b})*${c}.distance(${b}))))`;
-    } else expr = shoelaceSym((p.polygons[m.area] ?? []).map(ps));
+    const expr = measureSym(p, m, ps);
     out.push({
       name: `${tag} 측정${i + 1}`,
       kind: 'approx',
@@ -361,6 +503,37 @@ function measureChecks(p: ShapeParams, s: ShState, tag: string): WidgetCheck[] {
     });
   });
   return out;
+}
+
+/** 목표 판정 검산 항목: 끄는 점이 닿는 모든 자리를 sympy 가 다시 판정(verify.py check_goal) */
+function goalChecks(p: ShapeParams, g: ShGoal): WidgetCheck {
+  const s0 = shInit(p);
+  const movers = new Set(goalMovers(p, g));
+  const ps = (id: string) => {
+    if (!movers.has(id)) return pointSym(p, s0, id);
+    const pt = p.points.find((x) => x.id === id) as ShPoint;
+    if (pt.on && 'circle' in pt.on) {
+      const c = P(s0, pt.on.circle[0]);
+      const r = pt.on.circle[1];
+      return `Point(${c.x} + ${r}*cos(rad(pt_${id}_d)), ${c.y} + ${r}*sin(rad(pt_${id}_d)))`;
+    }
+    return `Point(pt_${id}_x, pt_${id}_y)`;
+  };
+  const states = goalStates(p, g);
+  return {
+    name: '목표 판정',
+    kind: 'goal',
+    of: [{ expr: measureSym(p, p.measures[g.of] as ShMeasure, ps) }],
+    targets: g.kind === 'visit' ? g.at.map((t) => [t.src]) : [[g.is.src]],
+    tol: g.tol.src,
+    states: states.map((x) => x.sym),
+    hits: goalTable(
+      p,
+      g,
+      states.map((x) => x.s),
+    ),
+    need: g.kind === 'value' ? g.places : 1,
+  };
 }
 
 /** 격자점 넓이의 정확한 분수(2배 넓이는 정수) */
@@ -377,7 +550,7 @@ export const shapeDef: WidgetDef<ShapeParams> = {
       raw,
       '도형판',
       ['grid', 'points'],
-      ['polygons', 'circles', 'segments', 'measures', 'digits', 'cut', 'note'],
+      ['polygons', 'circles', 'segments', 'measures', 'digits', 'cut', 'note', 'goal', 'done'],
     );
     const g = obj(o.grid, '도형판 grid', ['w', 'h']);
     const grid = { w: int(g.w, '도형판 grid.w', 2, 16), h: int(g.h, '도형판 grid.h', 2, 12) };
@@ -450,6 +623,8 @@ export const shapeDef: WidgetDef<ShapeParams> = {
     };
     const note = optStr(o.note, '도형판 note');
     if (note !== undefined) p.note = note;
+    const done = optStr(o.done, '도형판 done');
+    if (done !== undefined) p.done = done;
     p.measures = (o.measures === undefined ? [] : arr(o.measures, '도형판 measures', 0, 6)).map(
       (rm, i) => {
         const at = `도형판 측정${i + 1}`;
@@ -508,6 +683,31 @@ export const shapeDef: WidgetDef<ShapeParams> = {
       if (Math.abs(whole - res) > 1e-9)
         fail('도형판 cut.result', '결과 모양의 넓이가 처음 넓이와 다름');
     }
+    if (o.goal !== undefined) {
+      const at = '도형판 goal';
+      if (p.cut) fail(at, '잘라 옮기기는 조각을 제자리에 옮기는 것이 목표 — 따로 두지 않음');
+      const { shape, common } = parseGoalShape<number, GoalNum>(o.goal, at, {
+        of: (v, w) => int(v, w, 0, p.measures.length - 1),
+        is: goalNum,
+        num: goalNum,
+      });
+      needHint(common, at);
+      const g = { ...(shape as GoalShape<number, GoalNum>), ...common };
+      if (!goalMovers(p, g).length) fail(at, '그 측정값을 바꾸는 끄는 점이 없음');
+      p.goal = g;
+      checkNotAtStart(shGoalHits(p, shInit(p)), shGoalNeed(p), at);
+      checkHitTable(
+        goalTable(
+          p,
+          g,
+          goalStates(p, g).map((x) => x.s),
+        ),
+        g.kind === 'value' ? g.places : 1,
+        g.tol,
+        at,
+        (k) => (g.kind === 'visit' ? `가 볼 곳 ${g.at[k]?.src}` : '목표'),
+      );
+    } else if (o.done !== undefined) fail('도형판 done', '목표(goal)가 있을 때만');
     return p;
   },
   checks(p) {
@@ -537,7 +737,13 @@ export const shapeDef: WidgetDef<ShapeParams> = {
         check: `${shoelaceSym(c.rest.map(ps))} + ${shoelaceSym(c.piece.map((id) => `(${ps(id)} + Point(${c.by[0]}, ${c.by[1]}))`))}`,
       });
     }
+    if (p.goal) out.push(goalChecks(p, p.goal));
     return out;
   },
-  texts: (p) => (p.note ? [p.note] : []),
+  texts: (p) => [
+    ...(p.note ? [p.note] : []),
+    ...(p.done ? [p.done] : []),
+    ...(p.goal ? [p.goal.hint] : []),
+  ],
+  hasGoal: (p) => !!p.cut || !!p.goal,
 };

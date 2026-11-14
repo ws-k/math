@@ -1,9 +1,9 @@
-// 상태와 손으로 바꾸기(순수): 처음 상태·점 끌기·방향키·찍은 점 더하기/옮기기/지우기·탐색 목표.
+// 상태와 손으로 바꾸기(순수): 처음 상태·점 끌기·방향키·찍은 점 더하기/옮기기/지우기. 목표 판정은 goal.ts.
 // 화면(Coord.tsx)이 손 조작마다 부르는 함수들이라, 그리기·검산과 떼어 두면 손 조작만 따로 읽고 고칠 수 있다.
 import type { GridPt } from '../../grade.ts';
 import { fAt } from './curve.ts';
 import { frame, iRange, MIN_SNAP_PX, snapMult, toWorld } from './frame.ts';
-import { pointOf, pointXY } from './point.ts';
+import { pointOf } from './point.ts';
 import type { Box, CoordParams, CoordState } from './types.ts';
 
 /** 직선 손잡이 처음 자리: 화면 가로 1/4·3/4, 세로 가운데 줄 */
@@ -23,6 +23,7 @@ export function initial(p: CoordParams): CoordState {
   const pts: Record<string, GridPt> = {};
   for (const o of p.objects) if (o.kind === 'point') pts[o.id] = { i: o.i, j: o.j };
   return {
+    solved: false,
     vars: Object.fromEntries(p.sliders.map((s) => [s.id, s.value])),
     pts,
     user: p.mode === 'line' ? (p.start ?? defaultStart(p)).map((g) => ({ ...g })) : [],
@@ -145,11 +146,4 @@ export function freeSpot(p: CoordParams, s: CoordState): GridPt | null {
       }
     }
   return best;
-}
-
-/** 탐색 목표: 끄는 점이 상대 점에 within 만큼 다가갔나 */
-export function goalMet(p: CoordParams, s: CoordState): boolean {
-  if (!p.goal) return false;
-  const [a, b] = p.goal.approach;
-  return Math.abs(pointXY(p, s, a)[0] - pointXY(p, s, b)[0]) <= p.goal.within + 1e-12;
 }

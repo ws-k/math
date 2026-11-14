@@ -109,6 +109,11 @@ export interface ExploreScene extends Base {
   widget: WidgetSpec;
   /** 핵심 장면 표시. 2026-11-14 부터 진행을 막지 않는다(목표를 안 이뤄도 넘어감) */
   gate?: boolean;
+  /**
+   * 카드 아래 글(after)을 부품 목표를 이룬 뒤에 보인다(조각 ②). 결론을 먼저 읽고 조작하면 스스로 찾는 일이
+   * 사라져서. 목표가 있는 부품에만 쓸 수 있다(형식 검사).
+   */
+  afterGoal?: true;
 }
 
 export interface TermsScene extends Base {

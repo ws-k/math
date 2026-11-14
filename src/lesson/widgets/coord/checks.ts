@@ -2,6 +2,7 @@
 // 과제 검산을 맨 뒤에 쌓는다. 항목 순서가 검산 기준선(verify:diff)의 비교 열쇠라 이 순서를 지킨다.
 import { exactStr } from '../../expr.ts';
 import type { WidgetCheck } from '../specs.ts';
+import { goalChecks } from './goal.ts';
 import { kindOf } from './kinds.ts';
 import { taskChecks, taskDerivOf } from './task.ts';
 import type { CheckCtx, CoordParams } from './types.ts';
@@ -29,5 +30,6 @@ export function coordChecks(p: CoordParams): WidgetCheck[] {
   };
   for (const o of p.objects) kindOf(o).checks?.(o, cx);
   taskChecks(p, cx.out);
+  goalChecks(p, cx.out);
   return cx.out;
 }

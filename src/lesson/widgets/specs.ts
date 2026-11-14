@@ -28,6 +28,11 @@ export interface WidgetDef<P> {
   vars?(p: P): Record<string, string>;
   /** 부품이 그리는 방정식(sympy "왼쪽=오른쪽"). 레슨 equations 와 대조할 때 쓴다 */
   equation?(p: P): string | undefined;
+  /**
+   * 이 매개변수에 '이뤄야 할 목표'가 있는가(한 번 만지면 끝나는 탐색이 아닌가). 장면의 afterGoal(결론 글을
+   * 목표 뒤에 공개)은 목표가 있는 부품에만 — 목표가 없으면 한 번 만지자마자 결론이 보여 미루는 뜻이 없다.
+   */
+  hasGoal?(p: P): boolean;
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: 부품마다 매개변수 타입이 달라 등록부는 any 로 모은다. 꺼낼 때 parse 가 타입을 다시 붙인다.

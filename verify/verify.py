@@ -292,7 +292,57 @@ def check_root(it):
     return None
 
 
+def _root_count(v):
+    """x 의 식 v 의 서로 다른 실근 개수(앱은 스투름 열로 센다 — 여기서는 solveset 으로 따로). 무수히 많으면 None"""
+    sols = sympy.solveset(v, sympy.Symbol("x"), domain=sympy.S.Reals)
+    return sympy.Integer(len(sols)) if sols.is_FiniteSet else None
+
+
+def _goal_match(v, t, tol):
+    """목표 판정 한 칸: 둘 다 실수이고, tol=0 이면 정확히 같고, 아니면 |v−t| ≤ tol(정확한 값으로)."""
+    if v is None or not (defined(v) and defined(t)):
+        return False
+    if tol == 0:
+        if v.is_Rational and t.is_Rational:
+            return v == t
+        # 30자리에서 이미 다르면 다르다(빠른 길). 아주 가까울 때만 기호로 확인한다
+        if abs(sympy.N(v - t, 30)) > sympy.Float("1e-25"):
+            return False
+        return equal(v, t)
+    return bool(sympy.N(sympy.Abs(v - t), 50) <= tol)
+
+
+def check_goal(it):
+    """부품 목표 판정(원칙 P7): 끌기·슬라이더로 닿는 모든 상태(states)에서 앱이 '목표에 닿았다'고 본 상태(hits)가
+    sympy 로 다시 판정한 것과 같은가. 목표마다 need 곳 이상 닿을 수 있어야 하고(닿을 수 없는 목표 금지),
+    허용 오차가 있으면(무리수 목표, 원칙 P10) 닿는 자리가 정확히 need 곳이어야 한다 — 오차 안에 자리가 여럿이면
+    더듬어 맞히기가 되거나 정답이 아닌 자리를 맞았다고 하게 된다."""
+    comps = [(read(c["expr"]), bool(c.get("roots"))) for c in it["of"]]
+    targets = [[read(t) for t in tg] for tg in it["targets"]]
+    tol = read(it["tol"])
+    got = [[] for _ in targets]
+    for k, st in enumerate(it["states"]):
+        sub = {sympy.Symbol(n): read(v) for n, v in st.items()}
+        vals = []
+        for e, roots in comps:
+            v = e.subs(sub)
+            vals.append(_root_count(v) if roots else v)
+        for ti, tg in enumerate(targets):
+            if all(_goal_match(v, t.subs(sub), tol) for v, t in zip(vals, tg)):
+                got[ti].append(k)
+    if got != it["hits"]:
+        return f"앱 판정 {it['hits']} ≠ sympy 판정 {got} (상태 번호, 목표마다)"
+    need = int(it["need"])
+    for ti, h in enumerate(got):
+        if len(h) < need:
+            return f"목표 {ti + 1} 에 닿는 상태가 {len(h)}곳 < {need}곳 (닿을 수 없는 목표)"
+        if tol != 0 and len(h) != need:
+            return f"허용 오차 {tol} 안에 드는 상태가 {len(h)}곳 — 정답 자리가 {need}곳이어야 함"
+    return None
+
+
 KINDS = {
+    "goal": check_goal,
     "root": check_root,
     "spot": check_spot,
     "equiv": check_equiv,

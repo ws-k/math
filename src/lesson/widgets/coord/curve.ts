@@ -45,7 +45,8 @@ function curvePath(p: CoordParams, s: CoordState, c: CurveObj, f: Frame): string
 
 export const curveKind: KindDef<CurveObj> = {
   parse(ro, at, cx) {
-    const c = obj(ro, at, ['id', 'curve'], ['label', 'tone']);
+    const c = obj(ro, at, ['id', 'curve'], ['label', 'tone', 'hide']);
+    if (c.hide !== undefined && c.hide !== true) fail(`${at} hide`, 'true 만');
     const id = cx.named(c.id, `${at} id`);
     const expr = str(c.curve, `${at} curve`).replace(/\s+/g, '');
     let node: Node;
@@ -61,12 +62,15 @@ export const curveKind: KindDef<CurveObj> = {
       node,
       ...(c.label !== undefined ? { label: str(c.label, `${at} label`) } : {}),
       tone: c.tone === undefined ? 'main' : oneOf(c.tone, `${at} tone`, TONES),
+      ...(c.hide === true ? { hide: true as const } : {}),
     };
     cx.curves.set(id, co);
     return co;
   },
   draw(o, k, { p, s, f, items }) {
-    items.push({ t: 'path', key: `c${k}`, d: curvePath(p, s, o, f), cls: `curve ${o.tone}` });
+    // 숨긴 정답 곡선은 맞히기 전에는 경로를 비워 둔다(숨김 표시만 하면 모양이 DOM 에 남는다)
+    const d = o.hide && !s.solved ? '' : curvePath(p, s, o, f);
+    items.push({ t: 'path', key: `c${k}`, d, cls: `curve ${o.tone}` });
   },
   checks(o, { vars, range, fixed, deriv, out }) {
     out.push({

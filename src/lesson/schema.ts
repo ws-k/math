@@ -41,7 +41,7 @@ const KIND_KEYS: Record<string, { req: string[]; opt: string[] }> = {
     req: ['choices', 'answer', 'answerCheck', 'reveal'],
     opt: ['widget', 'format', 'thoughts', 'conclude', 'gate', 'eq'],
   },
-  explore: { req: ['widget'], opt: ['gate'] },
+  explore: { req: ['widget'], opt: ['gate', 'afterGoal'] },
   terms: { req: ['terms'], opt: ['aside'] },
   spot: { req: ['items'], opt: [] },
   solve: { req: ['items'], opt: [] },
@@ -193,7 +193,8 @@ export function validateLesson(
         if (e === undefined) return fail(where, `레슨 equations 에 없는 식 ${name}`);
         return e;
       };
-      const widget = (v: unknown) => {
+      /** 부품 검사. 결론 글 공개(afterGoal) 판단에 쓰려고 '목표가 있나'를 돌려준다 */
+      const widget = (v: unknown): boolean => {
         const w = obj(v, `${at} widget`, ['type', 'params'], ['eq']);
         const type = str(w.type, `${at} widget.type`);
         const def = widgetDefs[type];
@@ -226,6 +227,7 @@ export function validateLesson(
             b: want,
           });
         }
+        return def.hasGoal?.(p) ?? false;
       };
 
       if (s.gate !== undefined && s.gate !== true) fail(`${at} gate`, 'true 만');
@@ -317,9 +319,17 @@ export function validateLesson(
           }
           break;
         }
-        case 'explore':
-          widget(s.widget);
+        case 'explore': {
+          const hasGoal = widget(s.widget);
+          if (s.afterGoal !== undefined) {
+            // 결론 글을 목표를 이룬 뒤에 보인다 — 결론을 먼저 읽고 조작하지 않게
+            if (s.afterGoal !== true) fail(`${at} afterGoal`, 'true 만');
+            if (s.after === undefined) fail(`${at} afterGoal`, '미룰 결론 글(after)이 없음');
+            if (!hasGoal)
+              fail(`${at} afterGoal`, '목표가 없는 부품 — 한 번 만지면 바로 보여 미루는 뜻이 없음');
+          }
           break;
+        }
         case 'terms': {
           arr(s.terms, `${at} terms`, 1, 6).forEach((rt, i) => {
             const t = obj(rt, `${at} 용어${i + 1}`, ['term', 'body']);

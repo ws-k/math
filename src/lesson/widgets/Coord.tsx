@@ -1,12 +1,13 @@
 // 좌표평면 화면. 무엇을 어디에 그릴지는 coord.ts 의 draw(상태 → 그릴 목록)가 정하고, 여기서는
 // ① 처음·상태가 바뀔 때 React 로 그리고 ② 끄는 동안에는 같은 목록을 DOM 에 직접 적용한다(React 렌더 없음).
-// 상태는 손을 뗄 때 한 번만 바꾼다.
+// 상태는 손을 뗄 때 한 번만 바꾼다. 목표 판정도 손을 뗄 때만 한다(원칙 P3 — 끄는 도중 지나간 자리는 세지 않음).
 //
 // 손 조작: 손잡이 끌기(손가락·펜·마우스, Pointer Events + capture), 빈 칸 누르기(점 찍기·직선 손잡이 옮기기),
 // 손으로 긋기(sketch, '그리기 시작'을 누른 뒤에만). 모든 끌기에는 버튼·방향키 대체가 있다(긋기는 예외).
 // touch-action:none 은 손잡이와, 긋는 중인 그림 영역에만 건다 — 그래야 그래프 위에서도 페이지가 스크롤된다.
 import { type KeyboardEvent, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { EDGE, nearest } from '../drag.ts';
+import { type GoalProgress, goalLine, goalRelease, goalStart } from '../goal.ts';
 import { HANDLE_HIT, Handle, handleAt } from '../Handle.tsx';
 import { LRich } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
@@ -20,7 +21,8 @@ import {
   draw,
   frame,
   freeSpot,
-  goalMet,
+  goalHits,
+  goalNeed,
   grade,
   grid,
   gridAt,
@@ -29,6 +31,7 @@ import {
   moveUser,
   type PointObj,
   removeUser,
+  sliderSnap,
   toWorld,
 } from './coord.ts';
 import type { WidgetProps } from './index.tsx';
@@ -54,6 +57,11 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     cls: '',
   });
   const [done, setDone] = useState(false);
+  /** 목표 진행(닿은 곳·뗀 횟수). 슬라이더 이벤트가 오래된 함수를 잡고 있어도 최신 값을 보게 ref 로도 둔다 */
+  const [prog, setProg] = useState<GoalProgress>(goalStart);
+  const progRef = useRef(prog);
+  const doneRef = useRef(false);
+  const need = goalNeed(p);
   const clip = useId();
   /** 끄는 동안의 상태(화면에 직접 적용한 것). 손을 떼면 setSt 로 넘긴다 */
   const live = useRef(st);
@@ -128,18 +136,36 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     return r ? { x: cx - r.left, y: cy - r.top } : { x: 0, y: 0 };
   };
 
-  const settle = (n: CoordState) => {
-    live.current = n;
-    setSt(n);
+  /** 손을 뗀 자리를 상태로. explore 의 목표 판정도 여기서만 한다 */
+  const settle = (n0: CoordState) => {
+    let n = n0;
     if (p.mode === 'explore') {
-      const ok = p.goal ? goalMet(p, n) : true;
-      if (ok && !done) {
+      if (p.goal) {
+        const g = goalRelease(progRef.current, goalHits(p, n), need);
+        progRef.current = g;
+        setProg(g);
+        // 이루면 숨긴 정답(곡선·목표 점)을 그린다
+        if (g.done && !n.solved) n = { ...n, solved: true };
+        const line = goalLine(g, need, { intro: p.intro, done: p.done, hint: p.goal.hint });
+        setMsg({ text: line.text, cls: line.cls });
+        if (g.done && !doneRef.current) {
+          doneRef.current = true;
+          setDone(true);
+          onDone();
+        }
+      } else if (!doneRef.current) {
+        // 목표가 없는 탐색은 한 번 만져 보면 끝
+        doneRef.current = true;
         setDone(true);
         if (p.done) setMsg({ text: p.done, cls: 'ok' });
         onDone();
       }
     } else if (msg.cls) setMsg({ text: p.intro ?? '', cls: '' });
+    live.current = n;
+    setSt(n);
   };
+  const settleRef = useRef(settle);
+  settleRef.current = settle;
 
   const gridMode = p.mode === 'plot' || p.mode === 'connect' || p.mode === 'line';
 
@@ -246,6 +272,12 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     const v = grade(p, st);
     if (v.ok) {
       setMsg({ text: p.done ?? '맞아요.', cls: 'ok' });
+      // 맞히면 숨긴 정답 곡선을 그린다(손그리기 과제의 정답 공개)
+      if (!st.solved) {
+        const n = { ...st, solved: true };
+        live.current = n;
+        setSt(n);
+      }
       if (!done) {
         setDone(true);
         onDone();
@@ -265,15 +297,18 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       const el = sliderRefs.current.get(s.id);
       if (!el) continue;
       const input = () => {
+        // 제외 값(밑 a=1 등)은 움직이던 쪽으로 건너뛴다
+        const v = sliderSnap(s, Number(el.value), live.current.vars[s.id] ?? s.value);
+        if (v !== Number(el.value)) el.value = String(v);
         live.current = {
           ...live.current,
-          vars: { ...live.current.vars, [s.id]: Number(el.value) },
+          vars: { ...live.current.vars, [s.id]: v },
         };
         apply(draw(p, live.current, boxRef.current));
         const out = els.current.get(`s:${s.id}`);
         if (out) out.textContent = el.value;
       };
-      const change = () => settle(live.current);
+      const change = () => settleRef.current(live.current);
       el.addEventListener('input', input);
       el.addEventListener('change', change);
       offs.push(() => {
@@ -290,7 +325,9 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
   const g = useMemo(() => grid(p, box), [p, box]);
   const f = frame(box);
   const dragPts = p.objects.filter((o): o is PointObj => o.kind === 'point' && o.drag === 'x');
-  const legend = p.objects.filter((o) => o.kind === 'curve' && o.label);
+  // 숨긴 정답 곡선의 범례는 맞힌 뒤에
+  const legend = p.objects.filter((o) => o.kind === 'curve' && o.label && !(o.hide && !st.solved));
+  const progress = p.goal ? goalLine(prog, need, {}).progress : null;
 
   const touch = p.mode === 'sketch' && sketching ? 'none' : 'manipulation';
   return (
@@ -454,6 +491,11 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
           </b>
         </label>
       ))}
+      {progress && (
+        <p className="gprog num" aria-live="polite">
+          {progress}
+        </p>
+      )}
       <div className={`toast ${msg.cls}`} aria-live="polite">
         {msg.text && <LRich inline src={msg.text} />}
       </div>

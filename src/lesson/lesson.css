@@ -576,6 +576,13 @@
 .lesson .toast.bad {
   color: var(--bad);
 }
+/* 목표 진행("3곳 중 2곳"). 닿은 수만 보이고 색은 바꾸지 않는다 — 가까워짐 신호가 되지 않게(원칙 P3) */
+.lesson .gprog {
+  margin: 0;
+  text-align: center;
+  color: var(--sub);
+  font-size: 0.86rem;
+}
 
 /* 용어 */
 .lesson .terms {

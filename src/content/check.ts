@@ -100,7 +100,27 @@ export interface RootCheck {
   digits?: number;
 }
 
+/**
+ * 부품 목표 판정(원칙 P7). 끌기·슬라이더로 닿는 모든 상태(states: 상태 기호 → 정확한 값 글자)에서
+ * 앱이 목표마다 '닿았다'고 본 상태 번호(hits)가 sympy 가 다시 판정한 것과 같은가(verify.py check_goal).
+ * of 는 재는 값의 성분(점 자리 목표면 x·y 둘), roots 면 그 식(x 의 식)의 서로 다른 실근 개수를 값으로 쓴다.
+ * targets 는 목표마다 성분별 견줄 식(상태 기호를 써도 됨 — 다른 읽는 값과 견줄 때).
+ * 목표마다 need 곳 이상 닿아야 하고, tol(허용 오차) 이 0 이 아니면 정확히 need 곳이어야 한다(원칙 P10).
+ */
+export interface GoalCheck {
+  ref: string;
+  unit: string;
+  kind: 'goal';
+  of: { expr: string; roots?: true }[];
+  targets: string[][];
+  tol: string;
+  states: Record<string, string>[];
+  hits: number[][];
+  need: number;
+}
+
 export type CheckItem =
+  | GoalCheck
   | RootCheck
   | AnswerCheck
   | SpotCheck

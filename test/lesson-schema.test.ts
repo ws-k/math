@@ -245,3 +245,52 @@ test('근삿값 보기: 보기마다 approx 항목', () => {
     digits: 2,
   });
 });
+
+// 결론 글 공개 옵션(조각 ②): afterGoal 이면 카드 아래 글(after)을 목표를 이룬 뒤에 보인다 —
+// 결론을 먼저 읽고 조작하지 않게. 목표가 있는 부품에만(없으면 한 번 만지자마자 보여 미루는 뜻이 없다)
+const coordExplore = (goal: boolean) => ({
+  kind: 'explore' as const,
+  id: 'g',
+  title: 't',
+  after: '결론',
+  afterGoal: true as const,
+  widget: {
+    type: 'coord',
+    params: {
+      mode: 'explore',
+      x: { min: -1, max: 5, step: 1 },
+      y: { min: -6, max: 10, step: 1 },
+      sliders: [{ id: 'c', min: -2, max: 7, step: 1, value: 0, label: '$c$' }],
+      objects: [{ id: 'f', curve: 'x**2-4*x+c' }],
+      ...(goal ? { goal: { value: { of: 'roots(f)', is: 1 }, hint: '닿기만 하게' } } : {}),
+    },
+  },
+});
+
+test('afterGoal: 목표가 있는 부품이면 통과하고 목표 판정 항목이 생긴다', () => {
+  const r = with_((l) => l.scenes.splice(2, 0, coordExplore(true)));
+  assert.deepEqual(r.errors, []);
+  assert.ok(
+    r.items.some((i) => i.ref === 'u/lesson:g:목표 판정' && 'kind' in i && i.kind === 'goal'),
+  );
+});
+
+for (const [name, f] of [
+  ['목표 없는 부품에 afterGoal', (l: Lesson) => l.scenes.splice(2, 0, coordExplore(false))],
+  [
+    'afterGoal 인데 after 가 없음',
+    (l: Lesson) => {
+      const { after: _a, ...s } = coordExplore(true);
+      l.scenes.splice(2, 0, s);
+    },
+  ],
+  [
+    'afterGoal 은 true 만',
+    (l: Lesson) =>
+      l.scenes.splice(2, 0, { ...coordExplore(true), afterGoal: false as unknown as true }),
+  ],
+] as const) {
+  test(`오류여야 함(afterGoal): ${name}`, () => {
+    assert.ok(with_(f).errors.length > 0, '오류가 없음');
+  });
+}

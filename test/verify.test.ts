@@ -256,3 +256,70 @@ test('많은 항목은 나눠 동시에 검산해도 결과(합계·실패 목�
   assert.match(r.stdout, /합계: 399 \/ 400/);
   assert.match(r.stdout, /실패 1건:\n {2}- u4\/p123: 검산값 246 ≠ 답 1/);
 });
+
+// 부품 목표 판정(goal): 끌기·슬라이더로 닿는 모든 상태에서 앱이 '닿았다'고 본 상태 번호가 sympy 판정과 같은가
+const goal = { unit: 'u', ref: 'u/lesson:g:목표', kind: 'goal' };
+const cs = Array.from({ length: 10 }, (_, k) => ({ c: String(k - 2) }));
+const quarters = Array.from({ length: 9 }, (_, k) => ({ pt_R_x: `${k}/4` }));
+
+test('목표 판정(goal): 실근 개수·허용 오차·다른 읽는 값과 견주기', () => {
+  const r = runVerify([
+    // x²−4x+c 의 서로 다른 실근이 하나 = c=4 (상태 번호 6)
+    {
+      ...goal,
+      of: [{ expr: 'x**2-4*x+c', roots: true }],
+      targets: [['1']],
+      tol: '0',
+      states: cs,
+      hits: [[6]],
+      need: 1,
+    },
+    // 무리수 목표: √3 에 1/8 안으로 닿는 자리는 7/4 하나뿐
+    {
+      ...goal,
+      of: [{ expr: 'pt_R_x' }],
+      targets: [['sqrt(3)']],
+      tol: '1/8',
+      states: quarters,
+      hits: [[7]],
+      need: 1,
+    },
+    // 여러 곳 가 보기 + 다른 상태 기호와 견주기(R 의 접선 기울기 = 평균 기울기 3 → x=1)
+    {
+      ...goal,
+      of: [{ expr: 'diff(x**3,x).subs(x,pt_R_x)' }],
+      targets: [['(8-(-1))/(2-(-1))'], ['0']],
+      tol: '0',
+      states: quarters,
+      hits: [[4], [0]],
+      need: 1,
+    },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+for (const [name, it] of [
+  [
+    '앱 판정이 sympy 와 다름',
+    { of: [{ expr: 'x**2-4*x+c', roots: true }], targets: [['1']], states: cs, hits: [[5]] },
+  ],
+  [
+    '닿을 수 없는 목표',
+    { of: [{ expr: 'x**2-4*x+c', roots: true }], targets: [['3']], states: cs, hits: [[]] },
+  ],
+  [
+    '허용 오차 안의 자리가 둘(정답 자리가 하나가 아님)',
+    {
+      of: [{ expr: 'pt_R_x' }],
+      targets: [['sqrt(3)']],
+      tol: '1/2',
+      states: quarters,
+      hits: [[6, 7, 8]],
+    },
+  ],
+] as const) {
+  test(`실패해야 함(goal): ${name}`, () => {
+    const r = runVerify([{ ...goal, tol: '0', need: 1, ...it }]);
+    assert.equal(r.status, 1, r.stdout);
+  });
+}
