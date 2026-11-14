@@ -100,3 +100,5 @@
 - simulate: 표본 크기 고르는 표본평균 실험(지금 주사위 2개까지) — prob-estimation
 - solve 문항 answerTex 허용(0.8185 가 "1637/2000" 으로 보임) — prob-normal
 - 검산 주의: sympy 가 (−1)^n 극한에서 오류 → 위아래 수열로 나눠 검산 — calc-seq-limit
+- 새 부품: 입체 단면 보기(사각뿔·단면 정사각형 입체), coord 쌓은 상자 그림, 이계도함수 읽기 값 — calc-integral-app, calc-diff-app
+- 검산 주의: 좌표 과제 검산식에 list(...) 불가 → solveset(...).args[0] 또는 Max(*solve(...)); 급수 극한은 limit(summation) 대신 정적분으로 — calc 단원
