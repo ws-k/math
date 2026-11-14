@@ -1,0 +1,1325 @@
+{
+  "id": "geo-vector-dot",
+  "course": "기하",
+  "unit": "평면벡터",
+  "title": "평면벡터의 성분과 내적",
+  "prereq": [
+    "geo-vector-ops",
+    "math1-trig-def"
+  ],
+  "suneung": [
+    "기하 23",
+    "기하 30"
+  ],
+  "hours": 3.5,
+  "formulas": [
+    "$\\vec a=(a_1,a_2)$ 이면 $\\lvert\\vec a\\rvert=\\sqrt{a_1^2+a_2^2}$",
+    "$\\overrightarrow{AB}=(x_2-x_1,\\ y_2-y_1)$",
+    "$\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta$ $(0^\\circ\\le\\theta\\le180^\\circ)$",
+    "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$",
+    "$\\vec a\\perp\\vec b\\iff\\vec a\\cdot\\vec b=0$",
+    "$\\lvert\\vec a+\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2+2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$",
+    "직선 $\\vec p=\\vec a+t\\vec u$, 원 $\\lvert\\vec p-\\vec c\\rvert=r$"
+  ],
+  "lesson": {
+    "minutes": 30,
+    "values": {
+      "shadow": {
+        "value": "2",
+        "check": "4*cos(rad(60))"
+      },
+      "half": {
+        "value": "-1/2",
+        "check": "cos(rad(120))"
+      },
+      "perp": {
+        "value": "-2",
+        "check": "solve(Eq(2*1+1*y, 0), y)[0]"
+      },
+      "px": {
+        "value": "3",
+        "check": "solve(Eq((x+5)*(x-5)+4**2, 0), x)[1]"
+      },
+      "pdot": {
+        "value": "0",
+        "check": "(-5-3)*(5-3)+(0-4)*(0-4)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "기하 · 평면벡터",
+        "title": "두 화살표를 곱하면\n수 하나가 나와요",
+        "lead": "벡터끼리 더하고 빼는 건 해 봤어요. 이번에는 두 벡터를 '곱해서' 수 하나를 만들어요. 그 수의 부호만 봐도 두 벡터가 이루는 각이 보여요.",
+        "meta": [
+          "성분",
+          "내적",
+          "수직 조건"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "기울어진 막대의\n그림자 길이는?",
+        "lead": "길이 4 인 막대가 바닥과 $60^\\circ$ 를 이루며 서 있어요. 해가 바로 위에서 비출 때, 바닥에 생기는 그림자의 길이는 얼마일까요?",
+        "choices": [
+          {
+            "value": "4",
+            "check": "4*cos(rad(0))",
+            "feedback": "막대를 바닥에 눕혔을 때($0^\\circ$)의 그림자예요. 세울수록 그림자는 짧아져요."
+          },
+          {
+            "value": "2",
+            "check": "4*cos(rad(60))"
+          },
+          {
+            "value": "8",
+            "check": "4/cos(rad(60))",
+            "feedback": "$\\cos60^\\circ$ 로 나눴네요. 그림자는 막대보다 길 수 없어요. 곱해야 해요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "4*cos(rad(60))",
+        "reveal": "**맞아요.** 막대·그림자·빛줄기가 직각삼각형을 만들어요.",
+        "thoughts": [
+          "막대가 빗변, 그림자가 밑변이고 사이각이 $60^\\circ$ 예요.",
+          "밑변 = 빗변 × $\\cos60^\\circ$ 이니까 그림자는 $4\\times\\frac12=${{shadow}} 예요."
+        ],
+        "conclude": "벡터 $\\vec b$ 가 $\\vec a$ 방향에 드리우는 그림자는 $\\lvert\\vec b\\rvert\\cos\\theta$ 예요. 여기에 $\\lvert\\vec a\\rvert$ 를 곱한 값이 ==오늘 배울 내적==이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "sign",
+        "chip": "손으로 해 보기",
+        "title": "각을 바꾸며\n그림자의 부호를 보세요",
+        "lead": "$\\vec a=(1,0)$ 은 $x$축 방향, $\\vec b$ 는 원점에서 원 위의 점 P 까지예요. 둘 다 길이가 1 이라 $\\vec a\\cdot\\vec b=1\\cdot1\\cdot\\cos\\theta$, 곧 화면의 $\\cos\\theta$ 값이에요. P 를 돌려 보고, $\\theta$ 가 $0^\\circ$ 와 $180^\\circ$ 사이에서 $\\vec a\\cdot\\vec b=-\\frac12$ 인 곳에 놓은 뒤 '확인'을 누르세요.",
+        "gate": true,
+        "widget": {
+          "type": "unitCircle",
+          "params": {
+            "unit": "deg",
+            "start": 30,
+            "snap": 15,
+            "show": [
+              "cos"
+            ],
+            "task": {
+              "answer": 120,
+              "check": "deg(acos(-Rational(1,2)))"
+            }
+          }
+        },
+        "after": "그림자가 $\\vec a$ 쪽으로 생기면(예각) 내적은 양수, 딱 수직($90^\\circ$)이면 0, 반대쪽으로 생기면(둔각) 음수예요. 방금 찾은 $120^\\circ$ 에서는 {{half}} 이었어요. ==내적의 부호가 각의 종류를 알려 줘요.=="
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "성분",
+            "body": "$\\vec a$ 를 원점에서 시작하게 옮겼을 때 끝점의 좌표 $(a_1,a_2)$ 예요. $\\overrightarrow{AB}$ 의 성분은 **끝점 − 시작점**이고, 크기는 $\\lvert\\vec a\\rvert=\\sqrt{a_1^2+a_2^2}$ 예요."
+          },
+          {
+            "term": "내적",
+            "body": "$\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta$. 결과는 벡터가 아니라 **수 하나**예요. $\\theta$ 는 두 벡터의 시작점을 맞췄을 때의 각($0^\\circ\\le\\theta\\le180^\\circ$)이에요."
+          },
+          {
+            "term": "성분으로 내적",
+            "body": "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$. **같은 자리 성분끼리 곱해서 더해요.** 코사인법칙으로 정의와 같은 값임을 보일 수 있어요."
+          },
+          {
+            "term": "수직 조건",
+            "body": "$\\vec a\\perp\\vec b\\iff\\vec a\\cdot\\vec b=0$ (영벡터가 아닐 때). 또 $\\vec a\\cdot\\vec a=\\lvert\\vec a\\rvert^2$ 이에요."
+          }
+        ],
+        "aside": "**확인** · $\\vec a=(1,0)$, $\\vec b=(\\cos\\theta,\\sin\\theta)$ 에 성분 공식을 쓰면 $1\\cdot\\cos\\theta+0\\cdot\\sin\\theta=\\cos\\theta$, 앞 장면의 값과 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "perp",
+        "chip": "직접 그려 보기",
+        "title": "수직인 벡터의 끝점을\n모두 이어 보세요",
+        "lead": "선분은 $\\vec a=(2,1)$ 이에요. $\\vec a$ 에 수직인 벡터 $\\vec b=(x,y)$ 를 원점에서 그리면, 그 끝점은 $\\vec a\\cdot\\vec b=2x+y=0$ 을 만족해요. 이런 끝점이 모두 놓이는 직선을 두 손잡이로 그리고 '확인하기'를 누르세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "line",
+            "x": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "y": {
+              "min": -4,
+              "max": 4,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "a",
+                "curve": "x/2+Abs(sqrt(x*(2-x)))-sqrt(x*(2-x))",
+                "label": "$\\vec a=(2,1)$"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "x": 2,
+                  "y": 1
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "line": {
+                "slope": {
+                  "value": "-2",
+                  "check": "solve(Eq(2*1+1*y, 0), y)[0]"
+                },
+                "intercept": {
+                  "value": "0",
+                  "check": "solve(Eq(2*0+1*y, 0), y)[0]"
+                }
+              }
+            },
+            "intro": "$x=1$ 이면 $2\\cdot1+y=0$ 이에요. 그 점부터 찾아 보세요.",
+            "done": "맞아요. 끝점은 모두 기울기 {{perp}} 인 직선 위에 있어요. 기울기 $\\frac12$ 와 곱하면 $-1$, 고1 때 배운 수직 조건과 같아요."
+          }
+        },
+        "after": "같은 생각으로 점 $A$ 를 지나고 $\\vec n$ 에 수직인 직선은 $(\\vec p-\\vec a)\\cdot\\vec n=0$ 으로 적어요. 점 $A$ 를 지나고 $\\vec u$ 와 평행한 직선은 $\\vec p=\\vec a+t\\vec u$ 예요. ==직선도 벡터 하나로 적을 수 있어요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "circle",
+        "chip": "두 번째 해 보기",
+        "title": "내적이 0 이 되는\n점을 찍어 보세요",
+        "lead": "두 점 $A(-5,0)$, $B(5,0)$ 이 있어요. 가로줄 $y=4$ 위의 점 $P(x,4)$ 중 $\\overrightarrow{PA}\\cdot\\overrightarrow{PB}=0$ 인 점을 찾아 찍으세요. 성분으로 쓰면 $(-5-x)(5-x)+(0-4)^2$ 이 0 이 되는 점이에요. 오른쪽 것을 찍으세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": -6,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": -1,
+              "max": 5,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "h",
+                "curve": "4+0*x",
+                "label": "$y=4$",
+                "tone": "soft"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "x": -5,
+                  "y": 0
+                },
+                "name": "A"
+              },
+              {
+                "id": "B",
+                "point": {
+                  "x": 5,
+                  "y": 0
+                },
+                "name": "B"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "3",
+                  "check": "solve(Eq((x+5)*(x-5)+4**2, 0), x)[1]"
+                },
+                "y": {
+                  "value": "4",
+                  "check": "sqrt(-(3+5)*(3-5))"
+                }
+              }
+            },
+            "intro": "$x^2-25+16=0$ 을 풀어도 되고, 칸을 하나씩 넣어 봐도 돼요.",
+            "done": "맞아요. $x={{px}}$ 에서 $(-8)\\cdot2+16={{pdot}}$ 이에요. $\\angle APB=90^\\circ$ 예요."
+          }
+        },
+        "after": "$\\overrightarrow{PA}\\cdot\\overrightarrow{PB}=0$ 이면 $\\angle APB$ 가 직각이에요. 그래서 이런 점 $P$ 는 모두 ==선분 AB 를 지름으로 하는 원== 위에 있어요. 중심 $C$, 반지름 $r$ 인 원은 $\\lvert\\vec p-\\vec c\\rvert=r$ 로 적어요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $\\vec a=(2,1)$, $\\vec b=(1,3)$ 일 때 $\\lvert\\vec a+\\vec b\\rvert^2$ 을 $\\lvert\\vec a\\rvert^2$ 과 $\\lvert\\vec b\\rvert^2$ 으로 나눠 계산했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(2+1)**2+(1+3)**2"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(2**2+1**2)"
+              },
+              {
+                "sym": "+(1**2+3**2)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "+2*(2*1+1*3)+(1**2+3**2)",
+              "body": "$\\lvert\\vec a+\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2+2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$ 이에요. 가운데 $2\\,\\vec a\\cdot\\vec b$ 를 빠뜨리면 안 돼요. $(x+y)^2$ 에서 $2xy$ 를 빠뜨리는 것과 같은 실수예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $\\vec a=(3,4)$ 일 때 $\\vec a\\cdot\\vec a$ 가 $\\lvert\\vec a\\rvert$ 와 같다고 적었어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "3*3+4*4"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sqrt(3**2+4**2)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "(sqrt(3**2+4**2))**2",
+              "body": "자기 자신과의 내적은 사이각이 $0^\\circ$ 라 $\\lvert\\vec a\\rvert\\lvert\\vec a\\rvert\\cos0^\\circ=\\lvert\\vec a\\rvert^2$ 이에요. 크기가 아니라 **크기의 제곱**이에요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "perpk",
+            "q": "두 벡터 $\\vec a=(2,-1)$, $\\vec b=(k,4)$ 가 서로 수직일 때, 실수 $k$ 의 값을 구하세요.",
+            "hint": "수직이면 내적이 0 이에요. 같은 자리 성분끼리 곱해서 더해요.",
+            "concepts": [
+              "$\\vec a\\perp\\vec b$ 이면 $\\vec a\\cdot\\vec b=0$",
+              "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$"
+            ],
+            "steps": [
+              {
+                "title": "내적을 성분으로",
+                "body": "$$\\vec a\\cdot\\vec b=2\\cdot k+(-1)\\cdot4=2k-4$$"
+              },
+              {
+                "title": "0 으로 놓기",
+                "body": "$2k-4=0$ 이므로 $k={{answer}}$ 예요."
+              }
+            ],
+            "tip": "$\\vec b=(2,4)$ 를 넣어 보면 $4-4=0$ 이에요. 검산은 늘 다시 내적해 보면 돼요.",
+            "answer": "2",
+            "answerType": "int",
+            "check": "solve(Eq(2*k+(-1)*4, 0), k)[0]"
+          },
+          {
+            "id": "angle",
+            "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=2$, $\\lvert\\vec b\\rvert=3$, $\\vec a\\cdot\\vec b=-3$ 을 만족시켜요. 두 벡터가 이루는 각의 크기는 몇 도인가요?",
+            "hint": "정의식 $\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta$ 에 아는 값을 넣어요.",
+            "concepts": [
+              "$\\cos\\theta=\\dfrac{\\vec a\\cdot\\vec b}{\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert}$",
+              "$0^\\circ\\le\\theta\\le180^\\circ$"
+            ],
+            "steps": [
+              {
+                "title": "정의식에 넣기",
+                "body": "$$-3=2\\cdot3\\cdot\\cos\\theta$$"
+              },
+              {
+                "title": "$\\cos\\theta$",
+                "body": "$\\cos\\theta=-\\frac{3}{6}=-\\frac12$ 이에요. 음수라 둔각이에요."
+              },
+              {
+                "title": "각 찾기",
+                "body": "$0^\\circ$ 와 $180^\\circ$ 사이에서 $\\cos\\theta=-\\frac12$ 인 각은 ${{answer}}^\\circ$ 예요."
+              }
+            ],
+            "tip": "부호를 놓치면 $60^\\circ$ 가 나와요. 내적이 음수면 각은 $90^\\circ$ 보다 커요.",
+            "answer": "120",
+            "answerType": "int",
+            "check": "deg(acos(Rational(-3, 2*3)))"
+          },
+          {
+            "id": "square",
+            "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=3$, $\\lvert\\vec b\\rvert=2$, $\\lvert\\vec a+\\vec b\\rvert=\\sqrt{19}$ 를 만족시킬 때, $\\vec a\\cdot\\vec b$ 의 값을 구하세요.",
+            "hint": "크기는 바로 다루기 어려우니 **제곱**해서 내적으로 바꿔요.",
+            "concepts": [
+              "$\\lvert\\vec a+\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2+2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$"
+            ],
+            "steps": [
+              {
+                "title": "양변 제곱",
+                "body": "$$\\lvert\\vec a+\\vec b\\rvert^2=19$$"
+              },
+              {
+                "title": "전개",
+                "body": "$$19=3^2+2\\,\\vec a\\cdot\\vec b+2^2=13+2\\,\\vec a\\cdot\\vec b$$"
+              },
+              {
+                "title": "내적 구하기",
+                "body": "$2\\,\\vec a\\cdot\\vec b=6$ 이므로 $\\vec a\\cdot\\vec b={{answer}}$ 이에요."
+              }
+            ],
+            "tip": "크기 조건이 나오면 제곱해서 내적을 꺼내는 것, 수능 기하에서 가장 자주 쓰는 길이에요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "solve(Eq(3**2+2*d+2**2, 19), d)[0]"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "성분은 **끝점 − 시작점**, 크기는 $\\sqrt{a_1^2+a_2^2}$ 예요.",
+          "$\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta=a_1b_1+a_2b_2$. 예각이면 양수, 수직이면 0, 둔각이면 음수예요.",
+          "크기 조건은 제곱해서 내적으로: $\\lvert\\vec a+\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2+2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$.",
+          "수능에서는 성분 계산(23번)과, 원 위를 움직이는 점의 내적 최대·최소(30번)로 나와요. 최대·최소는 $\\cos\\theta$ 가 $\\pm1$ 이 되는 자리를 찾아요."
+        ],
+        "done": "평면벡터의 성분과 내적 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "geo-vector-dot-size",
+    "geo-vector-dot-comp",
+    "geo-vector-dot-perp",
+    "geo-vector-dot-angle"
+  ],
+  "problems": [
+    {
+      "q": "두 벡터 $\\vec a=(1,-3)$, $\\vec b=(-5,6)$ 에 대하여 $\\lvert\\vec a+\\vec b\\rvert$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt((1+(-5))**2+(-3+(6))**2)",
+      "concepts": [
+        "$\\vec a=(a_1,a_2)$ 이면 $\\lvert\\vec a\\rvert=\\sqrt{a_1^2+a_2^2}$ 이에요.",
+        "벡터끼리 더하거나 뺄 때는 같은 자리 성분끼리 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "성분끼리 계산",
+          "body": "$$\\vec a+\\vec b=(1+(-5),\\ -3+6)=(-4,3)$$"
+        },
+        {
+          "title": "제곱해서 더하기",
+          "body": "$$(-4)^2+3^2=16+9=25$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$\\lvert\\vec a+\\vec b\\rvert=\\sqrt{25}=5$ 예요."
+        }
+      ],
+      "tip": "$\\lvert\\vec a\\rvert+\\lvert\\vec b\\rvert$ 처럼 크기끼리 더하면 안 돼요. 두 벡터의 방향이 다르면 값이 달라져요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "geo-vector-dot-size",
+      "seed": 1000
+    },
+    {
+      "q": "세 점 $A(-2,-3)$, $B(-4,-2)$, $C(2,-2)$ 에 대하여 $\\overrightarrow{AB}\\cdot\\overrightarrow{AC}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-7",
+      "answerType": "int",
+      "check": "(-4-(-2))*(2-(-2))+(-2-(-3))*(-2-(-3))",
+      "concepts": [
+        "$A(x_1,y_1)$, $B(x_2,y_2)$ 이면 $\\overrightarrow{AB}=(x_2-x_1,\\ y_2-y_1)$ 이에요.",
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$ — 같은 자리 성분끼리 곱해서 더해요."
+      ],
+      "steps": [
+        {
+          "title": "$\\overrightarrow{AB}$ 의 성분",
+          "body": "끝점에서 시작점을 빼요.\n$$\\overrightarrow{AB}=(-4-(-2),\\ -2-(-3))=(-2,1)$$"
+        },
+        {
+          "title": "$\\overrightarrow{AC}$ 의 성분",
+          "body": "$$\\overrightarrow{AC}=(2-(-2),\\ -2-(-3))=(4,1)$$"
+        },
+        {
+          "title": "내적",
+          "body": "$$(-2)\\cdot4+1\\cdot1=-8+1=-7$$"
+        }
+      ],
+      "tip": "시작점이 같은 두 벡터를 만들어야 해요. $\\overrightarrow{AB}$ 는 $B-A$, 끝점에서 시작점을 빼요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "geo-vector-dot-comp",
+      "seed": 1001
+    },
+    {
+      "q": "두 벡터 $\\vec a=(-3,3)$, $\\vec b=(k-3,4)$ 가 서로 수직일 때, 실수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "solve(Eq(-3*(k+(-3))+(3)*(4), 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\perp\\vec b$ 이면 $\\vec a\\cdot\\vec b=0$ 이에요.",
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$ — 같은 자리 성분끼리 곱해서 더해요."
+      ],
+      "steps": [
+        {
+          "title": "수직이면 내적이 0",
+          "body": "$$(-3)(k-3)+3\\cdot4=0$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$-3(k-3)=-12$$"
+        },
+        {
+          "title": "$k$ 구하기",
+          "body": "$k-3=4$ 이므로 $k=7$ 이에요."
+        }
+      ],
+      "tip": "구한 $k$ 를 넣어 $\\vec a\\cdot\\vec b$ 를 다시 계산하면 0 이 나와야 해요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "geo-vector-dot-perp",
+      "seed": 1002
+    },
+    {
+      "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=3$, $\\lvert\\vec b\\rvert=2$ 이고, 두 벡터가 이루는 각의 크기가 $120^\\circ$ 일 때, $\\lvert\\vec a-\\vec b\\rvert^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "19",
+      "answerType": "int",
+      "check": "(3-2*cos(rad(120)))**2+(0-2*sin(rad(120)))**2",
+      "concepts": [
+        "$\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta$",
+        "$\\lvert\\vec a\\pm\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2\\pm2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$"
+      ],
+      "steps": [
+        {
+          "title": "내적",
+          "body": "$\\cos120^\\circ=-\\frac12$ 이므로\n$$\\vec a\\cdot\\vec b=3\\cdot2\\cdot\\left(-\\frac12\\right)=-3$$"
+        },
+        {
+          "title": "전개해서 넣기",
+          "body": "$$\\lvert\\vec a-\\vec b\\rvert^2=3^2-2\\cdot\\left(-3\\right)+2^2=9+6+4=19$$"
+        }
+      ],
+      "tip": "가운데 $2\\,\\vec a\\cdot\\vec b$ 를 빠뜨리면 $\\lvert\\vec a\\rvert^2+\\lvert\\vec b\\rvert^2$ 만 남아요. 가장 흔한 실수예요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "geo-vector-dot-angle",
+      "seed": 1003
+    },
+    {
+      "q": "두 벡터 $\\vec a=(0,-4)$, $\\vec b=(-4,1)$ 에 대하여 $\\lvert\\vec a+\\vec b\\rvert$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt((0+(-4))**2+(-4+(1))**2)",
+      "concepts": [
+        "$\\vec a=(a_1,a_2)$ 이면 $\\lvert\\vec a\\rvert=\\sqrt{a_1^2+a_2^2}$ 이에요.",
+        "벡터끼리 더하거나 뺄 때는 같은 자리 성분끼리 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "성분끼리 계산",
+          "body": "$$\\vec a+\\vec b=(0+(-4),\\ -4+1)=(-4,-3)$$"
+        },
+        {
+          "title": "제곱해서 더하기",
+          "body": "$$(-4)^2+(-3)^2=16+9=25$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$\\lvert\\vec a+\\vec b\\rvert=\\sqrt{25}=5$ 예요."
+        }
+      ],
+      "tip": "$\\lvert\\vec a\\rvert+\\lvert\\vec b\\rvert$ 처럼 크기끼리 더하면 안 돼요. 두 벡터의 방향이 다르면 값이 달라져요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "geo-vector-dot-size",
+      "seed": 1004
+    },
+    {
+      "q": "세 점 $A(1,0)$, $B(2,2)$, $C(-1,-2)$ 에 대하여 $\\overrightarrow{AB}\\cdot\\overrightarrow{AC}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-6",
+      "answerType": "int",
+      "check": "(2-(1))*(-1-(1))+(2-(0))*(-2-(0))",
+      "concepts": [
+        "$A(x_1,y_1)$, $B(x_2,y_2)$ 이면 $\\overrightarrow{AB}=(x_2-x_1,\\ y_2-y_1)$ 이에요.",
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$ — 같은 자리 성분끼리 곱해서 더해요."
+      ],
+      "steps": [
+        {
+          "title": "$\\overrightarrow{AB}$ 의 성분",
+          "body": "끝점에서 시작점을 빼요.\n$$\\overrightarrow{AB}=(2-1,\\ 2-0)=(1,2)$$"
+        },
+        {
+          "title": "$\\overrightarrow{AC}$ 의 성분",
+          "body": "$$\\overrightarrow{AC}=(-1-1,\\ -2-0)=(-2,-2)$$"
+        },
+        {
+          "title": "내적",
+          "body": "$$1\\cdot(-2)+2\\cdot(-2)=-2-4=-6$$"
+        }
+      ],
+      "tip": "시작점이 같은 두 벡터를 만들어야 해요. $\\overrightarrow{AB}$ 는 $B-A$, 끝점에서 시작점을 빼요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "geo-vector-dot-comp",
+      "seed": 1005
+    },
+    {
+      "q": "두 벡터 $\\vec a=(-1,3)$, $\\vec b=(3,k-3)$ 가 서로 수직일 때, 실수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "solve(Eq(-1*(3)+(3)*(k+(-3)), 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\perp\\vec b$ 이면 $\\vec a\\cdot\\vec b=0$ 이에요.",
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$ — 같은 자리 성분끼리 곱해서 더해요."
+      ],
+      "steps": [
+        {
+          "title": "수직이면 내적이 0",
+          "body": "$$(-1)\\cdot3+3(k-3)=0$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$3(k-3)=3$$"
+        },
+        {
+          "title": "$k$ 구하기",
+          "body": "$k-3=1$ 이므로 $k=4$ 예요."
+        }
+      ],
+      "tip": "구한 $k$ 를 넣어 $\\vec a\\cdot\\vec b$ 를 다시 계산하면 0 이 나와야 해요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "geo-vector-dot-perp",
+      "seed": 1006
+    },
+    {
+      "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=6$, $\\lvert\\vec b\\rvert=2$ 이고, 두 벡터가 이루는 각의 크기가 $60^\\circ$ 일 때, $\\lvert\\vec a+\\vec b\\rvert^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "52",
+      "answerType": "int",
+      "check": "(6+2*cos(rad(60)))**2+(0+2*sin(rad(60)))**2",
+      "concepts": [
+        "$\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta$",
+        "$\\lvert\\vec a\\pm\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2\\pm2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$"
+      ],
+      "steps": [
+        {
+          "title": "내적",
+          "body": "$\\cos60^\\circ=\\frac12$ 이므로\n$$\\vec a\\cdot\\vec b=6\\cdot2\\cdot\\frac12=6$$"
+        },
+        {
+          "title": "전개해서 넣기",
+          "body": "$$\\lvert\\vec a+\\vec b\\rvert^2=6^2+2\\cdot6+2^2=36+12+4=52$$"
+        }
+      ],
+      "tip": "가운데 $2\\,\\vec a\\cdot\\vec b$ 를 빠뜨리면 $\\lvert\\vec a\\rvert^2+\\lvert\\vec b\\rvert^2$ 만 남아요. 가장 흔한 실수예요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "geo-vector-dot-angle",
+      "seed": 1007
+    },
+    {
+      "q": "두 벡터 $\\vec a=(1,3)$, $\\vec b=(4,-1)$ 에 대하여 $\\lvert\\vec a-\\vec b\\rvert$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt((1-(4))**2+(3-(-1))**2)",
+      "concepts": [
+        "$\\vec a=(a_1,a_2)$ 이면 $\\lvert\\vec a\\rvert=\\sqrt{a_1^2+a_2^2}$ 이에요.",
+        "벡터끼리 더하거나 뺄 때는 같은 자리 성분끼리 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "성분끼리 계산",
+          "body": "$$\\vec a-\\vec b=(1-4,\\ 3-(-1))=(-3,4)$$"
+        },
+        {
+          "title": "제곱해서 더하기",
+          "body": "$$(-3)^2+4^2=9+16=25$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$\\lvert\\vec a-\\vec b\\rvert=\\sqrt{25}=5$ 예요."
+        }
+      ],
+      "tip": "$\\lvert\\vec a\\rvert-\\lvert\\vec b\\rvert$ 처럼 크기끼리 빼면 안 돼요. 두 벡터의 방향이 다르면 값이 달라져요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "geo-vector-dot-size",
+      "seed": 1008
+    },
+    {
+      "q": "두 벡터 $\\vec a=(1,-1)$, $\\vec b=(-1,2)$ 의 내적 $\\vec a\\cdot\\vec b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3",
+      "answerType": "int",
+      "check": "1*(-1)+(-1)*(2)",
+      "concepts": [
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$ — 같은 자리 성분끼리 곱해서 더해요."
+      ],
+      "steps": [
+        {
+          "title": "같은 자리끼리 곱하기",
+          "body": "$x$ 성분끼리 $1\\cdot(-1)=-1$, $y$ 성분끼리 $(-1)\\cdot2=-2$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\vec a\\cdot\\vec b=-1-2=-3$$"
+        }
+      ],
+      "tip": "엇갈려 곱하면($a_1b_2$) 안 돼요. 내적은 벡터가 아니라 **수 하나**예요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "geo-vector-dot-comp",
+      "seed": 1009
+    },
+    {
+      "q": "두 벡터 $\\vec a=(-1,3)$, $\\vec b=(k+3,-2)$ 가 서로 수직일 때, 실수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-9",
+      "answerType": "int",
+      "check": "solve(Eq(-1*(k+(3))+(3)*(-2), 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\perp\\vec b$ 이면 $\\vec a\\cdot\\vec b=0$ 이에요.",
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$ — 같은 자리 성분끼리 곱해서 더해요."
+      ],
+      "steps": [
+        {
+          "title": "수직이면 내적이 0",
+          "body": "$$-(k+3)+3\\cdot(-2)=0$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$-(k+3)=6$$"
+        },
+        {
+          "title": "$k$ 구하기",
+          "body": "$k+3=-6$ 이므로 $k=-9$ 예요."
+        }
+      ],
+      "tip": "구한 $k$ 를 넣어 $\\vec a\\cdot\\vec b$ 를 다시 계산하면 0 이 나와야 해요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "geo-vector-dot-perp",
+      "seed": 1010
+    },
+    {
+      "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=6$, $\\lvert\\vec b\\rvert=5$ 이고, 두 벡터가 이루는 각의 크기가 $120^\\circ$ 일 때, $\\lvert\\vec a-\\vec b\\rvert^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "91",
+      "answerType": "int",
+      "check": "(6-5*cos(rad(120)))**2+(0-5*sin(rad(120)))**2",
+      "concepts": [
+        "$\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta$",
+        "$\\lvert\\vec a\\pm\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2\\pm2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$"
+      ],
+      "steps": [
+        {
+          "title": "내적",
+          "body": "$\\cos120^\\circ=-\\frac12$ 이므로\n$$\\vec a\\cdot\\vec b=6\\cdot5\\cdot\\left(-\\frac12\\right)=-15$$"
+        },
+        {
+          "title": "전개해서 넣기",
+          "body": "$$\\lvert\\vec a-\\vec b\\rvert^2=6^2-2\\cdot\\left(-15\\right)+5^2=36+30+25=91$$"
+        }
+      ],
+      "tip": "가운데 $2\\,\\vec a\\cdot\\vec b$ 를 빠뜨리면 $\\lvert\\vec a\\rvert^2+\\lvert\\vec b\\rvert^2$ 만 남아요. 가장 흔한 실수예요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "geo-vector-dot-angle",
+      "seed": 1011
+    },
+    {
+      "q": "두 벡터 $\\vec a=(3,-1)$, $\\vec b=(1,-2)$ 에 대하여 $\\lvert\\vec a+\\vec b\\rvert$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt((3+(1))**2+(-1+(-2))**2)",
+      "concepts": [
+        "$\\vec a=(a_1,a_2)$ 이면 $\\lvert\\vec a\\rvert=\\sqrt{a_1^2+a_2^2}$ 이에요.",
+        "벡터끼리 더하거나 뺄 때는 같은 자리 성분끼리 계산해요."
+      ],
+      "steps": [
+        {
+          "title": "성분끼리 계산",
+          "body": "$$\\vec a+\\vec b=(3+1,\\ -1+(-2))=(4,-3)$$"
+        },
+        {
+          "title": "제곱해서 더하기",
+          "body": "$$4^2+(-3)^2=16+9=25$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$\\lvert\\vec a+\\vec b\\rvert=\\sqrt{25}=5$ 예요."
+        }
+      ],
+      "tip": "$\\lvert\\vec a\\rvert+\\lvert\\vec b\\rvert$ 처럼 크기끼리 더하면 안 돼요. 두 벡터의 방향이 다르면 값이 달라져요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "geo-vector-dot-size",
+      "seed": 1012
+    },
+    {
+      "q": "세 점 $A(-2,1)$, $B(0,-2)$, $C(2,0)$ 에 대하여 $\\overrightarrow{AB}\\cdot\\overrightarrow{AC}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "(0-(-2))*(2-(-2))+(-2-(1))*(0-(1))",
+      "concepts": [
+        "$A(x_1,y_1)$, $B(x_2,y_2)$ 이면 $\\overrightarrow{AB}=(x_2-x_1,\\ y_2-y_1)$ 이에요.",
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$ — 같은 자리 성분끼리 곱해서 더해요."
+      ],
+      "steps": [
+        {
+          "title": "$\\overrightarrow{AB}$ 의 성분",
+          "body": "끝점에서 시작점을 빼요.\n$$\\overrightarrow{AB}=(0-(-2),\\ -2-1)=(2,-3)$$"
+        },
+        {
+          "title": "$\\overrightarrow{AC}$ 의 성분",
+          "body": "$$\\overrightarrow{AC}=(2-(-2),\\ 0-1)=(4,-1)$$"
+        },
+        {
+          "title": "내적",
+          "body": "$$2\\cdot4+(-3)\\cdot(-1)=8+3=11$$"
+        }
+      ],
+      "tip": "시작점이 같은 두 벡터를 만들어야 해요. $\\overrightarrow{AB}$ 는 $B-A$, 끝점에서 시작점을 빼요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "geo-vector-dot-comp",
+      "seed": 1013
+    },
+    {
+      "q": "두 벡터 $\\vec a=(-3,3)$, $\\vec b=(5,k+3)$ 가 서로 수직일 때, 실수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "solve(Eq(-3*(5)+(3)*(k+(3)), 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\perp\\vec b$ 이면 $\\vec a\\cdot\\vec b=0$ 이에요.",
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$ — 같은 자리 성분끼리 곱해서 더해요."
+      ],
+      "steps": [
+        {
+          "title": "수직이면 내적이 0",
+          "body": "$$(-3)\\cdot5+3(k+3)=0$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$$3(k+3)=15$$"
+        },
+        {
+          "title": "$k$ 구하기",
+          "body": "$k+3=5$ 이므로 $k=2$ 예요."
+        }
+      ],
+      "tip": "구한 $k$ 를 넣어 $\\vec a\\cdot\\vec b$ 를 다시 계산하면 0 이 나와야 해요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "geo-vector-dot-perp",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "두 점 $A(1,-2)$, $B(4,2)$ 에 대하여 벡터 $\\overrightarrow{AB}$ 의 크기를 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "sqrt((4-1)**2+(2-(-2))**2)",
+      "concepts": [
+        "$\\overrightarrow{AB}=(x_2-x_1,\\ y_2-y_1)$",
+        "$\\lvert\\vec a\\rvert=\\sqrt{a_1^2+a_2^2}$"
+      ],
+      "steps": [
+        {
+          "title": "성분 구하기",
+          "body": "끝점에서 시작점을 빼요.\n$$\\overrightarrow{AB}=(4-1,\\ 2-(-2))=(3,4)$$"
+        },
+        {
+          "title": "크기",
+          "body": "$$\\lvert\\overrightarrow{AB}\\rvert=\\sqrt{3^2+4^2}=\\sqrt{25}=5$$"
+        }
+      ],
+      "tip": "두 점 사이의 거리 $\\overline{AB}$ 와 같은 값이에요. 벡터의 크기는 화살표의 길이예요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a=(3,-1)$, $\\vec b=(-2,4)$ 에 대하여 $\\vec a\\cdot\\vec b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-10",
+      "answerType": "int",
+      "check": "3*(-2)+(-1)*4",
+      "concepts": [
+        "$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2$"
+      ],
+      "steps": [
+        {
+          "title": "같은 자리끼리 곱하기",
+          "body": "$x$ 성분끼리 $3\\cdot(-2)=-6$, $y$ 성분끼리 $(-1)\\cdot4=-4$ 예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\vec a\\cdot\\vec b=-6+(-4)=-10$$"
+        }
+      ],
+      "tip": "내적이 음수이니 두 벡터가 이루는 각은 둔각이에요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a=(2,k)$, $\\vec b=(k-3,4)$ 가 서로 수직일 때, 실수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "solve(Eq(2*(k-3)+k*4, 0), k)[0]",
+      "concepts": [
+        "$\\vec a\\perp\\vec b$ 이면 $\\vec a\\cdot\\vec b=0$"
+      ],
+      "steps": [
+        {
+          "title": "내적 = 0",
+          "body": "$$2(k-3)+k\\cdot4=0$$"
+        },
+        {
+          "title": "정리",
+          "body": "$2k-6+4k=0$, $6k=6$ 이에요."
+        },
+        {
+          "title": "답",
+          "body": "$k=1$ 이에요."
+        }
+      ],
+      "tip": "$k=1$ 을 넣으면 $\\vec a=(2,1)$, $\\vec b=(-2,4)$ 이고 $-4+4=0$ 이에요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a=(2,1)$, $\\vec b=(1,3)$ 이 이루는 각의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "45",
+      "answerType": "int",
+      "check": "deg(acos((2*1+1*3)/(sqrt(2**2+1**2)*sqrt(1**2+3**2))))",
+      "concepts": [
+        "$\\cos\\theta=\\dfrac{\\vec a\\cdot\\vec b}{\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert}$"
+      ],
+      "steps": [
+        {
+          "title": "내적",
+          "body": "$\\vec a\\cdot\\vec b=2\\cdot1+1\\cdot3=5$ 예요."
+        },
+        {
+          "title": "크기",
+          "body": "$\\lvert\\vec a\\rvert=\\sqrt5$, $\\lvert\\vec b\\rvert=\\sqrt{10}$ 이에요."
+        },
+        {
+          "title": "$\\cos\\theta$",
+          "body": "$$\\cos\\theta=\\frac{5}{\\sqrt5\\cdot\\sqrt{10}}=\\frac{5}{5\\sqrt2}=\\frac{\\sqrt2}{2}$$"
+        },
+        {
+          "title": "각",
+          "body": "$\\cos\\theta=\\frac{\\sqrt2}{2}$ 인 각은 $45^\\circ$ 예요."
+        }
+      ],
+      "tip": "$\\sqrt5\\cdot\\sqrt{10}=\\sqrt{50}=5\\sqrt2$ 처럼 근호를 먼저 정리하면 계산이 짧아져요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=2$, $\\lvert\\vec b\\rvert=4$ 이고 이루는 각의 크기가 $60^\\circ$ 일 때, $\\vec a\\cdot\\vec b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "2*4*cos(rad(60))",
+      "concepts": [
+        "$\\vec a\\cdot\\vec b=\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "정의식",
+          "body": "$$\\vec a\\cdot\\vec b=2\\cdot4\\cdot\\cos60^\\circ$$"
+        },
+        {
+          "title": "계산",
+          "body": "$\\cos60^\\circ=\\frac12$ 이므로 $8\\times\\frac12=4$ 예요."
+        }
+      ],
+      "tip": "$\\vec b$ 의 그림자 길이 $4\\cos60^\\circ=2$ 에 $\\lvert\\vec a\\rvert=2$ 를 곱한 것과 같아요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=3$, $\\lvert\\vec b\\rvert=2$, $\\vec a\\cdot\\vec b=2$ 를 만족시킬 때, $\\lvert\\vec a-\\vec b\\rvert$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "sqrt(3**2-2*2+2**2)",
+      "concepts": [
+        "$\\lvert\\vec a-\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2-2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$"
+      ],
+      "steps": [
+        {
+          "title": "제곱해서 전개",
+          "body": "$$\\lvert\\vec a-\\vec b\\rvert^2=3^2-2\\cdot2+2^2=9-4+4=9$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$\\lvert\\vec a-\\vec b\\rvert=\\sqrt9=3$ 이에요."
+        }
+      ],
+      "tip": "빼기일 때는 가운데 항의 부호가 $-$ 예요. $(x-y)^2=x^2-2xy+y^2$ 와 같은 모양이에요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=1$, $\\lvert\\vec b\\rvert=2$, $\\lvert\\vec a+\\vec b\\rvert=\\sqrt7$ 을 만족시킬 때, 두 벡터가 이루는 각의 크기는 몇 도인가요?",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "check": "deg(acos(Rational(7-1**2-2**2, 2)/(1*2)))",
+      "concepts": [
+        "$\\lvert\\vec a+\\vec b\\rvert^2=\\lvert\\vec a\\rvert^2+2\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$",
+        "$\\cos\\theta=\\dfrac{\\vec a\\cdot\\vec b}{\\lvert\\vec a\\rvert\\lvert\\vec b\\rvert}$"
+      ],
+      "steps": [
+        {
+          "title": "제곱해서 내적 꺼내기",
+          "body": "$$7=1^2+2\\,\\vec a\\cdot\\vec b+2^2$$\n이므로 $2\\,\\vec a\\cdot\\vec b=2$, $\\vec a\\cdot\\vec b=1$ 이에요."
+        },
+        {
+          "title": "$\\cos\\theta$",
+          "body": "$$\\cos\\theta=\\frac{1}{1\\cdot2}=\\frac12$$"
+        },
+        {
+          "title": "각",
+          "body": "$\\theta=60^\\circ$ 예요."
+        }
+      ],
+      "tip": "크기 → 제곱 → 내적 → 각. 이 순서가 이 단원의 기본 흐름이에요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=3$, $\\lvert\\vec b\\rvert=2$ 이고, 두 벡터 $\\vec a+\\vec b$ 와 $\\vec a-2\\vec b$ 가 서로 수직일 때, $\\vec a\\cdot\\vec b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "solve(Eq(3**2-2*d+d-2*2**2, 0), d)[0]",
+      "concepts": [
+        "수직이면 내적이 0",
+        "$\\vec a\\cdot\\vec a=\\lvert\\vec a\\rvert^2$"
+      ],
+      "steps": [
+        {
+          "title": "수직 → 내적 0",
+          "body": "$$(\\vec a+\\vec b)\\cdot(\\vec a-2\\vec b)=0$$"
+        },
+        {
+          "title": "다항식처럼 전개",
+          "body": "$$\\lvert\\vec a\\rvert^2-2\\,\\vec a\\cdot\\vec b+\\vec b\\cdot\\vec a-2\\lvert\\vec b\\rvert^2=0$$"
+        },
+        {
+          "title": "값 넣기",
+          "body": "$9-\\vec a\\cdot\\vec b-8=0$ 이므로 $\\vec a\\cdot\\vec b=1$ 이에요."
+        }
+      ],
+      "tip": "내적은 곱셈처럼 분배할 수 있고 $\\vec a\\cdot\\vec b=\\vec b\\cdot\\vec a$ 예요. 그래서 다항식 전개처럼 다루면 돼요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "점 $A(2,1)$ 을 지나고 벡터 $\\vec n=(3,-2)$ 에 수직인 직선을 $(\\vec p-\\vec a)\\cdot\\vec n=0$ 으로 나타냈어요. 이 직선의 $y$절편을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "solve(Eq(3*(0-2)+(-2)*(y-1), 0), y)[0]",
+      "concepts": [
+        "$\\vec p=(x,y)$ 이면 $(\\vec p-\\vec a)\\cdot\\vec n=0$ 은 $n_1(x-x_1)+n_2(y-y_1)=0$"
+      ],
+      "steps": [
+        {
+          "title": "성분으로 풀어 쓰기",
+          "body": "$\\vec p-\\vec a=(x-2,\\ y-1)$ 이므로\n$$3(x-2)-2(y-1)=0$$"
+        },
+        {
+          "title": "$x=0$ 넣기",
+          "body": "$-6-2y+2=0$ 이에요."
+        },
+        {
+          "title": "답",
+          "body": "$-2y=4$, $y=-2$ 예요."
+        }
+      ],
+      "tip": "정리하면 $3x-2y-4=0$ 이에요. $x$, $y$ 의 계수 $(3,-2)$ 가 바로 수직인 벡터 $\\vec n$ 이에요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "두 점 $A(-1,2)$, $B(5,10)$ 에 대하여 $(\\vec p-\\vec a)\\cdot(\\vec p-\\vec b)=0$ 을 만족시키는 점 $P$ 가 그리는 도형의 넓이가 $k\\pi$ 일 때, $k$ 의 값을 구하세요. (단, $\\vec a$, $\\vec b$, $\\vec p$ 는 각각 점 $A$, $B$, $P$ 의 위치벡터)",
+      "choices": null,
+      "answer": "25",
+      "answerType": "int",
+      "check": "Rational((5-(-1))**2+(10-2)**2, 4)",
+      "concepts": [
+        "$\\overrightarrow{PA}\\cdot\\overrightarrow{PB}=0$ 이면 $\\angle APB=90^\\circ$",
+        "지름에 대한 원주각은 $90^\\circ$"
+      ],
+      "steps": [
+        {
+          "title": "식의 뜻",
+          "body": "$\\vec p-\\vec a=\\overrightarrow{AP}$, $\\vec p-\\vec b=\\overrightarrow{BP}$ 이고 내적이 0 이니 $\\angle APB=90^\\circ$ 예요."
+        },
+        {
+          "title": "도형",
+          "body": "점 $P$ 는 $AB$ 를 지름으로 하는 원 위에 있어요."
+        },
+        {
+          "title": "지름",
+          "body": "$$\\overline{AB}=\\sqrt{6^2+8^2}=10$$\n이므로 반지름은 5 예요."
+        },
+        {
+          "title": "넓이",
+          "body": "$\\pi\\cdot5^2=25\\pi$ 이므로 $k=25$ 예요."
+        }
+      ],
+      "tip": "$P$ 가 $A$ 나 $B$ 와 겹쳐도 내적이 0 이라 원 전체가 돼요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "두 벡터 $\\vec a=(3,1)$, $\\vec b=(1,-2)$ 에 대하여 벡터 $2\\vec a+\\vec b$ 의 모든 성분의 합은?",
+      "choices": [
+        "$5$",
+        "$6$",
+        "$7$",
+        "$8$",
+        "$9$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "(2*3+1)+(2*1+(-2))",
+      "choiceChecks": [
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "concepts": [
+        "실수배와 덧셈은 성분끼리 해요."
+      ],
+      "steps": [
+        {
+          "title": "실수배",
+          "body": "$2\\vec a=(6,2)$ 예요."
+        },
+        {
+          "title": "덧셈",
+          "body": "$2\\vec a+\\vec b=(6+1,\\ 2+(-2))=(7,0)$ 이에요."
+        },
+        {
+          "title": "성분의 합",
+          "body": "$7+0=7$ 이에요."
+        }
+      ],
+      "tip": "$y$ 성분이 0 이 되어도 성분이에요. 빼먹지 말고 더해요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "두 벡터 $\\vec a$, $\\vec b$ 가 $\\lvert\\vec a\\rvert=2$, $\\lvert\\vec b\\rvert=3$, $\\lvert2\\vec a-\\vec b\\rvert=\\sqrt{13}$ 을 만족시킬 때, $\\vec a\\cdot\\vec b$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "solve(Eq(4*2**2-4*d+3**2, 13), d)[0]",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "$\\lvert2\\vec a-\\vec b\\rvert^2=4\\lvert\\vec a\\rvert^2-4\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$"
+      ],
+      "steps": [
+        {
+          "title": "제곱해서 전개",
+          "body": "$$\\lvert2\\vec a-\\vec b\\rvert^2=4\\lvert\\vec a\\rvert^2-4\\,\\vec a\\cdot\\vec b+\\lvert\\vec b\\rvert^2$$"
+        },
+        {
+          "title": "값 넣기",
+          "body": "$13=16-4\\,\\vec a\\cdot\\vec b+9$ 예요."
+        },
+        {
+          "title": "답",
+          "body": "$4\\,\\vec a\\cdot\\vec b=12$, $\\vec a\\cdot\\vec b=3$ 이에요."
+        }
+      ],
+      "tip": "$2\\vec a$ 의 크기의 제곱은 $4\\lvert\\vec a\\rvert^2$, 가운데 항은 $2\\cdot2\\,\\vec a\\cdot\\vec b=4\\,\\vec a\\cdot\\vec b$ 예요. 계수를 따로따로 챙겨요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "좌표평면에서 두 점 $A(3,0)$, $B(0,4)$ 와 원 $x^2+y^2=1$ 위를 움직이는 점 $P$ 가 있어요. $\\overrightarrow{PA}\\cdot\\overrightarrow{PB}$ 의 최댓값을 $M$, 최솟값을 $m$ 이라 할 때, $M-m$ 의 값은?",
+      "choices": [
+        "$6$",
+        "$8$",
+        "$10$",
+        "$12$",
+        "$14$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "maximum((3-cos(t))*(0-cos(t))+(0-sin(t))*(4-sin(t)), t, Interval(0, 2*pi)) - minimum((3-cos(t))*(0-cos(t))+(0-sin(t))*(4-sin(t)), t, Interval(0, 2*pi))",
+      "choiceChecks": [
+        "6",
+        "8",
+        "10",
+        "12",
+        "14"
+      ],
+      "concepts": [
+        "원점 $O$ 를 거쳐 쪼개기: $\\overrightarrow{PA}=\\vec a-\\vec p$",
+        "$\\vec u\\cdot\\vec p=\\lvert\\vec u\\rvert\\lvert\\vec p\\rvert\\cos\\theta$ 는 $\\cos\\theta=\\pm1$ 일 때 최대·최소"
+      ],
+      "steps": [
+        {
+          "title": "위치벡터로 쓰기",
+          "body": "$\\overrightarrow{PA}=\\vec a-\\vec p$, $\\overrightarrow{PB}=\\vec b-\\vec p$ 예요."
+        },
+        {
+          "title": "전개",
+          "body": "$$(\\vec a-\\vec p)\\cdot(\\vec b-\\vec p)=\\vec a\\cdot\\vec b-(\\vec a+\\vec b)\\cdot\\vec p+\\lvert\\vec p\\rvert^2$$"
+        },
+        {
+          "title": "아는 값 넣기",
+          "body": "$\\vec a\\cdot\\vec b=3\\cdot0+0\\cdot4=0$, $\\lvert\\vec p\\rvert=1$ 이고 $\\vec a+\\vec b=(3,4)$ 예요. 그래서 식은 $1-(3,4)\\cdot\\vec p$ 예요."
+        },
+        {
+          "title": "움직이는 부분",
+          "body": "$(3,4)\\cdot\\vec p=5\\cdot1\\cdot\\cos\\theta$ 는 $-5$ 부터 $5$ 까지 움직여요."
+        },
+        {
+          "title": "최대·최소",
+          "body": "$M=1+5=6$, $m=1-5=-4$ 이므로 $M-m=10$ 이에요."
+        }
+      ],
+      "tip": "움직이는 점이 들어간 내적은 '고정된 벡터 · 움직이는 벡터' 꼴로 모은 뒤 $\\cos\\theta=\\pm1$ 을 생각해요. 수능 기하 30번의 기본 뼈대예요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "점 $A(2,1)$ 을 지나고 벡터 $\\vec n=(1,2)$ 에 수직인 직선의 $x$절편과 $y$절편의 합은?",
+      "choices": [
+        "$4$",
+        "$5$",
+        "$6$",
+        "$7$",
+        "$8$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "solve(Eq((x-2)+2*(0-1), 0), x)[0] + solve(Eq((0-2)+2*(y-1), 0), y)[0]",
+      "choiceChecks": [
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "concepts": [
+        "점 $A$ 를 지나고 $\\vec n$ 에 수직인 직선: $(\\vec p-\\vec a)\\cdot\\vec n=0$"
+      ],
+      "steps": [
+        {
+          "title": "직선의 식",
+          "body": "$$1\\cdot(x-2)+2(y-1)=0$$\n곧 $x+2y-4=0$ 이에요."
+        },
+        {
+          "title": "$x$절편",
+          "body": "$y=0$ 이면 $x=4$ 예요."
+        },
+        {
+          "title": "$y$절편",
+          "body": "$x=0$ 이면 $2y=4$, $y=2$ 예요."
+        },
+        {
+          "title": "합",
+          "body": "$4+2=6$ 이에요."
+        }
+      ],
+      "tip": "$\\vec n$ 을 방향벡터로 착각하면 기울기가 $2$ 인 직선을 쓰게 돼요. 수직인 벡터면 기울기는 $-\\frac12$ 예요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "한 변의 길이가 2 인 정삼각형 $ABC$ 에서 $\\overrightarrow{AB}\\cdot\\overrightarrow{BC}$ 의 값은?",
+      "choices": [
+        "$-4$",
+        "$-2$",
+        "$0$",
+        "$2$",
+        "$4$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "(2-0)*(1-2)+(0-0)*(sqrt(3)-0)",
+      "choiceChecks": [
+        "-4",
+        "-2",
+        "0",
+        "2",
+        "4"
+      ],
+      "concepts": [
+        "내적의 각은 두 벡터의 **시작점을 맞춰** 잰다"
+      ],
+      "steps": [
+        {
+          "title": "시작점 맞추기",
+          "body": "$\\overrightarrow{AB}$ 를 $B$ 에서 시작하게 옮기면, $\\overrightarrow{BC}$ 와 이루는 각은 $\\angle ABC$ 의 바깥쪽 $180^\\circ-60^\\circ=120^\\circ$ 예요."
+        },
+        {
+          "title": "정의식",
+          "body": "$$\\overrightarrow{AB}\\cdot\\overrightarrow{BC}=2\\cdot2\\cdot\\cos120^\\circ=4\\cdot\\left(-\\frac12\\right)=-2$$"
+        }
+      ],
+      "tip": "꼭짓점 $B$ 의 내각 $60^\\circ$ 를 그대로 쓰면 $2$ 가 나와요. 좌표 $A(0,0)$, $B(2,0)$, $C(1,\\sqrt3)$ 로 놓고 성분으로 계산해도 $-2$ 예요."
+    }
+  ]
+}
