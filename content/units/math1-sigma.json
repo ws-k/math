@@ -1,0 +1,1423 @@
+{
+  "id": "math1-sigma",
+  "course": "수학Ⅰ",
+  "unit": "수열",
+  "title": "수열의 합",
+  "prereq": [
+    "math1-arith-geo"
+  ],
+  "suneung": [
+    "공통 3",
+    "공통 20"
+  ],
+  "hours": 3.5,
+  "formulas": [
+    "$\\sum_{k=1}^{n}a_k=a_1+a_2+\\cdots+a_n$",
+    "$\\sum_{k=1}^{n}(a_k\\pm b_k)=\\sum_{k=1}^{n}a_k\\pm\\sum_{k=1}^{n}b_k$, $\\sum_{k=1}^{n}ca_k=c\\sum_{k=1}^{n}a_k$, $\\sum_{k=1}^{n}c=cn$",
+    "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$, $\\sum_{k=1}^{n}k^2=\\frac{n(n+1)(2n+1)}{6}$, $\\sum_{k=1}^{n}k^3=\\left\\{\\frac{n(n+1)}{2}\\right\\}^2$",
+    "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$ (부분분수)",
+    "$a_1=S_1$, $a_n=S_n-S_{n-1}$ ($n\\ge2$)"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "s10": {
+        "value": "55",
+        "check": "summation(k, (k, 1, 10))"
+      },
+      "pair": {
+        "value": "11",
+        "check": "1 + 10"
+      },
+      "twice": {
+        "value": "110",
+        "check": "2*summation(k, (k, 1, 10))"
+      },
+      "s4": {
+        "value": "10",
+        "check": "summation(k, (k, 1, 4))"
+      },
+      "q6": {
+        "value": "91",
+        "check": "summation(k**2, (k, 1, 6))"
+      },
+      "c6": {
+        "value": "441",
+        "check": "summation(k**3, (k, 1, 6))"
+      },
+      "o5": {
+        "value": "25",
+        "check": "summation(2*k - 1, (k, 1, 5))"
+      },
+      "o4": {
+        "value": "16",
+        "check": "summation(2*k - 1, (k, 1, 4))"
+      },
+      "a5": {
+        "value": "9",
+        "check": "summation(2*k - 1, (k, 1, 5)) - summation(2*k - 1, (k, 1, 4))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "수학Ⅰ · 수열",
+        "title": "1부터 100까지,\n하나씩 더해야 할까요?",
+        "lead": "긴 덧셈을 짧게 줄이는 방법을 찾아봐요. 짝을 짓고 점을 찍어 규칙을 보고, 기호와 공식에는 마지막에 이름을 붙여요.",
+        "meta": [
+          "$\\sum$ 의 성질",
+          "부분분수로 합",
+          "합과 일반항"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$1+2+\\cdots+10$,\n거꾸로 한 줄 더 써 보면?",
+        "lead": "$1+2+3+\\cdots+10$ 아래에 같은 합을 거꾸로 $10+9+8+\\cdots+1$ 로 써요. 위아래로 짝을 지어 더하면 처음 합은 얼마일까요?",
+        "choices": [
+          {
+            "value": "110",
+            "check": "10*(1 + 10)",
+            "feedback": "위아래 두 줄을 모두 더한 값이에요. 같은 합을 두 번 더했으니 반으로 나눠야 해요."
+          },
+          {
+            "value": "55",
+            "check": "summation(k, (k, 1, 10))"
+          },
+          {
+            "value": "100",
+            "check": "10*10",
+            "feedback": "가장 큰 수 10 을 열 번 더한 값이에요. 앞쪽 수들은 10 보다 작아요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "summation(k, (k, 1, 10))",
+        "reveal": "**맞아요.** 거꾸로 쓴 줄과 짝을 지으면 바로 보여요.",
+        "thoughts": [
+          "위아래 짝의 합은 $1+10$, $2+9$, $\\ldots$ 모두 {{pair}}이에요.",
+          "짝이 10개라 두 줄을 더하면 {{twice}}이에요.",
+          "같은 합을 두 번 더했으니 절반인 {{s10}}가 처음 합이에요."
+        ],
+        "conclude": "1부터 $n$ 까지도 같아요. 짝의 합 $n+1$ 이 $n$ 개, 그 절반이 $\\frac{n(n+1)}{2}$ 이에요. ==짝을 지으면 긴 덧셈이 곱셈 한 번==으로 끝나요."
+      },
+      {
+        "kind": "explore",
+        "id": "plot",
+        "chip": "손으로 해 보기",
+        "title": "합을 차례로\n점으로 찍어 보세요",
+        "lead": "$S_n=1+2+\\cdots+n$ 이라 해요. $S_1$, $S_2$, $S_3$, $S_4$ 를 구해 점 $(n,\\,S_n)$ 을 네 개 찍어 보세요. 빈 칸을 누르면 점이 찍히고, 찍은 점은 $n$ 순서로 이어져요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "connect",
+            "x": {
+              "min": 0,
+              "max": 5,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 12,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "S",
+                "curve": "x*(x+1)/2",
+                "label": "$y=\\frac{x(x+1)}{2}$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "pointsOn": {
+                "curve": "S",
+                "count": 4
+              }
+            },
+            "intro": "$S_2=1+2$, $S_3=1+2+3$ 처럼 하나씩 더해 가요.",
+            "done": "네 점이 모두 곡선 $y=\\frac{x(x+1)}{2}$ 위에 있어요. $S_4={{s4}}$ 도 $\\frac{4\\cdot5}{2}$ 와 같아요."
+          }
+        },
+        "after": "한 칸 갈 때마다 올라가는 높이가 $1,\\,2,\\,3,\\,\\ldots$ 로 커져서 점들이 굽은 곡선을 그려요. 그래서 합 $S_n$ 은 ==곧은 직선이 아니라 이차식==이에요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "긴 합을 줄여 쓰는\n기호가 있어요",
+        "terms": [
+          {
+            "term": "$\\sum$ (시그마)",
+            "body": "$a_1+a_2+\\cdots+a_n=\\sum_{k=1}^{n}a_k$. $k$ 에 $1$ 부터 $n$ 까지 차례로 넣어 모두 더한다는 뜻이에요."
+          },
+          {
+            "term": "$\\sum$ 의 성질",
+            "body": "더하기·빼기와 상수배는 나눠 쓸 수 있어요. $\\sum(a_k+b_k)=\\sum a_k+\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$. **곱은 나눠 쓸 수 없어요.**"
+          },
+          {
+            "term": "자연수 거듭제곱의 합",
+            "body": "$\\sum k=\\frac{n(n+1)}{2}$, $\\sum k^2=\\frac{n(n+1)(2n+1)}{6}$, $\\sum k^3=\\left\\{\\frac{n(n+1)}{2}\\right\\}^2$"
+          }
+        ],
+        "aside": "**확인** · $\\sum_{k=1}^{10}k=\\frac{10\\cdot11}{2}$ 은 {{s10}}, 오늘의 질문에서 짝을 지어 구한 값과 같아요."
+      },
+      {
+        "kind": "question",
+        "id": "square",
+        "chip": "지름길",
+        "title": "제곱의 합도\n공식으로 바로 구해요",
+        "lead": "$\\sum_{k=1}^{6}k^2=1^2+2^2+\\cdots+6^2$ 의 값은 얼마일까요?",
+        "choices": [
+          {
+            "value": "441",
+            "check": "summation(k, (k, 1, 6))**2",
+            "feedback": "$(1+2+\\cdots+6)^2=21^2$ 이에요. 합을 제곱한 값이지 제곱을 더한 값이 아니에요. 이 값은 세제곱의 합과 같아요."
+          },
+          {
+            "value": "91",
+            "check": "summation(k**2, (k, 1, 6))"
+          },
+          {
+            "value": "36",
+            "check": "6**2",
+            "feedback": "마지막 항 $6^2$ 만 구했어요. $1^2$ 부터 모두 더해야 해요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "summation(k**2, (k, 1, 6))",
+        "reveal": "**맞아요.** $\\frac{6\\cdot7\\cdot13}{6}={{q6}}$ 이에요.",
+        "thoughts": [
+          "$\\sum_{k=1}^{n}k^2=\\frac{n(n+1)(2n+1)}{6}$ 에 $n=6$ 을 넣어요.",
+          "합 $1+2+\\cdots+6$ 을 제곱하면 {{c6}}, 이건 세제곱의 합 $\\sum_{k=1}^{6}k^3$ 과 같은 값이에요."
+        ],
+        "conclude": "==제곱의 합과 합의 제곱은 달라요.== 세제곱의 합이 합의 제곱과 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "general",
+        "chip": "거꾸로 가기",
+        "title": "합에서 한 항만\n꺼내 보세요",
+        "lead": "홀수를 차례로 더한 합 $S_n=1+3+5+\\cdots$ 은 곡선 $y=x^2$ 위에 놓여요. 점 P 의 높이가 $S_5$ 예요. Q 를 끌어 $x=4$ 에 놓고 두 높이를 비교해 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 28,
+              "step": 4
+            },
+            "objects": [
+              {
+                "id": "S",
+                "curve": "x**2",
+                "label": "$y=x^2$"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "S",
+                  "x": 5
+                },
+                "name": "P"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "S",
+                  "x": 2,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "Q"
+              },
+              {
+                "readout": "y(P)",
+                "label": "P 의 높이 $S_5$",
+                "digits": 0
+              },
+              {
+                "readout": "y(Q)",
+                "label": "Q 의 높이",
+                "digits": 0
+              }
+            ],
+            "intro": "Q 를 오른쪽으로 끌어 보세요.",
+            "done": "Q 가 $x=4$ 이면 높이는 $S_4={{o4}}$ 이에요. 두 높이의 차 {{a5}}가 바로 다섯째 홀수 $a_5$ 예요."
+          }
+        },
+        "after": "$S_5$ 에서 바로 앞의 합 $S_4$ 를 빼면 마지막 항 $a_5$ 만 남아요. 그래서 ==합에서 앞의 합을 빼면 일반항==이 나와요. $a_n=S_n-S_{n-1}$ 은 앞의 합이 있는 $n\\ge2$ 에서만 쓰고, 첫째항은 $a_1=S_1$ 로 따로 구해요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 분수를 두 조각으로 나눴어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "1/(k*(k+2))"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "1/k-1/(k+2)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "(1/k-1/(k+2))/2",
+              "body": "$\\frac1k-\\frac{1}{k+2}$ 을 통분하면 분자가 $2$ 라서 두 배가 돼요. 두 분모의 차가 $2$ 이면 앞에 $\\frac12$ 을 곱해야 해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $\\sum_{k=1}^{4}\\left(\\frac1k-\\frac{1}{k+2}\\right)$ 를 늘어놓고 지웠어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "(1-1/3)+(1/2-1/4)+(1/3-1/5)+(1/4-1/6)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "1-1/6",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "1+1/2-1/5-1/6",
+              "body": "한 칸씩 건너 지워져서 앞의 두 항 $1$, $\\frac12$ 과 뒤의 두 항 $-\\frac15$, $-\\frac16$ 이 남아요. 처음과 끝이 하나씩만 남는 건 분모의 차가 $1$ 일 때예요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "linear",
+            "q": "$\\sum_{k=1}^{10}(2k+1)$ 의 값을 구하세요.",
+            "hint": "$\\sum$ 를 $2\\sum k$ 와 $\\sum 1$ 로 나눠요. $1$ 을 몇 번 더하는지 세어요.",
+            "concepts": [
+              "$\\sum(a_k+b_k)=\\sum a_k+\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$",
+              "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$"
+            ],
+            "steps": [
+              {
+                "title": "나누어 쓰기",
+                "body": "$$\\sum_{k=1}^{10}(2k+1)=2\\sum_{k=1}^{10}k+\\sum_{k=1}^{10}1$$"
+              },
+              {
+                "title": "$\\sum k$ 공식",
+                "body": "$$\\sum_{k=1}^{10}k=\\frac{10\\cdot11}{2}=55$$"
+              },
+              {
+                "title": "상수의 합",
+                "body": "$1$ 을 $10$ 번 더하므로 $10$ 이에요."
+              },
+              {
+                "title": "더하기",
+                "body": "$$2\\cdot55+10={{answer}}$$"
+              }
+            ],
+            "tip": "$\\sum_{k=1}^{10}1$ 을 $1$ 로 두면 $111$ 이 나와 틀려요. 상수도 $k$ 가 바뀌는 횟수만큼 더해져요.",
+            "answer": "120",
+            "answerType": "int",
+            "check": "summation(2*k + 1, (k, 1, 10))"
+          },
+          {
+            "id": "telescope",
+            "q": "$\\sum_{k=1}^{9}\\frac{1}{k(k+1)}$ 의 값을 구하세요.",
+            "hint": "$\\frac{1}{k(k+1)}=\\frac1k-\\frac{1}{k+1}$ 로 나눠 늘어놓아요.",
+            "concepts": [
+              "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+              "늘어놓으면 가운데 항이 서로 지워져요."
+            ],
+            "steps": [
+              {
+                "title": "부분분수로 나누기",
+                "body": "$$\\frac{1}{k(k+1)}=\\frac1k-\\frac{1}{k+1}$$"
+              },
+              {
+                "title": "늘어놓기",
+                "body": "$$\\left(1-\\frac12\\right)+\\left(\\frac12-\\frac13\\right)+\\cdots+\\left(\\frac19-\\frac{1}{10}\\right)$$"
+              },
+              {
+                "title": "지우고 남은 항",
+                "body": "가운데가 모두 지워져 $1-\\frac{1}{10}$ 만 남아요."
+              },
+              {
+                "title": "계산하기",
+                "body": "$$1-\\frac{1}{10}=\\frac{9}{10}$$"
+              }
+            ],
+            "tip": "분모의 차가 $1$ 이라 처음 $1$ 과 끝 $-\\frac{1}{10}$ 만 남아요. 항이 $9$ 개라도 계산은 두 번이면 끝나요.",
+            "answer": "9/10",
+            "answerType": "fraction",
+            "check": "summation(1/(k*(k + 1)), (k, 1, 9))"
+          },
+          {
+            "id": "sn",
+            "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=n^2+2n+1$ 일 때, $a_1+a_{10}$ 의 값을 구하세요.",
+            "hint": "$a_1$ 은 $S_1$ 로 따로 구하고, $a_{10}$ 은 $S_{10}-S_9$ 로 구해요.",
+            "concepts": [
+              "$a_1=S_1$, $a_n=S_n-S_{n-1}$ ($n\\ge2$)"
+            ],
+            "steps": [
+              {
+                "title": "첫째항은 $S_1$",
+                "body": "$a_1=S_1=1+2+1=4$ 예요."
+              },
+              {
+                "title": "$S_{10}$, $S_9$ 구하기",
+                "body": "$S_{10}=100+20+1=121$, $S_9=81+18+1=100$ 이에요."
+              },
+              {
+                "title": "$a_{10}$ 꺼내기",
+                "body": "$$a_{10}=S_{10}-S_9=121-100=21$$"
+              },
+              {
+                "title": "더하기",
+                "body": "$$a_1+a_{10}=4+21={{answer}}$$"
+              }
+            ],
+            "tip": "$n\\ge2$ 일 때 $a_n=2n+1$ 이지만 여기에 $n=1$ 을 넣은 $3$ 은 $a_1$ 이 아니에요. 상수항 $1$ 때문에 첫째항만 달라져요.",
+            "answer": "25",
+            "answerType": "int",
+            "check": "S = n**2 + 2*n + 1\nans = S.subs(n, 1) + S.subs(n, 10) - S.subs(n, 9)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$\\sum_{k=1}^{n}a_k$ 는 $a_1$ 부터 $a_n$ 까지의 합이에요. 더하기·빼기·상수배는 나눠 쓰고, 곱은 전개부터 해요.",
+          "$\\sum k=\\frac{n(n+1)}{2}$, $\\sum k^2=\\frac{n(n+1)(2n+1)}{6}$, $\\sum k^3=\\left\\{\\frac{n(n+1)}{2}\\right\\}^2$.",
+          "분모가 두 일차식의 곱이면 부분분수로 나눠 늘어놓고 지워요. 분모의 차만큼 나눠 주는 것을 잊지 마세요.",
+          "$a_n=S_n-S_{n-1}$ ($n\\ge2$), $a_1=S_1$. 수능에서는 $\\sum$ 의 성질 계산과 합에서 일반항을 꺼내는 문제로 자주 나와요."
+        ],
+        "done": "수열의 합 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "math1-sig-property",
+    "math1-sig-linear",
+    "math1-sig-square",
+    "math1-sig-telescope",
+    "math1-sig-from-sn"
+  ],
+  "problems": [
+    {
+      "q": "$\\sum_{k=1}^{20}a_k=15$, $\\sum_{k=1}^{20}b_k=11$ 일 때, $\\sum_{k=1}^{20}(3a_k-4b_k-1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-19",
+      "answerType": "int",
+      "check": "3*(15) + -4*(11) + summation(-1, (k, 1, 20))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$"
+      ],
+      "steps": [
+        {
+          "title": "세 덩어리로 나누기",
+          "body": "더하기·빼기와 상수배는 $\\sum$ 밖으로 나눠 쓸 수 있어요.\n$$3\\sum_{k=1}^{20}a_k-4\\sum_{k=1}^{20}b_k+\\sum_{k=1}^{20}(-1)$$"
+        },
+        {
+          "title": "상수의 합",
+          "body": "$(-1)$ 을 $20$ 번 더하므로 $\\sum_{k=1}^{20}(-1)=-1\\times20=-20$ 이에요."
+        },
+        {
+          "title": "주어진 값 대입하기",
+          "body": "$$3\\cdot15-4\\cdot11-20=45-44-20=-19$$"
+        }
+      ],
+      "tip": "상수 $(-1)$ 의 합을 $-1$ 로 두는 실수가 많아요. $k$ 가 $1$ 부터 $20$ 까지 바뀌는 동안 $20$ 번 더해져요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "math1-sig-property",
+      "seed": 1000
+    },
+    {
+      "q": "$\\sum_{k=1}^{6}(-3k-3)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-81",
+      "answerType": "int",
+      "check": "summation(-3*k - 3, (k, 1, 6))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{6}(-3k-3)=-3\\sum_{k=1}^{6}k+\\sum_{k=1}^{6}(-3)$$"
+        },
+        {
+          "title": "$\\sum k$ 공식",
+          "body": "$$\\sum_{k=1}^{6}k=\\frac{6\\cdot7}{2}=21$$"
+        },
+        {
+          "title": "상수의 합",
+          "body": "$(-3)$ 을 $6$ 번 더해요. $-3\\times6=-18$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$-3\\cdot21-18=-63-18=-81$$"
+        }
+      ],
+      "tip": "$-3k-3$ 에 $k=1$ 을 넣은 첫째항과 $k=6$ 을 넣은 끝항의 평균에 항의 개수 $6$ 을 곱해도 같은 답이에요. 등차수열의 합이기 때문이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "math1-sig-linear",
+      "seed": 1001
+    },
+    {
+      "q": "$\\sum_{k=1}^{6}k(k-1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "70",
+      "answerType": "int",
+      "check": "summation((k + (-1))*(k + 0), (k, 1, 6))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$",
+        "$\\sum_{k=1}^{n}k^2=\\frac{n(n+1)(2n+1)}{6}$"
+      ],
+      "steps": [
+        {
+          "title": "먼저 전개하기",
+          "body": "곱은 $\\sum$ 을 나눠 쓸 수 없어서 전개부터 해요.\n$$k(k-1)=k^2-k$$"
+        },
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{6}k^2-\\sum_{k=1}^{6}k$$"
+        },
+        {
+          "title": "$\\sum k^2$ 공식",
+          "body": "$$\\sum_{k=1}^{6}k^2=\\frac{6\\cdot7\\cdot13}{6}=91$$"
+        },
+        {
+          "title": "$\\sum k$ 공식",
+          "body": "$\\sum_{k=1}^{6}k=21$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$91-21=70$$"
+        }
+      ],
+      "tip": "$\\sum_{k=1}^{6}k(k-1)$ 를 $\\left(\\sum_{k=1}^{6}(k-1)\\right)\\left(\\sum_{k=1}^{6}k\\right)$ 처럼 따로 더해 곱하면 틀려요. 곱은 전개한 뒤 나눠요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "math1-sig-square",
+      "seed": 1002
+    },
+    {
+      "q": "$\\sum_{k=1}^{15}\\frac{1}{k(k+1)}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "15/16",
+      "answerType": "fraction",
+      "check": "summation(1/((k + 0)*(k + 1)), (k, 1, 15))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+        "늘어놓으면 가운데 항이 서로 지워져요."
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 분모의 차가 $1$ 이라 그대로 나눠져요.\n$$\\frac{1}{k(k+1)}=\\frac{1}{k}-\\frac{1}{k+1}$$"
+        },
+        {
+          "title": "늘어놓기",
+          "body": "$$\\left(1-\\frac{1}{2}\\right)+\\left(\\frac{1}{2}-\\frac{1}{3}\\right)+\\cdots+\\left(\\frac{1}{15}-\\frac{1}{16}\\right)$$"
+        },
+        {
+          "title": "지우고 남은 항",
+          "body": "가운데가 모두 지워져 처음과 끝만 남아요.\n$$1-\\frac{1}{16}$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$=\\frac{15}{16}$$"
+        }
+      ],
+      "tip": "처음 몇 항과 끝 몇 항을 직접 적어 보면 무엇이 남는지 헷갈리지 않아요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "math1-sig-telescope",
+      "seed": 1003
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=n^2-2n+1$ 일 때, $a_1+a_{7}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "(1*n**2 - 2*n + 1).subs(n, 1) + (1*n**2 - 2*n + 1).subs(n, 7) - (1*n**2 - 2*n + 1).subs(n, 6)",
+      "concepts": [
+        "$a_1=S_1$, $a_n=S_n-S_{n-1}$ ($n\\ge2$)"
+      ],
+      "steps": [
+        {
+          "title": "첫째항은 $S_1$",
+          "body": "앞의 합이 없으니 $a_1=S_1=0$ 이에요."
+        },
+        {
+          "title": "$n\\ge2$ 일 때 일반항",
+          "body": "$$a_n=S_n-S_{n-1}=2n-3$$"
+        },
+        {
+          "title": "$a_{7}$ 구하기",
+          "body": "$n=7$ 을 넣으면 $a_{7}=11$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$a_1+a_{7}=0+11=11$$"
+        }
+      ],
+      "tip": "$a_n=2n-3$ 에 $n=1$ 을 넣으면 $-1$ 이지만, 실제 첫째항은 $S_1=0$ 이에요. $S_n$ 에 상수항이 있으면 첫째항만 따로 구해야 해요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "math1-sig-from-sn",
+      "seed": 1004
+    },
+    {
+      "q": "$\\sum_{k=1}^{10}a_k=11$, $\\sum_{k=1}^{10}b_k=6$ 일 때, $\\sum_{k=1}^{10}(a_k+2b_k-1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "13",
+      "answerType": "int",
+      "check": "1*(11) + 2*(6) + summation(-1, (k, 1, 10))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$"
+      ],
+      "steps": [
+        {
+          "title": "세 덩어리로 나누기",
+          "body": "더하기·빼기와 상수배는 $\\sum$ 밖으로 나눠 쓸 수 있어요.\n$$\\sum_{k=1}^{10}a_k+2\\sum_{k=1}^{10}b_k+\\sum_{k=1}^{10}(-1)$$"
+        },
+        {
+          "title": "상수의 합",
+          "body": "$(-1)$ 을 $10$ 번 더하므로 $\\sum_{k=1}^{10}(-1)=-1\\times10=-10$ 이에요."
+        },
+        {
+          "title": "주어진 값 대입하기",
+          "body": "$$1\\cdot11+2\\cdot6-10=11+12-10=13$$"
+        }
+      ],
+      "tip": "상수 $(-1)$ 의 합을 $-1$ 로 두는 실수가 많아요. $k$ 가 $1$ 부터 $10$ 까지 바뀌는 동안 $10$ 번 더해져요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "math1-sig-property",
+      "seed": 1005
+    },
+    {
+      "q": "$\\sum_{k=1}^{19}(-k-4)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-266",
+      "answerType": "int",
+      "check": "summation(-1*k - 4, (k, 1, 19))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{19}(-k-4)=-\\sum_{k=1}^{19}k+\\sum_{k=1}^{19}(-4)$$"
+        },
+        {
+          "title": "$\\sum k$ 공식",
+          "body": "$$\\sum_{k=1}^{19}k=\\frac{19\\cdot20}{2}=190$$"
+        },
+        {
+          "title": "상수의 합",
+          "body": "$(-4)$ 을 $19$ 번 더해요. $-4\\times19=-76$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$-190-76=-266$$"
+        }
+      ],
+      "tip": "$-k-4$ 에 $k=1$ 을 넣은 첫째항과 $k=19$ 을 넣은 끝항의 평균에 항의 개수 $19$ 을 곱해도 같은 답이에요. 등차수열의 합이기 때문이에요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "math1-sig-linear",
+      "seed": 1006
+    },
+    {
+      "q": "$\\sum_{k=1}^{4}(k+3)(k-2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "summation((k + 3)*(k + (-2)), (k, 1, 4))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$",
+        "$\\sum_{k=1}^{n}k^2=\\frac{n(n+1)(2n+1)}{6}$"
+      ],
+      "steps": [
+        {
+          "title": "먼저 전개하기",
+          "body": "곱은 $\\sum$ 을 나눠 쓸 수 없어서 전개부터 해요.\n$$(k+3)(k-2)=k^2+k-6$$"
+        },
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{4}k^2+\\sum_{k=1}^{4}k+\\sum_{k=1}^{4}(-6)$$"
+        },
+        {
+          "title": "$\\sum k^2$ 공식",
+          "body": "$$\\sum_{k=1}^{4}k^2=\\frac{4\\cdot5\\cdot9}{6}=30$$"
+        },
+        {
+          "title": "$\\sum k$ 와 상수의 합",
+          "body": "$\\sum_{k=1}^{4}k=10$, 상수 $(-6)$ 의 합은 $-6\\times4=-24$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$30+10-24=16$$"
+        }
+      ],
+      "tip": "$\\sum_{k=1}^{4}(k+3)(k-2)$ 를 $\\left(\\sum_{k=1}^{4}(k+3)\\right)\\left(\\sum_{k=1}^{4}(k-2)\\right)$ 처럼 따로 더해 곱하면 틀려요. 곱은 전개한 뒤 나눠요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "math1-sig-square",
+      "seed": 1007
+    },
+    {
+      "q": "$\\sum_{k=1}^{10}\\frac{1}{k(k+2)}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "175/264",
+      "answerType": "fraction",
+      "check": "summation(1/(k*(k + 2)), (k, 1, 10))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+        "분모의 차가 2이면 한 칸씩 건너 지워져요."
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 분모의 차가 $2$ 라서 앞에 $\\frac12$ 을 곱해요.\n$$\\frac{1}{k(k+2)}=\\frac12\\left(\\frac1k-\\frac{1}{k+2}\\right)$$"
+        },
+        {
+          "title": "늘어놓기",
+          "body": "$$\\frac12\\left\\{\\left(1-\\frac13\\right)+\\left(\\frac12-\\frac14\\right)+\\left(\\frac13-\\frac15\\right)+\\cdots+\\left(\\frac{1}{10}-\\frac{1}{12}\\right)\\right\\}$$"
+        },
+        {
+          "title": "지우고 남은 항",
+          "body": "한 칸씩 건너 지워져서 앞의 두 항과 뒤의 두 항이 남아요.\n$$\\frac12\\left(1+\\frac12-\\frac{1}{11}-\\frac{1}{12}\\right)$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$=\\frac{175}{264}$$"
+        }
+      ],
+      "tip": "$\\frac12$ 을 빠뜨리면 답이 두 배가 돼요. 또 남는 항이 처음과 끝 하나씩이 아니라 두 개씩이에요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "math1-sig-telescope",
+      "seed": 1008
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=3n^2+n-1$ 일 때, $a_1+a_{8}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "49",
+      "answerType": "int",
+      "check": "(3*n**2 + 1*n - 1).subs(n, 1) + (3*n**2 + 1*n - 1).subs(n, 8) - (3*n**2 + 1*n - 1).subs(n, 7)",
+      "concepts": [
+        "$a_1=S_1$, $a_n=S_n-S_{n-1}$ ($n\\ge2$)"
+      ],
+      "steps": [
+        {
+          "title": "첫째항은 $S_1$",
+          "body": "앞의 합이 없으니 $a_1=S_1=3$ 이에요."
+        },
+        {
+          "title": "$n\\ge2$ 일 때 일반항",
+          "body": "$$a_n=S_n-S_{n-1}=6n-2$$"
+        },
+        {
+          "title": "$a_{8}$ 구하기",
+          "body": "$n=8$ 을 넣으면 $a_{8}=46$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$a_1+a_{8}=3+46=49$$"
+        }
+      ],
+      "tip": "$a_n=6n-2$ 에 $n=1$ 을 넣으면 $4$ 이지만, 실제 첫째항은 $S_1=3$ 이에요. $S_n$ 에 상수항이 있으면 첫째항만 따로 구해야 해요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "math1-sig-from-sn",
+      "seed": 1009
+    },
+    {
+      "q": "$\\sum_{k=1}^{10}a_k=14$, $\\sum_{k=1}^{10}b_k=17$ 일 때, $\\sum_{k=1}^{10}(-a_k-3b_k-1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-75",
+      "answerType": "int",
+      "check": "-1*(14) + -3*(17) + summation(-1, (k, 1, 10))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$"
+      ],
+      "steps": [
+        {
+          "title": "세 덩어리로 나누기",
+          "body": "더하기·빼기와 상수배는 $\\sum$ 밖으로 나눠 쓸 수 있어요.\n$$-\\sum_{k=1}^{10}a_k-3\\sum_{k=1}^{10}b_k+\\sum_{k=1}^{10}(-1)$$"
+        },
+        {
+          "title": "상수의 합",
+          "body": "$(-1)$ 을 $10$ 번 더하므로 $\\sum_{k=1}^{10}(-1)=-1\\times10=-10$ 이에요."
+        },
+        {
+          "title": "주어진 값 대입하기",
+          "body": "$$-1\\cdot14-3\\cdot17-10=-14-51-10=-75$$"
+        }
+      ],
+      "tip": "상수 $(-1)$ 의 합을 $-1$ 로 두는 실수가 많아요. $k$ 가 $1$ 부터 $10$ 까지 바뀌는 동안 $10$ 번 더해져요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "math1-sig-property",
+      "seed": 1010
+    },
+    {
+      "q": "$\\sum_{k=1}^{19}(5k+2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "988",
+      "answerType": "int",
+      "check": "summation(5*k + 2, (k, 1, 19))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{19}(5k+2)=5\\sum_{k=1}^{19}k+\\sum_{k=1}^{19}2$$"
+        },
+        {
+          "title": "$\\sum k$ 공식",
+          "body": "$$\\sum_{k=1}^{19}k=\\frac{19\\cdot20}{2}=190$$"
+        },
+        {
+          "title": "상수의 합",
+          "body": "$2$ 을 $19$ 번 더해요. $2\\times19=38$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$5\\cdot190+38=950+38=988$$"
+        }
+      ],
+      "tip": "$5k+2$ 에 $k=1$ 을 넣은 첫째항과 $k=19$ 을 넣은 끝항의 평균에 항의 개수 $19$ 을 곱해도 같은 답이에요. 등차수열의 합이기 때문이에요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "math1-sig-linear",
+      "seed": 1011
+    },
+    {
+      "q": "$\\sum_{k=1}^{7}k(k-2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "84",
+      "answerType": "int",
+      "check": "summation((k + (-2))*(k + 0), (k, 1, 7))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$",
+        "$\\sum_{k=1}^{n}k^2=\\frac{n(n+1)(2n+1)}{6}$"
+      ],
+      "steps": [
+        {
+          "title": "먼저 전개하기",
+          "body": "곱은 $\\sum$ 을 나눠 쓸 수 없어서 전개부터 해요.\n$$k(k-2)=k^2-2k$$"
+        },
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{7}k^2-2\\sum_{k=1}^{7}k$$"
+        },
+        {
+          "title": "$\\sum k^2$ 공식",
+          "body": "$$\\sum_{k=1}^{7}k^2=\\frac{7\\cdot8\\cdot15}{6}=140$$"
+        },
+        {
+          "title": "$\\sum k$ 공식",
+          "body": "$\\sum_{k=1}^{7}k=28$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$140-2\\cdot28=84$$"
+        }
+      ],
+      "tip": "$\\sum_{k=1}^{7}k(k-2)$ 를 $\\left(\\sum_{k=1}^{7}(k-2)\\right)\\left(\\sum_{k=1}^{7}k\\right)$ 처럼 따로 더해 곱하면 틀려요. 곱은 전개한 뒤 나눠요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "math1-sig-square",
+      "seed": 1012
+    },
+    {
+      "q": "$\\sum_{k=1}^{12}\\frac{1}{k(k+1)}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12/13",
+      "answerType": "fraction",
+      "check": "summation(1/((k + 0)*(k + 1)), (k, 1, 12))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+        "늘어놓으면 가운데 항이 서로 지워져요."
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 분모의 차가 $1$ 이라 그대로 나눠져요.\n$$\\frac{1}{k(k+1)}=\\frac{1}{k}-\\frac{1}{k+1}$$"
+        },
+        {
+          "title": "늘어놓기",
+          "body": "$$\\left(1-\\frac{1}{2}\\right)+\\left(\\frac{1}{2}-\\frac{1}{3}\\right)+\\cdots+\\left(\\frac{1}{12}-\\frac{1}{13}\\right)$$"
+        },
+        {
+          "title": "지우고 남은 항",
+          "body": "가운데가 모두 지워져 처음과 끝만 남아요.\n$$1-\\frac{1}{13}$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$=\\frac{12}{13}$$"
+        }
+      ],
+      "tip": "처음 몇 항과 끝 몇 항을 직접 적어 보면 무엇이 남는지 헷갈리지 않아요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "math1-sig-telescope",
+      "seed": 1013
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=n^2+3n+3$ 일 때, $a_{7}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "(1*n**2 + 3*n + 3).subs(n, 7) - (1*n**2 + 3*n + 3).subs(n, 6)",
+      "concepts": [
+        "$a_1=S_1$, $a_n=S_n-S_{n-1}$ ($n\\ge2$)"
+      ],
+      "steps": [
+        {
+          "title": "합에서 한 항 꺼내기",
+          "body": "$S_{7}$ 에서 바로 앞의 합 $S_{6}$ 을 빼면 $a_{7}$ 만 남아요.\n$$a_{7}=S_{7}-S_{6}$$"
+        },
+        {
+          "title": "$S_{7}$ 구하기",
+          "body": "$$S_{7}=73$$"
+        },
+        {
+          "title": "$S_{6}$ 구하기",
+          "body": "$$S_{6}=57$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$a_{7}=73-57=16$$"
+        }
+      ],
+      "tip": "일반항을 먼저 구해도 돼요. $n\\ge2$ 일 때 $a_n=S_n-S_{n-1}=2n+2$ 이고, $n=7$ 을 넣으면 $16$ 이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "math1-sig-from-sn",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\sum_{k=1}^{10}a_k=20$, $\\sum_{k=1}^{10}b_k=7$ 일 때, $\\sum_{k=1}^{10}(3a_k-2b_k+1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "56",
+      "answerType": "int",
+      "check": "3*20 - 2*7 + summation(1, (k, 1, 10))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$"
+      ],
+      "steps": [
+        {
+          "title": "나누어 쓰기",
+          "body": "$$3\\sum_{k=1}^{10}a_k-2\\sum_{k=1}^{10}b_k+\\sum_{k=1}^{10}1$$"
+        },
+        {
+          "title": "상수의 합",
+          "body": "$1$ 을 $10$ 번 더하므로 $10$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$3\\cdot20-2\\cdot7+10=60-14+10=56$$"
+        }
+      ],
+      "tip": "마지막 $+1$ 을 그대로 $1$ 로 더하면 $47$ 이 나와요. 상수의 합은 상수 × 항의 개수예요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\sum_{k=1}^{8}(k+1)(k-1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "196",
+      "answerType": "int",
+      "check": "summation((k + 1)*(k - 1), (k, 1, 8))",
+      "concepts": [
+        "$\\sum_{k=1}^{n}k^2=\\frac{n(n+1)(2n+1)}{6}$",
+        "곱은 전개한 뒤 나눠 써요."
+      ],
+      "steps": [
+        {
+          "title": "전개하기",
+          "body": "$(k+1)(k-1)=k^2-1$ 이에요."
+        },
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{8}k^2-\\sum_{k=1}^{8}1$$"
+        },
+        {
+          "title": "$\\sum k^2$ 공식",
+          "body": "$$\\sum_{k=1}^{8}k^2=\\frac{8\\cdot9\\cdot17}{6}=204$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$204-8=196$$"
+        }
+      ],
+      "tip": "$\\sum(k+1)\\times\\sum(k-1)$ 처럼 따로 더해 곱하면 $44\\times28$ 이 되어 틀려요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$\\sum_{k=11}^{20}k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "155",
+      "answerType": "int",
+      "check": "summation(k, (k, 11, 20))",
+      "concepts": [
+        "$\\sum_{k=m}^{n}a_k=\\sum_{k=1}^{n}a_k-\\sum_{k=1}^{m-1}a_k$",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "1부터의 합 두 개로",
+          "body": "$$\\sum_{k=11}^{20}k=\\sum_{k=1}^{20}k-\\sum_{k=1}^{10}k$$"
+        },
+        {
+          "title": "각각 구하기",
+          "body": "$\\frac{20\\cdot21}{2}=210$, $\\frac{10\\cdot11}{2}=55$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$210-55=155$$"
+        }
+      ],
+      "tip": "빼는 쪽은 $\\sum_{k=1}^{10}$ 이에요. $\\sum_{k=1}^{11}$ 을 빼면 $11$ 이 빠져 버려요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\sum_{k=1}^{6}(k^3-k)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "420",
+      "answerType": "int",
+      "check": "summation(k**3 - k, (k, 1, 6))",
+      "concepts": [
+        "$\\sum_{k=1}^{n}k^3=\\left\\{\\frac{n(n+1)}{2}\\right\\}^2$",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{6}k^3-\\sum_{k=1}^{6}k$$"
+        },
+        {
+          "title": "$\\sum k$",
+          "body": "$$\\sum_{k=1}^{6}k=\\frac{6\\cdot7}{2}=21$$"
+        },
+        {
+          "title": "$\\sum k^3$",
+          "body": "$$\\sum_{k=1}^{6}k^3=21^2=441$$"
+        },
+        {
+          "title": "빼기",
+          "body": "$$441-21=420$$"
+        }
+      ],
+      "tip": "세제곱의 합은 $\\sum k$ 를 제곱한 것이라, $\\sum k$ 를 먼저 구하면 둘 다 한 번에 나와요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\sum_{k=1}^{15}\\frac{1}{(2k-1)(2k+1)}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "15/31",
+      "answerType": "fraction",
+      "check": "summation(1/((2*k - 1)*(2*k + 1)), (k, 1, 15))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 분모의 차가 $2$ 라서 $\\frac12$ 을 곱해요.\n$$\\frac{1}{(2k-1)(2k+1)}=\\frac12\\left(\\frac{1}{2k-1}-\\frac{1}{2k+1}\\right)$$"
+        },
+        {
+          "title": "늘어놓기",
+          "body": "$$\\frac12\\left\\{\\left(1-\\frac13\\right)+\\left(\\frac13-\\frac15\\right)+\\cdots+\\left(\\frac{1}{29}-\\frac{1}{31}\\right)\\right\\}$$"
+        },
+        {
+          "title": "지우고 남은 항",
+          "body": "홀수 분모끼리 바로 이어져서 처음과 끝만 남아요.\n$$\\frac12\\left(1-\\frac{1}{31}\\right)$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$\\frac12\\cdot\\frac{30}{31}=\\frac{15}{31}$$"
+        }
+      ],
+      "tip": "분모의 차가 $2$ 여도 분모가 홀수만 나오면 바로 이웃끼리 지워져요. $\\frac12$ 은 잊지 마세요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=n^2-3n$ 일 때, $a_{10}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "S = n**2 - 3*n\nans = S.subs(n, 10) - S.subs(n, 9)",
+      "concepts": [
+        "$a_n=S_n-S_{n-1}$ ($n\\ge2$)"
+      ],
+      "steps": [
+        {
+          "title": "합에서 한 항 꺼내기",
+          "body": "$$a_{10}=S_{10}-S_9$$"
+        },
+        {
+          "title": "각각 구하기",
+          "body": "$S_{10}=100-30=70$, $S_9=81-27=54$ 예요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$70-54=16$$"
+        }
+      ],
+      "tip": "일반항으로 구해도 돼요. $a_n=S_n-S_{n-1}=2n-4$ 이므로 $a_{10}=16$ 이에요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=2^n-1$ 일 때, $a_6$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "32",
+      "answerType": "int",
+      "check": "S = 2**n - 1\nans = S.subs(n, 6) - S.subs(n, 5)",
+      "concepts": [
+        "$a_n=S_n-S_{n-1}$ ($n\\ge2$)"
+      ],
+      "steps": [
+        {
+          "title": "합에서 한 항 꺼내기",
+          "body": "$$a_6=S_6-S_5$$"
+        },
+        {
+          "title": "각각 구하기",
+          "body": "$S_6=64-1=63$, $S_5=32-1=31$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$63-31=32$$"
+        }
+      ],
+      "tip": "$a_n=2^n-2^{n-1}=2^{n-1}$ 이라 이 수열은 공비가 $2$ 인 등비수열이에요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$\\sum_{k=1}^{n}(2k-1)=144$ 를 만족시키는 자연수 $n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "ans = [r for r in solve(Eq(summation(2*k - 1, (k, 1, n)), 144), n) if r > 0][0]",
+      "concepts": [
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$",
+        "$\\sum_{k=1}^{n}c=cn$"
+      ],
+      "steps": [
+        {
+          "title": "나누어 쓰기",
+          "body": "$$2\\sum_{k=1}^{n}k-\\sum_{k=1}^{n}1=n(n+1)-n$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$n^2+n-n=n^2$ 이에요."
+        },
+        {
+          "title": "방정식 풀기",
+          "body": "$n^2=144$ 이고 $n$ 은 자연수라 $n=12$ 예요."
+        }
+      ],
+      "tip": "홀수를 차례로 $n$ 개 더하면 $n^2$ 이에요. 레슨에서 본 곡선 $y=x^2$ 위의 점들이에요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$\\sum_{k=1}^{24}\\frac{1}{\\sqrt{k+1}+\\sqrt{k}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "ans = sum(radsimp(1/(sqrt(j + 1) + sqrt(j))) for j in range(1, 25))",
+      "concepts": [
+        "분모의 유리화: $\\frac{1}{\\sqrt{a}+\\sqrt{b}}=\\frac{\\sqrt{a}-\\sqrt{b}}{a-b}$",
+        "늘어놓으면 가운데 항이 지워져요."
+      ],
+      "steps": [
+        {
+          "title": "분모를 유리화하기",
+          "body": "분자·분모에 $\\sqrt{k+1}-\\sqrt{k}$ 를 곱하면 분모가 $(k+1)-k=1$ 이 돼요.\n$$\\frac{1}{\\sqrt{k+1}+\\sqrt{k}}=\\sqrt{k+1}-\\sqrt{k}$$"
+        },
+        {
+          "title": "늘어놓기",
+          "body": "$$(\\sqrt2-\\sqrt1)+(\\sqrt3-\\sqrt2)+\\cdots+(\\sqrt{25}-\\sqrt{24})$$"
+        },
+        {
+          "title": "지우고 남은 항",
+          "body": "$$\\sqrt{25}-\\sqrt1=5-1=4$$"
+        }
+      ],
+      "tip": "분수 대신 근호가 있어도 '이웃끼리 지워지는 꼴'로 바꾸는 생각은 같아요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$\\sum_{k=1}^{10}a_k=5$, $\\sum_{k=1}^{10}a_k^2=20$ 일 때, $\\sum_{k=1}^{10}(a_k+1)^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "40",
+      "answerType": "int",
+      "check": "20 + 2*5 + summation(1, (k, 1, 10))",
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$"
+      ],
+      "steps": [
+        {
+          "title": "전개하기",
+          "body": "$(a_k+1)^2=a_k^2+2a_k+1$ 이에요."
+        },
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{10}a_k^2+2\\sum_{k=1}^{10}a_k+\\sum_{k=1}^{10}1$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$$20+2\\cdot5+10=40$$"
+        }
+      ],
+      "tip": "$\\sum(a_k+1)^2$ 을 $\\left(\\sum a_k+1\\right)^2$ 처럼 계산하면 안 돼요. 전개한 뒤 나눠요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "$\\sum_{k=1}^{10}(a_k+2)=30$ 일 때, $\\sum_{k=1}^{10}a_k$ 의 값은?",
+      "choices": [
+        "$6$",
+        "$8$",
+        "$10$",
+        "$12$",
+        "$14$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "30 - summation(2, (k, 1, 10))",
+      "choiceChecks": [
+        "6",
+        "8",
+        "10",
+        "12",
+        "14"
+      ],
+      "concepts": [
+        "$\\sum(a_k+b_k)=\\sum a_k+\\sum b_k$, $\\sum_{k=1}^{n}c=cn$"
+      ],
+      "steps": [
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{10}a_k+\\sum_{k=1}^{10}2=30$$"
+        },
+        {
+          "title": "상수의 합",
+          "body": "$2$ 를 $10$ 번 더하므로 $20$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$\\sum_{k=1}^{10}a_k=30-20=10$$"
+        }
+      ],
+      "tip": "상수 $2$ 를 한 번만 빼면 $28$ 이 나와 보기에 없어요. 보기에 없으면 상수의 합을 의심해요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "$\\sum_{k=1}^{5}a_k=8$, $\\sum_{k=1}^{5}a_k^2=20$ 일 때, $\\sum_{k=1}^{5}(a_k-1)^2$ 의 값은?",
+      "choices": [
+        "$7$",
+        "$8$",
+        "$9$",
+        "$10$",
+        "$11$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "20 - 2*8 + summation(1, (k, 1, 5))",
+      "choiceChecks": [
+        "7",
+        "8",
+        "9",
+        "10",
+        "11"
+      ],
+      "concepts": [
+        "$\\sum(a_k\\pm b_k)=\\sum a_k\\pm\\sum b_k$, $\\sum ca_k=c\\sum a_k$, $\\sum_{k=1}^{n}c=cn$"
+      ],
+      "steps": [
+        {
+          "title": "전개하기",
+          "body": "$(a_k-1)^2=a_k^2-2a_k+1$ 이에요."
+        },
+        {
+          "title": "나누어 쓰기",
+          "body": "$$\\sum_{k=1}^{5}a_k^2-2\\sum_{k=1}^{5}a_k+\\sum_{k=1}^{5}1$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$$20-2\\cdot8+5=9$$"
+        }
+      ],
+      "tip": "마지막 $\\sum 1$ 을 $1$ 로 두면 $5$ 가 나와요. 항의 개수 $5$ 를 곱해야 해요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=n^2+4n$ 일 때, $\\sum_{k=1}^{10}\\frac{1}{a_ka_{k+1}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/25",
+      "answerType": "fraction",
+      "check": "S = n**2 + 4*n\na = lambda j: S.subs(n, 1) if j == 1 else S.subs(n, j) - S.subs(n, j - 1)\nans = sum(1/(a(j)*a(j + 1)) for j in range(1, 11))",
+      "concepts": [
+        "$a_1=S_1$, $a_n=S_n-S_{n-1}$ ($n\\ge2$)",
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "첫째항",
+          "body": "$a_1=S_1=1+4=5$ 예요."
+        },
+        {
+          "title": "$n\\ge2$ 일 때 일반항",
+          "body": "$$a_n=S_n-S_{n-1}=(n^2+4n)-\\{(n-1)^2+4(n-1)\\}=2n+3$$"
+        },
+        {
+          "title": "첫째항도 맞는지",
+          "body": "$2\\cdot1+3=5=a_1$ 이라 모든 $n$ 에서 $a_n=2n+3$ 이에요."
+        },
+        {
+          "title": "부분분수로 나누기",
+          "body": "$a_k=2k+3$, $a_{k+1}=2k+5$ 의 차가 $2$ 라서\n$$\\frac{1}{a_ka_{k+1}}=\\frac12\\left(\\frac{1}{2k+3}-\\frac{1}{2k+5}\\right)$$"
+        },
+        {
+          "title": "늘어놓고 지우기",
+          "body": "$$\\frac12\\left\\{\\left(\\frac15-\\frac17\\right)+\\cdots+\\left(\\frac{1}{23}-\\frac{1}{25}\\right)\\right\\}=\\frac12\\left(\\frac15-\\frac{1}{25}\\right)$$"
+        },
+        {
+          "title": "계산하기",
+          "body": "$$\\frac12\\cdot\\frac{4}{25}=\\frac{2}{25}$$"
+        }
+      ],
+      "tip": "$S_n$ 에 상수항이 없으면 $a_1$ 도 일반항 식과 맞아요. 그래도 한 번 확인하는 습관을 들여요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "수열 $\\{a_n\\}$ 의 첫째항부터 제$n$항까지의 합 $S_n$ 이 $S_n=n^2+2n+3$ 일 때, $a_1+a_{10}$ 의 값은?",
+      "choices": [
+        "$24$",
+        "$25$",
+        "$26$",
+        "$27$",
+        "$28$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "S = n**2 + 2*n + 3\nans = S.subs(n, 1) + S.subs(n, 10) - S.subs(n, 9)",
+      "choiceChecks": [
+        "24",
+        "25",
+        "26",
+        "27",
+        "28"
+      ],
+      "concepts": [
+        "$a_1=S_1$, $a_n=S_n-S_{n-1}$ ($n\\ge2$)"
+      ],
+      "steps": [
+        {
+          "title": "첫째항은 $S_1$",
+          "body": "$a_1=S_1=1+2+3=6$ 이에요."
+        },
+        {
+          "title": "$n\\ge2$ 일 때 일반항",
+          "body": "$$a_n=S_n-S_{n-1}=2n+1$$"
+        },
+        {
+          "title": "$a_{10}$",
+          "body": "$a_{10}=21$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$6+21=27$$"
+        }
+      ],
+      "tip": "$a_n=2n+1$ 에 $n=1$ 을 넣어 $a_1=3$ 으로 두면 ① $24$ 를 고르게 돼요. 상수항 $3$ 이 첫째항에만 붙어요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "수열 $\\{a_n\\}$ 이 모든 자연수 $n$ 에 대하여 $\\sum_{k=1}^{n}a_k=n^3$ 을 만족시킬 때, $\\sum_{k=1}^{6}\\frac{a_k-1}{k}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "45",
+      "answerType": "int",
+      "check": "S = n**3\na = lambda j: S.subs(n, 1) if j == 1 else S.subs(n, j) - S.subs(n, j - 1)\nans = sum((a(j) - 1)/j for j in range(1, 7))",
+      "concepts": [
+        "$a_1=S_1$, $a_n=S_n-S_{n-1}$ ($n\\ge2$)",
+        "$\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$"
+      ],
+      "steps": [
+        {
+          "title": "$n\\ge2$ 일 때 일반항",
+          "body": "$$a_n=n^3-(n-1)^3=3n^2-3n+1$$"
+        },
+        {
+          "title": "첫째항 확인",
+          "body": "$a_1=S_1=1$ 이고, 식에 $n=1$ 을 넣어도 $1$ 이라 모든 $n$ 에서 맞아요."
+        },
+        {
+          "title": "식 줄이기",
+          "body": "$$\\frac{a_k-1}{k}=\\frac{3k^2-3k}{k}=3k-3$$"
+        },
+        {
+          "title": "합 구하기",
+          "body": "$$\\sum_{k=1}^{6}(3k-3)=3\\cdot21-18=45$$"
+        }
+      ],
+      "tip": "$a_k$ 를 하나씩 구해 더해도 되지만, 일반항을 먼저 구해 식을 줄이면 계산이 훨씬 짧아요."
+    }
+  ]
+}
