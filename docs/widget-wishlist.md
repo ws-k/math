@@ -102,3 +102,6 @@
 - 검산 주의: sympy 가 (−1)^n 극한에서 오류 → 위아래 수열로 나눠 검산 — calc-seq-limit
 - 새 부품: 입체 단면 보기(사각뿔·단면 정사각형 입체), coord 쌓은 상자 그림, 이계도함수 읽기 값 — calc-integral-app, calc-diff-app
 - 검산 주의: 좌표 과제 검산식에 list(...) 불가 → solveset(...).args[0] 또는 Max(*solve(...)); 급수 극한은 limit(summation) 대신 정적분으로 — calc 단원
+- coord: 거리 읽기 dist(P,F)·점과 직선 거리(이차곡선 정의를 coord 하나로) — geo-parabola, geo-ellipse, geo-hyperbola
+- shape: 곡선 그리기, 칸 밖 점(곡선 위 점), 두 길이 합·차 표시, 목표("합이 10 인 점"), 점 이름 F′ 등, 따라오는 수선의 발 — geo 이차곡선
+- 검산 주의: (-3+3)/2 는 파이썬 실수 0.0 → Rational 사용 — geo 단원
