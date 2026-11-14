@@ -1,4 +1,4 @@
-// 레슨 장면들. 장면은 데이터만 그리고, 진행(다음 장면·완료·넘어가기)은 LessonPlayer 가 쥔다.
+// 레슨 장면들. 장면은 데이터만 그리고, 진행(다음 장면·완료·처음부터)은 LessonPlayer 가 쥔다.
 // 화면 글자 가운데 값에서 나오는 것(보기 글자·식·{{값}})은 format.ts·LRich 로 데이터에서 만든다.
 // React key 는 데이터의 id 나 자리 번호로 — 글 내용을 key 로 쓰면 같은 글이 둘일 때 화면이 섞인다.
 import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
@@ -31,11 +31,9 @@ export interface SceneEnv {
   unitId: string;
   tool: Tool;
   background: Background;
-  /** 끝낸 장면 id(넘어가기로 끝낸 질문도 답이 펼쳐진다) */
+  /** 끝낸 장면 id */
   done: readonly string[];
   onDone(id: string): void;
-  /** 틀린 시도. gate 장면에서 두 번이면 재생기가 '넘어가기'를 보인다 */
-  onMiss(id: string): void;
 }
 
 /** 등식 sym("왼쪽=오른쪽") → TeX */
@@ -103,7 +101,7 @@ function Intro({ s, env }: { s: IntroScene; env: SceneEnv }) {
 function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
   const [picked, setPicked] = useState(false);
   const [wrong, setWrong] = useState<{ i: number; n: number } | null>(null);
-  // 넘어가기로 끝낸 장면(또는 이어 보기에서 이미 끝낸 장면)도 답과 풀이를 펼쳐 둔다
+  // 이어 보기에서 이미 끝낸 장면도 답과 풀이를 펼쳐 둔다
   const right = picked || env.done.includes(s.id);
   const labels = s.choices.map((c) => formatValue(c.value, s.format ?? {}));
   const pick = (i: number) => {
@@ -115,7 +113,6 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
     } else {
       // n 을 바꿔 같은 보기를 다시 눌러도 흔들림 애니메이션이 다시 돈다
       setWrong({ i, n: (wrong?.n ?? 0) + 1 });
-      env.onMiss(s.id);
     }
   };
   const fb = wrong ? s.choices[wrong.i]?.feedback : undefined;
@@ -165,7 +162,7 @@ function Explore({ s, env }: { s: ExploreScene; env: SceneEnv }) {
     <>
       <Head s={s} />
       <div className="card">
-        <Widget spec={s.widget} onDone={() => env.onDone(s.id)} onMiss={() => env.onMiss(s.id)} />
+        <Widget spec={s.widget} onDone={() => env.onDone(s.id)} onMiss={() => {}} />
       </div>
       <After s={s} />
     </>

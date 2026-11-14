@@ -49,7 +49,7 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
   };
   const commit = (n: NLState) => {
     setS(n);
-    // 과제·점프가 없는 부품은 한 번 만져 보면 목표를 이룬 것으로 본다(gate 장면이 막히지 않게)
+    // 과제·점프가 없는 부품은 한 번 만져 보면 목표를 이룬 것으로 본다
     if (!p.task && !p.jumps) finish();
     return n;
   };

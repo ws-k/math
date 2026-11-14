@@ -86,7 +86,7 @@ export interface NumFormat {
 export interface QuestionScene extends Base {
   kind: 'question';
   widget?: WidgetSpec;
-  /** 맞혀야 다음으로(두 번 틀리면 재생기가 '넘어가기'를 보인다) */
+  /** 핵심 장면 표시. 2026-11-14 부터 진행을 막지 않는다(목표를 안 이뤄도 넘어감) */
   gate?: boolean;
   /** 정답이 이 레슨 방정식의 해여야 한다(Lesson.equations 이름) */
   eq?: string;
@@ -107,7 +107,7 @@ export interface QuestionScene extends Base {
 export interface ExploreScene extends Base {
   kind: 'explore';
   widget: WidgetSpec;
-  /** 부품 목표를 이뤄야 다음으로 */
+  /** 핵심 장면 표시. 2026-11-14 부터 진행을 막지 않는다(목표를 안 이뤄도 넘어감) */
   gate?: boolean;
 }
 

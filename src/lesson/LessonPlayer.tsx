@@ -17,15 +17,13 @@ import { DragGuard } from './dragGuard.ts';
 import { lessonVars } from './format.ts';
 import { type SceneEnv, SceneFrame, SceneView } from './Scenes.tsx';
 import {
-  canNext,
-  canSkip,
   complete,
   dockLabel,
   type LessonState,
   lessonKey,
   next,
+  restart,
   restore,
-  skip,
   toSaved,
 } from './state.ts';
 import type { Lesson } from './types.ts';
@@ -77,8 +75,10 @@ export function LessonPlayer(p: {
   /** 방금 '계속하기'로 나타난 장면(올라오는 애니메이션과 스크롤 대상) */
   const [entered, setEntered] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  /** 장면별 틀린 횟수(저장하지 않는다 — 다시 열면 새로 센다) */
-  const [misses, setMisses] = useState<Record<string, number>>({});
+  /** '처음부터'를 한 번 눌러 확인을 기다리는 중(잘못 눌러 기록이 지워지지 않게 3초 안에 한 번 더) */
+  const [confirming, setConfirming] = useState(false);
+  /** 처음부터 다시 시작한 횟수. 장면 key 에 넣어 첫 장면까지 새로 만든다(남은 정답 표시가 없게) */
+  const [run, setRun] = useState(0);
   const loaded = useRef(p.initial !== undefined);
   const vars = useMemo(() => lessonVars(lesson, unit.problems.length), [lesson, unit.problems]);
 
@@ -110,9 +110,6 @@ export function LessonPlayer(p: {
     },
     [save],
   );
-  const onMiss = useCallback((id: string) => {
-    setMisses((m) => ({ ...m, [id]: (m[id] ?? 0) + 1 }));
-  }, []);
 
   // 나타난 장면으로 스크롤. 동작 줄이기면 부드러운 스크롤 없이 바로.
   useEffect(() => {
@@ -122,20 +119,25 @@ export function LessonPlayer(p: {
     requestAnimationFrame(() => el?.scrollIntoView({ behavior, block: 'start' }));
   }, [entered]);
 
+  useEffect(() => {
+    if (!confirming) return;
+    const t = setTimeout(() => setConfirming(false), 3000);
+    return () => clearTimeout(t);
+  }, [confirming]);
+
   if (!st) return <main className="lesson" />;
 
   const total = lesson.scenes.length;
   const go = (n: LessonState) => {
     if (n === st) return;
     save(n);
+    setConfirming(false);
     if (n.shown === 1) {
       setEntered(null);
-      setMisses({});
+      setRun((r) => r + 1);
       window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
     } else setEntered(lesson.scenes[n.shown - 1]?.id ?? null);
   };
-  const cur = lesson.scenes[st.shown - 1];
-  const skippable = !!cur && canSkip(lesson, st, misses[cur.id] ?? 0);
 
   const env: SceneEnv = {
     lesson,
@@ -144,7 +146,6 @@ export function LessonPlayer(p: {
     background: p.background,
     done: st.done,
     onDone,
-    onMiss,
   };
 
   return (
@@ -177,34 +178,38 @@ export function LessonPlayer(p: {
               <span className="count num">
                 {st.shown}/{total}
               </span>
+              {/* 마지막 장면에선 아래 '처음부터 다시 보기'가 같은 일을 해서 숨긴다 */}
+              {st.shown > 1 && st.shown < total && (
+                <button
+                  type="button"
+                  className="lbtn quiet restart"
+                  disabled={dragging}
+                  aria-live="polite"
+                  onClick={() => {
+                    if (dragging) return;
+                    if (confirming) go(restart(st));
+                    else setConfirming(true);
+                  }}
+                >
+                  {confirming ? '정말 처음부터?' : '처음부터'}
+                </button>
+              )}
             </div>
             {lesson.scenes.slice(0, st.shown).map((s) => (
-              <SceneFrame key={s.id} id={s.id} enter={s.id === entered}>
+              <SceneFrame key={`${run}:${s.id}`} id={s.id} enter={s.id === entered}>
                 <SceneView s={s} env={env} />
               </SceneFrame>
             ))}
           </div>
           <div className="dock">
-            {/* 막힌 gate 에서 두 번 틀리면 공통 탈출구. 그만두지 않고 다음으로 가게 한다 */}
-            {skippable ? (
-              <button
-                type="button"
-                className="lbtn soft"
-                disabled={dragging}
-                onClick={() => !dragging && go(skip(lesson, st))}
-              >
-                답 보고 넘어가기
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="lbtn blue"
-                disabled={dragging || !canNext(lesson, st)}
-                onClick={() => !dragging && go(next(lesson, st))}
-              >
-                {dockLabel(lesson, st)}
-              </button>
-            )}
+            <button
+              type="button"
+              className="lbtn blue"
+              disabled={dragging}
+              onClick={() => !dragging && go(next(lesson, st))}
+            >
+              {dockLabel(lesson, st)}
+            </button>
           </div>
         </main>
       </DragGuard.Provider>

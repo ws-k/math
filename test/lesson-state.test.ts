@@ -1,16 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  canNext,
-  canSkip,
   complete,
   dockLabel,
   initialState,
   lessonKey,
   next,
+  restart,
   restore,
-  SKIP_AFTER,
-  skip,
   toSaved,
 } from '../src/lesson/state.ts';
 import type { Lesson } from '../src/lesson/types.ts';
@@ -34,28 +31,30 @@ test('처음엔 첫 장면만 보이고 시작하기', () => {
   const s = initialState();
   assert.equal(s.shown, 1);
   assert.equal(dockLabel(L, s), '시작하기');
-  assert.equal(canNext(L, s), true);
 });
 
 test('다음 장면을 하나씩 쌓고, 끝에서는 처음부터 다시 보기', () => {
   let s = next(L, initialState());
   assert.equal(s.shown, 2);
   assert.equal(dockLabel(L, s), '계속하기');
-  s = complete(s, 'b');
   s = next(L, s);
   assert.equal(s.shown, 3);
   assert.equal(dockLabel(L, s), '처음부터 다시 보기');
-  // 끝에서 누르면 처음으로. 다시 보기는 처음 배우는 것처럼 — gate 도 다시 걸리게 완료 기록을 비운다
+  // 끝에서 누르면 처음으로. 다시 보기는 처음 배우는 것처럼 완료 기록을 비운다
   const r = next(L, s);
   assert.equal(r.shown, 1);
   assert.deepEqual(r.done, []);
 });
 
-test('gate 장면은 끝내기 전에는 넘어가지 않는다', () => {
+test('목표를 이루지 않아도 넘어간다(gate 표시가 있어도 막지 않는다)', () => {
   const s = next(L, initialState());
-  assert.equal(canNext(L, s), false);
-  assert.equal(next(L, s), s);
-  assert.equal(canNext(L, complete(s, 'b')), true);
+  assert.equal(next(L, s).shown, 3);
+});
+
+test('처음부터: 어디서든 첫 장면으로, 완료 기록은 비우고 finished 는 남긴다', () => {
+  const s = next(L, complete(next(L, initialState()), 'b'));
+  assert.deepEqual(restart(s), { shown: 1, done: [], finished: true });
+  assert.deepEqual(restart(complete(next(L, initialState()), 'b')), { shown: 1, done: [] });
 });
 
 test('complete 는 같은 장면을 두 번 넣지 않는다', () => {
@@ -75,38 +74,15 @@ test('저장 키', () => {
   assert.equal(lessonKey('m1-linear-eq'), 'lesson:m1-linear-eq');
 });
 
-test('restore: 저장된 자리 앞에 끝내지 않은 gate 가 있으면 그 gate 에서 멈춘다', () => {
+test('restore: 끝내지 않은 gate 가 앞에 있어도 저장된 자리에서 이어진다', () => {
   const L2: Lesson = { ...L, scenes: [...L.scenes, { kind: 'intro', id: 'd', title: 't' }] };
-  assert.deepEqual(restore(L2, { at: 'd', done: [] }), { shown: 2, done: [] });
-  assert.deepEqual(restore(L2, { at: 'd', done: ['b'] }), {
-    shown: 4,
-    done: ['b'],
-    finished: true,
-  });
-});
-
-test('넘어가기: gate 에서 두 번 실패하면 끝낸 것으로 치고 다음 장면으로', () => {
-  const s = next(L, initialState());
-  assert.equal(SKIP_AFTER, 2);
-  assert.equal(canSkip(L, s, 1), false);
-  assert.equal(canSkip(L, s, 2), true);
-  // 넘어간 장면은 '끝냄'이 아니라 '넘어감'으로 따로 적는다(나중에 다시 볼 장면을 알 수 있게)
-  assert.deepEqual(skip(L, s), { shown: 3, done: [], skipped: ['b'], finished: true });
-  assert.deepEqual(toSaved(L, skip(L, s)), { at: 'c', done: [], skipped: ['b'], finished: true });
-  // 넘어간 gate 는 되살릴 때 다시 막지 않는다
-  assert.deepEqual(restore(L, { at: 'c', done: [], skipped: ['b'] }), {
-    shown: 3,
-    done: [],
-    skipped: ['b'],
-    finished: true,
-  });
-  // gate 가 아니거나 이미 끝낸 장면은 넘어가기가 없다
-  assert.equal(canSkip(L, initialState(), 5), false);
-  assert.equal(canSkip(L, complete(s, 'b'), 5), false);
+  assert.deepEqual(restore(L2, { at: 'd', done: [] }), { shown: 4, done: [], finished: true });
+  // 예전 기록의 skipped 는 버린다
+  assert.deepEqual(restore(L2, { at: 'b', done: [], skipped: ['b'] }), { shown: 2, done: [] });
 });
 
 test('끝까지 본 적이 있으면 finished — 처음부터 다시 봐도 남고, 저장·복원된다', () => {
-  let s = complete(next(L, initialState()), 'b');
+  let s = next(L, initialState());
   assert.equal(s.finished, undefined);
   s = next(L, s);
   assert.equal(s.finished, true);

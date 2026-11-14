@@ -18,9 +18,9 @@ import './widgets.css';
 
 export interface WidgetProps<P = unknown> {
   params: P;
-  /** 부품 목표를 이뤘을 때(gate 장면이 열린다) */
+  /** 부품 목표를 이뤘을 때(장면을 끝냄으로 적는다) */
   onDone(): void;
-  /** 틀린 시도(오답·놓친 끌기 등). 두 번이면 재생기가 '넘어가기'를 보인다 */
+  /** 틀린 시도(오답·놓친 끌기 등). 2026-11-14 부터 재생기는 쓰지 않음 — 나중에 힌트용으로 쓰거나 지운다 */
   onMiss(): void;
 }
 

@@ -7,8 +7,6 @@ export interface LessonState {
   shown: number;
   /** 끝낸 장면 id(정답을 맞히거나 부품 목표를 이룬 장면) */
   done: string[];
-  /** 두 번 틀려 '답 보고 넘어가기'로 지나간 gate 장면 id. 끝낸 것(done)과 섞지 않는다 */
-  skipped?: string[];
   /** 마지막 장면까지 본 적이 있다(지도의 "레슨 완료"). 처음부터 다시 봐도 남는다 */
   finished?: true;
 }
@@ -16,7 +14,6 @@ export interface LessonState {
 export interface SavedLesson {
   at: string;
   done: string[];
-  skipped?: string[];
   finished?: true;
 }
 
@@ -24,43 +21,16 @@ export const lessonKey = (unitId: string) => `lesson:${unitId}`;
 
 export const initialState = (): LessonState => ({ shown: 1, done: [] });
 
-const isGate = (l: Lesson, i: number) => {
-  const s = l.scenes[i];
-  return !!s && (s.kind === 'question' || s.kind === 'explore') && s.gate === true;
-};
-
-/** '계속하기'를 눌러도 되나. 마지막으로 보인 장면이 gate 면 끝내야 넘어간다 */
-export function canNext(l: Lesson, s: LessonState): boolean {
-  const cur = l.scenes[s.shown - 1];
-  return !(cur && isGate(l, s.shown - 1) && !passed(s, cur.id));
+/** 처음부터 다시: 처음 배우는 것처럼 완료 기록을 비운다. 끝까지 본 적(finished)은 남긴다 */
+export function restart(s: LessonState): LessonState {
+  return s.finished ? { shown: 1, done: [], finished: true } : { shown: 1, done: [] };
 }
 
-/** gate 를 지나갔나(끝냈거나 넘어갔거나) */
-const passed = (s: { done: string[]; skipped?: string[] }, id: string) =>
-  s.done.includes(id) || !!s.skipped?.includes(id);
-
+/** 다음 장면. 목표를 이루지 않아도 넘어간다(사용자 결정 2026-11-14) — gate 표시가 있어도 막지 않는다 */
 export function next(l: Lesson, s: LessonState): LessonState {
-  if (!canNext(l, s)) return s;
-  // 처음부터 다시 보기는 처음 배우는 것처럼: gate 가 다시 걸리게 완료 기록을 비운다
-  const keep = s.finished ? { finished: true as const } : {};
-  if (s.shown >= l.scenes.length) return { shown: 1, done: [], ...keep };
+  if (s.shown >= l.scenes.length) return restart(s);
   const shown = s.shown + 1;
   return shown >= l.scenes.length ? { ...s, shown, finished: true } : { ...s, shown };
-}
-
-/** gate 장면에서 이만큼 실패하면 '넘어가기'를 보인다(막혀서 레슨을 그만두지 않게) */
-export const SKIP_AFTER = 2;
-
-/** 지금 막힌 gate 를 넘어갈 수 있나. misses 는 이 장면에서 틀린 횟수 */
-export function canSkip(l: Lesson, s: LessonState, misses: number): boolean {
-  return !canNext(l, s) && misses >= SKIP_AFTER;
-}
-
-/** 막힌 gate 를 '넘어감'으로 적고 다음 장면을 연다 */
-export function skip(l: Lesson, s: LessonState): LessonState {
-  const cur = l.scenes[s.shown - 1];
-  if (!cur || passed(s, cur.id)) return s;
-  return next(l, { ...s, skipped: [...(s.skipped ?? []), cur.id] });
 }
 
 export function complete(s: LessonState, id: string): LessonState {
@@ -76,7 +46,6 @@ export function toSaved(l: Lesson, s: LessonState): SavedLesson {
   return {
     at: l.scenes[s.shown - 1]?.id ?? '',
     done: s.done,
-    ...(s.skipped?.length ? { skipped: s.skipped } : {}),
     ...(s.finished ? { finished: true as const } : {}),
   };
 }
@@ -92,16 +61,9 @@ export function restore(l: Lesson, raw: unknown): LessonState {
     ...new Set(Array.isArray(v) ? v.filter((d): d is string => ids.includes(d)) : []),
   ];
   const done = known(o.done);
-  const sk = known(o.skipped);
-  const skipped = sk.length ? { skipped: sk } : {};
-  // 저장된 자리 앞에 끝내지 않은 gate 가 있으면(기록이 깨졌거나 레슨에 gate 가 새로 생김) 거기서 멈춘다 —
-  // 그렇지 않으면 막혀 있어야 할 장면을 건너뛴 채 이어진다
-  for (let i = 0; i < at; i++)
-    if (isGate(l, i) && !passed({ done, skipped: sk }, (l.scenes[i] as { id: string }).id))
-      return { shown: i + 1, done, ...skipped, ...keep };
   // finished 가 생기기 전 기록은 마지막 장면에 있어도 finished 가 없다 — 마지막 장면까지 왔으면 끝낸 것
   const last = at === ids.length - 1 ? { finished: true as const } : keep;
-  return { shown: at + 1, done, ...skipped, ...last };
+  return { shown: at + 1, done, ...last };
 }
 
 /** 지도·홈·단원 홈에 보일 레슨 상태. at 은 이어서 볼 장면 번호(1부터, 시작 안 했으면 0) */

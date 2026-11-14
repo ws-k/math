@@ -85,6 +85,16 @@
   color: var(--sub);
   flex: none;
 }
+/* 하던 레슨을 첫 장면부터 다시. 모양은 .lbtn.quiet, 여기선 상단 막대에 맞는 크기만 */
+.lesson .top .lbtn.restart {
+  flex: none;
+  width: auto;
+  min-height: 44px;
+  margin-right: -6px;
+  padding: 0 8px;
+  font-size: 0.85rem;
+  color: var(--primary);
+}
 
 /* 장면 */
 .lesson .scene {

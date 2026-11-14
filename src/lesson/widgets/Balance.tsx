@@ -16,7 +16,6 @@ import {
 } from 'react';
 import { flyFrom } from '../fly.ts';
 import { formatValue } from '../format.ts';
-import { SKIP_AFTER } from '../state.ts';
 import { LRich, Tex } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
 import {
@@ -37,8 +36,8 @@ import type { WidgetProps } from './index.tsx';
 
 /** 이만큼 못 움직였으면 끌기가 아니라 누르기로 본다 */
 const TAP_PX = 8;
-/** 끌기를 이만큼 놓치면 '눌러서 옮기기'를 켠다. 재생기가 '넘어가기'를 여는 기준과 같은 수 */
-const FAILS_FOR_TAP = SKIP_AFTER;
+/** 끌기를 이만큼 놓치면 '눌러서 옮기기'를 켠다 */
+const FAILS_FOR_TAP = 2;
 /**
  * 받침점에서 접시 끈이 걸린 자리까지 거리(viewBox 단위)와 그림 폭. 접시(폭 48%)의 가운데는 그림 폭의
  * 24% 자리라 받침점(190)에서 190 − 0.24 × 380 만큼 떨어져 있다 — 막대 끝(150)으로 계산하면 끈이 막대를 뚫는다.
@@ -190,7 +189,7 @@ type Msg = { text: string; vars: Record<string, string>; cls: '' | 'ok' };
 export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams>) {
   // 한쪽만 내린 상태는 실수가 아니라 과정이다 — 틀린 시도(onMiss)로 세지 않고, 저절로 되돌리지도 않는다.
   // 틀린 시도로 세는 것은 '실제로 끌었는데 아무 일도 안 일어난 끌기'뿐이다(항 끌기 부품과 같은 기준) —
-  // 관문 장면에서 끌기를 못 해 막힌 사람에게 '넘어가기'가 열리게. 누르기는 '눌러서 옮기기'만 켠다.
+  // 누르기는 '눌러서 옮기기'만 켠다.
   const fresh = useCallback(() => {
     const b = board0(p);
     return {
