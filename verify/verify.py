@@ -3,7 +3,10 @@
 check 는 sympy 식 문자열이다. 예) "Rational(2,3) + Rational(1,4)", "diff((x+2)*(2*x**2-x-2), x).subs(x, 1)"
 여러 줄이 필요하면 마지막 줄에 'ans = ...' 를 둔다.
 """
+import ast
 import json
+import multiprocessing
+import os
 import sys
 from collections import defaultdict
 
@@ -21,15 +24,50 @@ NS.update({s: sympy.Symbol(s) for s in "a b c d h k m n p q r s t u v w x y z".s
 TRANSFORMS = standard_transformations + (implicit_multiplication_application, convert_xor)
 
 
+def _div(a, b):
+    """정수 ÷ 정수는 분수로. 파이썬 그대로면 2**5*2**3/2**4 가 실수 16.0 이 되어 정수 답과 어긋나고,
+    (-3+3)/2 가 0.0 이 된다(요청 36·107). 소수나 sympy 값이 끼면 원래 나눗셈 그대로."""
+    if type(a) is int and type(b) is int:
+        return Rational(a, b)
+    return a / b
+
+
+class _ExactDiv(ast.NodeTransformer):
+    """검산식의 '/' 를 _div 호출로 바꾼다. 전역 계산을 통째로 sympy 정수로 바꾸면 반복문이 많은 검산식이 느려지고
+    range·문자열 서식 같은 파이썬 쪽 동작까지 달라지므로, 문제가 된 정수 나눗셈 하나만 고친다."""
+
+    def visit_BinOp(self, node):
+        self.generic_visit(node)
+        if isinstance(node.op, ast.Div):
+            return ast.copy_location(
+                ast.Call(ast.Name("_div", ast.Load()), [node.left, node.right], []), node
+            )
+        return node
+
+    def visit_AugAssign(self, node):
+        self.generic_visit(node)
+        if isinstance(node.op, ast.Div) and isinstance(node.target, ast.Name):
+            load = ast.Name(node.target.id, ast.Load())
+            call = ast.Call(ast.Name("_div", ast.Load()), [load, node.value], [])
+            return ast.copy_location(ast.Assign([node.target], call), node)
+        return node
+
+
+def _compile(code, mode):
+    tree = ast.fix_missing_locations(_ExactDiv().visit(ast.parse(code, mode=mode)))
+    return compile(tree, "<검산식>", mode)
+
+
 def evaluate(code):
     code = code.strip()
+    env = dict(NS)
+    env["_div"] = _div
     if "\n" in code or code.startswith("ans"):
-        env = dict(NS)
-        exec(code, env)
+        exec(_compile(code, "exec"), env)
         if "ans" not in env:
             raise ValueError("여러 줄 검산식에는 'ans = ...' 가 필요합니다")
         return sympify(env["ans"])
-    return sympify(eval(code, dict(NS)))
+    return sympify(eval(_compile(code, "eval"), env))
 
 
 def equal(a, b):
@@ -294,11 +332,32 @@ def check_item(it):
     return None
 
 
+def _run(it):
+    try:
+        return check_item(it)
+    except Exception as e:  # 검산식 자체 오류
+        return f"검산식 오류: {type(e).__name__}: {e}"
+
+
+# 이만큼 넘으면 여러 프로세스로 나눠 검산한다(요청 61, 전체 검산 6분). 적으면 프로세스를 띄우는 시간이 더 든다
+PARALLEL_FROM = 300
+
+
+def run_all(items):
+    """항목마다 실패 까닭(통과면 None). 순서는 입력 그대로 — 나눠 돌려도 출력이 같게."""
+    if len(items) < PARALLEL_FROM:
+        return [_run(it) for it in items]
+    # spawn: macOS 에서 fork 는 시스템 라이브러리와 섞이면 멈출 수 있다. 작은 묶음(chunksize)으로 나눠야
+    # 느린 단원(로그부등식 생성기 등)의 항목이 한 프로세스에 몰리지 않는다
+    with multiprocessing.get_context("spawn").Pool(os.cpu_count() or 2) as pool:
+        return pool.map(_run, items, chunksize=16)
+
+
 def main(path):
     items = json.load(open(path, encoding="utf-8"))
     total, passed = defaultdict(int), defaultdict(int)
     fails = []
-    for it in items:
+    for it, err in zip(items, run_all(items)):
         if it["ref"].startswith("gen:"):
             kind = "생성기 표본"
         elif "/lesson:" in it["ref"]:
@@ -307,10 +366,6 @@ def main(path):
             kind = "문제·예제"
         key = (it["unit"], kind)
         total[key] += 1
-        try:
-            err = check_item(it)
-        except Exception as e:  # 검산식 자체 오류
-            err = f"검산식 오류: {type(e).__name__}: {e}"
         if err:
             fails.append((it["ref"], err))
         else:

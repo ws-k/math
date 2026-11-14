@@ -222,3 +222,37 @@ for (const [name, it] of [
     assert.equal(r.status, 1, r.stdout);
   });
 }
+
+// 요청 36: 검산식 안의 정수끼리 나눗셈(2**5*2**3/2**4)이 파이썬 실수(16.0)가 되어 정수 답과 어긋나던 것.
+// 정수 ÷ 정수만 분수로 읽는다 — 소수(0.5)나 sympy 값의 나눗셈은 원래대로
+test('정수끼리 나눗셈은 분수로 읽는다(한 줄·여러 줄 모두)', () => {
+  const r = runVerify([
+    { ...base, answer: '16', answerType: 'int', check: '2**5*2**3/2**4' },
+    { ...base, answer: '7/2', answerType: 'fraction', check: '(3+4)/2' },
+    { ...base, answer: '0', answerType: 'fraction', check: '(-3+3)/2' },
+    { ...base, answer: '1/3', answerType: 'fraction', check: 'a = 1\nb = 3\nans = a/b' },
+    { ...base, answer: '3', answerType: 'int', check: 'int(10/3)' },
+    { ...base, answer: '3', answerType: 'int', check: 'sum(1 for k in range(9) if k % 3 == 0)' },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+test('실패해야 함: 분수로 읽어도 답이 다르면', () => {
+  const r = runVerify([{ ...base, answer: '3', answerType: 'int', check: '7/2' }]);
+  assert.equal(r.status, 1, r.stdout);
+});
+
+test('많은 항목은 나눠 동시에 검산해도 결과(합계·실패 목록)가 같다', () => {
+  const items = Array.from({ length: 400 }, (_, i) => ({
+    unit: `u${i % 7}`,
+    ref: `u${i % 7}/p${i}`,
+    answer: String(i * 2),
+    answerType: 'int',
+    check: `${i}*2`,
+  }));
+  items[123] = { ...items[123], answer: '1' } as (typeof items)[number];
+  const r = runVerify(items);
+  assert.equal(r.status, 1, r.stdout);
+  assert.match(r.stdout, /합계: 399 \/ 400/);
+  assert.match(r.stdout, /실패 1건:\n {2}- u4\/p123: 검산값 246 ≠ 답 1/);
+});
