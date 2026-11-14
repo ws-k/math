@@ -1,0 +1,1383 @@
+{
+  "id": "calc-trig-limit-diff",
+  "course": "미적분",
+  "unit": "미분법",
+  "title": "삼각함수의 극한과 미분",
+  "prereq": [
+    "calc-trig-addition",
+    "math2-limit"
+  ],
+  "suneung": [
+    "미적 23"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$",
+    "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$",
+    "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos x}{x^2}=\\frac12$",
+    "$(\\sin x)'=\\cos x$",
+    "$(\\cos x)'=-\\sin x$"
+  ],
+  "lesson": {
+    "minutes": 30,
+    "values": {
+      "lim1": {
+        "value": "1",
+        "check": "limit(sin(x)/x, x, 0)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "미적분 · 미분법",
+        "title": "아주 작은 각에서\n높이와 호는 닮았을까요?",
+        "lead": "각이 아주 작을 때 $\\sin x$ 와 $x$ 를 견주어 극한 하나를 찾고, 그 극한으로 $\\sin x$ 를 미분해요.",
+        "meta": [
+          "삼각함수의 극한",
+          "사인·코사인의 도함수"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$x=0.1$ 일 때\n$\\frac{\\sin x}{x}$ 는 얼마쯤일까요?",
+        "lead": "반지름이 1 인 원에서 중심각이 $0.1$ 라디안이면 호의 길이도 $0.1$ 이에요. 높이 $\\sin 0.1$ 은 호보다 아주 조금 짧아요. 둘의 비를 소수 둘째 자리까지 어림해 보세요.",
+        "choices": [
+          {
+            "value": "0.02",
+            "check": "sin(pi/1800)/Rational(1,10)",
+            "feedback": "$0.1$ 을 $0.1^\\circ$ 로 읽었어요. 미적분에서 각은 언제나 라디안이에요. 도로 재면 이 비가 1 로 가지 않아요."
+          },
+          {
+            "value": "1.00",
+            "check": "sin(Rational(1,10))/Rational(1,10)"
+          },
+          {
+            "value": "0.10",
+            "check": "sin(Rational(1,10))",
+            "feedback": "분자 $\\sin 0.1$ 만 구했어요. 묻는 것은 $\\sin 0.1$ 을 $0.1$ 로 나눈 비예요."
+          }
+        ],
+        "format": {
+          "approx": true,
+          "digits": 2
+        },
+        "answer": 1,
+        "answerCheck": "sin(Rational(1,10))/Rational(1,10)",
+        "reveal": "**맞아요.** 높이와 호의 길이가 거의 같아서 비가 1 에 아주 가까워요.",
+        "thoughts": [
+          "각이 작으면 원의 호는 거의 곧은 선분이라, 높이 $\\sin x$ 와 호의 길이 $x$ 가 거의 같아요.",
+          "그래서 $\\frac{\\sin x}{x}$ 는 1 보다 조금 작은 값이에요."
+        ],
+        "conclude": "$x$ 를 0 에 더 가까이 보내면 어떻게 될까요? ==그래프 위에서 끝까지 따라가 봐요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "secant",
+        "chip": "손으로 해 보기",
+        "title": "직선을 끌어\n기울기를 읽어 보세요",
+        "lead": "진한 곡선은 $y=\\sin x$, 흐린 직선은 $y=x$ 예요. 원점 O 와 곡선 위의 점 Q 를 잇는 직선의 기울기는 $\\frac{\\sin x-0}{x-0}=\\frac{\\sin x}{x}$ 예요. Q 를 O 쪽으로 끌어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 2,
+              "step": "1/4"
+            },
+            "y": {
+              "min": 0,
+              "max": 2,
+              "step": "1/4"
+            },
+            "objects": [
+              {
+                "id": "line",
+                "curve": "x",
+                "label": "$y=x$",
+                "tone": "soft"
+              },
+              {
+                "id": "s",
+                "curve": "sin(x)",
+                "label": "$y=\\sin x$"
+              },
+              {
+                "id": "O",
+                "point": {
+                  "on": "s",
+                  "x": 0
+                },
+                "name": "O"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "s",
+                  "x": "7/4",
+                  "drag": "x",
+                  "snap": "1/20"
+                },
+                "name": "Q"
+              },
+              {
+                "secant": [
+                  "O",
+                  "Q"
+                ]
+              },
+              {
+                "readout": "x(Q)",
+                "label": "Q 의 $x$"
+              },
+              {
+                "readout": "slope(O,Q)",
+                "label": "기울기 $\\frac{\\sin x}{x}$",
+                "digits": 3
+              }
+            ],
+            "goal": {
+              "approach": [
+                "Q",
+                "O"
+              ]
+            },
+            "intro": "Q 를 끌어 O 에 겹쳐 보세요.",
+            "done": "Q 가 O 에 닿으면 직선이 **접선**이 되고, 기울기는 {{lim1}}이에요. 그 접선이 바로 흐린 직선 $y=x$ 예요."
+          }
+        },
+        "after": "$x$ 가 0 에 다가갈수록 $\\frac{\\sin x}{x}$ 는 1 에 다가가요. 곧 ==원점에서 사인 곡선의 접선 기울기가 1== 이에요. $x$ 를 라디안으로 쟀기 때문에 생기는 깔끔한 값이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "squeeze",
+        "chip": "왜 그럴까요",
+        "title": "두 곡선 사이에\n끼어 있어요",
+        "lead": "단위원에서 세모·부채꼴·큰 세모의 넓이를 견주면 $0<x<\\frac{\\pi}{2}$ 일 때 $\\sin x<x<\\tan x$ 예요. 각 변을 $\\sin x$ 로 나누고 뒤집으면 $\\cos x<\\frac{\\sin x}{x}<1$ 이에요. 가운데 곡선 위의 점 Q 를 A 쪽으로 끌어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -1,
+              "max": 1,
+              "step": "1/4"
+            },
+            "y": {
+              "min": 0,
+              "max": "3/2",
+              "step": "1/4"
+            },
+            "objects": [
+              {
+                "id": "c",
+                "curve": "cos(x)",
+                "label": "$y=\\cos x$",
+                "tone": "soft"
+              },
+              {
+                "id": "f",
+                "curve": "sin(x)/x",
+                "label": "$y=\\frac{\\sin x}{x}$"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "x": 0,
+                  "y": 1
+                },
+                "name": "A"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "f",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": "1/20"
+                },
+                "name": "Q"
+              },
+              {
+                "readout": "x(Q)",
+                "label": "Q 의 $x$"
+              },
+              {
+                "readout": "y(Q)",
+                "label": "Q 의 높이",
+                "digits": 3
+              }
+            ],
+            "goal": {
+              "approach": [
+                "Q",
+                "A"
+              ],
+              "within": "1/10"
+            },
+            "intro": "Q 를 끌어 A 에 가까이 가 보세요. $x=0$ 에서는 식이 정의되지 않아 딱 멈출 수는 없어요.",
+            "done": "Q 는 늘 아래의 $y=\\cos x$ 와 높이 1 사이에 있어요. 아래쪽 곡선도 1 로 모이니, 끼어 있는 Q 의 높이도 {{lim1}}로 모여요."
+          }
+        },
+        "after": "위아래에서 같은 값으로 조여 오면 가운데도 그 값으로 가요. 이것이 ==함수의 극한의 대소 관계==예요. 그래서 $\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ 이 성립해요."
+      },
+      {
+        "kind": "explore",
+        "id": "slopes",
+        "chip": "도함수 찍어 보기",
+        "title": "접선의 기울기를\n높이로 찍어 보세요",
+        "lead": "진한 곡선이 $y=\\sin x$ 예요. $x=0$ 에서 접선의 기울기는 방금 구한 1, 꼭대기 $x=\\frac{\\pi}{2}$ 에서는 접선이 수평이라 0 이에요. 곡선 모양을 보며 $0$, $\\frac{\\pi}{2}$, $\\pi$, $\\frac{3\\pi}{2}$, $2\\pi$ 에서의 기울기를 그 자리의 높이로 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "connect",
+            "x": {
+              "min": 0,
+              "max": "2*pi",
+              "step": "pi/2"
+            },
+            "y": {
+              "min": -1,
+              "max": 1,
+              "step": "1/2"
+            },
+            "objects": [
+              {
+                "id": "s",
+                "curve": "sin(x)",
+                "label": "$y=\\sin x$"
+              },
+              {
+                "id": "d",
+                "curve": "cos(x)",
+                "label": "기울기를 이은 곡선",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "pointsOn": {
+                "curve": "d",
+                "count": 5
+              }
+            },
+            "intro": "빈 칸을 눌러 기울기만큼의 높이에 점을 찍어요. 찍은 점은 차례로 이어져요.",
+            "done": "찍은 점들이 흐린 곡선 위에 놓여요. 이 곡선이 바로 $y=\\cos x$ 예요. $\\pi$ 에서는 사인 곡선이 가장 가파르게 내려가서 기울기가 $-1$ 이에요."
+          }
+        },
+        "after": "사인 곡선의 기울기를 이어 그리면 코사인 곡선이 돼요. 곧 ==사인을 미분하면 코사인==이에요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "삼각함수의 극한",
+            "body": "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$. $\\frac{\\tan x}{x}=\\frac{\\sin x}{x}\\cdot\\frac{1}{\\cos x}$ 이고 $\\cos x\\to1$ 이라 $\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$ 도 성립해요. $x$ 는 반드시 라디안이에요."
+          },
+          {
+            "term": "$(\\sin x)'=\\cos x$",
+            "body": "덧셈정리로 펼치면 $\\frac{\\sin(x+h)-\\sin x}{h}=\\cos x\\cdot\\frac{\\sin h}{h}+\\sin x\\cdot\\frac{\\cos h-1}{h}$ 예요. $h\\to0$ 이면 앞은 $\\cos x$, 뒤는 $0$ 으로 가요."
+          },
+          {
+            "term": "$(\\cos x)'=-\\sin x$",
+            "body": "같은 방법으로 구해요. 코사인 곡선은 $x=0$ 을 지나면서 내려가기 시작하니 기울기에 마이너스가 붙어요."
+          }
+        ],
+        "aside": "**확인** · $x=0$ 에서 $(\\sin x)'=\\cos 0$ 은 {{lim1}}이에요. 직선을 끌어 읽은 기울기와 같아요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 코사인을 미분했어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "diff(cos(x),x)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sin(x)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "-sin(x)",
+              "body": "코사인을 미분하면 **마이너스 사인**이에요. $0<x<\\pi$ 에서 코사인 곡선은 내려가니 기울기가 음수여야 해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 곱한 함수를 미분했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "diff(x*sin(x),x)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "cos(x)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "sin(x)+x*cos(x)",
+              "body": "$x$ 의 도함수 $1$ 과 $\\sin x$ 의 도함수 $\\cos x$ 를 곱하기만 했어요. **앞 미분 × 뒤 그대로 + 앞 그대로 × 뒤 미분**이에요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "ratio",
+            "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin 3x}{2x}$ 의 값을 구하세요.",
+            "hint": "분모에도 $3x$ 를 만들어 $\\frac{\\sin 3x}{3x}$ 모양을 찾아요.",
+            "concepts": [
+              "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+              "$x\\to0$ 이면 $3x\\to0$ 이라 $\\frac{\\sin 3x}{3x}\\to1$ 이에요."
+            ],
+            "steps": [
+              {
+                "title": "모양 맞추기",
+                "body": "$$\\frac{\\sin 3x}{2x}=\\frac{\\sin 3x}{3x}\\cdot\\frac{3x}{2x}=\\frac{\\sin 3x}{3x}\\cdot\\frac32$$"
+              },
+              {
+                "title": "극한 보내기",
+                "body": "$x\\to0$ 이면 $3x\\to0$ 이므로 $\\frac{\\sin 3x}{3x}\\to1$ 이에요."
+              },
+              {
+                "title": "답",
+                "body": "$$1\\cdot\\frac32={{answer}}$$"
+              }
+            ],
+            "tip": "$\\sin 3x$ 를 $3x$ 로 바꿔 어림하면 $\\frac{3x}{2x}=\\frac32$ 가 바로 보여요. 단, $x\\to0$ 일 때만 쓸 수 있는 생각이에요.",
+            "answer": "3/2",
+            "answerType": "fraction",
+            "check": "limit(sin(3*x)/(2*x), x, 0)"
+          },
+          {
+            "id": "cosine",
+            "q": "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos x}{x^2}$ 의 값을 구하세요.",
+            "hint": "분자·분모에 $1+\\cos x$ 를 곱하면 분자가 $\\sin^2x$ 가 돼요.",
+            "concepts": [
+              "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+              "$1-\\cos^2x=\\sin^2x$"
+            ],
+            "steps": [
+              {
+                "title": "켤레식 곱하기",
+                "body": "$$\\frac{1-\\cos x}{x^2}=\\frac{(1-\\cos x)(1+\\cos x)}{x^2(1+\\cos x)}=\\frac{\\sin^2x}{x^2(1+\\cos x)}$$"
+              },
+              {
+                "title": "나눠 보기",
+                "body": "$$\\left(\\frac{\\sin x}{x}\\right)^2\\cdot\\frac{1}{1+\\cos x}$$"
+              },
+              {
+                "title": "극한 보내기",
+                "body": "$\\frac{\\sin x}{x}\\to1$, $1+\\cos x\\to2$ 이므로 $1\\cdot\\frac12={{answer}}$ 이에요."
+              }
+            ],
+            "tip": "이 값은 자주 쓰여서 외워 두면 좋아요. $x\\to0$ 근처에서 $1-\\cos x$ 는 $\\frac12x^2$ 처럼 행동해요.",
+            "answer": "1/2",
+            "answerType": "fraction",
+            "check": "limit((1 - cos(x))/x**2, x, 0)"
+          },
+          {
+            "id": "deriv",
+            "q": "함수 $f(x)=\\sin x\\cos x$ 에 대하여 $f'\\left(\\frac{\\pi}{3}\\right)$ 의 값을 구하세요.",
+            "hint": "곱의 미분법에 $(\\sin x)^\\prime=\\cos x$, $(\\cos x)^\\prime=-\\sin x$ 를 넣어요.",
+            "concepts": [
+              "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+              "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+            ],
+            "steps": [
+              {
+                "title": "곱의 미분법",
+                "body": "$$f'(x)=\\cos x\\cdot\\cos x+\\sin x\\cdot(-\\sin x)=\\cos^2x-\\sin^2x$$"
+              },
+              {
+                "title": "$x=\\frac{\\pi}{3}$ 의 값",
+                "body": "$\\cos\\frac{\\pi}{3}=\\frac12$, $\\sin\\frac{\\pi}{3}=\\frac{\\sqrt3}{2}$ 이므로 $\\cos^2=\\frac14$, $\\sin^2=\\frac34$ 예요."
+              },
+              {
+                "title": "대입하기",
+                "body": "$$f'\\left(\\frac{\\pi}{3}\\right)=\\frac14-\\frac34={{answer}}$$"
+              }
+            ],
+            "tip": "$\\cos^2x-\\sin^2x=\\cos 2x$ 이므로 $f'(x)=\\cos 2x$, $f'\\left(\\frac{\\pi}{3}\\right)=\\cos\\frac{2\\pi}{3}$ 로 구해도 같아요.",
+            "answer": "-1/2",
+            "answerType": "fraction",
+            "check": "diff(sin(x)*cos(x), x).subs(x, pi/3)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$, $\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$. $x$ 는 라디안이고, 안쪽과 같은 것을 분모에 만들어 써요.",
+          "$1-\\cos x$ 는 $1+\\cos x$ 를 곱해 $\\sin^2x$ 로 바꿔요. $\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos x}{x^2}=\\frac12$.",
+          "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$. 코사인 쪽에만 마이너스가 붙어요.",
+          "수능에서는 $\\frac{\\sin ax}{bx}$ 꼴의 극한이 2점 문제로, 도형 넓이의 극한이 3·4점 문제로 자주 나와요."
+        ],
+        "done": "삼각함수의 극한과 미분 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "calc-trig-limit-diff-sin-ratio",
+    "calc-trig-limit-diff-one-minus-cos",
+    "calc-trig-limit-diff-sin-cos-value",
+    "calc-trig-limit-diff-product"
+  ],
+  "problems": [
+    {
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin 5x}{6x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/6",
+      "answerType": "fraction",
+      "check": "limit(sin(5*x)/(6*x), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$",
+        "안쪽의 $ax$ 를 분모에도 똑같이 만들어 주면 $\\frac{\\sin ax}{ax}\\to1$ 을 쓸 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "모양 맞추기",
+          "body": "안쪽의 $5x$ 를 분모에도 만들어 줘요.\n$$\\frac{\\sin 5x}{6x}=\\frac{\\sin 5x}{5x}\\cdot\\frac{5x}{6x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "$x\\to0$ 이면 $5x\\to0$, $6x\\to0$ 이므로 분수 모양 부분은 모두 $1$ 로 가요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot\\frac{5}{6}=\\frac{5}{6}$$"
+        }
+      ],
+      "tip": "$x\\to0$ 근처에서는 $\\sin 5x$, $\\tan 5x$ 가 거의 $5x$ 와 같아요. 그래서 삼각함수를 지우고 $\\frac{5x}{6x}$ 로 어림하면 답이 바로 보여요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-sin-ratio",
+      "seed": 1000
+    },
+    {
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos x}{2x^2}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/4",
+      "answerType": "fraction",
+      "check": "limit((1 - cos(1*x))/(2*x**2), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$1-\\cos^2\\theta=\\sin^2\\theta$",
+        "안쪽의 $ax$ 를 분모에도 똑같이 만들어 주면 $\\frac{\\sin ax}{ax}\\to1$ 을 쓸 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "켤레식 곱하기",
+          "body": "분자·분모에 $1+\\cos x$ 를 곱하면 분자가 $1-\\cos^2 x=\\sin^2 x$ 가 돼요.\n$$\\frac{\\sin^2 x}{2x^2(1+\\cos x)}$$"
+        },
+        {
+          "title": "모양 맞추기",
+          "body": "$\\frac{\\sin x}{x}$ 를 두 번 만들어 줘요.\n$$\\left(\\frac{\\sin x}{x}\\right)^2\\cdot\\frac{1}{2}\\cdot\\frac{1}{1+\\cos x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "분수 모양 부분은 $1$ 로, $1+\\cos x$ 는 $2$ 로 가요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot\\frac{1}{2}\\cdot\\frac12=\\frac{1}{4}$$"
+        }
+      ],
+      "tip": "$x\\to0$ 근처에서 $1-\\cos x$ 는 $\\frac12x^2$ 처럼 행동해요. 그래서 어림한 $\\frac{1}{2}\\div2$ 도 같은 값이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-one-minus-cos",
+      "seed": 1001
+    },
+    {
+      "q": "함수 $f(x)=\\sin x-2\\cos x-2x$ 에 대하여 $f'\\left(\\frac{3\\pi}{2}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "diff(1*sin(x) + -2*cos(x) + -2*x, x).subs(x, 3*pi/2)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "$(ax)'=a$, 상수의 도함수는 $0$"
+      ],
+      "steps": [
+        {
+          "title": "항마다 미분하기",
+          "body": "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$ 이므로\n$$f'(x)=\\cos x+2\\sin x-2$$"
+        },
+        {
+          "title": "$x=\\frac{3\\pi}{2}$ 에서의 값",
+          "body": "$\\cos \\frac{3\\pi}{2}=0$, $\\sin \\frac{3\\pi}{2}=-1$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{3\\pi}{2}\\right)=\\cos \\frac{3\\pi}{2}+2\\sin \\frac{3\\pi}{2}-2=-4$$"
+        }
+      ],
+      "tip": "$\\cos x$ 를 미분할 때 붙는 마이너스를 빠뜨리면 $2\\sin x$ 대신 $-2\\sin x$ 가 돼서 답이 달라져요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-sin-cos-value",
+      "seed": 1002
+    },
+    {
+      "q": "함수 $f(x)=-\\sin x\\cos x$ 에 대하여 $f'\\left(\\frac{5\\pi}{6}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1/2",
+      "answerType": "fraction",
+      "check": "diff(-1*sin(x)*cos(x), x).subs(x, 5*pi/6)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법",
+          "body": "앞 미분 × 뒤 그대로 + 앞 그대로 × 뒤 미분이에요.\n$$f'(x)=-\\{\\cos x\\cdot\\cos x+\\sin x\\cdot(-\\sin x)\\}=-(\\cos^2x-\\sin^2x)$$"
+        },
+        {
+          "title": "$x=\\frac{5\\pi}{6}$ 에서의 제곱 값",
+          "body": "$\\cos^2 \\frac{5\\pi}{6}=\\frac{3}{4}$, $\\sin^2 \\frac{5\\pi}{6}=\\frac{1}{4}$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{5\\pi}{6}\\right)=-\\left(\\frac{3}{4}-\\frac{1}{4}\\right)=-\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "$\\cos^2x-\\sin^2x=\\cos 2x$ 이므로 $f'(x)=-\\cos 2x$ 로 보고 $\\cos\\left(2\\cdot\\frac{5\\pi}{6}\\right)$ 를 넣어도 같아요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-product",
+      "seed": 1003
+    },
+    {
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan 3x}{4x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "limit(tan(3*x)/(4*x), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$",
+        "안쪽의 $ax$ 를 분모에도 똑같이 만들어 주면 $\\frac{\\sin ax}{ax}\\to1$ 을 쓸 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "모양 맞추기",
+          "body": "안쪽의 $3x$ 를 분모에도 만들어 줘요.\n$$\\frac{\\tan 3x}{4x}=\\frac{\\tan 3x}{3x}\\cdot\\frac{3x}{4x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "$x\\to0$ 이면 $3x\\to0$, $4x\\to0$ 이므로 분수 모양 부분은 모두 $1$ 로 가요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot\\frac{3}{4}=\\frac{3}{4}$$"
+        }
+      ],
+      "tip": "$x\\to0$ 근처에서는 $\\sin 3x$, $\\tan 3x$ 가 거의 $3x$ 와 같아요. 그래서 삼각함수를 지우고 $\\frac{3x}{4x}$ 로 어림하면 답이 바로 보여요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-sin-ratio",
+      "seed": 1004
+    },
+    {
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos 2x}{x\\sin 3x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "limit((1 - cos(2*x))/(x*sin(3*x)), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$1-\\cos^2\\theta=\\sin^2\\theta$",
+        "안쪽의 $ax$ 를 분모에도 똑같이 만들어 주면 $\\frac{\\sin ax}{ax}\\to1$ 을 쓸 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "켤레식 곱하기",
+          "body": "분자·분모에 $1+\\cos 2x$ 를 곱하면 분자가 $1-\\cos^2 2x=\\sin^2 2x$ 가 돼요.\n$$\\frac{\\sin^2 2x}{x\\sin 3x(1+\\cos 2x)}$$"
+        },
+        {
+          "title": "모양 맞추기",
+          "body": "$\\frac{\\sin 2x}{2x}$ 를 두 번 만들어 줘요.\n$$\\left(\\frac{\\sin 2x}{2x}\\right)^2\\cdot\\frac{3x}{\\sin 3x}\\cdot\\frac{4}{3}\\cdot\\frac{1}{1+\\cos 2x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "분수 모양 부분은 $1$ 로, $1+\\cos 2x$ 는 $2$ 로 가요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot\\frac{4}{3}\\cdot\\frac12=\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "$x\\to0$ 근처에서 $1-\\cos 2x$ 는 $\\frac12(2x)^2$ 처럼 행동해요. 분모의 $x\\sin 3x$ 는 $3x^2$ 처럼 행동하니 어림한 $\\frac{4}{2}\\div3$ 도 같은 값이에요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-one-minus-cos",
+      "seed": 1005
+    },
+    {
+      "q": "함수 $f(x)=4\\sin x+5\\cos x-2x$ 에 대하여 $f'\\left(\\frac{\\pi}{2}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-7",
+      "answerType": "int",
+      "check": "diff(4*sin(x) + 5*cos(x) + -2*x, x).subs(x, 1*pi/2)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "$(ax)'=a$, 상수의 도함수는 $0$"
+      ],
+      "steps": [
+        {
+          "title": "항마다 미분하기",
+          "body": "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$ 이므로\n$$f'(x)=4\\cos x-5\\sin x-2$$"
+        },
+        {
+          "title": "$x=\\frac{\\pi}{2}$ 에서의 값",
+          "body": "$\\cos \\frac{\\pi}{2}=0$, $\\sin \\frac{\\pi}{2}=1$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{\\pi}{2}\\right)=4\\cos \\frac{\\pi}{2}-5\\sin \\frac{\\pi}{2}-2=-7$$"
+        }
+      ],
+      "tip": "$\\cos x$ 를 미분할 때 붙는 마이너스를 빠뜨리면 $-5\\sin x$ 대신 $5\\sin x$ 가 돼서 답이 달라져요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-sin-cos-value",
+      "seed": 1006
+    },
+    {
+      "q": "함수 $f(x)=3\\sin x\\cos x$ 에 대하여 $f'\\left(\\frac{\\pi}{6}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "diff(3*sin(x)*cos(x), x).subs(x, 1*pi/6)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법",
+          "body": "앞 미분 × 뒤 그대로 + 앞 그대로 × 뒤 미분이에요.\n$$f'(x)=3\\{\\cos x\\cdot\\cos x+\\sin x\\cdot(-\\sin x)\\}=3(\\cos^2x-\\sin^2x)$$"
+        },
+        {
+          "title": "$x=\\frac{\\pi}{6}$ 에서의 제곱 값",
+          "body": "$\\cos^2 \\frac{\\pi}{6}=\\frac{3}{4}$, $\\sin^2 \\frac{\\pi}{6}=\\frac{1}{4}$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{\\pi}{6}\\right)=3\\left(\\frac{3}{4}-\\frac{1}{4}\\right)=\\frac{3}{2}$$"
+        }
+      ],
+      "tip": "$\\cos^2x-\\sin^2x=\\cos 2x$ 이므로 $f'(x)=3\\cos 2x$ 로 보고 $\\cos\\left(2\\cdot\\frac{\\pi}{6}\\right)$ 를 넣어도 같아요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-product",
+      "seed": 1007
+    },
+    {
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin 4x}{\\sin 6x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "limit(sin(4*x)/sin(6*x), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$",
+        "안쪽의 $ax$ 를 분모에도 똑같이 만들어 주면 $\\frac{\\sin ax}{ax}\\to1$ 을 쓸 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "모양 맞추기",
+          "body": "안쪽의 $4x$ 를 분모에도 만들어 줘요.\n$$\\frac{\\sin 4x}{\\sin 6x}=\\frac{\\sin 4x}{4x}\\cdot\\frac{6x}{\\sin 6x}\\cdot\\frac{4x}{6x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "$x\\to0$ 이면 $4x\\to0$, $6x\\to0$ 이므로 분수 모양 부분은 모두 $1$ 로 가요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot\\frac{4}{6}=\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "$x\\to0$ 근처에서는 $\\sin 4x$, $\\tan 4x$ 가 거의 $4x$ 와 같아요. 그래서 삼각함수를 지우고 $\\frac{4x}{6x}$ 로 어림하면 답이 바로 보여요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-sin-ratio",
+      "seed": 1008
+    },
+    {
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos 3x}{3x^2}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "limit((1 - cos(3*x))/(3*x**2), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$1-\\cos^2\\theta=\\sin^2\\theta$",
+        "안쪽의 $ax$ 를 분모에도 똑같이 만들어 주면 $\\frac{\\sin ax}{ax}\\to1$ 을 쓸 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "켤레식 곱하기",
+          "body": "분자·분모에 $1+\\cos 3x$ 를 곱하면 분자가 $1-\\cos^2 3x=\\sin^2 3x$ 가 돼요.\n$$\\frac{\\sin^2 3x}{3x^2(1+\\cos 3x)}$$"
+        },
+        {
+          "title": "모양 맞추기",
+          "body": "$\\frac{\\sin 3x}{3x}$ 를 두 번 만들어 줘요.\n$$\\left(\\frac{\\sin 3x}{3x}\\right)^2\\cdot\\frac{9}{3}\\cdot\\frac{1}{1+\\cos 3x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "분수 모양 부분은 $1$ 로, $1+\\cos 3x$ 는 $2$ 로 가요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot\\frac{9}{3}\\cdot\\frac12=\\frac{3}{2}$$"
+        }
+      ],
+      "tip": "$x\\to0$ 근처에서 $1-\\cos 3x$ 는 $\\frac12(3x)^2$ 처럼 행동해요. 그래서 어림한 $\\frac{9}{2}\\div3$ 도 같은 값이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-one-minus-cos",
+      "seed": 1009
+    },
+    {
+      "q": "함수 $f(x)=-3\\sin x-2\\cos x-3x$ 에 대하여 $f'\\left(\\frac{3\\pi}{2}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5",
+      "answerType": "int",
+      "check": "diff(-3*sin(x) + -2*cos(x) + -3*x, x).subs(x, 3*pi/2)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "$(ax)'=a$, 상수의 도함수는 $0$"
+      ],
+      "steps": [
+        {
+          "title": "항마다 미분하기",
+          "body": "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$ 이므로\n$$f'(x)=-3\\cos x+2\\sin x-3$$"
+        },
+        {
+          "title": "$x=\\frac{3\\pi}{2}$ 에서의 값",
+          "body": "$\\cos \\frac{3\\pi}{2}=0$, $\\sin \\frac{3\\pi}{2}=-1$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{3\\pi}{2}\\right)=-3\\cos \\frac{3\\pi}{2}+2\\sin \\frac{3\\pi}{2}-3=-5$$"
+        }
+      ],
+      "tip": "$\\cos x$ 를 미분할 때 붙는 마이너스를 빠뜨리면 $2\\sin x$ 대신 $-2\\sin x$ 가 돼서 답이 달라져요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-sin-cos-value",
+      "seed": 1010
+    },
+    {
+      "q": "함수 $f(x)=4\\cos^2x$ 에 대하여 $f'\\left(\\frac{3\\pi}{4}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "diff(4*cos(x)**2, x).subs(x, 3*pi/4)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱으로 보기",
+          "body": "$\\cos^2x=\\cos x\\cdot\\cos x$ 이므로 곱의 미분법을 써요."
+        },
+        {
+          "title": "곱의 미분법",
+          "body": "$$f'(x)=4\\{(-\\sin x)\\cos x+\\cos x(-\\sin x)\\}=-8\\sin x\\cos x$$"
+        },
+        {
+          "title": "$x=\\frac{3\\pi}{4}$ 에서의 값",
+          "body": "$\\sin \\frac{3\\pi}{4}=\\frac{\\sqrt2}{2}$, $\\cos \\frac{3\\pi}{4}=-\\frac{\\sqrt2}{2}$ 이므로 $\\sin \\frac{3\\pi}{4}\\cos \\frac{3\\pi}{4}=-\\frac12$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{3\\pi}{4}\\right)=-8\\cdot\\left(-\\frac12\\right)=4$$"
+        }
+      ],
+      "tip": "$(\\cos^2x)'$ 을 $2\\cos x$ 로 끝내면 안 돼요. 안쪽 $\\cos x$ 도 미분해서 곱해야 해요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-product",
+      "seed": 1011
+    },
+    {
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin 2x}{\\sin 4x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "limit(sin(2*x)/sin(4*x), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$",
+        "안쪽의 $ax$ 를 분모에도 똑같이 만들어 주면 $\\frac{\\sin ax}{ax}\\to1$ 을 쓸 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "모양 맞추기",
+          "body": "안쪽의 $2x$ 를 분모에도 만들어 줘요.\n$$\\frac{\\sin 2x}{\\sin 4x}=\\frac{\\sin 2x}{2x}\\cdot\\frac{4x}{\\sin 4x}\\cdot\\frac{2x}{4x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "$x\\to0$ 이면 $2x\\to0$, $4x\\to0$ 이므로 분수 모양 부분은 모두 $1$ 로 가요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot\\frac{2}{4}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "$x\\to0$ 근처에서는 $\\sin 2x$, $\\tan 2x$ 가 거의 $2x$ 와 같아요. 그래서 삼각함수를 지우고 $\\frac{2x}{4x}$ 로 어림하면 답이 바로 보여요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-sin-ratio",
+      "seed": 1012
+    },
+    {
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos x}{x\\sin x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "limit((1 - cos(1*x))/(x*sin(1*x)), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$1-\\cos^2\\theta=\\sin^2\\theta$",
+        "안쪽의 $ax$ 를 분모에도 똑같이 만들어 주면 $\\frac{\\sin ax}{ax}\\to1$ 을 쓸 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "켤레식 곱하기",
+          "body": "분자·분모에 $1+\\cos x$ 를 곱하면 분자가 $1-\\cos^2 x=\\sin^2 x$ 가 돼요.\n$$\\frac{\\sin^2 x}{x\\sin x(1+\\cos x)}$$"
+        },
+        {
+          "title": "모양 맞추기",
+          "body": "$\\frac{\\sin x}{x}$ 를 두 번 만들어 줘요.\n$$\\left(\\frac{\\sin x}{x}\\right)^2\\cdot\\frac{x}{\\sin x}\\cdot1\\cdot\\frac{1}{1+\\cos x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "분수 모양 부분은 $1$ 로, $1+\\cos x$ 는 $2$ 로 가요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot1\\cdot\\frac12=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "$x\\to0$ 근처에서 $1-\\cos x$ 는 $\\frac12x^2$ 처럼 행동해요. 분모의 $x\\sin x$ 는 $x^2$ 처럼 행동하니 어림한 $\\frac{1}{2}\\div1$ 도 같은 값이에요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-one-minus-cos",
+      "seed": 1013
+    },
+    {
+      "q": "함수 $f(x)=-4\\sin x+3\\cos x+3x$ 에 대하여 $f'\\left(\\frac{3\\pi}{2}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "diff(-4*sin(x) + 3*cos(x) + 3*x, x).subs(x, 3*pi/2)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "$(ax)'=a$, 상수의 도함수는 $0$"
+      ],
+      "steps": [
+        {
+          "title": "항마다 미분하기",
+          "body": "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$ 이므로\n$$f'(x)=-4\\cos x-3\\sin x+3$$"
+        },
+        {
+          "title": "$x=\\frac{3\\pi}{2}$ 에서의 값",
+          "body": "$\\cos \\frac{3\\pi}{2}=0$, $\\sin \\frac{3\\pi}{2}=-1$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{3\\pi}{2}\\right)=-4\\cos \\frac{3\\pi}{2}-3\\sin \\frac{3\\pi}{2}+3=6$$"
+        }
+      ],
+      "tip": "$\\cos x$ 를 미분할 때 붙는 마이너스를 빠뜨리면 $-3\\sin x$ 대신 $3\\sin x$ 가 돼서 답이 달라져요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "calc-trig-limit-diff-sin-cos-value",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin 4x}{\\tan 2x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "limit(sin(4*x)/tan(2*x), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$"
+      ],
+      "steps": [
+        {
+          "title": "모양 맞추기",
+          "body": "$$\\frac{\\sin 4x}{\\tan 2x}=\\frac{\\sin 4x}{4x}\\cdot\\frac{2x}{\\tan 2x}\\cdot\\frac{4x}{2x}$$"
+        },
+        {
+          "title": "각 부분의 극한",
+          "body": "$\\frac{\\sin 4x}{4x}\\to1$, $\\frac{2x}{\\tan 2x}\\to1$ 이에요."
+        },
+        {
+          "title": "답",
+          "body": "$$1\\cdot1\\cdot\\frac{4x}{2x}=2$$"
+        }
+      ],
+      "tip": "$\\sin 4x\\approx4x$, $\\tan 2x\\approx2x$ 로 어림하면 $\\frac{4x}{2x}=2$ 가 바로 보여요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos 2x}{x\\sin x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "limit((1 - cos(2*x))/(x*sin(x)), x, 0)",
+      "concepts": [
+        "배각 공식: $\\cos 2x=1-2\\sin^2x$",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)"
+      ],
+      "steps": [
+        {
+          "title": "배각 공식",
+          "body": "$\\cos 2x=1-2\\sin^2x$ 이므로 $1-\\cos 2x=2\\sin^2x$ 예요."
+        },
+        {
+          "title": "약분하기",
+          "body": "$$\\frac{2\\sin^2x}{x\\sin x}=2\\cdot\\frac{\\sin x}{x}$$"
+        },
+        {
+          "title": "극한",
+          "body": "$\\frac{\\sin x}{x}\\to1$ 이므로 답은 $2$ 예요."
+        }
+      ],
+      "tip": "켤레식 $1+\\cos 2x$ 를 곱해도 풀리지만, 배각 공식을 쓰면 한 줄로 끝나요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{x\\to\\pi}\\frac{\\sin x}{x-\\pi}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "limit(sin(x)/(x - pi), x, pi)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$\\sin(\\pi+\\theta)=-\\sin\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "0 으로 가는 문자 만들기",
+          "body": "$t=x-\\pi$ 로 두면 $x\\to\\pi$ 일 때 $t\\to0$ 이고 $x=\\pi+t$ 예요."
+        },
+        {
+          "title": "분자 바꾸기",
+          "body": "$\\sin(\\pi+t)=-\\sin t$ 예요."
+        },
+        {
+          "title": "극한",
+          "body": "$$\\lim_{t\\to0}\\frac{-\\sin t}{t}=-1$$"
+        }
+      ],
+      "tip": "$\\frac{\\sin x}{x}\\to1$ 은 안쪽이 $0$ 으로 갈 때만 써요. $x\\to\\pi$ 이면 먼저 $0$ 으로 가는 문자로 바꿔야 해요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin 3x}{x^2+2x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "limit(sin(3*x)/(x**2 + 2*x), x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)"
+      ],
+      "steps": [
+        {
+          "title": "분모 묶기",
+          "body": "$x^2+2x=x(x+2)$ 예요."
+        },
+        {
+          "title": "모양 맞추기",
+          "body": "$$\\frac{\\sin 3x}{x(x+2)}=\\frac{\\sin 3x}{3x}\\cdot\\frac{3}{x+2}$$"
+        },
+        {
+          "title": "극한",
+          "body": "$$1\\cdot\\frac{3}{0+2}=\\frac32$$"
+        }
+      ],
+      "tip": "분모를 $x$ 로 묶어 내면 $\\frac{\\sin 3x}{x}$ 모양이 보여요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "함수 $f(x)=3\\sin x-2\\cos x$ 에 대하여 $f'(\\pi)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3",
+      "answerType": "int",
+      "check": "diff(3*sin(x) - 2*cos(x), x).subs(x, pi)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$"
+      ],
+      "steps": [
+        {
+          "title": "항마다 미분하기",
+          "body": "$$f'(x)=3\\cos x+2\\sin x$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$\\cos\\pi=-1$, $\\sin\\pi=0$ 이므로 $f'(\\pi)=3\\cdot(-1)+0=-3$ 이에요."
+        }
+      ],
+      "tip": "$-2\\cos x$ 를 미분하면 $-2\\cdot(-\\sin x)=+2\\sin x$ 예요. 마이너스 두 개가 만나 플러스가 돼요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{h\\to0}\\frac{\\sin\\left(\\frac{\\pi}{3}+h\\right)-\\sin\\frac{\\pi}{3}}{h}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "limit((sin(pi/3 + h) - sin(pi/3))/h, h, 0)",
+      "concepts": [
+        "미분계수의 정의: $f'(a)=\\displaystyle\\lim_{h\\to0}\\frac{f(a+h)-f(a)}{h}$",
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$"
+      ],
+      "steps": [
+        {
+          "title": "미분계수로 보기",
+          "body": "$f(x)=\\sin x$ 라 하면 주어진 극한은 $f'\\left(\\frac{\\pi}{3}\\right)$ 예요."
+        },
+        {
+          "title": "도함수",
+          "body": "$f'(x)=\\cos x$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$\\cos\\frac{\\pi}{3}=\\frac12$$"
+        }
+      ],
+      "tip": "덧셈정리로 $\\sin\\left(\\frac{\\pi}{3}+h\\right)$ 를 펼쳐 직접 계산해도 같은 값이 나오지만, 미분계수로 읽으면 훨씬 빨라요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan x-\\sin x}{x^3}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "limit((tan(x) - sin(x))/x**3, x, 0)",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\tan x}{x}=1$",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos x}{x^2}=\\frac12$"
+      ],
+      "steps": [
+        {
+          "title": "분자 묶기",
+          "body": "$\\tan x-\\sin x=\\tan x-\\tan x\\cos x=\\tan x(1-\\cos x)$ 예요."
+        },
+        {
+          "title": "나눠 보기",
+          "body": "$$\\frac{\\tan x(1-\\cos x)}{x^3}=\\frac{\\tan x}{x}\\cdot\\frac{1-\\cos x}{x^2}$$"
+        },
+        {
+          "title": "극한",
+          "body": "$$1\\cdot\\frac12=\\frac12$$"
+        }
+      ],
+      "tip": "$\\tan x\\approx x$, $\\sin x\\approx x$ 로 어림하면 분자가 $0$ 이 되어 버려요. 빼는 식에서는 어림하지 말고 묶어서 정확히 계산해요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "곡선 $y=2\\sin x+x$ 위의 점 $\\left(\\frac{\\pi}{3},\\ \\sqrt3+\\frac{\\pi}{3}\\right)$ 에서의 접선의 기울기를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "diff(2*sin(x) + x, x).subs(x, pi/3)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "접선의 기울기는 그 점에서의 미분계수예요."
+      ],
+      "steps": [
+        {
+          "title": "도함수",
+          "body": "$$y'=2\\cos x+1$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$\\cos\\frac{\\pi}{3}=\\frac12$ 이므로 $2\\cdot\\frac12+1=2$ 예요."
+        }
+      ],
+      "tip": "점의 $y$ 좌표 $2\\sin\\frac{\\pi}{3}+\\frac{\\pi}{3}=\\sqrt3+\\frac{\\pi}{3}$ 는 곡선 위의 점인지 확인하는 데만 쓰여요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "함수 $f(x)=(\\sin x+\\cos x)^2$ 에 대하여 $f'\\left(\\frac{\\pi}{6}\\right)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "expand(diff((sin(x) + cos(x))**2, x).subs(x, pi/6))",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$",
+        "$\\sin^2x+\\cos^2x=1$"
+      ],
+      "steps": [
+        {
+          "title": "펼치기",
+          "body": "$(\\sin x+\\cos x)^2=\\sin^2x+2\\sin x\\cos x+\\cos^2x=1+2\\sin x\\cos x$ 예요."
+        },
+        {
+          "title": "곱의 미분법",
+          "body": "$$f'(x)=2(\\cos^2x-\\sin^2x)=2\\cos 2x$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{\\pi}{6}\\right)=2\\cos\\frac{\\pi}{3}=2\\cdot\\frac12=1$$"
+        }
+      ],
+      "tip": "펼치지 않고 $\\{g(x)\\}^2$ 의 미분 $2g(x)g^\\prime(x)$ 를 써도 $2(\\sin x+\\cos x)(\\cos x-\\sin x)$ 로 같은 식이 돼요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "함수 $f(x)=a\\sin x+b\\cos x$ 가 $f(0)=2$, $f'(0)=3$ 을 만족시킬 때, $f'\\left(\\frac{\\pi}{2}\\right)$ 의 값을 구하세요. (단, $a$, $b$ 는 상수)",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "sol = solve([Eq((a*sin(x) + b*cos(x)).subs(x, 0), 2), Eq(diff(a*sin(x) + b*cos(x), x).subs(x, 0), 3)], [a, b], dict=True)[0]\nans = diff(sol[a]*sin(x) + sol[b]*cos(x), x).subs(x, pi/2)",
+      "concepts": [
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$"
+      ],
+      "steps": [
+        {
+          "title": "첫째 조건",
+          "body": "$f(0)=a\\cdot0+b\\cdot1=b$ 이므로 $b=2$ 예요."
+        },
+        {
+          "title": "둘째 조건",
+          "body": "$f'(x)=a\\cos x-b\\sin x$ 이므로 $f'(0)=a=3$ 이에요."
+        },
+        {
+          "title": "답",
+          "body": "$$f'\\left(\\frac{\\pi}{2}\\right)=3\\cdot0-2\\cdot1=-2$$"
+        }
+      ],
+      "tip": "$x=0$ 을 넣으면 $\\sin$ 항이 사라지고, $x=\\frac{\\pi}{2}$ 를 넣으면 $\\cos$ 항이 사라져요. 계수를 하나씩 골라내는 데 편리해요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{x\\sin x}{1-\\cos 2x}$ 의 값은?",
+      "choices": [
+        "$\\frac14$",
+        "$\\frac12$",
+        "$1$",
+        "$2$",
+        "$4$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "limit(x*sin(x)/(1 - cos(2*x)), x, 0)",
+      "choiceChecks": [
+        "Rational(1,4)",
+        "Rational(1,2)",
+        "1",
+        "2",
+        "4"
+      ],
+      "concepts": [
+        "배각 공식: $\\cos 2x=1-2\\sin^2x$",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)"
+      ],
+      "steps": [
+        {
+          "title": "배각 공식",
+          "body": "$1-\\cos 2x=2\\sin^2x$ 예요."
+        },
+        {
+          "title": "약분하기",
+          "body": "$$\\frac{x\\sin x}{2\\sin^2x}=\\frac12\\cdot\\frac{x}{\\sin x}$$"
+        },
+        {
+          "title": "극한",
+          "body": "$\\frac{x}{\\sin x}\\to1$ 이므로 $\\frac12$, 정답은 ② 예요."
+        }
+      ],
+      "tip": "$1-\\cos 2x\\approx\\frac12(2x)^2=2x^2$, $x\\sin x\\approx x^2$ 로 어림해도 $\\frac{x^2}{2x^2}=\\frac12$ 이에요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin 2x}{x^2+ax}=\\frac12$ 일 때, 상수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "solve(Eq(limit(sin(2*x)/(x**2 + a*x), x, 0), Rational(1,2)), a)[0]",
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)"
+      ],
+      "steps": [
+        {
+          "title": "분모 묶기",
+          "body": "$x^2+ax=x(x+a)$ 예요."
+        },
+        {
+          "title": "모양 맞추기",
+          "body": "$$\\frac{\\sin 2x}{x(x+a)}=\\frac{\\sin 2x}{2x}\\cdot\\frac{2}{x+a}$$"
+        },
+        {
+          "title": "극한값",
+          "body": "$x\\to0$ 이면 $1\\cdot\\frac{2}{a}=\\frac2a$ 예요."
+        },
+        {
+          "title": "방정식 풀기",
+          "body": "$\\frac2a=\\frac12$ 이므로 $a=4$ 예요."
+        }
+      ],
+      "tip": "$a=0$ 이면 분모가 $x^2$ 이 되어 극한이 발산해요. 그래서 $a\\ne0$ 이고, 극한값은 $\\frac2a$ 로 정해져요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "반지름의 길이가 $2$ 이고 중심각의 크기가 $\\theta$ 인 부채꼴 $\\mathrm{OAB}$ 가 있어요. 점 $\\mathrm{B}$ 에서 선분 $\\mathrm{OA}$ 에 내린 수선의 발을 $\\mathrm{H}$ 라 하고, 삼각형 $\\mathrm{AHB}$ 의 넓이를 $S(\\theta)$ 라 할 때, $\\displaystyle\\lim_{\\theta\\to0+}\\frac{S(\\theta)}{\\theta^3}$ 의 값은? (단, $0<\\theta<\\frac{\\pi}{2}$)",
+      "choices": [
+        "$\\frac14$",
+        "$\\frac12$",
+        "$1$",
+        "$2$",
+        "$4$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "S = Rational(1,2)*(2*sin(t))*(2 - 2*cos(t))\nans = limit(S/t**3, t, 0, '+')",
+      "choiceChecks": [
+        "Rational(1,4)",
+        "Rational(1,2)",
+        "1",
+        "2",
+        "4"
+      ],
+      "concepts": [
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{1-\\cos x}{x^2}=\\frac12$"
+      ],
+      "steps": [
+        {
+          "title": "두 변의 길이",
+          "body": "$\\overline{\\mathrm{BH}}=2\\sin\\theta$, $\\overline{\\mathrm{OH}}=2\\cos\\theta$ 이므로 $\\overline{\\mathrm{HA}}=2-2\\cos\\theta$ 예요."
+        },
+        {
+          "title": "넓이",
+          "body": "직각삼각형이므로 $$S(\\theta)=\\frac12\\cdot2\\sin\\theta\\cdot(2-2\\cos\\theta)=2\\sin\\theta(1-\\cos\\theta)$$"
+        },
+        {
+          "title": "나눠 보기",
+          "body": "$$\\frac{S(\\theta)}{\\theta^3}=2\\cdot\\frac{\\sin\\theta}{\\theta}\\cdot\\frac{1-\\cos\\theta}{\\theta^2}$$"
+        },
+        {
+          "title": "극한",
+          "body": "$2\\cdot1\\cdot\\frac12=1$ 이므로 정답은 ③ 이에요."
+        }
+      ],
+      "tip": "$\\theta$ 가 작으면 $\\overline{\\mathrm{BH}}\\approx2\\theta$, $\\overline{\\mathrm{HA}}\\approx\\theta^2$ 이라 넓이는 $\\theta^3$ 정도 크기예요. 그래서 $\\theta^3$ 으로 나눴을 때 유한한 값이 남아요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "함수 $f(x)=a\\sin x+b\\cos x$ 가 $\\displaystyle\\lim_{x\\to0}\\frac{f(x)}{x}=3$ 을 만족시킬 때, $f'\\left(\\frac{\\pi}{3}\\right)$ 의 값을 구하세요. (단, $a$, $b$ 는 상수)",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "bb = solve(Eq((a*sin(x) + b*cos(x)).subs(x, 0), 0), b)[0]\naa = solve(Eq(limit((a*sin(x) + bb*cos(x))/x, x, 0), 3), a)[0]\nans = diff(aa*sin(x) + bb*cos(x), x).subs(x, pi/3)",
+      "concepts": [
+        "분모가 $0$ 으로 가는데 극한값이 있으면 분자도 $0$ 으로 가야 해요.",
+        "$\\displaystyle\\lim_{x\\to0}\\frac{\\sin x}{x}=1$ ($x$ 는 라디안)",
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$"
+      ],
+      "steps": [
+        {
+          "title": "분자가 0 으로 가야 해요",
+          "body": "분모 $x\\to0$ 이고 극한값이 있으므로 $f(x)\\to0$ 이어야 해요. $f(0)=b=0$ 이에요."
+        },
+        {
+          "title": "극한값으로 $a$ 구하기",
+          "body": "$$\\lim_{x\\to0}\\frac{a\\sin x}{x}=a=3$$"
+        },
+        {
+          "title": "도함수",
+          "body": "$f(x)=3\\sin x$ 이므로 $f'(x)=3\\cos x$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$f'\\left(\\frac{\\pi}{3}\\right)=3\\cdot\\frac12=\\frac32$$"
+        }
+      ],
+      "tip": "수학Ⅱ 에서 배운 \"분모 → 0 이면 분자 → 0\" 이 삼각함수에서도 그대로 쓰여요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "함수 $f(x)=\\sin x+\\cos x$ 에 대하여 $\\displaystyle\\lim_{h\\to0}\\frac{f\\left(\\frac{\\pi}{2}+2h\\right)-f\\left(\\frac{\\pi}{2}\\right)}{h}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "limit((sin(pi/2 + 2*h) + cos(pi/2 + 2*h) - sin(pi/2) - cos(pi/2))/h, h, 0)",
+      "concepts": [
+        "미분계수의 정의: $f'(a)=\\displaystyle\\lim_{h\\to0}\\frac{f(a+h)-f(a)}{h}$",
+        "$(\\sin x)'=\\cos x$, $(\\cos x)'=-\\sin x$"
+      ],
+      "steps": [
+        {
+          "title": "미분계수 모양 만들기",
+          "body": "$$\\frac{f\\left(\\frac{\\pi}{2}+2h\\right)-f\\left(\\frac{\\pi}{2}\\right)}{2h}\\cdot2\\to2f'\\left(\\frac{\\pi}{2}\\right)$$"
+        },
+        {
+          "title": "도함수",
+          "body": "$f'(x)=\\cos x-\\sin x$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$f'\\left(\\frac{\\pi}{2}\\right)=0-1=-1$ 이므로 답은 $2\\cdot(-1)=-2$ 예요."
+        }
+      ],
+      "tip": "분모를 늘어난 양 $2h$ 로 맞춰 주는 것이 핵심이에요. 맞추지 않으면 $-1$ 이 나와 틀려요."
+    }
+  ]
+}
