@@ -1,0 +1,1582 @@
+{
+  "id": "geo-space-figures",
+  "course": "기하",
+  "unit": "공간도형과 공간좌표",
+  "title": "공간도형",
+  "prereq": [
+    "m1-solid-figures",
+    "m3-circle",
+    "m2-pythagoras"
+  ],
+  "suneung": [
+    "기하 27",
+    "기하 28"
+  ],
+  "hours": 4,
+  "formulas": [
+    "$S'=S\\cos\\theta$",
+    "$\\overline{A'B'}=\\overline{AB}\\cos\\theta$",
+    "$\\overline{PH}\\perp\\alpha,\\ \\overline{HO}\\perp l\\ \\Rightarrow\\ \\overline{PO}\\perp l$",
+    "$\\overline{PO}=\\sqrt{\\overline{PH}^2+\\overline{HO}^2}$"
+  ],
+  "lesson": {
+    "minutes": 30,
+    "values": {
+      "skew": {
+        "value": "4",
+        "check": "V = {'A': (0,0,0), 'B': (1,0,0), 'C': (1,1,0), 'D': (0,1,0), 'E': (0,0,1), 'F': (1,0,1), 'G': (1,1,1), 'H': (0,1,1)}\nE = ['AB','BC','CD','DA','EF','FG','GH','HE','AE','BF','CG','DH']\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\nP0, P1 = V['A'], V['B']\nu = sub(P1, P0)\ndef rel(e):\n    a, b = V[e[0]], V[e[1]]\n    w = sub(b, a)\n    if dot(cross(u, w), sub(a, P0)) != 0: return 'skew'\n    if cross(u, w) == [0, 0, 0]: return 'parallel'\n    return 'meet'\nans = sum(1 for e in E if set(e) != set('AB') and rel(e) == 'skew')"
+      },
+      "par": {
+        "value": "3",
+        "check": "V = {'A': (0,0,0), 'B': (1,0,0), 'C': (1,1,0), 'D': (0,1,0), 'E': (0,0,1), 'F': (1,0,1), 'G': (1,1,1), 'H': (0,1,1)}\nE = ['AB','BC','CD','DA','EF','FG','GH','HE','AE','BF','CG','DH']\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\nP0, P1 = V['A'], V['B']\nu = sub(P1, P0)\ndef rel(e):\n    a, b = V[e[0]], V[e[1]]\n    w = sub(b, a)\n    if dot(cross(u, w), sub(a, P0)) != 0: return 'skew'\n    if cross(u, w) == [0, 0, 0]: return 'parallel'\n    return 'meet'\nans = sum(1 for e in E if set(e) != set('AB') and rel(e) == 'parallel')"
+      },
+      "meet": {
+        "value": "4",
+        "check": "V = {'A': (0,0,0), 'B': (1,0,0), 'C': (1,1,0), 'D': (0,1,0), 'E': (0,0,1), 'F': (1,0,1), 'G': (1,1,1), 'H': (0,1,1)}\nE = ['AB','BC','CD','DA','EF','FG','GH','HE','AE','BF','CG','DH']\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\nP0, P1 = V['A'], V['B']\nu = sub(P1, P0)\ndef rel(e):\n    a, b = V[e[0]], V[e[1]]\n    w = sub(b, a)\n    if dot(cross(u, w), sub(a, P0)) != 0: return 'skew'\n    if cross(u, w) == [0, 0, 0]: return 'parallel'\n    return 'meet'\nans = sum(1 for e in E if set(e) != set('AB') and rel(e) == 'meet')"
+      },
+      "shadow": {
+        "value": "2",
+        "check": "4*cos(pi/3)"
+      },
+      "plate": {
+        "value": "12",
+        "check": "3*4"
+      },
+      "area": {
+        "value": "6",
+        "check": "3*4*cos(pi/3)"
+      },
+      "po": {
+        "value": "5",
+        "check": "sqrt(3**2 + 4**2)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "기하 · 공간도형",
+        "title": "비스듬히 세운 판의 그림자,\n얼마나 줄어들까요?",
+        "lead": "공간에서는 직선이 만나지도 평행하지도 않을 수 있고, 그림자는 기울기만큼 줄어들어요. 정육면체와 그림자로 직접 확인하고, 이름은 마지막에 붙여요.",
+        "meta": [
+          "꼬인 위치",
+          "정사영",
+          "삼수선의 정리"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "모서리 AB 와 만나지도,\n평행하지도 않은 모서리는 몇 개?",
+        "lead": "정육면체의 모서리는 12개예요. AB 를 빼고 남은 11개를 AB 와의 관계로 나눠 보세요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 9,
+              "h": 9
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 1,
+                "y": 1
+              },
+              {
+                "id": "B",
+                "x": 6,
+                "y": 1
+              },
+              {
+                "id": "C",
+                "x": 8,
+                "y": 3
+              },
+              {
+                "id": "D",
+                "x": 3,
+                "y": 3
+              },
+              {
+                "id": "E",
+                "x": 1,
+                "y": 6
+              },
+              {
+                "id": "F",
+                "x": 6,
+                "y": 6
+              },
+              {
+                "id": "G",
+                "x": 8,
+                "y": 8
+              },
+              {
+                "id": "H",
+                "x": 3,
+                "y": 8
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "F",
+                "E"
+              ],
+              [
+                "B",
+                "C",
+                "G",
+                "F"
+              ],
+              [
+                "E",
+                "F",
+                "G",
+                "H"
+              ]
+            ],
+            "segments": [
+              [
+                "A",
+                "D"
+              ],
+              [
+                "D",
+                "C"
+              ],
+              [
+                "D",
+                "H"
+              ]
+            ],
+            "note": "밑면 ABCD, 윗면 EFGH 예요. AD·DC·DH 는 뒤에 숨은 모서리예요."
+          }
+        },
+        "choices": [
+          {
+            "value": "4",
+            "check": "V = {'A': (0,0,0), 'B': (1,0,0), 'C': (1,1,0), 'D': (0,1,0), 'E': (0,0,1), 'F': (1,0,1), 'G': (1,1,1), 'H': (0,1,1)}\nE = ['AB','BC','CD','DA','EF','FG','GH','HE','AE','BF','CG','DH']\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\nP0, P1 = V['A'], V['B']\nu = sub(P1, P0)\ndef rel(e):\n    a, b = V[e[0]], V[e[1]]\n    w = sub(b, a)\n    if dot(cross(u, w), sub(a, P0)) != 0: return 'skew'\n    if cross(u, w) == [0, 0, 0]: return 'parallel'\n    return 'meet'\nans = sum(1 for e in E if set(e) != set('AB') and rel(e) == 'skew')"
+          },
+          {
+            "value": "7",
+            "check": "12 - 1 - 4",
+            "feedback": "AB 와 만나지 않는 모서리를 모두 셌네요. 그중 DC·EF·HG 는 AB 와 **평행**해요. 평행한 두 직선은 한 평면 위에 놓여요."
+          },
+          {
+            "value": "3",
+            "check": "V = {'A': (0,0,0), 'B': (1,0,0), 'C': (1,1,0), 'D': (0,1,0), 'E': (0,0,1), 'F': (1,0,1), 'G': (1,1,1), 'H': (0,1,1)}\nE = ['AB','BC','CD','DA','EF','FG','GH','HE','AE','BF','CG','DH']\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\nP0, P1 = V['A'], V['B']\nu = sub(P1, P0)\ndef rel(e):\n    a, b = V[e[0]], V[e[1]]\n    w = sub(b, a)\n    if dot(cross(u, w), sub(a, P0)) != 0: return 'skew'\n    if cross(u, w) == [0, 0, 0]: return 'parallel'\n    return 'meet'\nans = sum(1 for e in E if set(e) != set('AB') and rel(e) == 'parallel')",
+            "feedback": "그건 AB 와 평행한 모서리(DC·EF·HG)의 수예요. 평행하지도 않은 것을 찾아야 해요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "V = {'A': (0,0,0), 'B': (1,0,0), 'C': (1,1,0), 'D': (0,1,0), 'E': (0,0,1), 'F': (1,0,1), 'G': (1,1,1), 'H': (0,1,1)}\nE = ['AB','BC','CD','DA','EF','FG','GH','HE','AE','BF','CG','DH']\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\nP0, P1 = V['A'], V['B']\nu = sub(P1, P0)\ndef rel(e):\n    a, b = V[e[0]], V[e[1]]\n    w = sub(b, a)\n    if dot(cross(u, w), sub(a, P0)) != 0: return 'skew'\n    if cross(u, w) == [0, 0, 0]: return 'parallel'\n    return 'meet'\nans = sum(1 for e in E if set(e) != set('AB') and rel(e) == 'skew')",
+        "reveal": "**맞아요.** 셋으로 나눠 세면 보여요.",
+        "thoughts": [
+          "AB 와 만나는 모서리: AD, BC, AE, BF 로 {{meet}}개예요.",
+          "AB 와 평행한 모서리: DC, EF, HG 로 {{par}}개예요.",
+          "남은 EH, FG, DH, CG 의 {{skew}}개는 만나지도 평행하지도 않아요."
+        ],
+        "conclude": "평면에서는 두 직선이 만나거나 평행하거나 둘 중 하나였어요. ==공간에는 세 번째 관계가 있어요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "stick",
+        "chip": "손으로 해 보기",
+        "title": "막대를 세우면\n그림자는 얼마나 짧아질까요?",
+        "lead": "길이 4 인 막대 OP 의 한끝 O 를 바닥에 고정하고 세워요. 바로 위에서 빛을 비추면 바닥에 생기는 그림자가 OH 예요. 점 P 를 끌어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 4,
+              "step": "1/2"
+            },
+            "y": {
+              "min": 0,
+              "max": 4,
+              "step": "1/2"
+            },
+            "objects": [
+              {
+                "id": "arc",
+                "curve": "sqrt(16 - x**2)",
+                "label": "막대 끝 P 가 지나는 길(반지름 4)",
+                "tone": "soft"
+              },
+              {
+                "id": "O",
+                "point": {
+                  "x": 0,
+                  "y": 0
+                },
+                "name": "O"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "arc",
+                  "x": 2
+                },
+                "name": "Q"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "arc",
+                  "x": 3.5,
+                  "drag": "x",
+                  "snap": "1/2"
+                },
+                "name": "P"
+              },
+              {
+                "secant": [
+                  "O",
+                  "P"
+                ]
+              },
+              {
+                "readout": "x(P)",
+                "label": "그림자 OH 의 길이"
+              },
+              {
+                "readout": "y(P)",
+                "label": "높이 PH"
+              }
+            ],
+            "goal": {
+              "approach": [
+                "P",
+                "Q"
+              ]
+            },
+            "intro": "그림자가 막대 길이의 절반이 되는 자리 Q 에 P 를 놓아 보세요.",
+            "done": "그림자가 {{shadow}}, 막대의 절반이에요. 이때 막대가 바닥과 이루는 각은 $60^\\circ$ 이고 $\\cos60^\\circ=\\frac12$ 예요."
+          }
+        },
+        "after": "막대가 바닥과 이루는 각을 $\\theta$ 라 하면 그림자의 길이는 $4\\cos\\theta$ 예요. ==기울어진 길이에 cos 를 곱하면 그림자==가 돼요. 눕힐수록($\\theta$ 가 작을수록) 그림자가 길어져요."
+      },
+      {
+        "kind": "question",
+        "id": "plate",
+        "chip": "두 번째 해 보기",
+        "title": "판을 세우면\n그림자 넓이는요?",
+        "lead": "가로 3, 세로 4 인 직사각형 판의 가로 모서리를 바닥에 붙인 채, 판이 바닥과 $60^\\circ$ 가 되게 세웠어요. 그림은 옆에서 본 모습이고 OA 가 판의 세로예요. 바로 위에서 빛을 비추면 그림자의 넓이는?",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 9,
+              "h": 5
+            },
+            "points": [
+              {
+                "id": "O",
+                "x": 1,
+                "y": 1
+              },
+              {
+                "id": "R",
+                "x": 8,
+                "y": 1
+              },
+              {
+                "id": "A",
+                "deg": 60,
+                "on": {
+                  "circle": [
+                    "O",
+                    4
+                  ]
+                }
+              },
+              {
+                "id": "H",
+                "x": 3,
+                "y": 1
+              }
+            ],
+            "segments": [
+              [
+                "O",
+                "R"
+              ],
+              [
+                "O",
+                "A"
+              ],
+              [
+                "A",
+                "H"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "O",
+                  "A"
+                ]
+              },
+              {
+                "angle": [
+                  "A",
+                  "O",
+                  "R"
+                ]
+              }
+            ],
+            "digits": 0,
+            "note": "바닥선이 바닥, OA 가 세운 판의 세로, H 는 A 의 그림자예요."
+          }
+        },
+        "choices": [
+          {
+            "value": "6",
+            "check": "3*4*cos(pi/3)"
+          },
+          {
+            "value": "12",
+            "check": "3*4",
+            "feedback": "판을 세우면 그림자는 줄어요. 세로 4 가 그림자에서는 얼마로 보이는지 앞 장면을 떠올려 보세요."
+          },
+          {
+            "value": "3",
+            "check": "3*cos(pi/3)*4*cos(pi/3)",
+            "feedback": "가로와 세로를 둘 다 줄였네요. 가로 3 은 바닥에 붙어 있어 그림자에서도 그대로예요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "3*4*cos(pi/3)",
+        "reveal": "**맞아요.** 한 방향만 줄어들어요.",
+        "thoughts": [
+          "가로 3 은 바닥에 붙어 있으니 그림자에서도 3 이에요.",
+          "세로 4 는 $60^\\circ$ 기울어 있어 그림자에서는 $4\\cos60^\\circ$, 곧 {{shadow}} 가 돼요.",
+          "그림자 넓이는 $3\\times2$, 곧 {{area}} 이에요. 원래 넓이 {{plate}} 에 $\\cos60^\\circ$ 를 곱한 값과 같아요."
+        ],
+        "conclude": "==그림자 넓이는 원래 넓이에 cos 를 곱한 값==이에요. 어떤 모양의 판이든 가는 띠로 나누면 띠마다 같은 비율로 줄어서 그래요."
+      },
+      {
+        "kind": "explore",
+        "id": "perp",
+        "chip": "세 번째 해 보기",
+        "title": "공중의 점에서\n바닥의 직선까지 거리",
+        "lead": "점 P 에서 바닥 평면 $\\alpha$ 에 내린 수선의 발이 H, H 에서 바닥의 직선 $l$ 에 내린 수선의 발이 O 예요. 그림은 P, H, O 를 지나는 세로 단면이고, 직선 $l$ 은 O 에서 화면을 수직으로 뚫고 지나가요. P 를 위아래로 끌어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 8,
+              "h": 8
+            },
+            "points": [
+              {
+                "id": "L",
+                "x": 0,
+                "y": 1
+              },
+              {
+                "id": "R",
+                "x": 8,
+                "y": 1
+              },
+              {
+                "id": "H",
+                "x": 2,
+                "y": 1
+              },
+              {
+                "id": "T",
+                "x": 2,
+                "y": 8
+              },
+              {
+                "id": "O",
+                "x": 6,
+                "y": 1
+              },
+              {
+                "id": "P",
+                "x": 2,
+                "y": 4,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "H",
+                    "T"
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "P",
+                "H",
+                "O"
+              ]
+            ],
+            "segments": [
+              [
+                "L",
+                "R"
+              ],
+              [
+                "H",
+                "T"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "P",
+                  "H"
+                ]
+              },
+              {
+                "len": [
+                  "H",
+                  "O"
+                ]
+              },
+              {
+                "len": [
+                  "P",
+                  "O"
+                ]
+              },
+              {
+                "angle": [
+                  "P",
+                  "H",
+                  "O"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "바닥선 LR 이 평면 α, 직선 l 은 O 에서 화면에 수직이에요."
+          }
+        },
+        "after": "직선 $l$ 은 $\\overline{HO}$ 와도, 평면에 수직인 $\\overline{PH}$ 와도 수직이라 삼각형 PHO 가 놓인 면 전체와 수직이에요. 그래서 ==PO 도 직선 l 과 수직==이고, P 와 $l$ 사이의 거리는 $\\overline{PO}=\\sqrt{\\overline{PH}^2+\\overline{HO}^2}$ 예요. PH 가 3 일 때 {{po}} 였어요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "꼬인 위치",
+            "body": "만나지도 않고 평행하지도 않은 두 직선이에요. 한 평면 위에 놓을 수 없어요. 같은 면 위의 두 모서리는 꼬인 위치가 될 수 없어요."
+          },
+          {
+            "term": "직선과 평면의 수직",
+            "body": "직선이 평면 위의 한 점을 지나는 **두** 직선과 수직이면, 그 평면 위의 모든 직선과 수직이에요. 이때 직선과 평면이 수직이라고 해요."
+          },
+          {
+            "term": "정사영",
+            "body": "평면에 수직으로 빛을 비출 때 생기는 그림자예요. 기울어진 각이 $\\theta$ 이면 길이는 $l\\cos\\theta$, 넓이는 $S'=S\\cos\\theta$ 예요."
+          },
+          {
+            "term": "이면각",
+            "body": "두 평면이 만나는 선 위의 한 점에서, 각 평면 위에 그 선과 수직인 반직선을 그어 잰 각이에요. 판과 바닥의 $60^\\circ$ 가 이 각이에요."
+          },
+          {
+            "term": "삼수선의 정리",
+            "body": "$\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$ 이에요. 수선 셋 중 둘이 수직이면 나머지도 수직이에요."
+          }
+        ],
+        "aside": "**확인** · 넓이 {{plate}} 인 판을 $60^\\circ$ 세우면 그림자는 {{area}} 이었어요. 넓이의 비가 곧 $\\cos60^\\circ$ 예요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 넓이가 12 인 판이 바닥과 $60^\\circ$ ($=\\frac{\\pi}{3}$) 를 이뤄요. 그림자 넓이를 구했어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "12*cos(pi/3)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "6*sqrt(3)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "6",
+              "body": "$\\cos60^\\circ=\\frac12$ 이라 그림자는 6 이에요. $6\\sqrt3$ 은 $\\sin60^\\circ$ 를 곱한 값이에요. 그림자는 바닥에 **눕는** 쪽이라 $\\cos$ 예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $\\overline{PH}=3$, $\\overline{HO}=4$ 일 때 P 에서 직선 $l$ 까지의 거리를 구했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt(3**2 + 4**2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "3 + 4",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "5",
+              "body": "제곱해서 더한 뒤 제곱근을 씌우면 5 예요. 3+4 는 P 에서 내려와 바닥을 걸어간 길이일 뿐, 곧은 거리가 아니에요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "angle",
+            "q": "정육면체 ABCD-EFGH 에서 두 직선 AC 와 BG 가 이루는 각의 크기는 몇 도인지 구하세요. (E, F, G, H 는 각각 A, B, C, D 바로 위의 꼭짓점이에요.)",
+            "hint": "BG 와 평행한 면의 대각선을 A 를 지나게 찾아 보세요.",
+            "concepts": [
+              "꼬인 위치: 만나지도 않고 평행하지도 않은 두 직선",
+              "꼬인 위치의 두 직선이 이루는 각은 한 직선을 평행하게 옮겨 만나게 한 뒤 재요."
+            ],
+            "steps": [
+              {
+                "title": "평행한 직선 찾기",
+                "body": "면 ADHE 의 대각선 AH 는 맞은편 면 BCGF 의 대각선 BG 와 평행해요."
+              },
+              {
+                "title": "삼각형 ACH 보기",
+                "body": "AC, CH, AH 는 모두 정육면체 면의 대각선이라 길이가 같아요. 그래서 삼각형 ACH 는 정삼각형이에요."
+              },
+              {
+                "title": "각 구하기",
+                "body": "AC 와 BG 가 이루는 각은 $\\angle CAH$ 와 같고, 정삼각형의 한 각이라 {{answer}}° 예요."
+              }
+            ],
+            "tip": "꼬인 위치의 두 직선은 만나지 않으니 그대로는 각을 잴 수 없어요. 한쪽을 평행하게 옮겨 만나게 하는 것이 요령이에요.",
+            "answer": "60",
+            "answerType": "int",
+            "check": "deg(acos(Abs(Matrix([1, 1, 0]).dot(Matrix([0, 1, 1])))/(sqrt(2)*sqrt(2))))"
+          },
+          {
+            "id": "reverse",
+            "q": "평면 $\\alpha$ 밖의 점 P 에서 $\\alpha$ 에 내린 수선의 발을 H 라 하고, $\\alpha$ 위의 직선 $l$ 위의 점 O 에 대하여 $\\overline{PO}\\perp l$ 이에요. $\\overline{PH}=6$, $\\overline{PO}=10$ 일 때 점 H 와 직선 $l$ 사이의 거리를 구하세요.",
+            "hint": "삼수선의 정리는 거꾸로도 성립해요. $\\overline{PH}\\perp\\alpha$, $\\overline{PO}\\perp l$ 이면 무엇이 수직일까요?",
+            "concepts": [
+              "삼수선의 정리: $\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$",
+              "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+            ],
+            "steps": [
+              {
+                "title": "삼수선의 정리(거꾸로)",
+                "body": "$\\overline{PH}\\perp\\alpha$, $\\overline{PO}\\perp l$ 이므로 $\\overline{HO}\\perp l$ 이에요. 구할 거리는 $\\overline{HO}$ 예요."
+              },
+              {
+                "title": "직각삼각형 PHO",
+                "body": "$\\angle PHO=90^\\circ$ 이고 빗변이 $\\overline{PO}=10$ 이에요."
+              },
+              {
+                "title": "피타고라스",
+                "body": "$$\\overline{HO}=\\sqrt{10^2-6^2}=\\sqrt{64}={{answer}}$$"
+              }
+            ],
+            "tip": "빗변은 늘 $\\overline{PO}$ 예요. P 에서 바닥으로 바로 내려간 $\\overline{PH}$ 가 가장 짧은 변 중 하나예요.",
+            "answer": "8",
+            "answerType": "int",
+            "check": "sqrt(10**2 - 6**2)"
+          },
+          {
+            "id": "dihedral",
+            "q": "넓이가 20 인 삼각형의 평면 $\\alpha$ 위로의 정사영의 넓이가 10 이에요. 삼각형이 있는 평면과 평면 $\\alpha$ 가 이루는 각의 크기는 몇 도인지 구하세요. (단, 각은 $0^\\circ$ 와 $90^\\circ$ 사이)",
+            "hint": "$S'=S\\cos\\theta$ 를 거꾸로 써요.",
+            "concepts": [
+              "정사영의 넓이: $S'=S\\cos\\theta$"
+            ],
+            "steps": [
+              {
+                "title": "공식 거꾸로 쓰기",
+                "body": "$\\cos\\theta=\\dfrac{S'}{S}=\\dfrac{10}{20}=\\dfrac12$ 이에요."
+              },
+              {
+                "title": "각 찾기",
+                "body": "$\\cos\\theta=\\frac12$ 인 예각은 {{answer}}° 예요."
+              }
+            ],
+            "tip": "정사영 넓이를 알면 두 평면의 각(이면각)을 거꾸로 알 수 있어요. 수능에서는 이 방향으로도 자주 물어요.",
+            "answer": "60",
+            "answerType": "int",
+            "check": "deg(acos(Rational(10, 20)))"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "만나지도 평행하지도 않으면 **꼬인 위치**예요. 같은 면 위의 두 직선은 꼬인 위치가 될 수 없어요.",
+          "정사영은 기울어진 쪽만 $\\cos\\theta$ 배로 줄어요. 길이는 $l\\cos\\theta$, 넓이는 $S'=S\\cos\\theta$.",
+          "삼수선의 정리: $\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$, 그리고 $\\overline{PO}=\\sqrt{\\overline{PH}^2+\\overline{HO}^2}$.",
+          "수능에서는 삼수선으로 이면각을 찾고, $\\cos\\theta$ 로 정사영의 넓이를 구하는 문제가 자주 나와요."
+        ],
+        "done": "공간도형 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "geo-space-figures-prism-skew",
+    "geo-space-figures-proj-length",
+    "geo-space-figures-proj-area",
+    "geo-space-figures-three-perp"
+  ],
+  "problems": [
+    {
+      "q": "정칠각기둥의 아랫면을 $A_1A_2\\cdots A_{7}$, 윗면을 $B_1B_2\\cdots B_{7}$ 이라 하고, $A_k$ 바로 위의 꼭짓점을 $B_k$ 라 해요. 모서리 $A_1A_2$ 와 꼬인 위치에 있는 모서리의 개수를 구하세요.",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "import math\nn = 7\nP = [(math.cos(2*math.pi*i/n), math.sin(2*math.pi*i/n), z) for z in (0, 1) for i in range(n)]\nE = [(i, (i+1) % n) for i in range(n)] + [(n+i, n+(i+1) % n) for i in range(n)] + [(i, n+i) for i in range(n)]\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\ne = (0, 1)\nu = sub(P[e[1]], P[e[0]])\ndef skew(f): return abs(dot(cross(u, sub(P[f[1]], P[f[0]])), sub(P[f[0]], P[e[0]]))) > 1e-9\ndef par(f): return max(abs(t) for t in cross(u, sub(P[f[1]], P[f[0]]))) < 1e-9\nans = sum(1 for f in E if f != e and skew(f))",
+      "concepts": [
+        "두 직선의 위치 관계: 한 점에서 만난다 · 평행하다 · 꼬인 위치에 있다",
+        "꼬인 위치: 만나지도 않고 평행하지도 않아서 한 평면 위에 놓을 수 없는 두 직선"
+      ],
+      "steps": [
+        {
+          "title": "아랫면 모서리는 빼기",
+          "body": "아랫면의 모서리는 $A_1A_2$ 와 같은 평면 위에 있어서, 늘이면 만나거나 평행해요. 꼬인 위치는 하나도 없어요."
+        },
+        {
+          "title": "옆모서리",
+          "body": "$A_1B_1$, $A_2B_2$ 는 $A_1A_2$ 와 만나요. 나머지 5개는 만나지도 평행하지도 않으니 꼬인 위치예요."
+        },
+        {
+          "title": "윗면 모서리",
+          "body": "윗면은 아랫면과 평행해서 만날 수 없어요. 평행한 $B_1B_2$ 를 빼면 6개가 꼬인 위치예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$5+6=11$$"
+        }
+      ],
+      "tip": "\"만나지 않으면 꼬인 위치\"가 아니에요. 같은 면 위의 모서리는 늘이면 만나거나 평행해요. 면별로 나눠 세면 빠뜨리지 않아요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "geo-space-figures-prism-skew",
+      "seed": 1000
+    },
+    {
+      "q": "길이가 8 인 선분 AB 가 평면 $\\alpha$ 와 이루는 각의 크기가 $60^\\circ$ 예요. 선분 AB 의 평면 $\\alpha$ 위로의 정사영의 길이를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "8*cos(pi/3)",
+      "concepts": [
+        "정사영의 길이: $\\overline{A'B'}=\\overline{AB}\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "정사영의 길이 공식",
+          "body": "선분과 평면이 이루는 각이 $\\theta$ 이면 정사영의 길이는 (선분의 길이)$\\times\\cos\\theta$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$8\\cos60^\\circ=8\\times\\frac12=4$$"
+        }
+      ],
+      "tip": "선분이 평면에 가까이 누울수록(θ 가 작을수록) 그림자가 길어져요. $\\cos$ 를 $\\sin$ 으로 바꿔 쓰면 높이를 구하게 되니 조심해요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "geo-space-figures-proj-length",
+      "seed": 1001
+    },
+    {
+      "q": "넓이가 36 인 삼각형 ABC 가 있는 평면과 평면 $\\alpha$ 가 이루는 각의 크기를 $\\theta$ 라 할 때 $\\cos\\theta=\\frac{1}{6}$ 이에요. 삼각형 ABC 의 평면 $\\alpha$ 위로의 정사영의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "36*Rational(1, 6)",
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "정사영의 넓이 공식",
+          "body": "평면도형의 넓이가 $S$ 이면 정사영의 넓이는 $S'=S\\cos\\theta$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$S'=36\\times\\frac{1}{6}=6$$"
+        }
+      ],
+      "tip": "정사영은 원래 도형보다 커질 수 없어요($\\cos\\theta\\le1$). 답이 원래 넓이보다 크면 나누기와 곱하기를 바꾼 거예요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "geo-space-figures-proj-area",
+      "seed": 1002
+    },
+    {
+      "q": "평면 $\\alpha$ 밖의 점 P 에서 $\\alpha$ 에 내린 수선의 발을 H 라 하고, $\\alpha$ 위의 직선 $l$ 위의 점 O 에 대하여 $\\overline{PO}\\perp l$ 이에요. $\\overline{PH}=5$, $\\overline{PO}=13$ 일 때 점 H 와 직선 $l$ 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "sqrt(13**2 - 5**2)",
+      "concepts": [
+        "삼수선의 정리(역): $\\overline{PH}\\perp\\alpha$, $\\overline{PO}\\perp l$ 이면 $\\overline{HO}\\perp l$",
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "삼수선의 정리 쓰기",
+          "body": "$\\overline{PH}\\perp\\alpha$, $\\overline{PO}\\perp l$ 이므로 $\\overline{HO}\\perp l$ 이에요. 그래서 H 와 $l$ 사이의 거리는 $\\overline{HO}$ 예요."
+        },
+        {
+          "title": "직각삼각형 PHO",
+          "body": "$\\angle PHO=90^\\circ$ 이고 빗변은 $\\overline{PO}$ 예요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$$\\overline{HO}=\\sqrt{13^2-5^2}=\\sqrt{144}=12$$"
+        }
+      ],
+      "tip": "세 수선 중 두 개가 수직이면 나머지 하나도 수직이에요. 어느 두 개가 주어졌는지 먼저 확인해요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "geo-space-figures-three-perp",
+      "seed": 1003
+    },
+    {
+      "q": "정사각기둥의 아랫면을 $A_1A_2\\cdots A_{4}$, 윗면을 $B_1B_2\\cdots B_{4}$ 이라 하고, $A_k$ 바로 위의 꼭짓점을 $B_k$ 라 해요. 모서리 $A_1B_1$ 과 꼬인 위치에 있는 모서리의 개수를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "import math\nn = 4\nP = [(math.cos(2*math.pi*i/n), math.sin(2*math.pi*i/n), z) for z in (0, 1) for i in range(n)]\nE = [(i, (i+1) % n) for i in range(n)] + [(n+i, n+(i+1) % n) for i in range(n)] + [(i, n+i) for i in range(n)]\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\ne = (0, n)\nu = sub(P[e[1]], P[e[0]])\ndef skew(f): return abs(dot(cross(u, sub(P[f[1]], P[f[0]])), sub(P[f[0]], P[e[0]]))) > 1e-9\ndef par(f): return max(abs(t) for t in cross(u, sub(P[f[1]], P[f[0]]))) < 1e-9\nans = sum(1 for f in E if f != e and skew(f))",
+      "concepts": [
+        "두 직선의 위치 관계: 한 점에서 만난다 · 평행하다 · 꼬인 위치에 있다",
+        "꼬인 위치: 만나지도 않고 평행하지도 않아서 한 평면 위에 놓을 수 없는 두 직선"
+      ],
+      "steps": [
+        {
+          "title": "옆모서리",
+          "body": "다른 옆모서리 3개는 모두 $A_1B_1$ 과 평행해요."
+        },
+        {
+          "title": "아랫면 모서리",
+          "body": "$A_1$ 에 붙은 2개는 만나요. 나머지 2개는 꼬인 위치예요."
+        },
+        {
+          "title": "윗면 모서리",
+          "body": "$B_1$ 에 붙은 2개는 만나요. 나머지 2개는 꼬인 위치예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$2+2=4$$"
+        }
+      ],
+      "tip": "\"만나지 않으면 꼬인 위치\"가 아니에요. 같은 면 위의 모서리는 늘이면 만나거나 평행해요. 면별로 나눠 세면 빠뜨리지 않아요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "geo-space-figures-prism-skew",
+      "seed": 1004
+    },
+    {
+      "q": "평면 $\\alpha$ 의 같은 쪽에 있는 두 점 A, B 에서 $\\alpha$ 까지의 거리가 각각 4, 19 이고 $\\overline{AB}=17$ 예요. 선분 AB 의 평면 $\\alpha$ 위로의 정사영의 길이를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "sqrt(17**2 - (19 - 4)**2)",
+      "concepts": [
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)",
+        "정사영 $\\mathrm{A'B'}$ 은 높이 차와 수직이에요."
+      ],
+      "steps": [
+        {
+          "title": "정사영 그리기",
+          "body": "A, B 에서 $\\alpha$ 에 내린 수선의 발을 A', B' 이라 하면 정사영은 $\\overline{A'B'}$ 예요."
+        },
+        {
+          "title": "직각삼각형 찾기",
+          "body": "A 를 지나 $\\overline{A'B'}$ 에 평행한 선을 그으면, 빗변이 $\\overline{AB}=17$, 세로가 높이 차 $19-4=15$ 인 직각삼각형이 생겨요. 가로가 정사영의 길이예요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$$\\overline{A'B'}=\\sqrt{17^2-15^2}=\\sqrt{64}=8$$"
+        }
+      ],
+      "tip": "높이 4, 19 를 그대로 쓰지 말고 **차**를 써요. 높이를 더하는 건 두 점이 평면의 반대쪽에 있을 때예요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "geo-space-figures-proj-length",
+      "seed": 1005
+    },
+    {
+      "q": "넓이가 24 인 삼각형 ABC 가 있는 평면과 평면 $\\alpha$ 가 이루는 각의 크기를 $\\theta$ 라 할 때 $\\cos\\theta=\\frac{3}{4}$ 이에요. 삼각형 ABC 의 평면 $\\alpha$ 위로의 정사영의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "18",
+      "answerType": "int",
+      "check": "24*Rational(3, 4)",
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "정사영의 넓이 공식",
+          "body": "평면도형의 넓이가 $S$ 이면 정사영의 넓이는 $S'=S\\cos\\theta$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$S'=24\\times\\frac{3}{4}=18$$"
+        }
+      ],
+      "tip": "정사영은 원래 도형보다 커질 수 없어요($\\cos\\theta\\le1$). 답이 원래 넓이보다 크면 나누기와 곱하기를 바꾼 거예요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "geo-space-figures-proj-area",
+      "seed": 1006
+    },
+    {
+      "q": "평면 $\\alpha$ 밖의 점 P 에서 $\\alpha$ 에 내린 수선의 발을 H, 점 H 에서 $\\alpha$ 위의 직선 $l$ 에 내린 수선의 발을 O 라 해요. $\\overline{PH}=7$, $\\overline{HO}=24$ 일 때 점 P 와 직선 $l$ 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "25",
+      "answerType": "int",
+      "check": "sqrt(7**2 + 24**2)",
+      "concepts": [
+        "삼수선의 정리: $\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$",
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "삼수선의 정리",
+          "body": "$\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이므로 $\\overline{PO}\\perp l$ 이에요. 그래서 P 와 $l$ 사이의 거리는 $\\overline{PO}$ 예요."
+        },
+        {
+          "title": "직각삼각형 PHO",
+          "body": "$\\overline{PH}$ 는 평면 위의 모든 직선과 수직이라 $\\angle PHO=90^\\circ$ 예요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$$\\overline{PO}=\\sqrt{7^2+24^2}=\\sqrt{625}=25$$"
+        }
+      ],
+      "tip": "$7+24$ 처럼 더하면 안 돼요. P 에서 평면으로 내려간 뒤 평면 위를 걸어간 길이일 뿐, 곧은 거리가 아니에요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "geo-space-figures-three-perp",
+      "seed": 1007
+    },
+    {
+      "q": "정칠각기둥의 아랫면을 $A_1A_2\\cdots A_{7}$, 윗면을 $B_1B_2\\cdots B_{7}$ 이라 하고, $A_k$ 바로 위의 꼭짓점을 $B_k$ 라 해요. 모서리 $A_1A_2$ 와 꼬인 위치에 있는 모서리의 개수를 구하세요.",
+      "choices": null,
+      "answer": "11",
+      "answerType": "int",
+      "check": "import math\nn = 7\nP = [(math.cos(2*math.pi*i/n), math.sin(2*math.pi*i/n), z) for z in (0, 1) for i in range(n)]\nE = [(i, (i+1) % n) for i in range(n)] + [(n+i, n+(i+1) % n) for i in range(n)] + [(i, n+i) for i in range(n)]\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\ne = (0, 1)\nu = sub(P[e[1]], P[e[0]])\ndef skew(f): return abs(dot(cross(u, sub(P[f[1]], P[f[0]])), sub(P[f[0]], P[e[0]]))) > 1e-9\ndef par(f): return max(abs(t) for t in cross(u, sub(P[f[1]], P[f[0]]))) < 1e-9\nans = sum(1 for f in E if f != e and skew(f))",
+      "concepts": [
+        "두 직선의 위치 관계: 한 점에서 만난다 · 평행하다 · 꼬인 위치에 있다",
+        "꼬인 위치: 만나지도 않고 평행하지도 않아서 한 평면 위에 놓을 수 없는 두 직선"
+      ],
+      "steps": [
+        {
+          "title": "아랫면 모서리는 빼기",
+          "body": "아랫면의 모서리는 $A_1A_2$ 와 같은 평면 위에 있어서, 늘이면 만나거나 평행해요. 꼬인 위치는 하나도 없어요."
+        },
+        {
+          "title": "옆모서리",
+          "body": "$A_1B_1$, $A_2B_2$ 는 $A_1A_2$ 와 만나요. 나머지 5개는 만나지도 평행하지도 않으니 꼬인 위치예요."
+        },
+        {
+          "title": "윗면 모서리",
+          "body": "윗면은 아랫면과 평행해서 만날 수 없어요. 평행한 $B_1B_2$ 를 빼면 6개가 꼬인 위치예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$5+6=11$$"
+        }
+      ],
+      "tip": "\"만나지 않으면 꼬인 위치\"가 아니에요. 같은 면 위의 모서리는 늘이면 만나거나 평행해요. 면별로 나눠 세면 빠뜨리지 않아요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "geo-space-figures-prism-skew",
+      "seed": 1008
+    },
+    {
+      "q": "평면 $\\alpha$ 의 같은 쪽에 있는 두 점 A, B 에서 $\\alpha$ 까지의 거리가 각각 3, 11 이고 $\\overline{AB}=17$ 예요. 선분 AB 의 평면 $\\alpha$ 위로의 정사영의 길이를 구하세요.",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "sqrt(17**2 - (11 - 3)**2)",
+      "concepts": [
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)",
+        "정사영 $\\mathrm{A'B'}$ 은 높이 차와 수직이에요."
+      ],
+      "steps": [
+        {
+          "title": "정사영 그리기",
+          "body": "A, B 에서 $\\alpha$ 에 내린 수선의 발을 A', B' 이라 하면 정사영은 $\\overline{A'B'}$ 예요."
+        },
+        {
+          "title": "직각삼각형 찾기",
+          "body": "A 를 지나 $\\overline{A'B'}$ 에 평행한 선을 그으면, 빗변이 $\\overline{AB}=17$, 세로가 높이 차 $11-3=8$ 인 직각삼각형이 생겨요. 가로가 정사영의 길이예요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$$\\overline{A'B'}=\\sqrt{17^2-8^2}=\\sqrt{225}=15$$"
+        }
+      ],
+      "tip": "높이 3, 11 를 그대로 쓰지 말고 **차**를 써요. 높이를 더하는 건 두 점이 평면의 반대쪽에 있을 때예요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "geo-space-figures-proj-length",
+      "seed": 1009
+    },
+    {
+      "q": "넓이가 24 인 삼각형 ABC 가 있는 평면과 평면 $\\alpha$ 가 이루는 각의 크기를 $\\theta$ 라 할 때 $\\cos\\theta=\\frac{7}{8}$ 이에요. 삼각형 ABC 의 평면 $\\alpha$ 위로의 정사영의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "21",
+      "answerType": "int",
+      "check": "24*Rational(7, 8)",
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "정사영의 넓이 공식",
+          "body": "평면도형의 넓이가 $S$ 이면 정사영의 넓이는 $S'=S\\cos\\theta$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$S'=24\\times\\frac{7}{8}=21$$"
+        }
+      ],
+      "tip": "정사영은 원래 도형보다 커질 수 없어요($\\cos\\theta\\le1$). 답이 원래 넓이보다 크면 나누기와 곱하기를 바꾼 거예요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "geo-space-figures-proj-area",
+      "seed": 1010
+    },
+    {
+      "q": "평면 $\\alpha$ 밖의 점 P 에서 $\\alpha$ 에 내린 수선의 발을 H 라 하고, $\\alpha$ 위의 직선 $l$ 위의 점 O 에 대하여 $\\overline{PO}\\perp l$ 이에요. $\\overline{PH}=24$, $\\overline{PO}=25$ 일 때 점 H 와 직선 $l$ 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "sqrt(25**2 - 24**2)",
+      "concepts": [
+        "삼수선의 정리(역): $\\overline{PH}\\perp\\alpha$, $\\overline{PO}\\perp l$ 이면 $\\overline{HO}\\perp l$",
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "삼수선의 정리 쓰기",
+          "body": "$\\overline{PH}\\perp\\alpha$, $\\overline{PO}\\perp l$ 이므로 $\\overline{HO}\\perp l$ 이에요. 그래서 H 와 $l$ 사이의 거리는 $\\overline{HO}$ 예요."
+        },
+        {
+          "title": "직각삼각형 PHO",
+          "body": "$\\angle PHO=90^\\circ$ 이고 빗변은 $\\overline{PO}$ 예요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$$\\overline{HO}=\\sqrt{25^2-24^2}=\\sqrt{49}=7$$"
+        }
+      ],
+      "tip": "세 수선 중 두 개가 수직이면 나머지 하나도 수직이에요. 어느 두 개가 주어졌는지 먼저 확인해요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "geo-space-figures-three-perp",
+      "seed": 1011
+    },
+    {
+      "q": "정사각기둥의 아랫면을 $A_1A_2\\cdots A_{4}$, 윗면을 $B_1B_2\\cdots B_{4}$ 이라 하고, $A_k$ 바로 위의 꼭짓점을 $B_k$ 라 해요. 모서리 $A_1A_2$ 와 꼬인 위치에 있는 모서리의 개수를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "import math\nn = 4\nP = [(math.cos(2*math.pi*i/n), math.sin(2*math.pi*i/n), z) for z in (0, 1) for i in range(n)]\nE = [(i, (i+1) % n) for i in range(n)] + [(n+i, n+(i+1) % n) for i in range(n)] + [(i, n+i) for i in range(n)]\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\ne = (0, 1)\nu = sub(P[e[1]], P[e[0]])\ndef skew(f): return abs(dot(cross(u, sub(P[f[1]], P[f[0]])), sub(P[f[0]], P[e[0]]))) > 1e-9\ndef par(f): return max(abs(t) for t in cross(u, sub(P[f[1]], P[f[0]]))) < 1e-9\nans = sum(1 for f in E if f != e and skew(f))",
+      "concepts": [
+        "두 직선의 위치 관계: 한 점에서 만난다 · 평행하다 · 꼬인 위치에 있다",
+        "꼬인 위치: 만나지도 않고 평행하지도 않아서 한 평면 위에 놓을 수 없는 두 직선"
+      ],
+      "steps": [
+        {
+          "title": "아랫면 모서리는 빼기",
+          "body": "아랫면의 모서리는 $A_1A_2$ 와 같은 평면 위에 있어서, 늘이면 만나거나 평행해요. 꼬인 위치는 하나도 없어요."
+        },
+        {
+          "title": "옆모서리",
+          "body": "$A_1B_1$, $A_2B_2$ 는 $A_1A_2$ 와 만나요. 나머지 2개는 만나지도 평행하지도 않으니 꼬인 위치예요."
+        },
+        {
+          "title": "윗면 모서리",
+          "body": "윗면은 아랫면과 평행해서 만날 수 없어요. 평행한 $B_1B_2$, $B_{3}B_{4}$ 를 빼면 2개가 꼬인 위치예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$2+2=4$$"
+        }
+      ],
+      "tip": "\"만나지 않으면 꼬인 위치\"가 아니에요. 같은 면 위의 모서리는 늘이면 만나거나 평행해요. 면별로 나눠 세면 빠뜨리지 않아요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "geo-space-figures-prism-skew",
+      "seed": 1012
+    },
+    {
+      "q": "길이가 8 인 선분 AB 가 평면 $\\alpha$ 와 이루는 각의 크기가 $60^\\circ$ 예요. 선분 AB 의 평면 $\\alpha$ 위로의 정사영의 길이를 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "8*cos(pi/3)",
+      "concepts": [
+        "정사영의 길이: $\\overline{A'B'}=\\overline{AB}\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "정사영의 길이 공식",
+          "body": "선분과 평면이 이루는 각이 $\\theta$ 이면 정사영의 길이는 (선분의 길이)$\\times\\cos\\theta$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$8\\cos60^\\circ=8\\times\\frac12=4$$"
+        }
+      ],
+      "tip": "선분이 평면에 가까이 누울수록(θ 가 작을수록) 그림자가 길어져요. $\\cos$ 를 $\\sin$ 으로 바꿔 쓰면 높이를 구하게 되니 조심해요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "geo-space-figures-proj-length",
+      "seed": 1013
+    },
+    {
+      "q": "가로 8, 세로 9 인 직사각형이 있는 평면과 평면 $\\beta$ 가 이루는 각의 크기가 $60^\\circ$ 예요. 이 직사각형의 평면 $\\beta$ 위로의 정사영의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "36",
+      "answerType": "fraction",
+      "check": "8*9*cos(pi/3)",
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "원래 넓이",
+          "body": "$S=8\\times9=72$ 이에요."
+        },
+        {
+          "title": "정사영의 넓이 공식",
+          "body": "$$S'=S\\cos60^\\circ=72\\times\\frac12=36$$"
+        }
+      ],
+      "tip": "두 평면이 만나는 선과 나란한 방향은 그대로이고, 수직인 방향만 $\\cos\\theta$ 배로 줄어요. 그래서 넓이도 $\\cos\\theta$ 배예요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "geo-space-figures-proj-area",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "정육면체 ABCD-EFGH 에서 면의 대각선 AC 와 꼬인 위치에 있는 모서리의 개수를 구하세요. (E, F, G, H 는 각각 A, B, C, D 바로 위의 꼭짓점이에요.)",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "V = {'A': (0,0,0), 'B': (1,0,0), 'C': (1,1,0), 'D': (0,1,0), 'E': (0,0,1), 'F': (1,0,1), 'G': (1,1,1), 'H': (0,1,1)}\nE = ['AB','BC','CD','DA','EF','FG','GH','HE','AE','BF','CG','DH']\ndef sub(u, v): return [u[0]-v[0], u[1]-v[1], u[2]-v[2]]\ndef cross(a, b): return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]\ndef dot(a, b): return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]\nP0, P1 = V['A'], V['C']\nu = sub(P1, P0)\ndef rel(e):\n    a, b = V[e[0]], V[e[1]]\n    w = sub(b, a)\n    if dot(cross(u, w), sub(a, P0)) != 0: return 'skew'\n    if cross(u, w) == [0, 0, 0]: return 'parallel'\n    return 'meet'\nans = sum(1 for e in E if set(e) != set('AC') and rel(e) == 'skew')",
+      "concepts": [
+        "꼬인 위치: 만나지도 않고 평행하지도 않은 두 직선"
+      ],
+      "steps": [
+        {
+          "title": "아랫면 모서리 4개",
+          "body": "AB, BC, CD, DA 는 AC 와 같은 아랫면 위에 있어서 꼬인 위치가 아니에요."
+        },
+        {
+          "title": "윗면 모서리 4개",
+          "body": "윗면은 아랫면과 평행해서 AC 와 만나지 않아요. AC 와 평행한 것은 윗면의 대각선 EG 인데 모서리가 아니에요. 그래서 EF, FG, GH, HE 4개 모두 꼬인 위치예요."
+        },
+        {
+          "title": "옆모서리 4개",
+          "body": "AE, CG 는 AC 의 끝점에서 만나요. BF, DH 는 AC 와 만나지도 평행하지도 않아 꼬인 위치예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$0+4+2=6$$"
+        }
+      ],
+      "tip": "면별로 나눠 세면 빠뜨리지 않아요. 대각선은 모서리가 아니라서 평행한 모서리가 하나도 없다는 점이 함정이에요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "길이가 10 인 선분 AB 의 평면 $\\alpha$ 위로의 정사영의 길이가 6 이에요. 두 점 A, B 가 평면 $\\alpha$ 의 같은 쪽에 있을 때, 두 점에서 평면 $\\alpha$ 까지의 거리의 차를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "sqrt(10**2 - 6**2)",
+      "concepts": [
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "직각삼각형 찾기",
+          "body": "A, B 에서 내린 수선의 발을 A', B' 이라 하고 A 를 지나 $\\overline{A'B'}$ 에 평행한 선을 그으면 빗변 10, 가로 6 인 직각삼각형이 생겨요."
+        },
+        {
+          "title": "세로가 높이 차",
+          "body": "세로가 바로 두 점의 높이 차예요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$$\\sqrt{10^2-6^2}=\\sqrt{64}=8$$"
+        }
+      ],
+      "tip": "정사영 길이와 높이 차, 원래 길이는 늘 직각삼각형을 이뤄요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "한 변의 길이가 4 인 정삼각형 ABC 가 있는 평면과 평면 $\\beta$ 가 이루는 각의 크기가 $60^\\circ$ 예요. 삼각형 ABC 의 평면 $\\beta$ 위로의 정사영의 넓이를 $S$ 라 할 때, $S^2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "(sqrt(3)/4*4**2*cos(pi/3))**2",
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$",
+        "한 변이 $a$ 인 정삼각형의 넓이: $\\frac{\\sqrt3}{4}a^2$"
+      ],
+      "steps": [
+        {
+          "title": "정삼각형의 넓이",
+          "body": "$$\\frac{\\sqrt3}{4}\\times4^2=4\\sqrt3$$"
+        },
+        {
+          "title": "정사영의 넓이",
+          "body": "$$S=4\\sqrt3\\cos60^\\circ=4\\sqrt3\\times\\frac12=2\\sqrt3$$"
+        },
+        {
+          "title": "제곱",
+          "body": "$$S^2=(2\\sqrt3)^2=12$$"
+        }
+      ],
+      "tip": "정사영의 모양을 몰라도 넓이는 원래 넓이 × $\\cos\\theta$ 로 바로 나와요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "직육면체 ABCD-EFGH 에서 $\\overline{AB}=15$, $\\overline{AD}=20$, $\\overline{AE}=5$ 예요. 점 E 와 직선 BD 사이의 거리를 구하세요. (E 는 A 바로 위의 꼭짓점이에요.)",
+      "choices": null,
+      "answer": "13",
+      "answerType": "int",
+      "check": "Line3D(Point3D(15, 0, 0), Point3D(0, 20, 0)).distance(Point3D(0, 0, 5))",
+      "concepts": [
+        "삼수선의 정리: $\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$",
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "A 에서 BD 에 수선",
+          "body": "A 에서 BD 에 내린 수선의 발을 I 라 해요. 직각삼각형 ABD 에서 $\\overline{BD}=\\sqrt{15^2+20^2}=25$ 예요."
+        },
+        {
+          "title": "AI 의 길이",
+          "body": "넓이를 두 가지로 쓰면 $\\frac12\\times15\\times20=\\frac12\\times25\\times\\overline{AI}$ 라서 $\\overline{AI}=12$ 예요."
+        },
+        {
+          "title": "삼수선의 정리",
+          "body": "$\\overline{EA}\\perp$ 평면 ABCD, $\\overline{AI}\\perp\\overline{BD}$ 이므로 $\\overline{EI}\\perp\\overline{BD}$ 예요. 구할 거리는 $\\overline{EI}$ 예요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$$\\overline{EI}=\\sqrt{5^2+12^2}=13$$"
+        }
+      ],
+      "tip": "공중의 점에서 바닥의 직선까지 거리는 \"바닥에 수선 → 바닥에서 직선에 수선 → 피타고라스\" 순서로 구해요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "한 변의 길이가 6 인 정사면체 ABCD 에서 두 면 ABC 와 BCD 가 이루는 각의 크기를 $\\theta$ 라 할 때, $\\cos\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "check": "A = Point3D(1, 1, 1)\nB = Point3D(1, -1, -1)\nC = Point3D(-1, 1, -1)\nD = Point3D(-1, -1, 1)\nans = Abs(cos(Plane(A, B, C).angle_between(Plane(B, C, D))))",
+      "concepts": [
+        "이면각: 두 평면의 교선에 수직인 두 반직선이 이루는 각",
+        "코사인법칙: $\\cos\\theta=\\frac{b^2+c^2-a^2}{2bc}$"
+      ],
+      "steps": [
+        {
+          "title": "교선 BC 의 중점 M",
+          "body": "두 면의 교선은 BC 예요. BC 의 중점을 M 이라 하면 정삼각형이라 $\\overline{AM}\\perp\\overline{BC}$, $\\overline{DM}\\perp\\overline{BC}$ 예요. 그래서 $\\theta=\\angle AMD$ 예요."
+        },
+        {
+          "title": "길이",
+          "body": "$\\overline{AM}=\\overline{DM}=\\frac{\\sqrt3}{2}\\times6=3\\sqrt3$, $\\overline{AD}=6$ 이에요."
+        },
+        {
+          "title": "코사인법칙",
+          "body": "$$\\cos\\theta=\\frac{27+27-36}{2\\times3\\sqrt3\\times3\\sqrt3}=\\frac{18}{54}=\\frac13$$"
+        }
+      ],
+      "tip": "이면각은 교선에 **수직인** 두 선으로 재야 해요. 정삼각형의 중선이 바로 그 선이에요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "평면 $\\alpha$ 위에 $\\angle C=90^\\circ$, $\\overline{AC}=20$, $\\overline{BC}=15$ 인 직각삼각형 ABC 가 있어요. 점 C 를 지나고 $\\alpha$ 에 수직인 직선 위의 점 P 에 대하여 $\\overline{PC}=9$ 일 때, 삼각형 PAB 의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "375/2",
+      "answerType": "fraction",
+      "check": "Rational(1, 2)*Point3D(20, 0, 0).distance(Point3D(0, 15, 0))*Line3D(Point3D(20, 0, 0), Point3D(0, 15, 0)).distance(Point3D(0, 0, 9))",
+      "concepts": [
+        "삼수선의 정리: $\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$",
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "C 에서 AB 에 수선",
+          "body": "$\\overline{AB}=\\sqrt{20^2+15^2}=25$ 이고, C 에서 AB 에 내린 수선의 발을 H 라 하면 $\\frac12\\times20\\times15=\\frac12\\times25\\times\\overline{CH}$ 에서 $\\overline{CH}=12$ 예요."
+        },
+        {
+          "title": "삼수선의 정리",
+          "body": "$\\overline{PC}\\perp\\alpha$, $\\overline{CH}\\perp\\overline{AB}$ 이므로 $\\overline{PH}\\perp\\overline{AB}$ 예요. 그래서 $\\overline{PH}$ 가 삼각형 PAB 의 높이예요."
+        },
+        {
+          "title": "높이",
+          "body": "$$\\overline{PH}=\\sqrt{9^2+12^2}=15$$"
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac12\\times25\\times15=\\frac{375}{2}$$"
+        }
+      ],
+      "tip": "삼수선의 정리는 \"공중에 있는 삼각형의 높이\"를 찾을 때 가장 많이 쓰여요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "반지름의 길이가 3 인 원판이 있는 평면과 평면 $\\alpha$ 가 이루는 각의 크기를 $\\theta$ 라 할 때 $\\cos\\theta=\\frac23$ 이에요. 원판의 평면 $\\alpha$ 위로의 정사영의 넓이가 $k\\pi$ 일 때, $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "pi*3**2*Rational(2, 3)/pi",
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "원판의 넓이",
+          "body": "$\\pi\\times3^2=9\\pi$ 예요."
+        },
+        {
+          "title": "정사영의 넓이",
+          "body": "$$9\\pi\\times\\frac23=6\\pi$$"
+        },
+        {
+          "title": "답",
+          "body": "$k=6$ 이에요."
+        }
+      ],
+      "tip": "원의 정사영은 타원이 되지만, 넓이는 모양을 몰라도 $\\cos\\theta$ 만 곱하면 돼요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "정사면체 ABCD 에서 꼬인 위치에 있는 두 모서리 AB 와 CD 가 이루는 각의 크기는 몇 도인지 구하세요.",
+      "choices": null,
+      "answer": "90",
+      "answerType": "int",
+      "check": "A = Point3D(1, 1, 1)\nB = Point3D(1, -1, -1)\nC = Point3D(-1, 1, -1)\nD = Point3D(-1, -1, 1)\nu = B - A\nv = D - C\nans = deg(acos(Abs(u.x*v.x + u.y*v.y + u.z*v.z)/(A.distance(B)*C.distance(D))))",
+      "concepts": [
+        "꼬인 위치: 만나지도 않고 평행하지도 않은 두 직선",
+        "직선이 평면 위의 두 직선과 수직이면 그 평면과 수직이에요."
+      ],
+      "steps": [
+        {
+          "title": "CD 의 중점 M",
+          "body": "CD 의 중점을 M 이라 하면 삼각형 ACD, BCD 가 정삼각형이라 $\\overline{AM}\\perp\\overline{CD}$, $\\overline{BM}\\perp\\overline{CD}$ 예요."
+        },
+        {
+          "title": "CD 는 평면 ABM 에 수직",
+          "body": "CD 가 평면 ABM 위의 두 직선 AM, BM 과 수직이니 평면 ABM 과 수직이에요."
+        },
+        {
+          "title": "AB 와 수직",
+          "body": "AB 는 평면 ABM 위에 있으니 CD 와 수직이에요. 이루는 각은 90° 예요."
+        }
+      ],
+      "tip": "꼬인 위치의 두 직선이 수직인지 보일 때는 \"한 직선이 다른 직선을 품은 평면과 수직\"임을 보이면 돼요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "평면 $\\alpha$ 위의 점 A 와 $\\alpha$ 밖의 점 B 에 대하여 $\\overline{AB}=10$ 이고, 점 B 에서 평면 $\\alpha$ 까지의 거리가 6 이에요. 선분 AB 와 평면 $\\alpha$ 가 이루는 각의 크기를 $\\theta$ 라 할 때, $\\cos\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4/5",
+      "answerType": "fraction",
+      "check": "sqrt(10**2 - 6**2)/10",
+      "concepts": [
+        "직선과 평면이 이루는 각: 직선과 그 정사영이 이루는 각",
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "정사영 그리기",
+          "body": "B 에서 내린 수선의 발을 H 라 하면 AB 의 정사영은 $\\overline{AH}$ 이고 $\\theta=\\angle BAH$ 예요."
+        },
+        {
+          "title": "정사영의 길이",
+          "body": "$$\\overline{AH}=\\sqrt{10^2-6^2}=8$$"
+        },
+        {
+          "title": "cos 값",
+          "body": "$$\\cos\\theta=\\frac{\\overline{AH}}{\\overline{AB}}=\\frac{8}{10}=\\frac45$$"
+        }
+      ],
+      "tip": "직선과 평면이 이루는 각은 직선과 그 **정사영**이 이루는 각이에요. 수선 BH 와의 각과 헷갈리지 마세요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "한 모서리의 길이가 2 인 정육면체 ABCD-EFGH 에서 대각선 AG 와 밑면 ABCD 가 이루는 각의 크기를 $\\theta$ 라 할 때, $\\cos^2\\theta$ 의 값을 구하세요. (G 는 C 바로 위의 꼭짓점이에요.)",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "(Point3D(0, 0, 0).distance(Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection(Point3D(2, 2, 2)))/Point3D(0, 0, 0).distance(Point3D(2, 2, 2)))**2",
+      "concepts": [
+        "직선과 평면이 이루는 각: 직선과 그 정사영이 이루는 각",
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "정사영 찾기",
+          "body": "G 에서 밑면에 내린 수선의 발은 C 라서 AG 의 정사영은 AC 예요."
+        },
+        {
+          "title": "길이",
+          "body": "$\\overline{AC}=2\\sqrt2$, $\\overline{AG}=\\sqrt{2^2+2^2+2^2}=2\\sqrt3$ 이에요."
+        },
+        {
+          "title": "cos² 값",
+          "body": "$$\\cos^2\\theta=\\left(\\frac{2\\sqrt2}{2\\sqrt3}\\right)^2=\\frac{8}{12}=\\frac23$$"
+        }
+      ],
+      "tip": "정육면체의 크기와 상관없이 같은 값이 나와요. 한 변을 1 로 놓고 풀어도 돼요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "두 평면 $\\alpha$, $\\beta$ 가 이루는 각의 크기가 $30^\\circ$ 예요. 평면 $\\alpha$ 위의 넓이가 $8\\sqrt3$ 인 도형의 평면 $\\beta$ 위로의 정사영의 넓이는?",
+      "choices": [
+        "$6$",
+        "$4\\sqrt3$",
+        "$12$",
+        "$8\\sqrt3$",
+        "$24$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "8*sqrt(3)*cos(pi/6)",
+      "choiceChecks": [
+        "6",
+        "4*sqrt(3)",
+        "12",
+        "8*sqrt(3)",
+        "24"
+      ],
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "공식",
+          "body": "$S'=S\\cos30^\\circ$ 예요."
+        },
+        {
+          "title": "계산",
+          "body": "$$8\\sqrt3\\times\\frac{\\sqrt3}{2}=\\frac{8\\times3}{2}=12$$"
+        }
+      ],
+      "tip": "$\\cos30^\\circ=\\frac{\\sqrt3}{2}$ 를 곱하면 $\\sqrt3$ 끼리 만나 정수가 돼요. 보기에 $\\sqrt3$ 이 남아 있으면 $\\sin$ 을 곱한 거예요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "평면 $\\alpha$ 위에 한 변의 길이가 6 인 정삼각형 ABC 가 있어요. 점 A 를 지나고 평면 $\\alpha$ 에 수직인 직선 위의 점 P 에 대하여 $\\overline{AP}=3$ 일 때, 점 P 와 직선 BC 사이의 거리는?",
+      "choices": [
+        "$3\\sqrt3$",
+        "$6$",
+        "$3\\sqrt5$",
+        "$3\\sqrt6$",
+        "$9$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "Line3D(Point3D(0, 0, 0), Point3D(6, 0, 0)).distance(Point3D(3, 3*sqrt(3), 3))",
+      "choiceChecks": [
+        "3*sqrt(3)",
+        "6",
+        "3*sqrt(5)",
+        "3*sqrt(6)",
+        "9"
+      ],
+      "concepts": [
+        "삼수선의 정리: $\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$",
+        "직각삼각형에서 (빗변)$^2$ = (다른 두 변의 제곱의 합)"
+      ],
+      "steps": [
+        {
+          "title": "BC 의 중점 M",
+          "body": "BC 의 중점을 M 이라 하면 정삼각형이라 $\\overline{AM}\\perp\\overline{BC}$ 이고 $\\overline{AM}=\\frac{\\sqrt3}{2}\\times6=3\\sqrt3$ 이에요."
+        },
+        {
+          "title": "삼수선의 정리",
+          "body": "$\\overline{PA}\\perp\\alpha$, $\\overline{AM}\\perp\\overline{BC}$ 이므로 $\\overline{PM}\\perp\\overline{BC}$ 예요. 구할 거리는 $\\overline{PM}$ 이에요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$$\\overline{PM}=\\sqrt{3^2+(3\\sqrt3)^2}=\\sqrt{9+27}=6$$"
+        }
+      ],
+      "tip": "수선의 발 M 을 B 나 C 로 잡으면 수직이 아니에요. 삼수선의 정리는 바닥에서 **수직으로** 내린 발에서만 성립해요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "한 모서리의 길이가 4 인 정사면체 ABCD 에서 삼각형 ABC 의 평면 BCD 위로의 정사영의 넓이는?",
+      "choices": [
+        "$\\frac{\\sqrt3}{3}$",
+        "$\\frac{2\\sqrt3}{3}$",
+        "$\\sqrt3$",
+        "$\\frac{4\\sqrt3}{3}$",
+        "$2\\sqrt3$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "A = Point3D(1, 1, 1)\nB = Point3D(1, -1, -1)\nC = Point3D(-1, 1, -1)\nD = Point3D(-1, -1, 1)\nans = 4*sqrt(3)*Abs(cos(Plane(A, B, C).angle_between(Plane(B, C, D))))",
+      "choiceChecks": [
+        "sqrt(3)/3",
+        "2*sqrt(3)/3",
+        "sqrt(3)",
+        "4*sqrt(3)/3",
+        "2*sqrt(3)"
+      ],
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$",
+        "정사면체의 이웃한 두 면이 이루는 각 $\\theta$: $\\cos\\theta=\\frac13$"
+      ],
+      "steps": [
+        {
+          "title": "삼각형 ABC 의 넓이",
+          "body": "$$\\frac{\\sqrt3}{4}\\times4^2=4\\sqrt3$$"
+        },
+        {
+          "title": "두 면이 이루는 각",
+          "body": "BC 의 중점 M 에서 $\\angle AMD=\\theta$ 이고, $\\overline{AM}=\\overline{DM}=2\\sqrt3$, $\\overline{AD}=4$ 라 코사인법칙으로 $\\cos\\theta=\\frac{12+12-16}{2\\times12}=\\frac13$ 이에요."
+        },
+        {
+          "title": "정사영의 넓이",
+          "body": "$$4\\sqrt3\\times\\frac13=\\frac{4\\sqrt3}{3}$$"
+        }
+      ],
+      "tip": "A 의 정사영은 삼각형 BCD 의 무게중심이라, 정사영은 삼각형 BCD 넓이의 $\\frac13$ 이라고 봐도 같은 답이 나와요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "정육면체 ABCD-EFGH 에서 두 직선 AF 와 BH 가 이루는 각의 크기는? (E, F, G, H 는 각각 A, B, C, D 바로 위의 꼭짓점이에요.)",
+      "choices": [
+        "$30^\\circ$",
+        "$45^\\circ$",
+        "$60^\\circ$",
+        "$75^\\circ$",
+        "$90^\\circ$"
+      ],
+      "answer": "5",
+      "answerType": "choice",
+      "check": "V = {'A': (0,0,0), 'B': (1,0,0), 'F': (1,0,1), 'H': (0,1,1)}\nu = [V['F'][i]-V['A'][i] for i in range(3)]\nv = [V['H'][i]-V['B'][i] for i in range(3)]\nans = deg(acos(Abs(sum(u[i]*v[i] for i in range(3)))/(sqrt(sum(t**2 for t in u))*sqrt(sum(t**2 for t in v)))))",
+      "choiceChecks": [
+        "30",
+        "45",
+        "60",
+        "75",
+        "90"
+      ],
+      "concepts": [
+        "삼수선의 정리: $\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$",
+        "정사각형의 두 대각선은 서로 수직이에요."
+      ],
+      "steps": [
+        {
+          "title": "BH 의 정사영",
+          "body": "H 에서 면 ABFE 에 내린 수선의 발은 E 예요. 그래서 BH 의 면 ABFE 위로의 정사영은 BE 예요."
+        },
+        {
+          "title": "바닥에서 수직",
+          "body": "정사각형 ABFE 의 두 대각선이라 $\\overline{BE}\\perp\\overline{AF}$ 예요."
+        },
+        {
+          "title": "평면 HEB 와 수직",
+          "body": "AF 는 면 ABFE 에 수직인 $\\overline{HE}$ 와도, $\\overline{EB}$ 와도 수직이라 평면 HEB 와 수직이에요(삼수선의 정리와 같은 생각이에요)."
+        },
+        {
+          "title": "답",
+          "body": "BH 는 평면 HEB 위에 있으니 $\\overline{BH}\\perp\\overline{AF}$ 예요. 이루는 각은 $90^\\circ$ 예요."
+        }
+      ],
+      "tip": "꼬인 두 직선의 각은 한 직선을 다른 직선이 있는 면으로 정사영해서 보면 쉬워져요. 정사영과 수직이면 원래 직선과도 수직이에요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "평면 $\\alpha$ 위에 $\\angle A=90^\\circ$, $\\overline{AB}=6$, $\\overline{AC}=8$ 인 직각삼각형 ABC 가 있어요. 점 A 를 지나고 평면 $\\alpha$ 에 수직인 직선 위의 점 P 에 대하여 평면 PBC 와 평면 $\\alpha$ 가 이루는 각의 크기가 $60^\\circ$ 일 때, 삼각형 PBC 의 넓이는?",
+      "choices": [
+        "$24$",
+        "$24\\sqrt3$",
+        "$36$",
+        "$48$",
+        "$48\\sqrt3$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "A = Point3D(0, 0, 0)\nB = Point3D(6, 0, 0)\nC = Point3D(0, 8, 0)\nL = Line3D(B, C)\nP = Point3D(0, 0, L.distance(A)*tan(pi/3))\nans = Rational(1, 2)*B.distance(C)*L.distance(P)",
+      "choiceChecks": [
+        "24",
+        "24*sqrt(3)",
+        "36",
+        "48",
+        "48*sqrt(3)"
+      ],
+      "concepts": [
+        "정사영의 넓이: $S'=S\\cos\\theta$",
+        "삼수선의 정리: $\\overline{PH}\\perp\\alpha$, $\\overline{HO}\\perp l$ 이면 $\\overline{PO}\\perp l$"
+      ],
+      "steps": [
+        {
+          "title": "정사영 찾기",
+          "body": "P 에서 $\\alpha$ 에 내린 수선의 발이 A 라서 삼각형 PBC 의 평면 $\\alpha$ 위로의 정사영은 삼각형 ABC 예요."
+        },
+        {
+          "title": "두 넓이의 관계",
+          "body": "삼각형 ABC 의 넓이는 $\\frac12\\times6\\times8=24$ 이고, 정사영의 넓이 = 원래 넓이 × $\\cos60^\\circ$ 예요."
+        },
+        {
+          "title": "거꾸로 구하기",
+          "body": "$$S=\\frac{24}{\\cos60^\\circ}=24\\times2=48$$"
+        }
+      ],
+      "tip": "높이 AP 를 직접 구하지 않아도 돼요. 이면각을 알면 정사영 관계로 한 번에 나와요. 직접 하려면 A 에서 BC 까지 $\\frac{24}{5}$, 삼수선으로 P 에서 BC 까지 $\\frac{48}{5}$ 를 구해 $\\frac12\\times10\\times\\frac{48}{5}$ 를 계산해요."
+    }
+  ]
+}

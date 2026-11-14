@@ -1,0 +1,1523 @@
+{
+  "id": "geo-space-coord",
+  "course": "기하",
+  "unit": "공간도형과 공간좌표",
+  "title": "공간좌표",
+  "prereq": [
+    "geo-space-figures",
+    "h1-coord-line"
+  ],
+  "suneung": [
+    "기하 25",
+    "기하 28"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$\\overline{AB}=\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$",
+    "$\\left(\\frac{mx_2+nx_1}{m+n},\\ \\frac{my_2+ny_1}{m+n},\\ \\frac{mz_2+nz_1}{m+n}\\right)$",
+    "$\\left(\\frac{x_1+x_2+x_3}{3},\\ \\frac{y_1+y_2+y_3}{3},\\ \\frac{z_1+z_2+z_3}{3}\\right)$",
+    "$(x-a)^2+(y-b)^2+(z-c)^2=r^2$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "diag": {
+        "value": "7",
+        "check": "Point3D(0, 0, 0).distance(Point3D(2, 3, 6))"
+      },
+      "oh": {
+        "value": "5",
+        "check": "Point3D(0, 0, 0).distance(Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection(Point3D(3, 4, 12)))"
+      },
+      "op": {
+        "value": "13",
+        "check": "Point3D(0, 0, 0).distance(Point3D(3, 4, 12))"
+      },
+      "px": {
+        "value": "5",
+        "check": "(Point3D(1, 1, 2) + Rational(2, 3)*(Point3D(7, 4, 8) - Point3D(1, 1, 2))).x"
+      },
+      "py": {
+        "value": "3",
+        "check": "(Point3D(1, 1, 2) + Rational(2, 3)*(Point3D(7, 4, 8) - Point3D(1, 1, 2))).y"
+      },
+      "pz": {
+        "value": "6",
+        "check": "(Point3D(1, 1, 2) + Rational(2, 3)*(Point3D(7, 4, 8) - Point3D(1, 1, 2))).z"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "기하 · 공간좌표",
+        "title": "좌표에 높이 하나를 더하면\n공간이 돼요",
+        "lead": "평면의 점은 두 수 $(x, y)$ 로 정했어요. 방 안의 공은 높이까지 세 수가 필요해요. 피타고라스를 두 번 써서 공간의 거리를 구해 봐요.",
+        "meta": [
+          "공간좌표",
+          "두 점 사이의 거리",
+          "구의 방정식"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "가로 2, 세로 3, 높이 6 인 상자,\n가장 긴 대각선은?",
+        "lead": "상자 안에 넣을 수 있는 가장 긴 막대의 길이예요. 꼭짓점 A 에서 반대쪽 꼭짓점 G 까지 곧게 잰 길이 AG 를 골라 보세요.",
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 6,
+              "h": 10
+            },
+            "points": [
+              {
+                "id": "A",
+                "x": 1,
+                "y": 1
+              },
+              {
+                "id": "B",
+                "x": 3,
+                "y": 1
+              },
+              {
+                "id": "C",
+                "x": 5,
+                "y": 3
+              },
+              {
+                "id": "D",
+                "x": 3,
+                "y": 3
+              },
+              {
+                "id": "E",
+                "x": 1,
+                "y": 7
+              },
+              {
+                "id": "F",
+                "x": 3,
+                "y": 7
+              },
+              {
+                "id": "G",
+                "x": 5,
+                "y": 9
+              },
+              {
+                "id": "H",
+                "x": 3,
+                "y": 9
+              }
+            ],
+            "polygons": [
+              [
+                "A",
+                "B",
+                "F",
+                "E"
+              ],
+              [
+                "B",
+                "C",
+                "G",
+                "F"
+              ],
+              [
+                "E",
+                "F",
+                "G",
+                "H"
+              ]
+            ],
+            "segments": [
+              [
+                "A",
+                "D"
+              ],
+              [
+                "D",
+                "C"
+              ],
+              [
+                "D",
+                "H"
+              ],
+              [
+                "A",
+                "G"
+              ]
+            ],
+            "note": "AB=2, BC=3, CG=6 인 상자예요. AG 가 가장 긴 대각선이에요."
+          }
+        },
+        "choices": [
+          {
+            "value": "7",
+            "check": "Point3D(0, 0, 0).distance(Point3D(2, 3, 6))"
+          },
+          {
+            "value": "11",
+            "check": "2 + 3 + 6",
+            "feedback": "세 모서리를 더하면 모서리를 따라 걸어간 길이예요. 대각선은 상자 속을 곧게 가로질러요."
+          },
+          {
+            "value": "49",
+            "check": "2**2 + 3**2 + 6**2",
+            "feedback": "제곱해서 더한 데서 멈췄어요. 그 값은 대각선의 **제곱**이에요."
+          }
+        ],
+        "answer": 0,
+        "answerCheck": "Point3D(0, 0, 0).distance(Point3D(2, 3, 6))",
+        "reveal": "**맞아요.** 피타고라스를 두 번 쓰면 돼요.",
+        "thoughts": [
+          "바닥의 대각선 AC 는 $\\sqrt{2^2+3^2}=\\sqrt{13}$ 이에요.",
+          "AC 와 높이 CG 는 수직이라 다시 피타고라스를 써요. $\\overline{AG}^2=13+6^2=49$ 예요.",
+          "그래서 $\\overline{AG}$ 는 {{diag}} 이에요."
+        ],
+        "conclude": "세 방향의 길이를 제곱해 더하고 제곱근을 씌우면 돼요. ==공간의 거리도 결국 피타고라스==예요."
+      },
+      {
+        "kind": "explore",
+        "id": "shadow",
+        "chip": "손으로 해 보기",
+        "title": "점 P(3, 4, 12) 의 그림자를\n바닥에 찍어 보세요",
+        "lead": "공간의 점은 $(x, y, z)$ 세 수로 나타내요. 바닥이 $xy$평면이고 $z$ 는 높이예요. P 에서 바닥에 수직으로 내린 점 H 를 아래 좌표평면(바닥)에 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": 0,
+              "max": 5,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 5,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "O",
+                "point": {
+                  "x": 0,
+                  "y": 0
+                },
+                "name": "O"
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "3",
+                  "check": "Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection(Point3D(3, 4, 12)).x"
+                },
+                "y": {
+                  "value": "4",
+                  "check": "Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection(Point3D(3, 4, 12)).y"
+                }
+              }
+            },
+            "intro": "P 의 그림자 H 를 한 번 눌러 찍고 '확인하기'를 누르세요.",
+            "done": "H 는 $(3, 4, 0)$ 이에요. 높이 $z$ 만 0 이 되고, 원점에서 H 까지는 $\\sqrt{3^2+4^2}$, 곧 {{oh}} 예요."
+          }
+        },
+        "after": "점에서 평면에 수직으로 내린 점을 그 평면 위로의 ==정사영==이라고 해요. $xy$평면 위로의 정사영은 $z$ 좌표만 0 으로 바꾸면 돼요."
+      },
+      {
+        "kind": "explore",
+        "id": "section",
+        "chip": "왜 그럴까요",
+        "title": "O, H, P 를 지나는\n세로 단면을 보세요",
+        "lead": "바닥의 거리 OH 와 높이 HP 는 수직이에요. 그림은 O, H, P 를 지나도록 세로로 자른 단면이에요. P 를 끌어 높이를 12 까지 올리고 OP 를 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "shape",
+          "params": {
+            "grid": {
+              "w": 6,
+              "h": 12
+            },
+            "points": [
+              {
+                "id": "O",
+                "x": 0,
+                "y": 0
+              },
+              {
+                "id": "H",
+                "x": 5,
+                "y": 0
+              },
+              {
+                "id": "T",
+                "x": 5,
+                "y": 12
+              },
+              {
+                "id": "P",
+                "x": 5,
+                "y": 6,
+                "drag": true,
+                "on": {
+                  "seg": [
+                    "H",
+                    "T"
+                  ]
+                }
+              }
+            ],
+            "polygons": [
+              [
+                "O",
+                "H",
+                "P"
+              ]
+            ],
+            "segments": [
+              [
+                "H",
+                "T"
+              ]
+            ],
+            "measures": [
+              {
+                "len": [
+                  "O",
+                  "H"
+                ]
+              },
+              {
+                "len": [
+                  "H",
+                  "P"
+                ]
+              },
+              {
+                "len": [
+                  "O",
+                  "P"
+                ]
+              },
+              {
+                "angle": [
+                  "O",
+                  "H",
+                  "P"
+                ]
+              }
+            ],
+            "digits": 1,
+            "note": "바닥선이 xy평면, 세로선이 높이 z 예요."
+          }
+        },
+        "after": "$\\overline{OP}^2=\\overline{OH}^2+\\overline{HP}^2=(3^2+4^2)+12^2$ 이고, P 가 꼭대기일 때 $\\overline{OP}$ 는 {{op}} 이에요. 세 좌표를 제곱해 더한 것과 같아서 ==원점까지 거리는 세 좌표의 제곱의 합의 제곱근==이에요. 두 점 사이라면 좌표의 **차**로 똑같이 해요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "좌표공간",
+            "body": "원점에서 서로 수직인 $x$축, $y$축, $z$축을 세운 공간이에요. 점은 $(x, y, z)$ 로 나타내요."
+          },
+          {
+            "term": "좌표평면",
+            "body": "$xy$평면($z=0$), $yz$평면($x=0$), $zx$평면($y=0$) 세 개예요. 점의 $xy$평면 위로의 정사영은 $(x, y, 0)$ 이에요."
+          },
+          {
+            "term": "두 점 사이의 거리",
+            "body": "$\\overline{AB}=\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$. 피타고라스를 두 번 쓴 결과예요."
+          },
+          {
+            "term": "대칭점",
+            "body": "$xy$평면에 대칭이면 $z$ 의 부호만, $x$축에 대칭이면 $y$·$z$ 의 부호가, 원점에 대칭이면 셋 다 바뀌어요. 이름에 든 좌표는 그대로예요."
+          },
+          {
+            "term": "구의 방정식",
+            "body": "중심 $(a, b, c)$ 에서 거리가 $r$ 인 점들이에요. 거리 공식을 그대로 쓰면 $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ 이에요."
+          }
+        ],
+        "aside": "**확인** · 원점과 $(3, 4, 12)$ 사이의 거리는 $\\sqrt{9+16+144}$, 곧 {{op}} 이에요. 단면에서 본 값과 같아요."
+      },
+      {
+        "kind": "explore",
+        "id": "divide",
+        "chip": "두 번째 해 보기",
+        "title": "내분점도\n좌표마다 따로 구해요",
+        "lead": "두 점 A(1, 1, 2), B(7, 4, 8) 을 이은 선분을 $2:1$ 로 내분하는 점 P 를 찾아요. 먼저 바닥($xy$평면)에 비친 두 점 A′, B′ 을 같은 비로 내분하는 점을 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 5,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "A1",
+                "point": {
+                  "x": 1,
+                  "y": 1
+                },
+                "name": "A'"
+              },
+              {
+                "id": "B1",
+                "point": {
+                  "x": 7,
+                  "y": 4
+                },
+                "name": "B'"
+              },
+              {
+                "secant": [
+                  "A1",
+                  "B1"
+                ]
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "5",
+                  "check": "Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection((Point3D(1, 1, 2) + Rational(2, 3)*(Point3D(7, 4, 8) - Point3D(1, 1, 2)))).x"
+                },
+                "y": {
+                  "value": "3",
+                  "check": "Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection((Point3D(1, 1, 2) + Rational(2, 3)*(Point3D(7, 4, 8) - Point3D(1, 1, 2)))).y"
+                }
+              }
+            },
+            "intro": "A′ 에서 B′ 쪽으로 전체의 $\\frac23$ 만큼 간 자리를 찍어 보세요.",
+            "done": "바닥의 내분점은 $({{px}}, {{py}})$ 이에요. 높이도 같은 방법으로 $\\frac{2\\times8+1\\times2}{3}$, 곧 {{pz}} 이라서 P 는 $({{px}}, {{py}}, {{pz}})$ 이에요."
+          }
+        },
+        "after": "$x$, $y$, $z$ 가 서로 따로 움직여서 ==내분점은 좌표마다 평면의 공식을 그대로 써요.== 중점은 $1:1$ 내분점이에요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 두 점 A(1, −2, 3), B(3, 2, 7) 사이의 거리를 구하고 있어요. 틀린 부분을 눌러 보세요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sqrt((3-1)**2 + (2-(-2))**2 + (7-3)**2)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sqrt(2**2 + 0**2 + 4**2)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "sqrt(2**2 + 4**2 + 4**2)",
+              "body": "$2-(-2)=4$ 예요. 음수를 빼면 더하는 것과 같아요. 바르게 하면 $\\sqrt{4+16+16}=6$ 이에요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 구의 방정식을 완전제곱식으로 바꾸는 중이에요. $x$ 부분만 떼어 봤어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "x**2 - 6*x"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "(x-3)**2 + 9",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "(x-3)**2 - 9",
+              "body": "$(x-3)^2=x^2-6x+9$ 라서 9 를 더 붙인 셈이에요. 그만큼 **빼야** 같아져요. 그래서 반지름을 구할 때 이 수들은 오른쪽으로 더해져요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "axis",
+            "q": "$x$축 위의 점 P 가 두 점 A(1, 3, 2), B(5, 1, −2) 에서 같은 거리에 있어요. 점 P 의 $x$좌표를 구하세요.",
+            "hint": "$x$축 위의 점은 $(t, 0, 0)$ 꼴이에요. 거리의 제곱끼리 같다고 놓아요.",
+            "concepts": [
+              "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+            ],
+            "steps": [
+              {
+                "title": "점 P 놓기",
+                "body": "P$(t, 0, 0)$ 이라 하면 $\\overline{PA}^2=\\overline{PB}^2$ 이에요."
+              },
+              {
+                "title": "식 세우기",
+                "body": "$$(t-1)^2+3^2+2^2=(t-5)^2+1^2+(-2)^2$$"
+              },
+              {
+                "title": "정리하기",
+                "body": "$t^2$ 은 양쪽에서 지워져요. $-2t+14=-10t+30$ 이라 $8t=16$ 이에요."
+              },
+              {
+                "title": "답",
+                "body": "$t={{answer}}$ 예요."
+              }
+            ],
+            "tip": "거리를 그대로 놓으면 제곱근이 붙어 번거로워요. 거리가 같으면 거리의 제곱도 같으니 제곱끼리 비교해요.",
+            "answer": "2",
+            "answerType": "int",
+            "check": "solve(Eq(Point3D(t, 0, 0).distance(Point3D(1, 3, 2))**2, Point3D(t, 0, 0).distance(Point3D(5, 1, -2))**2), t)[0]"
+          },
+          {
+            "id": "mirror",
+            "q": "점 P(2, −4, 4) 를 $xy$평면에 대하여 대칭이동한 점을 Q, $z$축에 대하여 대칭이동한 점을 R 라 할 때, 선분 QR 의 길이를 구하세요.",
+            "hint": "$xy$평면 대칭은 $z$ 의 부호만, $z$축 대칭은 $x$·$y$ 의 부호가 바뀌어요.",
+            "concepts": [
+              "대칭점: $xy$평면 대칭은 $z$ 부호만, $x$축 대칭은 $y$·$z$ 부호, 원점 대칭은 세 부호가 모두 바뀌어요.",
+              "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+            ],
+            "steps": [
+              {
+                "title": "두 대칭점",
+                "body": "Q$(2, -4, -4)$, R$(-2, 4, 4)$ 예요."
+              },
+              {
+                "title": "좌표의 차",
+                "body": "$x$ 는 $-4$, $y$ 는 $8$, $z$ 는 $8$ 만큼 차이 나요."
+              },
+              {
+                "title": "거리",
+                "body": "$$\\overline{QR}=\\sqrt{(-4)^2+8^2+8^2}=\\sqrt{144}={{answer}}$$"
+              }
+            ],
+            "tip": "Q 와 R 는 원점에 대하여 서로 대칭이에요. 그래서 $\\overline{QR}$ 는 원점과 P 사이 거리 6 의 두 배예요.",
+            "answer": "12",
+            "answerType": "int",
+            "check": "(2*Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection(Point3D(2, -4, 4)) - Point3D(2, -4, 4)).distance(2*Line3D(Point3D(0, 0, 0), Point3D(0, 0, 1)).projection(Point3D(2, -4, 4)) - Point3D(2, -4, 4))"
+          },
+          {
+            "id": "sphere",
+            "q": "구 $x^2+y^2+z^2-4x+2y-6z+k=0$ 의 반지름의 길이가 4 일 때, 상수 $k$ 의 값을 구하세요.",
+            "hint": "$x$, $y$, $z$ 끼리 묶어 완전제곱식으로 바꾸면 오른쪽에 $r^2$ 이 남아요.",
+            "concepts": [
+              "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)"
+            ],
+            "steps": [
+              {
+                "title": "완전제곱식으로 묶기",
+                "body": "$$(x-2)^2+(y+1)^2+(z-3)^2=4+1+9-k$$"
+              },
+              {
+                "title": "반지름의 제곱",
+                "body": "$r^2=14-k$ 이고 $r=4$ 라서 $14-k=16$ 이에요."
+              },
+              {
+                "title": "답",
+                "body": "$k={{answer}}$ 예요."
+              }
+            ],
+            "tip": "완전제곱을 만들려고 더한 $4+1+9$ 가 오른쪽으로 넘어가요. 상수항 $k$ 는 넘어가며 부호가 바뀌어요.",
+            "answer": "-2",
+            "answerType": "int",
+            "check": "e = x**2 + y**2 + z**2 - 4*x + 2*y - 6*z + k\no = {x: 0, y: 0, z: 0}\ncen = [-diff(e, v).subs(o)/2 for v in (x, y, z)]\nr2 = sum(t**2 for t in cen) - e.subs(o)\nans = solve(Eq(r2, 4**2), k)[0]"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "두 점 사이의 거리는 세 좌표의 차를 제곱해 더하고 제곱근을 씌워요. 피타고라스를 두 번 쓴 거예요.",
+          "대칭이동은 이름에 든 좌표만 그대로 두고 나머지의 부호를 바꿔요.",
+          "내분점·무게중심은 좌표마다 평면의 공식을 그대로 써요.",
+          "구는 완전제곱식으로 바꿔 중심과 반지름을 읽어요. 수능에서는 구와 좌표평면이 만나 생기는 원(중심까지의 거리와 피타고라스)이 자주 나와요."
+        ],
+        "done": "공간좌표 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "geo-space-coord-distance",
+    "geo-space-coord-symmetric",
+    "geo-space-coord-section",
+    "geo-space-coord-sphere"
+  ],
+  "problems": [
+    {
+      "q": "두 점 $\\mathrm{A}(-3, 3, 3)$, $\\mathrm{B}(1, -5, -5)$ 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "Point3D(-3, 3, 3).distance(Point3D(1, -5, -5))",
+      "concepts": [
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "좌표의 차 구하기",
+          "body": "$x$ 의 차 4, $y$ 의 차 (-8), $z$ 의 차 (-8) 예요."
+        },
+        {
+          "title": "제곱해서 더하기",
+          "body": "$$4^2+(-8)^2+(-8)^2=16+64+64=144$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$$\\sqrt{144}=12$$"
+        }
+      ],
+      "tip": "바닥의 대각선을 먼저 구하고, 그 대각선과 높이로 한 번 더 피타고라스를 쓴 것과 같아요. 차의 부호는 제곱하면 사라지니 빼는 순서는 상관없어요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "geo-space-coord-distance",
+      "seed": 1000
+    },
+    {
+      "q": "점 $\\mathrm{P}(-5, -3, -5)$ 를 $zx$평면에 대하여 대칭이동한 점을 $\\mathrm{Q}(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-7",
+      "answerType": "int",
+      "check": "sum((2*Plane(Point3D(0, 0, 0), normal_vector=(0, 1, 0)).projection(Point3D(-5, -3, -5)) - Point3D(-5, -3, -5)).args)",
+      "concepts": [
+        "$zx$평면에 대칭이면 그 평면에 없는 $y$ 좌표만 부호가 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "부호가 바뀌는 좌표",
+          "body": "$zx$평면에 대칭이면 그 평면에 없는 $y$ 좌표만 부호가 바뀌어요."
+        },
+        {
+          "title": "대칭점",
+          "body": "$$\\mathrm{Q}(-5, 3, -5)$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$-5+3+(-5)=-7$$"
+        }
+      ],
+      "tip": "평면 대칭은 한 개, 축 대칭은 두 개, 원점 대칭은 세 개의 부호가 바뀌어요. 이름에 들어 있는 좌표가 그대로 남는다고 기억하면 쉬워요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "geo-space-coord-symmetric",
+      "seed": 1001
+    },
+    {
+      "q": "두 점 $\\mathrm{A}(0, -1, 0)$, $\\mathrm{B}(4, -5, -8)$ 에 대하여 선분 AB 를 3:1 로 내분하는 점을 $\\mathrm{P}(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-7",
+      "answerType": "int",
+      "check": "sum((Point3D(0, -1, 0) + Rational(3, 4)*(Point3D(4, -5, -8) - Point3D(0, -1, 0))).args)",
+      "concepts": [
+        "내분점: $\\left(\\frac{mx_2+nx_1}{m+n},\\ \\frac{my_2+ny_1}{m+n},\\ \\frac{mz_2+nz_1}{m+n}\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "공식은 좌표마다 따로",
+          "body": "$m=3$, $n=1$ 이고, 분자는 $m$ 을 B 쪽, $n$ 을 A 쪽 좌표에 곱해요."
+        },
+        {
+          "title": "$x$, $y$ 좌표",
+          "body": "$$a=\\frac{3\\cdot4+1\\cdot0}{4}=3,\\quad b=\\frac{3\\cdot(-5)+1\\cdot(-1)}{4}=-4$$"
+        },
+        {
+          "title": "$z$ 좌표",
+          "body": "$$c=\\frac{3\\cdot(-8)+1\\cdot0}{4}=-6$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$3+(-4)+(-6)=-7$$"
+        }
+      ],
+      "tip": "가장 흔한 실수는 $m$ 과 $n$ 을 바꿔 곱하는 거예요. P 는 A 에서 B 쪽으로 전체의 $\\frac{3}{4}$ 만큼 간 자리라는 걸 떠올리면 헷갈리지 않아요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "geo-space-coord-section",
+      "seed": 1002
+    },
+    {
+      "q": "구 $x^2+y^2+z^2+6x-10y-10z+43=0$ 의 중심의 좌표를 $(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "e = x**2 + y**2 + z**2 + (6)*x + (-10)*y + (-10)*z + (43)\no = {x: 0, y: 0, z: 0}\ncen = [-diff(e, v).subs(o)/2 for v in (x, y, z)]\nr2 = sum(t**2 for t in cen) - e.subs(o)\nans = sum(cen)",
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)"
+      ],
+      "steps": [
+        {
+          "title": "완전제곱식으로 묶기",
+          "body": "$x$, $y$, $z$ 끼리 묶어 완전제곱식을 만들면\n$$(x+3)^2+(y-5)^2+(z-5)^2=59-43=16$$"
+        },
+        {
+          "title": "중심 읽기",
+          "body": "중심은 $(-3, 5, 5)$ 예요. 괄호 안 부호와 반대예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$-3+5+5=7$$"
+        }
+      ],
+      "tip": "$x$ 의 계수를 $-2$ 로 나누면 중심의 $x$ 좌표가 바로 나와요. $y$, $z$ 도 같아요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "geo-space-coord-sphere",
+      "seed": 1003
+    },
+    {
+      "q": "원점 O 와 점 $\\mathrm{P}(3, 6, -2)$ 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "Point3D(0, 0, 0).distance(Point3D(3, 6, -2))",
+      "concepts": [
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "좌표의 차 구하기",
+          "body": "$x$ 의 차 3, $y$ 의 차 6, $z$ 의 차 (-2) 예요."
+        },
+        {
+          "title": "제곱해서 더하기",
+          "body": "$$3^2+6^2+(-2)^2=9+36+4=49$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$$\\sqrt{49}=7$$"
+        }
+      ],
+      "tip": "바닥의 대각선을 먼저 구하고, 그 대각선과 높이로 한 번 더 피타고라스를 쓴 것과 같아요. 차의 부호는 제곱하면 사라지니 빼는 순서는 상관없어요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "geo-space-coord-distance",
+      "seed": 1004
+    },
+    {
+      "q": "점 $\\mathrm{P}(-1, 2, 1)$ 를 $x$축에 대하여 대칭이동한 점을 $\\mathrm{Q}(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "sum((2*Line3D(Point3D(0, 0, 0), Point3D(1, 0, 0)).projection(Point3D(-1, 2, 1)) - Point3D(-1, 2, 1)).args)",
+      "concepts": [
+        "$x$축에 대칭이면 축 좌표는 그대로이고 나머지 $y$·$z$ 좌표의 부호가 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "부호가 바뀌는 좌표",
+          "body": "$x$축에 대칭이면 축 좌표는 그대로이고 나머지 $y$·$z$ 좌표의 부호가 바뀌어요."
+        },
+        {
+          "title": "대칭점",
+          "body": "$$\\mathrm{Q}(-1, -2, -1)$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$-1+(-2)+(-1)=-4$$"
+        }
+      ],
+      "tip": "평면 대칭은 한 개, 축 대칭은 두 개, 원점 대칭은 세 개의 부호가 바뀌어요. 이름에 들어 있는 좌표가 그대로 남는다고 기억하면 쉬워요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "geo-space-coord-symmetric",
+      "seed": 1005
+    },
+    {
+      "q": "두 점 $\\mathrm{A}(5, 5, 4)$, $\\mathrm{B}(11, -1, 1)$ 에 대하여 선분 AB 를 2:1 로 내분하는 점을 $\\mathrm{P}(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "sum((Point3D(5, 5, 4) + Rational(2, 3)*(Point3D(11, -1, 1) - Point3D(5, 5, 4))).args)",
+      "concepts": [
+        "내분점: $\\left(\\frac{mx_2+nx_1}{m+n},\\ \\frac{my_2+ny_1}{m+n},\\ \\frac{mz_2+nz_1}{m+n}\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "공식은 좌표마다 따로",
+          "body": "$m=2$, $n=1$ 이고, 분자는 $m$ 을 B 쪽, $n$ 을 A 쪽 좌표에 곱해요."
+        },
+        {
+          "title": "$x$, $y$ 좌표",
+          "body": "$$a=\\frac{2\\cdot11+1\\cdot5}{3}=9,\\quad b=\\frac{2\\cdot(-1)+1\\cdot5}{3}=1$$"
+        },
+        {
+          "title": "$z$ 좌표",
+          "body": "$$c=\\frac{2\\cdot1+1\\cdot4}{3}=2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$9+1+2=12$$"
+        }
+      ],
+      "tip": "가장 흔한 실수는 $m$ 과 $n$ 을 바꿔 곱하는 거예요. P 는 A 에서 B 쪽으로 전체의 $\\frac{2}{3}$ 만큼 간 자리라는 걸 떠올리면 헷갈리지 않아요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "geo-space-coord-section",
+      "seed": 1006
+    },
+    {
+      "q": "구 $x^2+y^2+z^2+8x+2y+8z+8=0$ 과 $xy$평면이 만나서 생기는 원의 반지름의 길이를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "e = x**2 + y**2 + z**2 + (8)*x + (2)*y + (8)*z + (8)\no = {x: 0, y: 0, z: 0}\ncen = [-diff(e, v).subs(o)/2 for v in (x, y, z)]\nr2 = sum(t**2 for t in cen) - e.subs(o)\nans = sqrt(r2 - cen[2]**2)",
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)",
+        "구의 중심에서 평면에 내린 수선은 단면인 원의 중심을 지나요."
+      ],
+      "steps": [
+        {
+          "title": "완전제곱식으로 묶기",
+          "body": "$x$, $y$, $z$ 끼리 묶어 완전제곱식을 만들면\n$$(x+4)^2+(y+1)^2+(z+4)^2=33-8=25$$"
+        },
+        {
+          "title": "중심과 반지름",
+          "body": "중심은 $(-4, -1, -4)$, 반지름은 5 이고, 중심에서 $xy$평면까지의 거리는 $|z|=4$ 예요."
+        },
+        {
+          "title": "단면은 직각삼각형으로",
+          "body": "구의 반지름이 빗변, 중심까지의 거리와 단면의 반지름이 두 변이에요.\n$$\\sqrt{5^2-4^2}=\\sqrt{9}=3$$"
+        }
+      ],
+      "tip": "방정식에 $z=0$ 을 넣고 정리해도 같은 원이 나와요. 그 원의 반지름의 제곱이 9 예요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "geo-space-coord-sphere",
+      "seed": 1007
+    },
+    {
+      "q": "두 점 $\\mathrm{A}(-1, 4, -1)$, $\\mathrm{B}(2, 0, 11)$ 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "13",
+      "answerType": "int",
+      "check": "Point3D(-1, 4, -1).distance(Point3D(2, 0, 11))",
+      "concepts": [
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "좌표의 차 구하기",
+          "body": "$x$ 의 차 3, $y$ 의 차 (-4), $z$ 의 차 12 예요."
+        },
+        {
+          "title": "제곱해서 더하기",
+          "body": "$$3^2+(-4)^2+12^2=9+16+144=169$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$$\\sqrt{169}=13$$"
+        }
+      ],
+      "tip": "바닥의 대각선을 먼저 구하고, 그 대각선과 높이로 한 번 더 피타고라스를 쓴 것과 같아요. 차의 부호는 제곱하면 사라지니 빼는 순서는 상관없어요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "geo-space-coord-distance",
+      "seed": 1008
+    },
+    {
+      "q": "점 $\\mathrm{P}(3, 2, -1)$ 를 $zx$평면에 대하여 대칭이동한 점을 $\\mathrm{Q}(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "0",
+      "answerType": "int",
+      "check": "sum((2*Plane(Point3D(0, 0, 0), normal_vector=(0, 1, 0)).projection(Point3D(3, 2, -1)) - Point3D(3, 2, -1)).args)",
+      "concepts": [
+        "$zx$평면에 대칭이면 그 평면에 없는 $y$ 좌표만 부호가 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "부호가 바뀌는 좌표",
+          "body": "$zx$평면에 대칭이면 그 평면에 없는 $y$ 좌표만 부호가 바뀌어요."
+        },
+        {
+          "title": "대칭점",
+          "body": "$$\\mathrm{Q}(3, -2, -1)$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$3+(-2)+(-1)=0$$"
+        }
+      ],
+      "tip": "평면 대칭은 한 개, 축 대칭은 두 개, 원점 대칭은 세 개의 부호가 바뀌어요. 이름에 들어 있는 좌표가 그대로 남는다고 기억하면 쉬워요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "geo-space-coord-symmetric",
+      "seed": 1009
+    },
+    {
+      "q": "두 점 $\\mathrm{A}(4, -1, -2)$, $\\mathrm{B}(-1, -11, 8)$ 에 대하여 선분 AB 를 3:2 로 내분하는 점을 $\\mathrm{P}(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "sum((Point3D(4, -1, -2) + Rational(3, 5)*(Point3D(-1, -11, 8) - Point3D(4, -1, -2))).args)",
+      "concepts": [
+        "내분점: $\\left(\\frac{mx_2+nx_1}{m+n},\\ \\frac{my_2+ny_1}{m+n},\\ \\frac{mz_2+nz_1}{m+n}\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "공식은 좌표마다 따로",
+          "body": "$m=3$, $n=2$ 이고, 분자는 $m$ 을 B 쪽, $n$ 을 A 쪽 좌표에 곱해요."
+        },
+        {
+          "title": "$x$, $y$ 좌표",
+          "body": "$$a=\\frac{3\\cdot(-1)+2\\cdot4}{5}=1,\\quad b=\\frac{3\\cdot(-11)+2\\cdot(-1)}{5}=-7$$"
+        },
+        {
+          "title": "$z$ 좌표",
+          "body": "$$c=\\frac{3\\cdot8+2\\cdot(-2)}{5}=4$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$1+(-7)+4=-2$$"
+        }
+      ],
+      "tip": "가장 흔한 실수는 $m$ 과 $n$ 을 바꿔 곱하는 거예요. P 는 A 에서 B 쪽으로 전체의 $\\frac{3}{5}$ 만큼 간 자리라는 걸 떠올리면 헷갈리지 않아요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "geo-space-coord-section",
+      "seed": 1010
+    },
+    {
+      "q": "구 $x^2+y^2+z^2-8x-6y+12z-39=0$ 과 $xy$평면이 만나서 생기는 원의 반지름의 길이를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "e = x**2 + y**2 + z**2 + (-8)*x + (-6)*y + (12)*z + (-39)\no = {x: 0, y: 0, z: 0}\ncen = [-diff(e, v).subs(o)/2 for v in (x, y, z)]\nr2 = sum(t**2 for t in cen) - e.subs(o)\nans = sqrt(r2 - cen[2]**2)",
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)",
+        "구의 중심에서 평면에 내린 수선은 단면인 원의 중심을 지나요."
+      ],
+      "steps": [
+        {
+          "title": "완전제곱식으로 묶기",
+          "body": "$x$, $y$, $z$ 끼리 묶어 완전제곱식을 만들면\n$$(x-4)^2+(y-3)^2+(z+6)^2=61+39=100$$"
+        },
+        {
+          "title": "중심과 반지름",
+          "body": "중심은 $(4, 3, -6)$, 반지름은 10 이고, 중심에서 $xy$평면까지의 거리는 $|z|=6$ 이에요."
+        },
+        {
+          "title": "단면은 직각삼각형으로",
+          "body": "구의 반지름이 빗변, 중심까지의 거리와 단면의 반지름이 두 변이에요.\n$$\\sqrt{10^2-6^2}=\\sqrt{64}=8$$"
+        }
+      ],
+      "tip": "방정식에 $z=0$ 을 넣고 정리해도 같은 원이 나와요. 그 원의 반지름의 제곱이 64 예요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "geo-space-coord-sphere",
+      "seed": 1011
+    },
+    {
+      "q": "두 점 $\\mathrm{A}(-3, 4, -2)$, $\\mathrm{B}(5, 5, -6)$ 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "Point3D(-3, 4, -2).distance(Point3D(5, 5, -6))",
+      "concepts": [
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "좌표의 차 구하기",
+          "body": "$x$ 의 차 8, $y$ 의 차 1, $z$ 의 차 (-4) 예요."
+        },
+        {
+          "title": "제곱해서 더하기",
+          "body": "$$8^2+1^2+(-4)^2=64+1+16=81$$"
+        },
+        {
+          "title": "제곱근",
+          "body": "$$\\sqrt{81}=9$$"
+        }
+      ],
+      "tip": "바닥의 대각선을 먼저 구하고, 그 대각선과 높이로 한 번 더 피타고라스를 쓴 것과 같아요. 차의 부호는 제곱하면 사라지니 빼는 순서는 상관없어요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "geo-space-coord-distance",
+      "seed": 1012
+    },
+    {
+      "q": "점 $\\mathrm{P}(-6, -4, 3)$ 를 $z$축에 대하여 대칭이동한 점을 $\\mathrm{Q}(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "13",
+      "answerType": "int",
+      "check": "sum((2*Line3D(Point3D(0, 0, 0), Point3D(0, 0, 1)).projection(Point3D(-6, -4, 3)) - Point3D(-6, -4, 3)).args)",
+      "concepts": [
+        "$z$축에 대칭이면 축 좌표는 그대로이고 나머지 $x$·$y$ 좌표의 부호가 바뀌어요."
+      ],
+      "steps": [
+        {
+          "title": "부호가 바뀌는 좌표",
+          "body": "$z$축에 대칭이면 축 좌표는 그대로이고 나머지 $x$·$y$ 좌표의 부호가 바뀌어요."
+        },
+        {
+          "title": "대칭점",
+          "body": "$$\\mathrm{Q}(6, 4, 3)$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$6+4+3=13$$"
+        }
+      ],
+      "tip": "평면 대칭은 한 개, 축 대칭은 두 개, 원점 대칭은 세 개의 부호가 바뀌어요. 이름에 들어 있는 좌표가 그대로 남는다고 기억하면 쉬워요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "geo-space-coord-symmetric",
+      "seed": 1013
+    },
+    {
+      "q": "세 점 $\\mathrm{A}(4, 4, 5)$, $\\mathrm{B}(2, 5, -1)$, $\\mathrm{C}(0, 0, 2)$ 를 꼭짓점으로 하는 삼각형 ABC 의 무게중심을 $\\mathrm{G}(a, b, c)$ 라 할 때, $a+b+c$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "sum(((Point3D(4, 4, 5) + Point3D(2, 5, -1) + Point3D(0, 0, 2))/3).args)",
+      "concepts": [
+        "무게중심: $\\left(\\frac{x_1+x_2+x_3}{3},\\ \\frac{y_1+y_2+y_3}{3},\\ \\frac{z_1+z_2+z_3}{3}\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "좌표마다 평균",
+          "body": "$$a=\\frac{4+2+0}{3}=2,\\quad b=\\frac{4+5+0}{3}=3,\\quad c=\\frac{5+(-1)+2}{3}=2$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$2+3+2=7$$"
+        }
+      ],
+      "tip": "무게중심은 세 점의 좌표를 각각 평균 낸 점이에요. 평면에서와 똑같고 $z$ 좌표가 하나 더 붙을 뿐이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "geo-space-coord-section",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$y$축 위의 점 P 가 두 점 A(2, 1, −1), B(−1, 3, 2) 에서 같은 거리에 있어요. 점 P 의 $y$좌표를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "solve(Eq(Point3D(0, t, 0).distance(Point3D(2, 1, -1))**2, Point3D(0, t, 0).distance(Point3D(-1, 3, 2))**2), t)[0]",
+      "concepts": [
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "점 P 놓기",
+          "body": "P$(0, t, 0)$ 이라 하면 $\\overline{PA}^2=\\overline{PB}^2$ 이에요."
+        },
+        {
+          "title": "식 세우기",
+          "body": "$$2^2+(t-1)^2+(-1)^2=(-1)^2+(t-3)^2+2^2$$"
+        },
+        {
+          "title": "정리하기",
+          "body": "$t^2$ 이 지워지고 $-2t+6=-6t+14$ 라서 $4t=8$ 이에요."
+        },
+        {
+          "title": "답",
+          "body": "$t=2$ 예요."
+        }
+      ],
+      "tip": "축 위의 점은 축 좌표 하나만 남기고 나머지를 0 으로 놓아요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "세 점 A(1, 2, 3), B(3, −1, 2), C(2, 5, −2) 를 꼭짓점으로 하는 삼각형 ABC 의 무게중심을 G 라 할 때, 원점 O 와 G 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "Point3D(0, 0, 0).distance((Point3D(1, 2, 3) + Point3D(3, -1, 2) + Point3D(2, 5, -2))/3)",
+      "concepts": [
+        "무게중심: $\\left(\\frac{x_1+x_2+x_3}{3},\\ \\frac{y_1+y_2+y_3}{3},\\ \\frac{z_1+z_2+z_3}{3}\\right)$",
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "무게중심",
+          "body": "$$G\\left(\\frac{1+3+2}{3},\\ \\frac{2-1+5}{3},\\ \\frac{3+2-2}{3}\\right)=(2, 2, 1)$$"
+        },
+        {
+          "title": "거리",
+          "body": "$$\\overline{OG}=\\sqrt{2^2+2^2+1^2}=\\sqrt9=3$$"
+        }
+      ],
+      "tip": "무게중심은 세 좌표를 각각 평균 내면 돼요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "두 점 A(1, 2, −3), B(4, −1, 6) 을 이은 선분 AB 가 $xy$평면과 만나는 점의 $x$좌표를 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).intersection(Line3D(Point3D(1, 2, -3), Point3D(4, -1, 6)))[0].x",
+      "concepts": [
+        "내분점: $\\left(\\frac{mx_2+nx_1}{m+n},\\ \\frac{my_2+ny_1}{m+n},\\ \\frac{mz_2+nz_1}{m+n}\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "xy평면 위의 점",
+          "body": "$xy$평면 위의 점은 $z$좌표가 0 이에요."
+        },
+        {
+          "title": "내분하는 비",
+          "body": "A 의 $z$ 는 $-3$, B 의 $z$ 는 $6$ 이라 0 은 A 쪽에서 3, B 쪽에서 6 떨어져 있어요. 그래서 그 점은 선분 AB 를 $1:2$ 로 내분해요."
+        },
+        {
+          "title": "x좌표",
+          "body": "$$\\frac{1\\times4+2\\times1}{1+2}=\\frac{6}{3}=2$$"
+        }
+      ],
+      "tip": "좌표평면과 만나는 점은 \"그 좌표가 0 이 되는 비\"를 먼저 찾으면 내분점 공식으로 바로 풀려요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "점 A(3, −4, 3) 을 $yz$평면에 대하여 대칭이동한 점을 B, $x$축에 대하여 대칭이동한 점을 C 라 할 때, 삼각형 ABC 의 넓이를 구하세요.",
+      "choices": null,
+      "answer": "30",
+      "answerType": "int",
+      "check": "A = Point3D(3, -4, 3)\nB = (2*Plane(Point3D(0, 0, 0), normal_vector=(1, 0, 0)).projection(Point3D(3, -4, 3)) - Point3D(3, -4, 3))\nC = (2*Line3D(Point3D(0, 0, 0), Point3D(1, 0, 0)).projection(Point3D(3, -4, 3)) - Point3D(3, -4, 3))\nans = Rational(1, 2)*Matrix((B - A).args).cross(Matrix((C - A).args)).norm()",
+      "concepts": [
+        "대칭점: $xy$평면 대칭은 $z$ 부호만, $x$축 대칭은 $y$·$z$ 부호, 원점 대칭은 세 부호가 모두 바뀌어요.",
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "두 대칭점",
+          "body": "B$(-3, -4, 3)$, C$(3, 4, -3)$ 이에요."
+        },
+        {
+          "title": "두 변",
+          "body": "$\\overline{AB}$ 는 $x$ 만 다르니 6, $\\overline{AC}$ 는 $\\sqrt{8^2+(-6)^2}=10$ 이에요."
+        },
+        {
+          "title": "직각 확인",
+          "body": "AB 는 $x$축 방향, AC 는 $x$좌표가 같아 $yz$평면과 평행한 방향이라 서로 수직이에요."
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac12\\times6\\times10=30$$"
+        }
+      ],
+      "tip": "한 좌표만 바뀐 선분은 그 축과 평행해요. 축과 평행한 선분은 다른 두 축이 만드는 평면과 수직이에요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "중심이 $(1, -2, 3)$ 이고 원점을 지나는 구의 방정식을 $x^2+y^2+z^2+ax+by+cz+d=0$ 으로 나타낼 때, $a+b+c+d$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "e = expand((x - 1)**2 + (y + 2)**2 + (z - 3)**2 - Point3D(1, -2, 3).distance(Point3D(0, 0, 0))**2)\nans = e.coeff(x, 1) + e.coeff(y, 1) + e.coeff(z, 1) + e.subs({x: 0, y: 0, z: 0})",
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)",
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "반지름",
+          "body": "원점을 지나니 반지름은 중심과 원점 사이 거리예요. $r^2=1+4+9=14$ 예요."
+        },
+        {
+          "title": "구의 방정식",
+          "body": "$$(x-1)^2+(y+2)^2+(z-3)^2=14$$"
+        },
+        {
+          "title": "전개하기",
+          "body": "$x^2+y^2+z^2-2x+4y-6z+14-14=0$ 이라 $a=-2$, $b=4$, $c=-6$, $d=0$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$-2+4-6+0=-4$$"
+        }
+      ],
+      "tip": "원점을 지나는 구는 상수항이 늘 0 이에요. 원점 $(0,0,0)$ 을 넣어 보면 바로 알 수 있어요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "구 $x^2+y^2+z^2-2x+4y-6z+k=0$ 이 $zx$평면에 접할 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "10",
+      "answerType": "int",
+      "check": "e = x**2 + y**2 + z**2 - 2*x + 4*y - 6*z + k\no = {x: 0, y: 0, z: 0}\ncen = [-diff(e, v).subs(o)/2 for v in (x, y, z)]\nr2 = sum(t**2 for t in cen) - e.subs(o)\nans = solve(Eq(r2, cen[1]**2), k)[0]",
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)",
+        "구가 평면에 접하면 반지름 = 중심과 평면 사이의 거리"
+      ],
+      "steps": [
+        {
+          "title": "완전제곱식",
+          "body": "$$(x-1)^2+(y+2)^2+(z-3)^2=14-k$$"
+        },
+        {
+          "title": "접할 조건",
+          "body": "중심 $(1, -2, 3)$ 과 $zx$평면($y=0$) 사이의 거리는 $|-2|=2$ 이고, 이것이 반지름이에요."
+        },
+        {
+          "title": "k 구하기",
+          "body": "$14-k=2^2$ 이라 $k=10$ 이에요."
+        }
+      ],
+      "tip": "$zx$평면까지의 거리는 $y$좌표의 절댓값이에요. 이름에 **없는** 좌표가 거리예요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "구 $(x-1)^2+(y-3)^2+(z+4)^2=41$ 과 $x$축이 만나는 두 점 사이의 거리를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "s = solve((x - 1)**2 + (0 - 3)**2 + (0 + 4)**2 - 41, x)\nans = Abs(s[0] - s[1])",
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)"
+      ],
+      "steps": [
+        {
+          "title": "x축 위의 점",
+          "body": "$x$축 위에서는 $y=0$, $z=0$ 이에요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$(x-1)^2+9+16=41$ 이라 $(x-1)^2=16$ 이에요."
+        },
+        {
+          "title": "두 점",
+          "body": "$x-1=\\pm4$ 라서 $x=5$ 또는 $x=-3$ 이에요."
+        },
+        {
+          "title": "거리",
+          "body": "$$5-(-3)=8$$"
+        }
+      ],
+      "tip": "중심에서 $x$축까지의 거리 5 와 반지름 $\\sqrt{41}$ 로 직각삼각형을 그려도 반쪽 길이 4 가 나와요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "구 $(x-2)^2+(y+1)^2+(z-2)^2=4$ 위의 점 P 와 원점 O 사이의 거리의 최댓값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "Point3D(0, 0, 0).distance(Point3D(2, -1, 2)) + sqrt(4)",
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)",
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "중심과 반지름",
+          "body": "중심 C$(2, -1, 2)$, 반지름 2 예요."
+        },
+        {
+          "title": "원점과 중심",
+          "body": "$$\\overline{OC}=\\sqrt{4+1+4}=3$$"
+        },
+        {
+          "title": "최댓값",
+          "body": "O 에서 C 를 지나 구의 반대편 끝까지 갈 때 가장 멀어요. $3+2=5$ 예요."
+        }
+      ],
+      "tip": "최솟값은 $3-2=1$ 이에요. 원점이 구 밖에 있을 때 \"중심까지 거리 ± 반지름\"이 최대·최소예요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "두 점 A$(a, 1, 3)$, B$(4, b, -3)$ 에 대하여 선분 AB 를 $1:2$ 로 내분하는 점의 좌표가 $(2, 3, 1)$ 일 때, $a+b$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "P = Point3D(a, 1, 3) + Rational(1, 3)*(Point3D(4, b, -3) - Point3D(a, 1, 3))\ns = solve([Eq(P.x, 2), Eq(P.y, 3)], [a, b])\nans = s[a] + s[b]",
+      "concepts": [
+        "내분점: $\\left(\\frac{mx_2+nx_1}{m+n},\\ \\frac{my_2+ny_1}{m+n},\\ \\frac{mz_2+nz_1}{m+n}\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "x좌표",
+          "body": "$\\dfrac{1\\times4+2a}{3}=2$ 라서 $a=1$ 이에요."
+        },
+        {
+          "title": "y좌표",
+          "body": "$\\dfrac{1\\times b+2\\times1}{3}=3$ 이라서 $b=7$ 이에요."
+        },
+        {
+          "title": "검산",
+          "body": "$z$좌표는 $\\dfrac{-3+6}{3}=1$ 로 맞아요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$1+7=8$$"
+        }
+      ],
+      "tip": "$m:n$ 에서 $m$ 은 B 쪽, $n$ 은 A 쪽 좌표에 곱해요. 거꾸로 곱하면 $a$, $b$ 가 엉뚱하게 나와요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "두 점 A(1, 2, 3), B(4, 6, 15) 에 대하여 선분 AB 와 $xy$평면이 이루는 각의 크기를 $\\theta$ 라 할 때, $\\cos\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5/13",
+      "answerType": "fraction",
+      "check": "Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection(Point3D(1, 2, 3)).distance(Plane(Point3D(0, 0, 0), normal_vector=(0, 0, 1)).projection(Point3D(4, 6, 15)))/Point3D(1, 2, 3).distance(Point3D(4, 6, 15))",
+      "concepts": [
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$",
+        "선분과 평면이 이루는 각: $\\cos\\theta=\\dfrac{\\text{정사영의 길이}}{\\text{선분의 길이}}$"
+      ],
+      "steps": [
+        {
+          "title": "선분의 길이",
+          "body": "$$\\overline{AB}=\\sqrt{3^2+4^2+12^2}=13$$"
+        },
+        {
+          "title": "정사영의 길이",
+          "body": "$xy$평면 위로의 정사영은 A'(1, 2, 0), B'(4, 6, 0) 을 이은 선분이라 길이는 $\\sqrt{3^2+4^2}=5$ 예요."
+        },
+        {
+          "title": "cos 값",
+          "body": "$$\\cos\\theta=\\frac{5}{13}$$"
+        }
+      ],
+      "tip": "정사영은 $z$ 좌표만 0 으로 바꾸면 돼요. 공간도형 단원의 \"정사영 = 길이 × cos\" 가 좌표로 그대로 보여요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "좌표공간의 점 A(2, 2, −1) 을 $x$축에 대하여 대칭이동한 점을 B 라 할 때, 점 C(−2, 1, 1) 에 대하여 선분 BC 의 길이는?",
+      "choices": [
+        "$3$",
+        "$4$",
+        "$5$",
+        "$6$",
+        "$7$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "(2*Line3D(Point3D(0, 0, 0), Point3D(1, 0, 0)).projection(Point3D(2, 2, -1)) - Point3D(2, 2, -1)).distance(Point3D(-2, 1, 1))",
+      "choiceChecks": [
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "concepts": [
+        "대칭점: $xy$평면 대칭은 $z$ 부호만, $x$축 대칭은 $y$·$z$ 부호, 원점 대칭은 세 부호가 모두 바뀌어요.",
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$"
+      ],
+      "steps": [
+        {
+          "title": "대칭점",
+          "body": "$x$축 대칭이라 $y$, $z$ 의 부호가 바뀌어 B$(2, -2, 1)$ 이에요."
+        },
+        {
+          "title": "좌표의 차",
+          "body": "$x$ 는 $-4$, $y$ 는 $3$, $z$ 는 $0$ 만큼 달라요."
+        },
+        {
+          "title": "거리",
+          "body": "$$\\overline{BC}=\\sqrt{16+9+0}=5$$"
+        }
+      ],
+      "tip": "$x$축 대칭을 $x$ 의 부호만 바꾸는 것으로 착각하면 $\\sqrt{29}$ 같은 엉뚱한 값이 나와요. 이름에 든 좌표는 그대로예요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "두 점 A$(a, 2, 1)$, B$(-2, b, 4)$ 에 대하여 선분 AB 를 $2:1$ 로 내분하는 점이 $z$축 위에 있을 때, $a+b$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "P = Point3D(a, 2, 1) + Rational(2, 3)*(Point3D(-2, b, 4) - Point3D(a, 2, 1))\ns = solve([Eq(P.x, 0), Eq(P.y, 0)], [a, b])\nans = s[a] + s[b]",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "내분점: $\\left(\\frac{mx_2+nx_1}{m+n},\\ \\frac{my_2+ny_1}{m+n},\\ \\frac{mz_2+nz_1}{m+n}\\right)$",
+        "$z$축 위의 점은 $x$, $y$ 좌표가 0"
+      ],
+      "steps": [
+        {
+          "title": "x좌표가 0",
+          "body": "$\\dfrac{2\\times(-2)+a}{3}=0$ 이라서 $a=4$ 예요."
+        },
+        {
+          "title": "y좌표가 0",
+          "body": "$\\dfrac{2b+2}{3}=0$ 이라서 $b=-1$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$4+(-1)=3$$"
+        }
+      ],
+      "tip": "$z$축 위라는 조건은 $x=0$, $y=0$ 두 식이 돼요. 미지수가 두 개라 딱 맞게 풀려요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "구 $x^2+y^2+z^2-6x+4y-8z+k=0$ 과 $xy$평면이 만나서 생기는 원의 넓이가 $9\\pi$ 일 때, 상수 $k$ 의 값은?",
+      "choices": [
+        "$2$",
+        "$4$",
+        "$6$",
+        "$8$",
+        "$10$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "e = x**2 + y**2 + z**2 - 6*x + 4*y - 8*z + k\no = {x: 0, y: 0, z: 0}\ncen = [-diff(e, v).subs(o)/2 for v in (x, y, z)]\nr2 = sum(t**2 for t in cen) - e.subs(o)\nans = solve(Eq(pi*(r2 - cen[2]**2), 9*pi), k)[0]",
+      "choiceChecks": [
+        "2",
+        "4",
+        "6",
+        "8",
+        "10"
+      ],
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)",
+        "구의 중심에서 평면까지의 거리 $d$, 단면인 원의 반지름 $\\rho$: $r^2=d^2+\\rho^2$"
+      ],
+      "steps": [
+        {
+          "title": "완전제곱식",
+          "body": "$$(x-3)^2+(y+2)^2+(z-4)^2=29-k$$"
+        },
+        {
+          "title": "직각삼각형",
+          "body": "중심에서 $xy$평면까지의 거리는 $|4|=4$, 단면인 원의 반지름은 넓이 $9\\pi$ 에서 3 이에요."
+        },
+        {
+          "title": "피타고라스",
+          "body": "$r^2=4^2+3^2=25$ 라서 $29-k=25$, $k=4$ 예요."
+        }
+      ],
+      "tip": "구를 평면으로 자른 단면은 늘 원이에요. 구의 반지름이 빗변인 직각삼각형을 그리면 풀려요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "중심의 $z$좌표가 7 이고 반지름의 길이가 6 인 구가 $yz$평면과 $zx$평면에 모두 접해요. 구의 중심의 $x$좌표와 $y$좌표가 모두 양수일 때, 원점과 이 구 위의 점 사이의 거리의 최댓값은?",
+      "choices": [
+        "$13$",
+        "$15$",
+        "$17$",
+        "$19$",
+        "$21$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "a, b = symbols('a b', positive=True)\nO = Point3D(0, 0, 0)\ncen = Point3D(a, b, 7)\ns = solve([Eq(Plane(O, normal_vector=(1, 0, 0)).distance(cen), 6), Eq(Plane(O, normal_vector=(0, 1, 0)).distance(cen), 6)], [a, b], dict=True)[0]\nans = O.distance(cen.subs(s)) + 6",
+      "choiceChecks": [
+        "13",
+        "15",
+        "17",
+        "19",
+        "21"
+      ],
+      "concepts": [
+        "구의 방정식: $(x-a)^2+(y-b)^2+(z-c)^2=r^2$ (중심 $(a,b,c)$, 반지름 $r$)",
+        "구가 평면에 접하면 반지름 = 중심과 평면 사이의 거리"
+      ],
+      "steps": [
+        {
+          "title": "중심 찾기",
+          "body": "$yz$평면까지 거리는 $|x|$, $zx$평면까지 거리는 $|y|$ 이고 둘 다 반지름 6 이에요. 양수라서 중심은 $(6, 6, 7)$ 이에요."
+        },
+        {
+          "title": "원점과 중심",
+          "body": "$$\\sqrt{6^2+6^2+7^2}=\\sqrt{121}=11$$"
+        },
+        {
+          "title": "최댓값",
+          "body": "원점에서 중심을 지나 반대편 끝까지가 가장 멀어요. $11+6=17$ 이에요."
+        }
+      ],
+      "tip": "평면에 접하는 조건은 \"중심의 그 좌표 = ±반지름\"으로 바로 바뀌어요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "좌표공간의 세 점 A(2, 0, 0), B(0, 4, 0), C(0, 0, 2) 를 꼭짓점으로 하는 삼각형 ABC 의 넓이는?",
+      "choices": [
+        "$4$",
+        "$5$",
+        "$6$",
+        "$7$",
+        "$8$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "Rational(1, 2)*Point3D(2, 0, 0).distance(Point3D(0, 4, 0))*Line3D(Point3D(2, 0, 0), Point3D(0, 4, 0)).distance(Point3D(0, 0, 2))",
+      "choiceChecks": [
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "concepts": [
+        "두 점 사이의 거리: $\\sqrt{(x_2-x_1)^2+(y_2-y_1)^2+(z_2-z_1)^2}$",
+        "삼수선의 정리: $\\overline{CO}\\perp xy$평면, $\\overline{OH}\\perp\\overline{AB}$ 이면 $\\overline{CH}\\perp\\overline{AB}$"
+      ],
+      "steps": [
+        {
+          "title": "밑변 AB",
+          "body": "$$\\overline{AB}=\\sqrt{2^2+4^2}=2\\sqrt5$$"
+        },
+        {
+          "title": "O 에서 AB 까지",
+          "body": "원점 O 에서 AB 에 내린 수선의 발을 H 라 하면 $\\frac12\\times2\\times4=\\frac12\\times2\\sqrt5\\times\\overline{OH}$ 라서 $\\overline{OH}=\\frac{4}{\\sqrt5}$ 예요."
+        },
+        {
+          "title": "삼수선의 정리",
+          "body": "$\\overline{CO}\\perp xy$평면, $\\overline{OH}\\perp\\overline{AB}$ 라서 $\\overline{CH}\\perp\\overline{AB}$ 예요. $\\overline{CH}=\\sqrt{2^2+\\frac{16}{5}}=\\frac{6}{\\sqrt5}$ 예요."
+        },
+        {
+          "title": "넓이",
+          "body": "$$\\frac12\\times2\\sqrt5\\times\\frac{6}{\\sqrt5}=6$$"
+        }
+      ],
+      "tip": "삼각형 OAB 는 삼각형 ABC 의 $xy$평면 위로의 정사영이에요. 넓이 4 와 $\\cos\\theta=\\frac{\\overline{OH}}{\\overline{CH}}=\\frac23$ 으로 $4\\div\\frac23=6$ 처럼 구해도 돼요."
+    }
+  ]
+}
