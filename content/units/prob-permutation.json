@@ -1,0 +1,1202 @@
+{
+  "id": "prob-permutation",
+  "course": "확률과 통계",
+  "unit": "경우의 수",
+  "title": "여러 가지 순열",
+  "prereq": [
+    "h1-counting"
+  ],
+  "suneung": [
+    "확통 23",
+    "확통 30",
+    "확통 28"
+  ],
+  "hours": 3.5,
+  "formulas": [
+    "원순열: $\\dfrac{n!}{n}=(n-1)!$",
+    "중복순열: $_n\\Pi_r=n^r$",
+    "같은 것이 있는 순열: $\\dfrac{n!}{p!\\,q!\\,r!}$ $(p+q+r=n)$",
+    "이웃하는 것은 한 묶음으로 배열한 뒤 묶음 안에서 자리를 바꾸는 수를 곱해요."
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "line4": {
+        "value": "24",
+        "check": "from itertools import permutations\nans = len(list(permutations(range(4))))"
+      },
+      "circ4": {
+        "value": "6",
+        "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(4)) for p in permutations(range(4))}\nans = len(reps)"
+      },
+      "f3": {
+        "value": "6",
+        "check": "factorial(3)"
+      },
+      "ox3": {
+        "value": "8",
+        "check": "from itertools import product\nans = len(list(product('OX', repeat=3)))"
+      },
+      "f5": {
+        "value": "120",
+        "check": "factorial(5)"
+      },
+      "flag": {
+        "value": "10",
+        "check": "from itertools import permutations\nans = len(set(permutations('RRBBB')))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "확률과 통계 · 경우의 수",
+        "title": "둥글게 앉기, 또 골라도 되기,\n같은 것 섞기",
+        "lead": "고1 에서는 서로 다른 것을 한 줄로 세웠어요. 오늘은 원탁에 둘러앉고, 같은 것을 여러 번 고르고, 같은 것이 섞인 줄을 세어요. 직접 세어 본 뒤에 공식에 이름을 붙여요.",
+        "meta": [
+          "원순열",
+          "중복순열",
+          "같은 것이 있는 순열"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "네 명이 원탁에 둘러앉는 방법은\n몇 가지일까요?",
+        "lead": "A, B, C, D 네 명이 둥근 탁자에 같은 간격으로 앉아요. 다 같이 한 칸씩 옆으로 옮겨 앉아도 누가 누구 옆인지는 그대로라서 같은 배치로 봐요.",
+        "choices": [
+          {
+            "value": "24",
+            "check": "factorial(4)",
+            "feedback": "한 줄로 세우는 수예요. 원탁에서는 다 같이 한 칸씩 돌린 배치가 모두 같은 배치예요."
+          },
+          {
+            "value": "6",
+            "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(4)) for p in permutations(range(4))}\nans = len(reps)"
+          },
+          {
+            "value": "3",
+            "check": "factorial(4) / 4 / 2",
+            "feedback": "뒤집어서 같은 것까지 하나로 본 수예요. 원탁에서는 시계 방향으로 A, B, C, D 와 반대 방향으로 A, B, C, D 가 서로 달라요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(4)) for p in permutations(range(4))}\nans = len(reps)",
+        "reveal": "**맞아요.** 한 줄로 세운 것을 원탁에 둘러 놓으면 보여요.",
+        "thoughts": [
+          "한 줄로 세우는 {{line4}}가지를 원탁에 둘러 놓으면, 한 칸씩 돌린 네 가지가 모두 같은 배치예요.",
+          "그래서 ${{line4}}\\div4={{circ4}}$ 가지예요."
+        ],
+        "conclude": "돌려서 같은 것을 하나로 세려면 ==한 사람을 먼저 앉혀 기준으로== 삼으면 돼요. 다음 장면에서 직접 해 봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "circle",
+        "chip": "손으로 해 보기",
+        "title": "A 를 먼저 앉히고\n나머지를 늘어놓아 보세요",
+        "lead": "A 자리를 정하면 더는 돌릴 수 없어요. A 에서 시계 방향으로 첫째·둘째·셋째 자리에 앉을 사람을 차례로 눌러 모든 배치를 찾아 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "list",
+            "items": [
+              "B",
+              "C",
+              "D"
+            ],
+            "k": 3
+          }
+        },
+        "after": "A 를 기준으로 하면 남은 세 명을 한 줄로 세우는 것과 같아서 $3!={{f3}}$ 이에요. 오늘의 질문의 답과 같아요. ==한 명을 기준으로 앉히고 나머지를 줄 세워요.== 그래서 $n$ 명이면 $(n-1)!$ 이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "repeat",
+        "chip": "두 번째 해 보기",
+        "title": "OX 퀴즈 세 문제,\n답안지는 몇 가지일까요?",
+        "lead": "문제마다 O 나 X 중 하나를 써요. 앞 문제에 쓴 것을 또 써도 돼요. 눌러서 나올 수 있는 답안지를 모두 만들어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "repeat",
+            "items": [
+              "O",
+              "X"
+            ],
+            "k": 3
+          }
+        },
+        "after": "문제마다 두 가지씩이고, 앞에서 무엇을 골랐든 후보가 줄지 않아요. 그래서 $2\\times2\\times2=2^3={{ox3}}$ 이에요. ==중복을 허락하면 자리마다 후보 수가 그대로예요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "flags",
+        "chip": "세 번째 해 보기",
+        "title": "빨간 깃발 2개와 파란 깃발 3개,\n빨강 자리를 골라 보세요",
+        "lead": "깃발을 꽂을 자리가 1번부터 5번까지 있어요. 같은 색 깃발끼리는 구별하지 않아요. 빨간 깃발을 꽂을 두 자리를 골라 보세요. 나머지 자리는 저절로 파랑이에요.",
+        "gate": true,
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "pick",
+            "items": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "k": 2
+          }
+        },
+        "after": "빨강 두 자리만 고르면 줄이 정해져서 {{flag}}가지예요. 깃발이 모두 달랐다면 $5!={{f5}}$ 가지인데, 빨강끼리 $2!$ 번, 파랑끼리 $3!$ 번 자리를 바꿔도 같은 줄이에요. 그래서 $\\dfrac{5!}{2!\\,3!}={{flag}}$ 이에요. ==같은 것끼리 바꾼 횟수로 나눠요.=="
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 센 방법에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "원순열",
+            "body": "서로 다른 것을 **원형으로** 놓는 순열. 돌려서 같은 것은 하나로 봐요. $n$ 개의 원순열의 수는 $\\dfrac{n!}{n}=(n-1)!$ 이에요."
+          },
+          {
+            "term": "중복순열",
+            "body": "서로 다른 $n$ 개에서 **중복을 허락해** $r$ 개를 줄 세우는 것. 그 수를 $_n\\Pi_r$ 로 쓰고 $_n\\Pi_r=n^r$ 이에요. 고르는 횟수 $r$ 이 지수예요."
+          },
+          {
+            "term": "같은 것이 있는 순열",
+            "body": "$n$ 개 중 같은 것이 $p$ 개, $q$ 개, … 있을 때 한 줄로 세우는 수는 $\\dfrac{n!}{p!\\,q!\\cdots}$ 예요. 같은 것끼리 자리를 바꾼 횟수로 나눠요."
+          },
+          {
+            "term": "이웃하는 것은 한 묶음으로",
+            "body": "꼭 붙어 있어야 하는 것은 **한 덩어리로 묶어** 먼저 배열하고, 묶음 안에서 자리를 바꾸는 수를 곱해요. 원탁에서도 똑같이 해요."
+          }
+        ],
+        "aside": "**확인** · 오늘의 질문은 $\\dfrac{4!}{4}=3!$ 이고, 늘어놓아 센 {{circ4}}가지와 같아요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 다섯 명이 원탁에 둘러앉는 방법의 수예요. 왼쪽은 한 줄로 세운 수를 돌려서 같은 다섯 가지로 나눈 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "5*4*3*2*1/5"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "5*4*3*2*1",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "24",
+              "body": "원탁에서는 다 같이 한 칸씩 돌린 다섯 배치가 같은 배치예요. **한 줄 세우기 수를 사람 수로 나눠요.** 곧 $(5-1)!$ 이에요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 서로 다른 편지 세 통을 서로 다른 우체통 네 개에 넣는 방법의 수예요(한 우체통에 여러 통 넣어도 돼요). 왼쪽은 편지마다 우체통을 고른 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "4*4*4"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "3*3*3*3",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "64",
+              "body": "**고르는 쪽이 지수**예요. 편지 한 통마다 우체통 네 개 중 하나를 고르니 $4^3$ 이에요. $3^4$ 은 우체통마다 편지를 고르는 셈이라, 한 편지가 두 우체통에 들어가는 일이 생겨요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "table",
+            "q": "부모 2명과 자녀 3명이 원탁에 일정한 간격으로 둘러앉을 때, 부모가 서로 이웃하게 앉는 방법의 수를 구하세요.",
+            "hint": "부모 두 명을 한 사람처럼 묶어요. 묶은 뒤에도 원탁이에요.",
+            "concepts": [
+              "원순열: 서로 다른 $n$ 개를 원형으로 놓는 수는 $\\dfrac{n!}{n}=(n-1)!$ 이에요.",
+              "이웃하는 것은 한 묶음으로 보고 배열한 뒤, 묶음 안에서 자리를 바꾸는 수를 곱해요."
+            ],
+            "steps": [
+              {
+                "title": "한 묶음으로",
+                "body": "부모를 하나로 묶으면 모두 $4$ 덩어리예요."
+              },
+              {
+                "title": "원순열",
+                "body": "$$(4-1)!=3!=6$$"
+              },
+              {
+                "title": "묶음 안 자리 바꾸기",
+                "body": "부모 두 명이 자리를 바꾸는 $2!$ 를 곱해요.\n$$6\\times2={{answer}}$$"
+              }
+            ],
+            "tip": "묶은 뒤 $4!$ 로 세면 원탁에서 돌린 것을 겹쳐 세요. 원탁이면 언제나 (덩어리 수 $-1$)! 이에요.",
+            "answer": "12",
+            "answerType": "int",
+            "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(5)) for p in permutations(range(5))}\nans = len([p for p in reps if (p.index(0) - p.index(1)) % 5 in (1, 4)])"
+          },
+          {
+            "id": "code",
+            "q": "숫자 $1,\\,2,\\,3$ 중에서 중복을 허락하여 네 자리 비밀번호를 만들어요. 만들 수 있는 비밀번호의 개수를 구하세요.",
+            "hint": "자리마다 쓸 수 있는 숫자가 몇 개인지 봐요. 앞에서 쓴 숫자를 또 써도 돼요.",
+            "concepts": [
+              "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요."
+            ],
+            "steps": [
+              {
+                "title": "자리마다 3가지",
+                "body": "네 자리 모두 $1,\\,2,\\,3$ 중 하나라 자리마다 $3$ 가지예요."
+              },
+              {
+                "title": "중복순열",
+                "body": "$$_3\\Pi_4=3^4={{answer}}$$"
+              }
+            ],
+            "tip": "고르는 것은 네 자리, 후보는 숫자 세 개예요. 그래서 $4^3$ 이 아니라 $3^4$ 이에요.",
+            "answer": "81",
+            "answerType": "int",
+            "check": "from itertools import product\nans = len(list(product((1, 2, 3), repeat=4)))"
+          },
+          {
+            "id": "path",
+            "q": "바둑판 모양의 길에서 A 지점에서 오른쪽으로 $4$ 칸, 위쪽으로 $2$ 칸 떨어진 B 지점까지 가요. A 에서 B 까지 가는 최단 경로의 수를 구하세요.",
+            "hint": "한 경로를 → 네 개와 ↑ 두 개를 늘어놓은 줄로 바꿔 봐요.",
+            "concepts": [
+              "같은 것이 있는 순열: $p$ 개, $q$ 개, … 가 각각 같으면 $\\dfrac{n!}{p!\\,q!\\cdots}$ 이에요.",
+              "최단 경로는 → 와 ↑ 를 정해진 개수만큼 한 줄로 늘어놓는 것과 같아요."
+            ],
+            "steps": [
+              {
+                "title": "화살표로 바꾸기",
+                "body": "가장 짧게 가려면 → 를 $4$ 번, ↑ 를 $2$ 번 가요. 화살표 $6$ 개를 늘어놓는 수예요."
+              },
+              {
+                "title": "같은 것이 있는 순열",
+                "body": "$$\\frac{6!}{4!\\,2!}={{answer}}$$"
+              }
+            ],
+            "tip": "↑ 가 들어갈 두 자리만 고르면 되니 $_6\\mathrm{C}_2$ 로 세어도 같아요.",
+            "answer": "15",
+            "answerType": "int",
+            "check": "from itertools import permutations\nans = len(set(permutations('RRRRUU')))"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "원탁에서는 돌려서 같은 것을 하나로 봐요. 원순열의 수는 $\\dfrac{n!}{n}=(n-1)!$, 한 명을 기준으로 앉히고 나머지를 줄 세워요.",
+          "중복을 허락해 $r$ 개를 줄 세우면 자리마다 $n$ 가지라 $_n\\Pi_r=n^r$. 고르는 쪽이 지수예요.",
+          "같은 것이 $p$ 개, $q$ 개 섞여 있으면 $\\dfrac{n!}{p!\\,q!}$. 최단 경로도 화살표를 늘어놓는 같은 것이 있는 순열이에요.",
+          "수능(확률과 통계)에서는 이웃·자리 조건이 붙은 배열을 세는 문제로 나와요. 묶음과 기준부터 정해요."
+        ],
+        "done": "여러 가지 순열 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "prob-permutation-circle",
+    "prob-permutation-repeat",
+    "prob-permutation-same",
+    "prob-permutation-path",
+    "prob-permutation-function"
+  ],
+  "problems": [
+    {
+      "q": "A, B 를 포함한 $7$ 명이 원탁에 일정한 간격으로 둘러앉을 때, A 와 B 가 이웃하지 않게 앉는 방법의 수를 구하세요.",
+      "choices": null,
+      "answer": "480",
+      "answerType": "int",
+      "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(7)) for p in permutations(range(7))}\nans = len([p for p in reps if (p.index(0) - p.index(1)) % 7 not in (1, 6)])",
+      "concepts": [
+        "원순열: 서로 다른 $n$ 개를 원형으로 놓는 수는 $\\dfrac{n!}{n}=(n-1)!$ 이에요. 한 명을 기준으로 앉히고 나머지를 줄 세워요.",
+        "이웃하지 않는 경우의 수 = 전체 − 이웃하는 경우의 수"
+      ],
+      "steps": [
+        {
+          "title": "전체",
+          "body": "$7$ 명의 원순열은 $(7-1)!=720$ 이에요."
+        },
+        {
+          "title": "이웃하는 경우",
+          "body": "A, B 를 묶으면 $6$ 덩어리라 $(6-1)!\\times2=240$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$720-240=480$$"
+        }
+      ],
+      "tip": "A 를 기준으로 앉히고 B 가 A 바로 옆 두 자리를 피하게 앉혀도 같은 답이 나와요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prob-permutation-circle",
+      "seed": 1000
+    },
+    {
+      "q": "숫자 $1,\\,2,\\,3$ 중에서 중복을 허락하여 만들 수 있는 $3$ 자리 자연수의 개수를 구하세요.",
+      "choices": null,
+      "answer": "27",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len(list(product(range(1, 4), repeat=3)))",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "자리마다 후보",
+          "body": "같은 숫자를 다시 써도 되니 모든 자리에 $3$ 가지씩 올 수 있어요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$_3\\Pi_3=3^3=27$$"
+        }
+      ],
+      "tip": "중복이 없으면 $_3\\mathrm{P}_3$ 처럼 자리마다 후보가 하나씩 줄지만, 중복을 허락하면 줄지 않아요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prob-permutation-repeat",
+      "seed": 1001
+    },
+    {
+      "q": "빨간 깃발 $3$ 개, 파란 깃발 $2$ 개, 노란 깃발 $1$ 개를 모두 한 줄로 늘어놓는 방법의 수를 구하세요. (같은 색 깃발끼리는 구별하지 않아요.)",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len(set(permutations('RRRBBY')))",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, $r$ 개가 각각 같을 때 $n$ 개를 줄 세우는 수는 $\\dfrac{n!}{p!\\,q!\\,r!}$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "모두 다르다면",
+          "body": "깃발 $6$ 개가 모두 다르면 $6!=720$ 가지예요."
+        },
+        {
+          "title": "같은 것끼리 겹친 횟수",
+          "body": "같은 색끼리 자리를 바꿔도 같은 배열이라, 한 배열이 $3!\\,2!$ 번씩 겹쳐 세어졌어요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{6!}{3!\\,2!}=60$$"
+        }
+      ],
+      "tip": "빨간 깃발 자리만 고르는 것으로도 셀 수 있어요. $6$ 자리 중 빨강 $3$ 자리를 고르고, 남은 자리에 다른 색을 차례로 놓아요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prob-permutation-same",
+      "seed": 1002
+    },
+    {
+      "q": "바둑판 모양의 길에서 A 지점에서 오른쪽으로 $3$ 칸, 위쪽으로 $2$ 칸 떨어진 B 지점까지 가요. A 에서 B 까지 가는 최단 경로의 수를 구하세요.",
+      "choices": null,
+      "answer": "10",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len(set(permutations('RRRUU')))",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, $r$ 개가 각각 같을 때 $n$ 개를 줄 세우는 수는 $\\dfrac{n!}{p!\\,q!\\,r!}$ 이에요.",
+        "최단 경로는 → 와 ↑ 를 정해진 개수만큼 한 줄로 늘어놓는 것과 같아요."
+      ],
+      "steps": [
+        {
+          "title": "화살표로 바꾸기",
+          "body": "가장 짧게 가려면 오른쪽(→) $3$ 번, 위(↑) $2$ 번만 가요. 한 경로는 이 화살표 $5$ 개를 늘어놓은 것이에요."
+        },
+        {
+          "title": "같은 것이 있는 순열",
+          "body": "$$\\frac{5!}{3!\\,2!}=10$$"
+        }
+      ],
+      "tip": "왼쪽(←)이나 아래(↓)로 한 번이라도 가면 최단이 아니에요. ↑ 가 들어갈 자리 $2$ 개만 고르면 나머지는 → 라서 $_{5}\\mathrm{C}_{2}=10$ 으로도 셀 수 있어요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prob-permutation-path",
+      "seed": 1003
+    },
+    {
+      "q": "두 집합 $X=\\{1,\\,2\\}$, $Y=\\{1,\\,2,\\,3\\}$ 에 대하여 $X$ 에서 $Y$ 로의 함수 $f$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([f for f in product(range(1, 4), repeat=2)])",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요.",
+        "함수는 $X$ 의 원소마다 $Y$ 의 원소를 하나씩 정하는 것이에요."
+      ],
+      "steps": [
+        {
+          "title": "원소마다 고르기",
+          "body": "$X$ 의 원소 $2$ 개마다 함숫값을 $Y$ 에서 $3$ 가지씩 골라요. 같은 값을 또 골라도 돼요."
+        },
+        {
+          "title": "중복순열",
+          "body": "$$_3\\Pi_2=3^2=9$$"
+        }
+      ],
+      "tip": "고르는 쪽은 정의역 $X$ 의 원소예요. 그래서 밑이 $3$, 지수가 $2$ 예요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prob-permutation-function",
+      "seed": 1004
+    },
+    {
+      "q": "$6$ 명이 원탁에 일정한 간격으로 둘러앉는 방법의 수를 구하세요. (돌려서 겹치는 것은 같은 것으로 봐요.)",
+      "choices": null,
+      "answer": "120",
+      "answerType": "int",
+      "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(6)) for p in permutations(range(6))}\nans = len(reps)",
+      "concepts": [
+        "원순열: 서로 다른 $n$ 개를 원형으로 놓는 수는 $\\dfrac{n!}{n}=(n-1)!$ 이에요. 한 명을 기준으로 앉히고 나머지를 줄 세워요."
+      ],
+      "steps": [
+        {
+          "title": "한 명을 기준으로",
+          "body": "돌려서 같은 것을 하나로 보니, 한 명을 먼저 앉혀 기준으로 삼아요. 그 사람 자리는 한 가지예요."
+        },
+        {
+          "title": "나머지 줄 세우기",
+          "body": "기준에서 시계 방향으로 남은 $5$ 명을 줄 세워요.\n$$5!=5\\times4\\times3\\times2\\times1=120$$"
+        }
+      ],
+      "tip": "한 줄로 세운 $6!=720$ 에는 같은 원 배열이 회전한 $6$ 가지씩 들어 있어요. $720\\div6=120$ 으로 검산할 수 있어요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prob-permutation-circle",
+      "seed": 1005
+    },
+    {
+      "q": "숫자 $1,\\,2$ 중에서 중복을 허락하여 만들 수 있는 $4$ 자리 자연수의 개수를 구하세요.",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len(list(product(range(1, 3), repeat=4)))",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "자리마다 후보",
+          "body": "같은 숫자를 다시 써도 되니 모든 자리에 $2$ 가지씩 올 수 있어요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$_2\\Pi_4=2^4=16$$"
+        }
+      ],
+      "tip": "중복이 없으면 $_2\\mathrm{P}_4$ 처럼 자리마다 후보가 하나씩 줄지만, 중복을 허락하면 줄지 않아요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prob-permutation-repeat",
+      "seed": 1006
+    },
+    {
+      "q": "빨간 깃발 $4$ 개, 파란 깃발 $1$ 개를 모두 한 줄로 늘어놓는 방법의 수를 구하세요. (같은 색 깃발끼리는 구별하지 않아요.)",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len(set(permutations('RRRRB')))",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, $r$ 개가 각각 같을 때 $n$ 개를 줄 세우는 수는 $\\dfrac{n!}{p!\\,q!\\,r!}$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "모두 다르다면",
+          "body": "깃발 $5$ 개가 모두 다르면 $5!=120$ 가지예요."
+        },
+        {
+          "title": "같은 것끼리 겹친 횟수",
+          "body": "같은 색끼리 자리를 바꿔도 같은 배열이라, 한 배열이 $4!$ 번씩 겹쳐 세어졌어요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{5!}{4!}=5$$"
+        }
+      ],
+      "tip": "빨간 깃발 자리만 고르는 것으로도 셀 수 있어요. $5$ 자리 중 빨강 $4$ 자리를 고르고, 남은 자리에 다른 색을 차례로 놓아요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prob-permutation-same",
+      "seed": 1007
+    },
+    {
+      "q": "바둑판 모양의 길에서 A 지점에서 오른쪽으로 $5$ 칸, 위쪽으로 $3$ 칸 떨어진 B 지점까지 가요. A 에서 B 까지 가는 최단 경로의 수를 구하세요.",
+      "choices": null,
+      "answer": "56",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len(set(permutations('RRRRRUUU')))",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, $r$ 개가 각각 같을 때 $n$ 개를 줄 세우는 수는 $\\dfrac{n!}{p!\\,q!\\,r!}$ 이에요.",
+        "최단 경로는 → 와 ↑ 를 정해진 개수만큼 한 줄로 늘어놓는 것과 같아요."
+      ],
+      "steps": [
+        {
+          "title": "화살표로 바꾸기",
+          "body": "가장 짧게 가려면 오른쪽(→) $5$ 번, 위(↑) $3$ 번만 가요. 한 경로는 이 화살표 $8$ 개를 늘어놓은 것이에요."
+        },
+        {
+          "title": "같은 것이 있는 순열",
+          "body": "$$\\frac{8!}{5!\\,3!}=56$$"
+        }
+      ],
+      "tip": "왼쪽(←)이나 아래(↓)로 한 번이라도 가면 최단이 아니에요. ↑ 가 들어갈 자리 $3$ 개만 고르면 나머지는 → 라서 $_{8}\\mathrm{C}_{3}=56$ 으로도 셀 수 있어요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prob-permutation-path",
+      "seed": 1008
+    },
+    {
+      "q": "두 집합 $X=\\{1,\\,2,\\,3,\\,4\\}$, $Y=\\{1,\\,2,\\,3\\}$ 에 대하여 $X$ 에서 $Y$ 로의 함수 $f$ 중에서 $f(1)=1$ 인 것의 개수를 구하세요.",
+      "choices": null,
+      "answer": "27",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([f for f in product(range(1, 4), repeat=4) if f[0] == 1])",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요.",
+        "함수는 $X$ 의 원소마다 $Y$ 의 원소를 하나씩 정하는 것이에요."
+      ],
+      "steps": [
+        {
+          "title": "원소마다 고르기",
+          "body": "$f(1)$ 은 $1$ 로 정해졌어요. 남은 $3$ 개 원소의 함숫값을 $Y$ 에서 $3$ 가지씩 골라요."
+        },
+        {
+          "title": "중복순열",
+          "body": "$$_3\\Pi_3=3^3=27$$"
+        }
+      ],
+      "tip": "고르는 쪽은 정의역 $X$ 의 원소예요. 그래서 밑이 $3$, 지수가 $3$ 이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prob-permutation-function",
+      "seed": 1009
+    },
+    {
+      "q": "$7$ 명이 원탁에 일정한 간격으로 둘러앉는 방법의 수를 구하세요. (돌려서 겹치는 것은 같은 것으로 봐요.)",
+      "choices": null,
+      "answer": "720",
+      "answerType": "int",
+      "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(7)) for p in permutations(range(7))}\nans = len(reps)",
+      "concepts": [
+        "원순열: 서로 다른 $n$ 개를 원형으로 놓는 수는 $\\dfrac{n!}{n}=(n-1)!$ 이에요. 한 명을 기준으로 앉히고 나머지를 줄 세워요."
+      ],
+      "steps": [
+        {
+          "title": "한 명을 기준으로",
+          "body": "돌려서 같은 것을 하나로 보니, 한 명을 먼저 앉혀 기준으로 삼아요. 그 사람 자리는 한 가지예요."
+        },
+        {
+          "title": "나머지 줄 세우기",
+          "body": "기준에서 시계 방향으로 남은 $6$ 명을 줄 세워요.\n$$6!=6\\times5\\times4\\times3\\times2\\times1=720$$"
+        }
+      ],
+      "tip": "한 줄로 세운 $7!=5040$ 에는 같은 원 배열이 회전한 $7$ 가지씩 들어 있어요. $5040\\div7=720$ 으로 검산할 수 있어요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prob-permutation-circle",
+      "seed": 1010
+    },
+    {
+      "q": "서로 다른 편지 $2$ 통을 서로 다른 우체통 $4$ 개에 넣는 방법의 수를 구하세요. (한 우체통에 여러 통을 넣어도 되고, 비어 있는 우체통이 있어도 돼요.)",
+      "choices": null,
+      "answer": "16",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len(list(product(range(4), repeat=2)))",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "누가 고르나",
+          "body": "편지 한 통마다 들어갈 우체통을 하나씩 골라요. 편지마다 $4$ 가지예요."
+        },
+        {
+          "title": "편지 수만큼 곱하기",
+          "body": "$$4^2=16$$"
+        }
+      ],
+      "tip": "고르는 쪽(편지 $2$ 통)이 지수, 골라지는 쪽(우체통 $4$ 개)이 밑이에요. $2^4=16$ 으로 바꿔 쓰지 않게 조심해요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prob-permutation-repeat",
+      "seed": 1011
+    },
+    {
+      "q": "빨간 깃발 $2$ 개, 파란 깃발 $2$ 개, 노란 깃발 $1$ 개를 모두 한 줄로 늘어놓는 방법의 수를 구하세요. (같은 색 깃발끼리는 구별하지 않아요.)",
+      "choices": null,
+      "answer": "30",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len(set(permutations('RRBBY')))",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, $r$ 개가 각각 같을 때 $n$ 개를 줄 세우는 수는 $\\dfrac{n!}{p!\\,q!\\,r!}$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "모두 다르다면",
+          "body": "깃발 $5$ 개가 모두 다르면 $5!=120$ 가지예요."
+        },
+        {
+          "title": "같은 것끼리 겹친 횟수",
+          "body": "같은 색끼리 자리를 바꿔도 같은 배열이라, 한 배열이 $2!\\,2!$ 번씩 겹쳐 세어졌어요."
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{5!}{2!\\,2!}=30$$"
+        }
+      ],
+      "tip": "빨간 깃발 자리만 고르는 것으로도 셀 수 있어요. $5$ 자리 중 빨강 $2$ 자리를 고르고, 남은 자리에 다른 색을 차례로 놓아요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prob-permutation-same",
+      "seed": 1012
+    },
+    {
+      "q": "바둑판 모양의 길에서 A 지점에서 오른쪽으로 $2$ 칸, 위쪽으로 $2$ 칸 떨어진 B 지점까지 가요. A 에서 B 까지 가는 최단 경로의 수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len(set(permutations('RRUU')))",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, $r$ 개가 각각 같을 때 $n$ 개를 줄 세우는 수는 $\\dfrac{n!}{p!\\,q!\\,r!}$ 이에요.",
+        "최단 경로는 → 와 ↑ 를 정해진 개수만큼 한 줄로 늘어놓는 것과 같아요."
+      ],
+      "steps": [
+        {
+          "title": "화살표로 바꾸기",
+          "body": "가장 짧게 가려면 오른쪽(→) $2$ 번, 위(↑) $2$ 번만 가요. 한 경로는 이 화살표 $4$ 개를 늘어놓은 것이에요."
+        },
+        {
+          "title": "같은 것이 있는 순열",
+          "body": "$$\\frac{4!}{2!\\,2!}=6$$"
+        }
+      ],
+      "tip": "왼쪽(←)이나 아래(↓)로 한 번이라도 가면 최단이 아니에요. ↑ 가 들어갈 자리 $2$ 개만 고르면 나머지는 → 라서 $_{4}\\mathrm{C}_{2}=6$ 으로도 셀 수 있어요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prob-permutation-path",
+      "seed": 1013
+    },
+    {
+      "q": "두 집합 $X=\\{1,\\,2,\\,3,\\,4\\}$, $Y=\\{1,\\,2,\\,3,\\,4,\\,5\\}$ 에 대하여 $X$ 에서 $Y$ 로의 함수 $f$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "625",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([f for f in product(range(1, 6), repeat=4)])",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요.",
+        "함수는 $X$ 의 원소마다 $Y$ 의 원소를 하나씩 정하는 것이에요."
+      ],
+      "steps": [
+        {
+          "title": "원소마다 고르기",
+          "body": "$X$ 의 원소 $4$ 개마다 함숫값을 $Y$ 에서 $5$ 가지씩 골라요. 같은 값을 또 골라도 돼요."
+        },
+        {
+          "title": "중복순열",
+          "body": "$$_5\\Pi_4=5^4=625$$"
+        }
+      ],
+      "tip": "고르는 쪽은 정의역 $X$ 의 원소예요. 그래서 밑이 $5$, 지수가 $4$ 예요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prob-permutation-function",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "A, B 를 포함한 $6$ 명이 원탁에 일정한 간격으로 둘러앉을 때, A 와 B 가 이웃하지 않게 앉는 방법의 수를 구하세요.",
+      "choices": null,
+      "answer": "72",
+      "answerType": "int",
+      "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(6)) for p in permutations(range(6))}\nans = len([p for p in reps if not (p.index(0) - p.index(1)) % 6 in (1, 5)])",
+      "concepts": [
+        "원순열: 서로 다른 $n$ 개를 원형으로 놓는 수는 $\\dfrac{n!}{n}=(n-1)!$ 이에요.",
+        "이웃하지 않는 경우 = 전체 − 이웃하는 경우"
+      ],
+      "steps": [
+        {
+          "title": "전체",
+          "body": "$6$ 명의 원순열은 $(6-1)!=120$ 이에요."
+        },
+        {
+          "title": "이웃하는 경우",
+          "body": "A, B 를 묶으면 $5$ 덩어리라 $(5-1)!\\times2=48$ 이에요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$120-48=72$$"
+        }
+      ],
+      "tip": "이웃하지 않는 경우를 바로 세기보다, 전체에서 이웃하는 경우를 빼는 쪽이 간단해요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "정삼각형 모양의 탁자의 각 변에 두 명씩, 모두 $6$ 명이 둘러앉는 방법의 수를 구하세요. (돌려서 겹치는 것은 같은 것으로 봐요.)",
+      "choices": null,
+      "answer": "240",
+      "answerType": "int",
+      "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in (0, 2, 4)) for p in permutations(range(6))}\nans = len(reps)",
+      "concepts": [
+        "원순열: 서로 다른 $n$ 개를 원형으로 놓는 수는 $\\dfrac{n!}{n}=(n-1)!$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "원순열부터",
+          "body": "자리를 둥글게 보면 $6$ 명의 원순열은 $(6-1)!=120$ 이에요."
+        },
+        {
+          "title": "자리가 다른 배치",
+          "body": "정삼각형 탁자에서는 한 칸 돌리면 변의 가운데·끝 자리가 달라져요. 돌려서 같아지는 건 두 칸씩 돌릴 때뿐이라, 원순열 하나가 서로 다른 배치 $2$ 개로 나뉘어요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$120\\times2=240$$"
+        }
+      ],
+      "tip": "한 줄로 세운 $6!=720$ 에서 돌려서 같은 것은 세 가지(두 칸씩 돌리기)라 $720\\div3=240$ 으로도 구해요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$_3\\Pi_4+{}_4\\Pi_2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "97",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len(list(product(range(3), repeat=4))) + len(list(product(range(4), repeat=2)))",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "각각 계산",
+          "body": "$_3\\Pi_4=3^4=81$, $_4\\Pi_2=4^2=16$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$81+16=97$$"
+        }
+      ],
+      "tip": "$_n\\Pi_r$ 에서 앞의 $n$ 이 밑, 뒤의 $r$ 이 지수예요. $4^3+2^4$ 처럼 바꾸면 틀려요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$_n\\Pi_2=49$ 를 만족시키는 자연수 $n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "ans = [s for s in solve(Eq(n**2, 49), n) if s > 0][0]",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "식으로 쓰기",
+          "body": "$_n\\Pi_2=n^2$ 이라 $n^2=49$ 예요."
+        },
+        {
+          "title": "자연수 고르기",
+          "body": "$n=\\pm7$ 중 자연수는 $7$ 이에요."
+        }
+      ],
+      "tip": "$_n\\mathrm{P}_2=n(n-1)$ 과 헷갈리지 마세요. 중복순열은 후보가 줄지 않아서 $n\\times n$ 이에요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "숫자 $0,\\,1,\\,2,\\,3$ 중에서 중복을 허락하여 만들 수 있는 세 자리 자연수의 개수를 구하세요.",
+      "choices": null,
+      "answer": "48",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([t for t in product(range(4), repeat=3) if t[0] != 0])",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "맨 앞자리",
+          "body": "맨 앞에는 $0$ 이 올 수 없어서 $1,\\,2,\\,3$ 의 $3$ 가지예요."
+        },
+        {
+          "title": "나머지 두 자리",
+          "body": "중복을 허락하니 $0$ 까지 $4$ 가지씩이에요. $4^2=16$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3\\times16=48$$"
+        }
+      ],
+      "tip": "$_4\\Pi_3=64$ 에는 $012$ 처럼 맨 앞이 $0$ 인 것 $16$ 개가 들어 있어요. $64-16=48$ 로 검산할 수 있어요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "두 집합 $X=\\{1,\\,2,\\,3\\}$, $Y=\\{1,\\,2,\\,3,\\,4,\\,5\\}$ 에 대하여 $X$ 에서 $Y$ 로의 함수의 개수를 구하세요.",
+      "choices": null,
+      "answer": "125",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len(list(product(range(1, 6), repeat=3)))",
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요.",
+        "함수는 $X$ 의 원소마다 $Y$ 의 원소를 하나씩 정하는 것이에요."
+      ],
+      "steps": [
+        {
+          "title": "원소마다 고르기",
+          "body": "$1,\\,2,\\,3$ 각각의 함숫값을 $Y$ 에서 하나씩 골라요. 같은 값을 또 골라도 돼요."
+        },
+        {
+          "title": "중복순열",
+          "body": "$$_5\\Pi_3=5^3=125$$"
+        }
+      ],
+      "tip": "고르는 쪽은 정의역 $X$(원소 $3$ 개)라서 지수가 $3$ 이에요. $3^5$ 이 아니에요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "문자 $a,\\,a,\\,b,\\,b,\\,b,\\,c$ 를 모두 한 줄로 늘어놓는 방법의 수를 구하세요.",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len(set(permutations('aabbbc')))",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, … 가 각각 같으면 $\\dfrac{n!}{p!\\,q!\\cdots}$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "모두 다르다면",
+          "body": "여섯 문자가 모두 다르면 $6!=720$ 이에요."
+        },
+        {
+          "title": "같은 것끼리 나누기",
+          "body": "$a$ 두 개, $b$ 세 개가 같아요.\n$$\\frac{6!}{2!\\,3!}=\\frac{720}{12}=60$$"
+        }
+      ],
+      "tip": "$c$ 는 하나뿐이라 $1!=1$ 로 나누는 셈이에요. 같은 것이 없는 문자는 신경 쓰지 않아도 돼요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "숫자 $1,\\,1,\\,2,\\,2,\\,2,\\,3$ 이 하나씩 적힌 카드 여섯 장을 모두 한 줄로 늘어놓아 여섯 자리 자연수를 만들 때, 홀수의 개수를 구하세요.",
+      "choices": null,
+      "answer": "30",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len([p for p in set(permutations('112223')) if int(p[-1]) % 2 == 1])",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, … 가 각각 같으면 $\\dfrac{n!}{p!\\,q!\\cdots}$ 이에요.",
+        "합의 법칙: 일의 자리가 $1$ 인 경우와 $3$ 인 경우는 동시에 일어나지 않아요."
+      ],
+      "steps": [
+        {
+          "title": "일의 자리가 1",
+          "body": "남은 $1,\\,2,\\,2,\\,2,\\,3$ 을 늘어놓아요. $\\dfrac{5!}{3!}=20$"
+        },
+        {
+          "title": "일의 자리가 3",
+          "body": "남은 $1,\\,1,\\,2,\\,2,\\,2$ 를 늘어놓아요. $\\dfrac{5!}{2!\\,3!}=10$"
+        },
+        {
+          "title": "더하기",
+          "body": "$$20+10=30$$"
+        }
+      ],
+      "tip": "일의 자리에 무엇을 쓰느냐에 따라 남은 카드의 같은 것 개수가 달라져요. 그래서 경우를 나눠 세요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "바둑판 모양의 길에서 A 지점을 $(0,\\,0)$, B 지점을 $(4,\\,3)$ 으로 둘 때, A 에서 점 $(2,\\,1)$ 을 거쳐 B 까지 가는 최단 경로의 수를 구하세요. (오른쪽이나 위쪽으로 한 칸씩만 가요.)",
+      "choices": null,
+      "answer": "18",
+      "answerType": "int",
+      "check": "from itertools import permutations\ndef visits(path):\n    x = y = 0\n    for s in path:\n        if s == 'R':\n            x += 1\n        else:\n            y += 1\n        if (x, y) == (2, 1):\n            return True\n    return False\nans = len([p for p in set(permutations('RRRRUUU')) if visits(p)])",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, … 가 각각 같으면 $\\dfrac{n!}{p!\\,q!\\cdots}$ 이에요.",
+        "최단 경로는 → 와 ↑ 를 정해진 개수만큼 한 줄로 늘어놓는 것과 같아요.",
+        "곱의 법칙: 두 구간을 잇따라 가요."
+      ],
+      "steps": [
+        {
+          "title": "A 에서 (2, 1) 까지",
+          "body": "→ $2$ 번, ↑ $1$ 번: $\\dfrac{3!}{2!\\,1!}=3$"
+        },
+        {
+          "title": "(2, 1) 에서 B 까지",
+          "body": "→ $2$ 번, ↑ $2$ 번: $\\dfrac{4!}{2!\\,2!}=6$"
+        },
+        {
+          "title": "곱하기",
+          "body": "$$3\\times6=18$$"
+        }
+      ],
+      "tip": "거쳐 가는 점이 있으면 그 점에서 길을 끊어 각각 센 뒤 곱해요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$a,\\,b,\\,c,\\,d,\\,e$ 다섯 문자를 한 줄로 늘어놓을 때, $a$ 가 $b$ 보다 왼쪽에 오는 방법의 수를 구하세요.",
+      "choices": null,
+      "answer": "60",
+      "answerType": "int",
+      "check": "from itertools import permutations\nans = len([p for p in permutations('abcde') if p.index('a') < p.index('b')])",
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, … 가 각각 같으면 $\\dfrac{n!}{p!\\,q!\\cdots}$ 이에요.",
+        "순서가 정해진 것은 같은 것으로 보고 늘어놓은 뒤, 정해진 순서대로 채워요."
+      ],
+      "steps": [
+        {
+          "title": "같은 것으로 보기",
+          "body": "$a,\\,b$ 를 둘 다 □ 로 바꿔 □, □, $c$, $d$, $e$ 를 늘어놓아요."
+        },
+        {
+          "title": "순서대로 채우기",
+          "body": "□ 두 자리 중 왼쪽에 $a$, 오른쪽에 $b$ 를 넣으면 한 가지로 정해져요."
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac{5!}{2!}=60$$"
+        }
+      ],
+      "tip": "$a$ 가 앞인 줄과 $b$ 가 앞인 줄은 짝지어져서 수가 같아요. 그래서 $5!\\div2=60$ 이라고 봐도 돼요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "숫자 $1,\\,2,\\,3,\\,4$ 중에서 중복을 허락하여 네 개를 택해 일렬로 나열하여 만들 수 있는 네 자리 자연수 중 $3000$ 이상인 것의 개수는?",
+      "choices": [
+        "$64$",
+        "$96$",
+        "$112$",
+        "$128$",
+        "$192$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "from itertools import product\nans = len([t for t in product((1, 2, 3, 4), repeat=4) if t[0] * 1000 + t[1] * 100 + t[2] * 10 + t[3] >= 3000])",
+      "choiceChecks": [
+        "4**3",
+        "96",
+        "112",
+        "2*4**3",
+        "3*4**3"
+      ],
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "맨 앞자리",
+          "body": "$3000$ 이상이려면 천의 자리가 $3$ 또는 $4$ 라서 $2$ 가지예요."
+        },
+        {
+          "title": "나머지 세 자리",
+          "body": "중복을 허락하니 $_4\\Pi_3=4^3=64$ 가지예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$2\\times64=128$$"
+        }
+      ],
+      "tip": "천의 자리만 조건이 있고 나머지는 자유예요. 조건 있는 자리부터 세면 꼬이지 않아요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "A, B, C, D, E, F 여섯 명이 원탁에 일정한 간격으로 둘러앉을 때, A 와 B 는 서로 이웃하고 C 와 D 는 서로 이웃하지 않게 앉는 방법의 수는?",
+      "choices": [
+        "$12$",
+        "$18$",
+        "$24$",
+        "$30$",
+        "$36$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(6)) for p in permutations(range(6))}\nans = len([p for p in reps if (p.index(0) - p.index(1)) % 6 in (1, 5) and not (p.index(2) - p.index(3)) % 6 in (1, 5)])",
+      "choiceChecks": [
+        "12",
+        "18",
+        "factorial(3)*4",
+        "30",
+        "36"
+      ],
+      "concepts": [
+        "원순열: 서로 다른 $n$ 개를 원형으로 놓는 수는 $\\dfrac{n!}{n}=(n-1)!$ 이에요.",
+        "이웃하는 것은 한 묶음으로 보고 배열한 뒤, 묶음 안에서 자리를 바꾸는 수를 곱해요."
+      ],
+      "steps": [
+        {
+          "title": "A, B 이웃",
+          "body": "A, B 를 묶으면 $5$ 덩어리라 $(5-1)!\\times2=48$ 이에요."
+        },
+        {
+          "title": "A, B 이웃 + C, D 이웃",
+          "body": "C, D 도 묶으면 $4$ 덩어리라 $(4-1)!\\times2\\times2=24$ 예요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$48-24=24$$"
+        }
+      ],
+      "tip": "'이웃하지 않게'는 '이웃하는 경우'를 빼서 구해요. 묶음이 생길 때마다 묶음 안 자리 바꾸기 $2$ 를 곱하는 것을 잊지 마세요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "숫자 $1,\\,1,\\,2,\\,2,\\,3,\\,3$ 이 하나씩 적힌 카드 여섯 장을 모두 일렬로 나열할 때, 같은 숫자가 적힌 카드끼리는 서로 이웃하지 않도록 나열하는 방법의 수는?",
+      "choices": [
+        "$24$",
+        "$27$",
+        "$30$",
+        "$36$",
+        "$42$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import permutations\nans = len([p for p in set(permutations('112233')) if all(p[i] != p[i + 1] for i in range(5))])",
+      "choiceChecks": [
+        "24",
+        "27",
+        "6*5",
+        "36",
+        "42"
+      ],
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, … 가 각각 같으면 $\\dfrac{n!}{p!\\,q!\\cdots}$ 이에요.",
+        "합의 법칙과 여사건: 이웃하는 쌍의 수로 나누어 세거나, 맨 앞부터 차례로 채워요."
+      ],
+      "steps": [
+        {
+          "title": "전체",
+          "body": "같은 것이 있는 순열로 $\\dfrac{6!}{2!\\,2!\\,2!}=90$ 이에요."
+        },
+        {
+          "title": "앞 두 자리부터",
+          "body": "맨 앞 두 장은 서로 다른 숫자여야 해서 $3\\times2=6$ 가지예요. 예를 들어 $1,\\,2$ 로 시작해요."
+        },
+        {
+          "title": "남은 넷 채우기",
+          "body": "$1,\\,2$ 로 시작하면 남은 카드는 $1,\\,2,\\,3,\\,3$ 이에요. 셋째 자리부터 이웃 조건을 지키며 늘어놓으면 $1323,\\,3123,\\,3132,\\,3213,\\,3231$ 의 $5$ 가지예요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$6\\times5=30$$"
+        }
+      ],
+      "tip": "전체 $90$ 에서 바로 빼려면 겹치는 경우가 여러 겹이라 실수하기 쉬워요. 앞자리를 정해 남은 것을 하나씩 늘어놓는 쪽이 안전해요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "집합 $X=\\{1,\\,2,\\,3,\\,4\\}$ 에 대하여 $X$ 에서 $X$ 로의 함수 $f$ 중에서 $f(1)<f(2)$ 를 만족시키는 함수의 개수는?",
+      "choices": [
+        "$64$",
+        "$96$",
+        "$128$",
+        "$144$",
+        "$160$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "from itertools import product\nans = len([f for f in product(range(1, 5), repeat=4) if f[0] < f[1]])",
+      "choiceChecks": [
+        "4**3",
+        "binomial(4,2)*4**2",
+        "2*4**3",
+        "144",
+        "160"
+      ],
+      "concepts": [
+        "중복순열: 서로 다른 $n$ 개에서 중복을 허락해 $r$ 개를 줄 세우는 수는 $_n\\Pi_r=n^r$ 이에요.",
+        "크기 순서가 정해진 두 값은 서로 다른 두 수를 고르기만 하면 정해져요."
+      ],
+      "steps": [
+        {
+          "title": "$f(1),\\,f(2)$ 정하기",
+          "body": "서로 다른 두 수를 고르면 작은 쪽이 $f(1)$, 큰 쪽이 $f(2)$ 로 정해져요. $_4\\mathrm{C}_2=6$"
+        },
+        {
+          "title": "$f(3),\\,f(4)$ 정하기",
+          "body": "조건이 없으니 중복순열 $_4\\Pi_2=16$ 이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$$6\\times16=96$$"
+        }
+      ],
+      "tip": "$f(1)<f(2)$ 에서 $f(1)=f(2)$ 인 경우는 빠져요. 전체 $16$ 쌍 중 같은 값 $4$ 쌍을 빼고 반으로 나눠 $6$ 을 얻을 수도 있어요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "좌표평면에서 원점 O 에서 출발하여 $x$ 축 방향 또는 $y$ 축 방향으로 한 번에 $1$ 씩 움직여 점 $(4,\\,3)$ 까지 최단 거리로 가려고 해요. 점 $(2,\\,1)$ 과 점 $(3,\\,1)$ 을 잇는 길은 공사 중이라 지날 수 없을 때, 가는 방법의 수는?",
+      "choices": [
+        "$17$",
+        "$20$",
+        "$26$",
+        "$29$",
+        "$32$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import permutations\ndef uses(path):\n    x = y = 0\n    for s in path:\n        nx, ny = (x + 1, y) if s == 'R' else (x, y + 1)\n        if (x, y) == (2, 1) and (nx, ny) == (3, 1):\n            return True\n        x, y = nx, ny\n    return False\nans = len([p for p in set(permutations('RRRRUUU')) if not uses(p)])",
+      "choiceChecks": [
+        "35-18",
+        "20",
+        "35-3*3",
+        "29",
+        "32"
+      ],
+      "concepts": [
+        "같은 것이 있는 순열: $p$ 개, $q$ 개, … 가 각각 같으면 $\\dfrac{n!}{p!\\,q!\\cdots}$ 이에요.",
+        "최단 경로는 → 와 ↑ 를 정해진 개수만큼 한 줄로 늘어놓는 것과 같아요.",
+        "여사건: 막힌 길을 지나는 경로를 전체에서 빼요."
+      ],
+      "steps": [
+        {
+          "title": "전체 최단 경로",
+          "body": "→ $4$ 번, ↑ $3$ 번이라 $\\dfrac{7!}{4!\\,3!}=35$ 예요."
+        },
+        {
+          "title": "막힌 길을 지나는 경로",
+          "body": "O 에서 $(2,\\,1)$ 까지 $\\dfrac{3!}{2!\\,1!}=3$, 막힌 길 한 칸, $(3,\\,1)$ 에서 $(4,\\,3)$ 까지 $\\dfrac{3!}{1!\\,2!}=3$ 이라 $3\\times3=9$ 예요."
+        },
+        {
+          "title": "빼기",
+          "body": "$$35-9=26$$"
+        }
+      ],
+      "tip": "막힌 '길'은 두 점 사이의 한 칸이에요. 점 $(2,\\,1)$ 을 지나는 경로를 모두 빼면($3\\times6=18$) 그 점에서 위로 가는 경로까지 빠져서 틀려요."
+    }
+  ]
+}

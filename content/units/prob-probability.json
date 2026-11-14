@@ -1,0 +1,1270 @@
+{
+  "id": "prob-probability",
+  "course": "확률과 통계",
+  "unit": "확률",
+  "title": "확률의 뜻과 덧셈정리",
+  "prereq": [
+    "m2-probability",
+    "h1-counting",
+    "h1-set-logic"
+  ],
+  "suneung": [
+    "확통 24",
+    "확통 25"
+  ],
+  "hours": 3,
+  "formulas": [
+    "수학적 확률: $P(A)=\\dfrac{n(A)}{n(S)}$, 통계적 확률: 상대도수 $\\dfrac{r}{n}$ ($n$ 이 충분히 클 때)",
+    "$0\\le P(A)\\le1$, $P(S)=1$, $P(\\varnothing)=0$",
+    "덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$",
+    "배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$, 여사건: $P(A^C)=1-P(A)$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "evenN": {
+        "value": "3",
+        "check": "len([k for k in range(1, 7) if k % 2 == 0])"
+      },
+      "mult3N": {
+        "value": "2",
+        "check": "len([k for k in range(1, 7) if k % 3 == 0])"
+      },
+      "bothN": {
+        "value": "1",
+        "check": "len([k for k in range(1, 7) if k % 2 == 0 and k % 3 == 0])"
+      },
+      "unionN": {
+        "value": "4",
+        "check": "len([k for k in range(1, 7) if k % 2 == 0 or k % 3 == 0])"
+      },
+      "union": {
+        "value": "2/3",
+        "check": "Rational(len([k for k in range(1, 7) if k % 2 == 0 or k % 3 == 0]), 6)"
+      },
+      "pairs": {
+        "value": "10",
+        "check": "from itertools import combinations\nballs = ['R', 'R', 'R', 'B', 'B']\ncs = list(combinations(range(5), 2))\nans = len(cs)"
+      },
+      "redPairs": {
+        "value": "3",
+        "check": "from itertools import combinations\nballs = ['R', 'R', 'R', 'B', 'B']\ncs = list(combinations(range(5), 2))\nans = len([c for c in cs if all(balls[i] == 'R' for i in c)])"
+      },
+      "atLeast": {
+        "value": "7/10",
+        "check": "from itertools import combinations\nballs = ['R', 'R', 'R', 'B', 'B']\ncs = list(combinations(range(5), 2))\nans = Rational(len([c for c in cs if any(balls[i] == 'B' for i in c)]), len(cs))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "확률과 통계 · 확률",
+        "title": "확률은 어떻게 정하고,\n'또는'은 어떻게 더할까요?",
+        "lead": "중학교에서는 경우의 수로 확률을 구했어요. 오늘은 사건을 집합으로 보고, 많이 던져 보는 확률과 '또는'의 확률을 더하는 규칙을 알아봐요.",
+        "meta": [
+          "시행과 사건",
+          "수학적·통계적 확률",
+          "덧셈정리·배반사건·여사건"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "주사위를 던져 짝수 또는\n3의 배수가 나올 확률은?",
+        "lead": "주사위 하나를 던질 때 짝수가 나올 확률은 $\\frac12$, 3의 배수가 나올 확률은 $\\frac13$ 이에요. 그럼 '짝수 또는 3의 배수'는 두 확률을 더하면 될까요?",
+        "choices": [
+          {
+            "value": "5/6",
+            "check": "Rational(len([k for k in range(1, 7) if k % 2 == 0]), 6) + Rational(len([k for k in range(1, 7) if k % 3 == 0]), 6)",
+            "feedback": "짝수이면서 3의 배수인 눈을 두 번 셌어요. 실제로 해당하는 눈은 {{unionN}}개뿐이에요."
+          },
+          {
+            "value": "2/3",
+            "check": "Rational(len([k for k in range(1, 7) if k % 2 == 0 or k % 3 == 0]), 6)"
+          },
+          {
+            "value": "1/6",
+            "check": "Rational(len([k for k in range(1, 7) if k % 2 == 0 and k % 3 == 0]), 6)",
+            "feedback": "짝수이면서 3의 배수인 경우만 셌어요. '또는'은 둘 중 하나만 돼도 돼요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "Rational(len([k for k in range(1, 7) if k % 2 == 0 or k % 3 == 0]), 6)",
+        "reveal": "**맞아요.** 해당하는 눈을 늘어놓으면 보여요.",
+        "thoughts": [
+          "짝수인 눈 {{evenN}}개와 3의 배수인 눈 {{mult3N}}개 중 {{bothN}}개가 겹쳐요. 합치면 겹친 것을 한 번만 세서 {{unionN}}개예요.",
+          "그래서 확률은 ${{union}}$ 이에요. 두 확률을 그냥 더하면 겹친 눈을 두 번 세게 돼요."
+        ],
+        "conclude": "'또는'의 확률은 ==겹친 부분==을 조심해야 해요. 다음 장면에서 겹친 곳을 직접 봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "venn",
+        "chip": "손으로 해 보기",
+        "title": "두 사건을 원 두 개로\n나눠 보세요",
+        "lead": "주사위 눈 중 짝수가 나오는 사건을 A, 3의 배수가 나오는 사건을 B 라 해요. 영역 버튼을 눌러 어떤 눈이 어디에 있는지 보고, 마지막에 '둘 다'를 눌러 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "venn",
+            "sets": {
+              "names": [
+                "짝수",
+                "3의 배수"
+              ],
+              "a": [
+                "2",
+                "4",
+                "6"
+              ],
+              "b": [
+                "3",
+                "6"
+              ]
+            }
+          }
+        },
+        "after": "A 에 셋, B 에 둘이 있지만 6 은 양쪽에 다 있어요. 그래서 $P(A\\cup B)=\\frac36+\\frac26-\\frac16={{union}}$ 이에요. ==두 번 센 겹친 부분을 한 번 빼요.== 겹친 부분이 없으면 그냥 더하면 돼요."
+      },
+      {
+        "kind": "explore",
+        "id": "sim",
+        "chip": "두 번째 해 보기",
+        "title": "많이 던지면\n비율은 어디로 갈까요?",
+        "lead": "주사위를 10번쯤 던지면 눈마다 나온 비율이 들쭉날쭉해요. 300번 넘게 던지며 막대가 점선(경우의 수로 구한 확률)에 다가가는지 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "simulate",
+          "params": {
+            "device": "die",
+            "n": 1,
+            "seed": 23,
+            "goal": 300
+          }
+        },
+        "after": "던진 횟수가 많아질수록 각 눈이 나온 비율, 곧 상대도수가 $\\frac16$ 근처에 모여요. ==많이 해 볼수록 상대도수는 경우의 수로 구한 확률에 다가가요.== 그래서 압정처럼 각 결과가 똑같이 자주 나온다고 할 수 없는 것도, 많이 던져 본 비율로 확률을 정할 수 있어요."
+      },
+      {
+        "kind": "question",
+        "id": "bag",
+        "chip": "반대쪽에서 세기",
+        "title": "공 두 개를 꺼낼 때\n적어도 하나가 파랑일 확률은?",
+        "lead": "빨간 공 세 개와 파란 공 두 개가 든 주머니에서 공 두 개를 동시에 꺼내요. 두 공을 눌러 나올 수 있는 짝을 모두 찾아 본 뒤 골라 보세요.",
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "pick",
+            "items": [
+              "빨1",
+              "빨2",
+              "빨3",
+              "파1",
+              "파2"
+            ],
+            "k": 2
+          }
+        },
+        "choices": [
+          {
+            "value": "3/5",
+            "check": "from itertools import combinations\nballs = ['R', 'R', 'R', 'B', 'B']\ncs = list(combinations(range(5), 2))\nans = Rational(len([c for c in cs if sum(balls[i] == 'B' for i in c) == 1]), len(cs))",
+            "feedback": "파란 공이 정확히 한 개인 짝만 셌어요. 둘 다 파랑인 짝도 '적어도 하나'예요."
+          },
+          {
+            "value": "7/10",
+            "check": "from itertools import combinations\nballs = ['R', 'R', 'R', 'B', 'B']\ncs = list(combinations(range(5), 2))\nans = 1 - Rational(len([c for c in cs if all(balls[i] == 'R' for i in c)]), len(cs))"
+          },
+          {
+            "value": "3/10",
+            "check": "from itertools import combinations\nballs = ['R', 'R', 'R', 'B', 'B']\ncs = list(combinations(range(5), 2))\nans = Rational(len([c for c in cs if all(balls[i] == 'R' for i in c)]), len(cs))",
+            "feedback": "둘 다 빨강일 확률이에요. 구하는 것은 그 반대쪽이에요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "from itertools import combinations\nballs = ['R', 'R', 'R', 'B', 'B']\ncs = list(combinations(range(5), 2))\nans = 1 - Rational(len([c for c in cs if all(balls[i] == 'R' for i in c)]), len(cs))",
+        "reveal": "**맞아요.** 모두 {{pairs}}가지 짝 중 둘 다 빨강인 짝만 빼면 돼요.",
+        "thoughts": [
+          "둘 다 빨강인 짝은 빨간 공 세 개 중 두 개를 고르는 {{redPairs}}가지예요.",
+          "그래서 $1-\\frac{ {{redPairs}} }{ {{pairs}} }={{atLeast}}$ 예요."
+        ],
+        "conclude": "'적어도 하나'는 ==하나도 없는 경우를 1에서 빼면== 빨라요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 쓴 생각에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "시행·표본공간·사건",
+            "body": "주사위 던지기처럼 같은 조건에서 되풀이할 수 있고 결과가 우연에 따라 정해지는 실험이 **시행**, 일어날 수 있는 모든 결과의 집합이 **표본공간** $S$, 그 부분집합이 **사건**이에요."
+          },
+          {
+            "term": "수학적 확률",
+            "body": "각 결과가 똑같이 일어날 것으로 기대될 때 $P(A)=\\dfrac{n(A)}{n(S)}$ 로 정하는 확률. 경우의 수로 구해요."
+          },
+          {
+            "term": "통계적 확률",
+            "body": "같은 시행을 $n$ 번 되풀이해 사건 $A$ 가 $r$ 번 일어났을 때, $n$ 이 충분히 크면 상대도수 $\\dfrac rn$ 을 확률로 봐요. 많이 던질수록 수학적 확률에 다가가요."
+          },
+          {
+            "term": "확률의 덧셈정리",
+            "body": "$P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$. 두 번 센 겹친 부분을 한 번 빼요. 확률은 언제나 $0\\le P(A)\\le1$ 이에요."
+          },
+          {
+            "term": "배반사건",
+            "body": "$A\\cap B=\\varnothing$, 곧 **동시에 일어나지 않는** 두 사건. 이때는 빼는 부분이 없어서 $P(A\\cup B)=P(A)+P(B)$ 예요."
+          },
+          {
+            "term": "여사건",
+            "body": "사건 $A$ 가 일어나지 않는 사건 $A^C$. $A$ 와 $A^C$ 는 배반이고 합치면 $S$ 라서 $P(A^C)=1-P(A)$ 예요."
+          }
+        ],
+        "aside": "**확인** · 오늘의 질문은 $P(A\\cup B)=\\frac12+\\frac13-\\frac16$ 이고, 늘어놓아 센 ${{union}}$ 과 같아요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $1$ 부터 $20$ 까지 적힌 카드 중 한 장을 꺼낼 때 2의 배수 또는 3의 배수가 나올 확률이에요. 왼쪽은 덧셈정리 식, 오른쪽은 어떤 학생이 구한 값이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "10/20+6/20-3/20"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "16/20",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "13/20",
+              "body": "6의 배수 카드는 2의 배수에도 3의 배수에도 들어 있어요. **겹친 부분은 한 번 빼요.** 그냥 더해도 되는 건 배반사건일 때뿐이에요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 동전 세 개를 던질 때 앞면이 적어도 한 개 나올 확률이에요. 왼쪽은 여사건 '모두 뒷면'의 확률을 $1$ 에서 뺀 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "1-1/8"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "1-3/8",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "7/8",
+              "body": "'적어도 한 개'의 반대는 '하나도 없음', 곧 모두 뒷면 한 가지예요. **앞면이 정확히 한 개인 경우를 빼면 안 돼요.**"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "card",
+            "q": "$1$ 부터 $30$ 까지의 자연수가 하나씩 적힌 카드 $30$ 장 중에서 한 장을 꺼낼 때, 3의 배수 또는 5의 배수가 적힌 카드가 나올 확률을 구하세요.",
+            "hint": "3의 배수이면서 5의 배수인 15의 배수를 두 번 세지 않게 해요.",
+            "concepts": [
+              "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+            ],
+            "steps": [
+              {
+                "title": "각각 세기",
+                "body": "3의 배수 $10$ 장, 5의 배수 $6$ 장, 둘 다인 15의 배수 $2$ 장이에요."
+              },
+              {
+                "title": "덧셈정리",
+                "body": "$$\\frac{10}{30}+\\frac{6}{30}-\\frac{2}{30}=\\frac{14}{30}$$"
+              },
+              {
+                "title": "약분",
+                "body": "$$\\frac{14}{30}={{answer}}$$"
+              }
+            ],
+            "tip": "15의 배수를 빼지 않으면 $\\frac{16}{30}$ 이 되어 틀려요.",
+            "answer": "7/15",
+            "answerType": "fraction",
+            "check": "ans = Rational(len([k for k in range(1, 31) if k % 3 == 0 or k % 5 == 0]), 30)"
+          },
+          {
+            "id": "team",
+            "q": "남학생 $4$ 명과 여학생 $3$ 명 중에서 대표 $3$ 명을 뽑을 때, 여학생이 적어도 한 명 뽑힐 확률을 구하세요.",
+            "hint": "'적어도 한 명'의 반대는 '모두 남학생'이에요.",
+            "concepts": [
+              "여사건의 확률: $P(A^C)=1-P(A)$. '적어도 하나'는 '하나도 없음'의 여사건이에요."
+            ],
+            "steps": [
+              {
+                "title": "여사건",
+                "body": "여학생이 한 명도 없으면 모두 남학생이에요."
+              },
+              {
+                "title": "모두 남학생일 확률",
+                "body": "$$\\frac{{}_4\\mathrm{C}_3}{{}_7\\mathrm{C}_3}=\\frac{4}{35}$$"
+              },
+              {
+                "title": "1 에서 빼기",
+                "body": "$$1-\\frac{4}{35}={{answer}}$$"
+              }
+            ],
+            "tip": "여학생이 1명, 2명, 3명인 경우를 각각 세어 더해도 $\\frac{18+12+1}{35}$ 로 같아요. 반대쪽 한 가지를 빼는 쪽이 짧아요.",
+            "answer": "31/35",
+            "answerType": "fraction",
+            "check": "from itertools import combinations\nkids = ['M'] * 4 + ['F'] * 3\ncs = list(combinations(range(7), 3))\nans = Rational(len([c for c in cs if any(kids[i] == 'F' for i in c)]), len(cs))"
+          },
+          {
+            "id": "formula",
+            "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac12$, $P(B)=\\frac25$, $P(A\\cup B)=\\frac{7}{10}$ 일 때, $P(A\\cap B)$ 를 구하세요.",
+            "hint": "덧셈정리에 아는 값을 넣고 $P(A\\cap B)$ 를 구해요.",
+            "concepts": [
+              "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+            ],
+            "steps": [
+              {
+                "title": "덧셈정리 세우기",
+                "body": "$$\\frac{7}{10}=\\frac12+\\frac25-P(A\\cap B)$$"
+              },
+              {
+                "title": "분모 맞추기",
+                "body": "$$P(A\\cap B)=\\frac{5}{10}+\\frac{4}{10}-\\frac{7}{10}=\\frac{2}{10}$$"
+              },
+              {
+                "title": "약분",
+                "body": "$$\\frac{2}{10}={{answer}}$$"
+              }
+            ],
+            "tip": "$P(A)+P(B)=\\frac{9}{10}$ 이 $P(A\\cup B)$ 보다 큰 만큼이 겹친 부분이에요.",
+            "answer": "1/5",
+            "answerType": "fraction",
+            "check": "solve(Eq(Rational(1, 2) + Rational(2, 5) - s, Rational(7, 10)), s)[0]"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "경우의 수로 정하면 수학적 확률 $\\dfrac{n(A)}{n(S)}$, 많이 해 본 상대도수로 정하면 통계적 확률이에요. 많이 할수록 둘이 가까워져요.",
+          "'또는'은 덧셈정리 $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$. 배반사건이면 빼는 부분이 없어요.",
+          "'적어도 하나', '~가 아닌'은 여사건으로 $1-P(A)$.",
+          "수능(확률과 통계)에서는 덧셈정리와 여사건을 이용해 확률을 구하는 문제로 나와요."
+        ],
+        "done": "확률의 뜻과 덧셈정리 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "prob-probability-addition",
+    "prob-probability-complement",
+    "prob-probability-formula",
+    "prob-probability-dice",
+    "prob-probability-lineup"
+  ],
+  "problems": [
+    {
+      "q": "$1$ 부터 $40$ 까지의 자연수가 하나씩 적힌 카드 $40$ 장 중에서 한 장을 꺼낼 때, 2의 배수 또는 7의 배수가 적힌 카드가 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "23/40",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([k for k in range(1, 41) if k % 2 == 0 or k % 7 == 0]), 40)",
+      "concepts": [
+        "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "각 사건의 확률",
+          "body": "2의 배수가 나오는 사건을 $A$, 7의 배수가 나오는 사건을 $B$ 라 해요. 2의 배수는 $20$ 장, 7의 배수는 $5$ 장이에요.\n$$P(A)=\\frac{20}{40},\\quad P(B)=\\frac{5}{40}$$"
+        },
+        {
+          "title": "겹치는 부분",
+          "body": "둘 다인 수는 최소공배수 14의 배수로 $2$ 장이에요.\n$$P(A\\cap B)=\\frac{2}{40}$$"
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$\\frac{20}{40}+\\frac{5}{40}-\\frac{2}{40}=\\frac{23}{40}$$"
+        }
+      ],
+      "tip": "14의 배수 카드는 두 번 세어졌어요. 빼지 않으면 확률이 $\\frac{5}{8}$ 처럼 커져서 틀려요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prob-probability-addition",
+      "seed": 1000
+    },
+    {
+      "q": "빨간 공 $3$ 개와 파란 공 $2$ 개가 들어 있는 주머니에서 공 $2$ 개를 동시에 꺼낼 때, 파란 공이 적어도 한 개 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "7/10",
+      "answerType": "fraction",
+      "check": "from itertools import combinations\nballs = ['R'] * 3 + ['B'] * 2\ncs = list(combinations(range(5), 2))\nans = Rational(len([c for c in cs if any(balls[i] == 'B' for i in c)]), len(cs))",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. \"적어도 하나\"는 \"하나도 없음\"의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건 잡기",
+          "body": "\"파란 공이 적어도 한 개\"의 반대는 \"모두 빨간 공\"이에요."
+        },
+        {
+          "title": "모두 빨간 공일 확률",
+          "body": "$$\\frac{{}_{3}\\mathrm{C}_{2}}{{}_{5}\\mathrm{C}_{2}}=\\frac{3}{10}$$"
+        },
+        {
+          "title": "1 에서 빼기",
+          "body": "$$1-\\frac{3}{10}=\\frac{7}{10}$$"
+        }
+      ],
+      "tip": "파란 공이 1개, 2개, … 인 경우를 하나하나 더해도 되지만, 반대쪽 한 가지를 빼는 쪽이 짧고 빠뜨릴 일이 없어요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prob-probability-complement",
+      "seed": 1001
+    },
+    {
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac{5}{8}$, $P(B)=\\frac{1}{2}$, $P(A\\cup B)=\\frac{7}{8}$ 일 때, $P(A\\cap B)$ 를 구하세요.",
+      "choices": null,
+      "answer": "1/4",
+      "answerType": "fraction",
+      "check": "solve(Eq(Rational(5, 8) + Rational(4, 8) - s, Rational(7, 8)), s)[0]",
+      "concepts": [
+        "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "덧셈정리 세우기",
+          "body": "$$\\frac{7}{8}=\\frac{5}{8}+\\frac{1}{2}-P(A\\cap B)$$"
+        },
+        {
+          "title": "옮겨서 풀기",
+          "body": "$$P(A\\cap B)=\\frac{5}{8}+\\frac{1}{2}-\\frac{7}{8}=\\frac{1}{4}$$"
+        }
+      ],
+      "tip": "$P(A)+P(B)$ 가 $P(A\\cup B)$ 보다 큰 만큼이 두 번 센 겹친 부분, 곧 $P(A\\cap B)$ 예요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prob-probability-formula",
+      "seed": 1002
+    },
+    {
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 눈의 합이 $4$ 또는 $12$ 일 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/9",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([1 for i in range(1, 7) for j in range(1, 7) if i + j in (4, 12)]), 36)",
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "배반인지 보기",
+          "body": "눈의 합이 $4$ 이면서 $12$ 일 수는 없어요. 두 사건은 배반사건이에요."
+        },
+        {
+          "title": "각각의 확률",
+          "body": "모든 경우는 $6\\times6=36$ 가지예요. 합이 $4$ 인 경우 $3$ 가지, $12$ 인 경우 $1$ 가지예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{3}{36}+\\frac{1}{36}=\\frac{1}{9}$$"
+        }
+      ],
+      "tip": "(1, 2) 와 (2, 1) 은 다른 경우예요. 두 주사위를 구별해야 모든 경우가 똑같이 자주 나와요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prob-probability-dice",
+      "seed": 1003
+    },
+    {
+      "q": "남학생 $2$ 명과 여학생 $1$ 명이 임의로 한 줄로 설 때, 양 끝 중 적어도 한쪽에 여학생이 설 확률을 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "from itertools import permutations\nkids = ['M'] * 2 + ['F'] * 1\nps = list(permutations(range(3)))\nans = Rational(len([p for p in ps if kids[p[0]] == 'F' or kids[p[-1]] == 'F']), len(ps))",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. \"적어도 하나\"는 \"하나도 없음\"의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건",
+          "body": "'적어도 한쪽에 여학생'의 반대는 '양 끝 모두 남학생'이에요."
+        },
+        {
+          "title": "양 끝 모두 남학생일 확률",
+          "body": "양 끝 두 자리에 설 사람만 보면 돼요.\n$$\\frac{{}_{2}\\mathrm{P}_{2}}{{}_{3}\\mathrm{P}_{2}}=\\frac{2}{6}=\\frac{1}{3}$$"
+        },
+        {
+          "title": "1 에서 빼기",
+          "body": "$$1-\\frac{1}{3}=\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "가운데 자리는 누가 서든 상관없어서 양 끝만 보면 돼요. 모두 줄 세운 $3!$ 로 세어도 가운데 $(3-2)!$ 이 분자·분모에서 약분돼요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prob-probability-lineup",
+      "seed": 1004
+    },
+    {
+      "q": "$1$ 부터 $40$ 까지의 자연수가 하나씩 적힌 카드 $40$ 장 중에서 한 장을 꺼낼 때, 3의 배수 또는 4의 배수가 적힌 카드가 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([k for k in range(1, 41) if k % 3 == 0 or k % 4 == 0]), 40)",
+      "concepts": [
+        "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "각 사건의 확률",
+          "body": "3의 배수가 나오는 사건을 $A$, 4의 배수가 나오는 사건을 $B$ 라 해요. 3의 배수는 $13$ 장, 4의 배수는 $10$ 장이에요.\n$$P(A)=\\frac{13}{40},\\quad P(B)=\\frac{10}{40}$$"
+        },
+        {
+          "title": "겹치는 부분",
+          "body": "둘 다인 수는 최소공배수 12의 배수로 $3$ 장이에요.\n$$P(A\\cap B)=\\frac{3}{40}$$"
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$\\frac{13}{40}+\\frac{10}{40}-\\frac{3}{40}=\\frac{1}{2}$$"
+        }
+      ],
+      "tip": "12의 배수 카드는 두 번 세어졌어요. 빼지 않으면 확률이 $\\frac{23}{40}$ 처럼 커져서 틀려요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prob-probability-addition",
+      "seed": 1005
+    },
+    {
+      "q": "빨간 공 $4$ 개와 파란 공 $2$ 개가 들어 있는 주머니에서 공 $3$ 개를 동시에 꺼낼 때, 파란 공이 적어도 한 개 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "4/5",
+      "answerType": "fraction",
+      "check": "from itertools import combinations\nballs = ['R'] * 4 + ['B'] * 2\ncs = list(combinations(range(6), 3))\nans = Rational(len([c for c in cs if any(balls[i] == 'B' for i in c)]), len(cs))",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. \"적어도 하나\"는 \"하나도 없음\"의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건 잡기",
+          "body": "\"파란 공이 적어도 한 개\"의 반대는 \"모두 빨간 공\"이에요."
+        },
+        {
+          "title": "모두 빨간 공일 확률",
+          "body": "$$\\frac{{}_{4}\\mathrm{C}_{3}}{{}_{6}\\mathrm{C}_{3}}=\\frac{4}{20}=\\frac{1}{5}$$"
+        },
+        {
+          "title": "1 에서 빼기",
+          "body": "$$1-\\frac{1}{5}=\\frac{4}{5}$$"
+        }
+      ],
+      "tip": "파란 공이 1개, 2개, … 인 경우를 하나하나 더해도 되지만, 반대쪽 한 가지를 빼는 쪽이 짧고 빠뜨릴 일이 없어요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prob-probability-complement",
+      "seed": 1006
+    },
+    {
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A)=\\frac{1}{6}$, $P(B)=\\frac{1}{2}$, $P(A\\cap B)=\\frac{1}{12}$ 일 때, $P(A\\cup B)$ 를 구하세요.",
+      "choices": null,
+      "answer": "7/12",
+      "answerType": "fraction",
+      "check": "Rational(2, 12) + Rational(6, 12) - Rational(1, 12)",
+      "concepts": [
+        "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "덧셈정리에 넣기",
+          "body": "$$P(A\\cup B)=\\frac{1}{6}+\\frac{1}{2}-\\frac{1}{12}$$"
+        },
+        {
+          "title": "계산",
+          "body": "분모를 $12$ 로 맞춰 분자끼리 계산해요.\n$$\\frac{2+6-1}{12}=\\frac{7}{12}$$"
+        }
+      ],
+      "tip": "$P(A)$ 와 $P(B)$ 에 $A\\cap B$ 가 한 번씩 들어 있어서 한 번 빼요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prob-probability-formula",
+      "seed": 1007
+    },
+    {
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 눈의 합이 $5$ 이하이거나 $10$ 이상일 확률을 구하세요.",
+      "choices": null,
+      "answer": "4/9",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([1 for i in range(1, 7) for j in range(1, 7) if i + j <= 5 or i + j >= 10]), 36)",
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "배반인지 보기",
+          "body": "합이 $5$ 이하이면서 $10$ 이상일 수는 없어요. 두 사건은 배반사건이에요."
+        },
+        {
+          "title": "각각 세기",
+          "body": "모든 경우는 $36$ 가지예요. 합이 $5$ 이하인 경우 $10$ 가지, $10$ 이상인 경우 $6$ 가지예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{10}{36}+\\frac{6}{36}=\\frac{4}{9}$$"
+        }
+      ],
+      "tip": "합이 $2$ 인 경우 $1$ 가지, $3$ 인 경우 $2$ 가지처럼 합이 $7$ 에 가까울수록 경우가 하나씩 늘어요. 표로 그려 두면 빨리 셀 수 있어요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prob-probability-dice",
+      "seed": 1008
+    },
+    {
+      "q": "남학생 $4$ 명과 여학생 $2$ 명이 임의로 한 줄로 설 때, 양 끝 중 적어도 한쪽에 여학생이 설 확률을 구하세요.",
+      "choices": null,
+      "answer": "3/5",
+      "answerType": "fraction",
+      "check": "from itertools import permutations\nkids = ['M'] * 4 + ['F'] * 2\nps = list(permutations(range(6)))\nans = Rational(len([p for p in ps if kids[p[0]] == 'F' or kids[p[-1]] == 'F']), len(ps))",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. \"적어도 하나\"는 \"하나도 없음\"의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건",
+          "body": "'적어도 한쪽에 여학생'의 반대는 '양 끝 모두 남학생'이에요."
+        },
+        {
+          "title": "양 끝 모두 남학생일 확률",
+          "body": "양 끝 두 자리에 설 사람만 보면 돼요.\n$$\\frac{{}_{4}\\mathrm{P}_{2}}{{}_{6}\\mathrm{P}_{2}}=\\frac{12}{30}=\\frac{2}{5}$$"
+        },
+        {
+          "title": "1 에서 빼기",
+          "body": "$$1-\\frac{2}{5}=\\frac{3}{5}$$"
+        }
+      ],
+      "tip": "가운데 자리는 누가 서든 상관없어서 양 끝만 보면 돼요. 모두 줄 세운 $6!$ 로 세어도 가운데 $(6-2)!$ 이 분자·분모에서 약분돼요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prob-probability-lineup",
+      "seed": 1009
+    },
+    {
+      "q": "$1$ 부터 $40$ 까지의 자연수가 하나씩 적힌 카드 $40$ 장 중에서 한 장을 꺼낼 때, 3의 배수 또는 5의 배수가 적힌 카드가 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "19/40",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([k for k in range(1, 41) if k % 3 == 0 or k % 5 == 0]), 40)",
+      "concepts": [
+        "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "각 사건의 확률",
+          "body": "3의 배수가 나오는 사건을 $A$, 5의 배수가 나오는 사건을 $B$ 라 해요. 3의 배수는 $13$ 장, 5의 배수는 $8$ 장이에요.\n$$P(A)=\\frac{13}{40},\\quad P(B)=\\frac{8}{40}$$"
+        },
+        {
+          "title": "겹치는 부분",
+          "body": "둘 다인 수는 최소공배수 15의 배수로 $2$ 장이에요.\n$$P(A\\cap B)=\\frac{2}{40}$$"
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$\\frac{13}{40}+\\frac{8}{40}-\\frac{2}{40}=\\frac{19}{40}$$"
+        }
+      ],
+      "tip": "15의 배수 카드는 두 번 세어졌어요. 빼지 않으면 확률이 $\\frac{21}{40}$ 처럼 커져서 틀려요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prob-probability-addition",
+      "seed": 1010
+    },
+    {
+      "q": "빨간 공 $6$ 개와 파란 공 $4$ 개가 들어 있는 주머니에서 공 $3$ 개를 동시에 꺼낼 때, 파란 공이 적어도 한 개 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "5/6",
+      "answerType": "fraction",
+      "check": "from itertools import combinations\nballs = ['R'] * 6 + ['B'] * 4\ncs = list(combinations(range(10), 3))\nans = Rational(len([c for c in cs if any(balls[i] == 'B' for i in c)]), len(cs))",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. \"적어도 하나\"는 \"하나도 없음\"의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건 잡기",
+          "body": "\"파란 공이 적어도 한 개\"의 반대는 \"모두 빨간 공\"이에요."
+        },
+        {
+          "title": "모두 빨간 공일 확률",
+          "body": "$$\\frac{{}_{6}\\mathrm{C}_{3}}{{}_{10}\\mathrm{C}_{3}}=\\frac{20}{120}=\\frac{1}{6}$$"
+        },
+        {
+          "title": "1 에서 빼기",
+          "body": "$$1-\\frac{1}{6}=\\frac{5}{6}$$"
+        }
+      ],
+      "tip": "파란 공이 1개, 2개, … 인 경우를 하나하나 더해도 되지만, 반대쪽 한 가지를 빼는 쪽이 짧고 빠뜨릴 일이 없어요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prob-probability-complement",
+      "seed": 1011
+    },
+    {
+      "q": "두 사건 $A$, $B$ 가 서로 배반사건이고 $P(A^C)=\\frac{7}{12}$, $P(B)=\\frac{1}{3}$ 일 때, $P(A\\cup B)$ 를 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "(1 - Rational(7, 12)) + Rational(4, 12)",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. \"적어도 하나\"는 \"하나도 없음\"의 여사건이에요.",
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "여사건에서 $P(A)$",
+          "body": "$$P(A)=1-\\frac{7}{12}=\\frac{5}{12}$$"
+        },
+        {
+          "title": "배반이면 더하기만",
+          "body": "$A\\cap B=\\varnothing$ 이라 빼는 부분이 없어요.\n$$P(A\\cup B)=\\frac{5}{12}+\\frac{1}{3}=\\frac{3}{4}$$"
+        }
+      ],
+      "tip": "$P(A^C)$ 를 그대로 더하면 안 돼요. 먼저 $1$ 에서 빼서 $P(A)$ 를 구해요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prob-probability-formula",
+      "seed": 1012
+    },
+    {
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 눈의 합이 $4$ 또는 $9$ 일 확률을 구하세요.",
+      "choices": null,
+      "answer": "7/36",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([1 for i in range(1, 7) for j in range(1, 7) if i + j in (4, 9)]), 36)",
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "배반인지 보기",
+          "body": "눈의 합이 $4$ 이면서 $9$ 일 수는 없어요. 두 사건은 배반사건이에요."
+        },
+        {
+          "title": "각각의 확률",
+          "body": "모든 경우는 $6\\times6=36$ 가지예요. 합이 $4$ 인 경우 $3$ 가지, $9$ 인 경우 $4$ 가지예요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{3}{36}+\\frac{4}{36}=\\frac{7}{36}$$"
+        }
+      ],
+      "tip": "(1, 2) 와 (2, 1) 은 다른 경우예요. 두 주사위를 구별해야 모든 경우가 똑같이 자주 나와요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prob-probability-dice",
+      "seed": 1013
+    },
+    {
+      "q": "남학생 $2$ 명과 여학생 $3$ 명이 임의로 한 줄로 설 때, 양 끝 중 적어도 한쪽에 여학생이 설 확률을 구하세요.",
+      "choices": null,
+      "answer": "9/10",
+      "answerType": "fraction",
+      "check": "from itertools import permutations\nkids = ['M'] * 2 + ['F'] * 3\nps = list(permutations(range(5)))\nans = Rational(len([p for p in ps if kids[p[0]] == 'F' or kids[p[-1]] == 'F']), len(ps))",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. \"적어도 하나\"는 \"하나도 없음\"의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건",
+          "body": "'적어도 한쪽에 여학생'의 반대는 '양 끝 모두 남학생'이에요."
+        },
+        {
+          "title": "양 끝 모두 남학생일 확률",
+          "body": "양 끝 두 자리에 설 사람만 보면 돼요.\n$$\\frac{{}_{2}\\mathrm{P}_{2}}{{}_{5}\\mathrm{P}_{2}}=\\frac{2}{20}=\\frac{1}{10}$$"
+        },
+        {
+          "title": "1 에서 빼기",
+          "body": "$$1-\\frac{1}{10}=\\frac{9}{10}$$"
+        }
+      ],
+      "tip": "가운데 자리는 누가 서든 상관없어서 양 끝만 보면 돼요. 모두 줄 세운 $5!$ 로 세어도 가운데 $(5-2)!$ 이 분자·분모에서 약분돼요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prob-probability-lineup",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "서로 다른 주사위 두 개를 동시에 던질 때, 나온 눈의 합이 5의 배수일 확률을 구하세요.",
+      "choices": null,
+      "answer": "7/36",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([t for t in [(i, j) for i in range(1, 7) for j in range(1, 7)] if sum(t) % 5 == 0]), 36)",
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "합이 5의 배수",
+          "body": "합은 $2$ 부터 $12$ 까지라 $5$ 또는 $10$ 이에요. 두 사건은 배반이에요."
+        },
+        {
+          "title": "각각 세기",
+          "body": "합이 $5$: $(1,4),(2,3),(3,2),(4,1)$ 로 $4$ 가지. 합이 $10$: $(4,6),(5,5),(6,4)$ 로 $3$ 가지."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{4}{36}+\\frac{3}{36}=\\frac{7}{36}$$"
+        }
+      ],
+      "tip": "$(5,5)$ 는 한 번만 세요. 두 주사위가 같은 눈이면 순서를 바꿔도 같은 경우예요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "두 사건 $A$, $B$ 가 서로 배반사건이고 $P(A)=\\frac13$, $P(B)=\\frac14$ 일 때, $P(A\\cup B)$ 를 구하세요.",
+      "choices": null,
+      "answer": "7/12",
+      "answerType": "fraction",
+      "check": "Rational(1, 3) + Rational(1, 4) - 0",
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "배반이면 더하기만",
+          "body": "$A\\cap B=\\varnothing$ 이라 $P(A\\cap B)=0$ 이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac13+\\frac14=\\frac{4}{12}+\\frac{3}{12}=\\frac{7}{12}$$"
+        }
+      ],
+      "tip": "배반사건이라는 말이 없으면 $P(A\\cap B)$ 를 알아야 해요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A^C)=\\frac23$, $P(B)=\\frac12$, $P(A\\cap B)=\\frac16$ 일 때, $P(A\\cup B)$ 를 구하세요.",
+      "choices": null,
+      "answer": "2/3",
+      "answerType": "fraction",
+      "check": "(1 - Rational(2, 3)) + Rational(1, 2) - Rational(1, 6)",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. '적어도 하나'는 '하나도 없음'의 여사건이에요.",
+        "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "$P(A)$ 구하기",
+          "body": "$$P(A)=1-\\frac23=\\frac13$$"
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$\\frac13+\\frac12-\\frac16=\\frac{2+3-1}{6}=\\frac23$$"
+        }
+      ],
+      "tip": "$P(A^C)$ 를 $P(A)$ 자리에 그대로 넣지 않게 조심해요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "동전 네 개를 동시에 던질 때, 앞면이 적어도 한 개 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "15/16",
+      "answerType": "fraction",
+      "check": "from itertools import product\ncs = list(product('HT', repeat=4))\nans = Rational(len([c for c in cs if 'H' in c]), len(cs))",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. '적어도 하나'는 '하나도 없음'의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건",
+          "body": "앞면이 하나도 없는 경우, 곧 모두 뒷면은 $1$ 가지예요."
+        },
+        {
+          "title": "확률",
+          "body": "모든 경우는 $2^4=16$ 가지라 $1-\\frac{1}{16}=\\frac{15}{16}$ 이에요."
+        }
+      ],
+      "tip": "앞면이 1, 2, 3, 4개인 경우를 다 더하는 것보다 여사건 한 가지를 빼는 게 훨씬 짧아요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$1$ 부터 $9$ 까지의 자연수가 하나씩 적힌 카드 $9$ 장 중에서 두 장을 동시에 꺼낼 때, 두 수의 합이 짝수일 확률을 구하세요.",
+      "choices": null,
+      "answer": "4/9",
+      "answerType": "fraction",
+      "check": "from itertools import combinations\ncs = list(combinations(range(1, 10), 2))\nans = Rational(len([c for c in cs if sum(c) % 2 == 0]), len(cs))",
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "합이 짝수인 경우",
+          "body": "둘 다 짝수이거나 둘 다 홀수예요. 두 경우는 배반이에요."
+        },
+        {
+          "title": "각각 세기",
+          "body": "짝수 $4$ 개 중 둘: $_4\\mathrm{C}_2=6$, 홀수 $5$ 개 중 둘: $_5\\mathrm{C}_2=10$. 모든 경우 $_9\\mathrm{C}_2=36$."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{6}{36}+\\frac{10}{36}=\\frac{16}{36}=\\frac49$$"
+        }
+      ],
+      "tip": "짝수+홀수는 홀수예요. 합이 짝수가 되려면 짝·홀이 같아야 해요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "표본공간 $S=\\{1,\\,2,\\,3,\\,4,\\,5,\\,6\\}$ 의 사건 $A=\\{1,\\,2,\\,3\\}$ 에 대하여, $A$ 와 서로 배반인 사건의 개수를 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "ans = len([m for m in range(64) if m & 0b000111 == 0])",
+      "concepts": [
+        "사건은 표본공간의 부분집합이고, 공집합 $\\varnothing$ 도 사건이에요.",
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "배반의 뜻",
+          "body": "$A\\cap B=\\varnothing$ 이려면 $B$ 에 $1,\\,2,\\,3$ 이 하나도 없어야 해요."
+        },
+        {
+          "title": "부분집합 세기",
+          "body": "$B$ 는 $\\{4,\\,5,\\,6\\}$ 의 부분집합이라 $2^3=8$ 개예요."
+        }
+      ],
+      "tip": "공집합도 사건이고 어떤 사건과도 배반이에요. 빼먹으면 $7$ 이 나와요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "남학생 $3$ 명과 여학생 $3$ 명이 한 줄로 설 때, 양 끝 중 적어도 한쪽에 여학생이 설 확률을 구하세요.",
+      "choices": null,
+      "answer": "4/5",
+      "answerType": "fraction",
+      "check": "from itertools import permutations\nkids = ['M1', 'M2', 'M3', 'F1', 'F2', 'F3']\nps = list(permutations(kids))\nans = Rational(len([p for p in ps if p[0][0] == 'F' or p[-1][0] == 'F']), len(ps))",
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. '적어도 하나'는 '하나도 없음'의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건",
+          "body": "'적어도 한쪽에 여학생'의 반대는 '양 끝 모두 남학생'이에요."
+        },
+        {
+          "title": "양 끝 모두 남학생",
+          "body": "양 끝에 남학생 둘을 세우는 $3\\times2=6$, 가운데 네 명을 세우는 $4!=24$ 라 $144$ 가지예요. 전체는 $6!=720$ 이라 확률은 $\\frac{144}{720}=\\frac15$ 이에요."
+        },
+        {
+          "title": "1 에서 빼기",
+          "body": "$$1-\\frac15=\\frac45$$"
+        }
+      ],
+      "tip": "양 끝 두 자리만 보면 $\\frac{_3\\mathrm{P}_2}{_6\\mathrm{P}_2}=\\frac{6}{30}=\\frac15$ 로 더 빨리 구할 수 있어요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "어떤 압정을 던져 바늘이 위로 향하는 횟수를 세었더니 아래와 같았어요. 이 압정을 한 번 던질 때 바늘이 위로 향할 확률을 통계적 확률로 구하세요. (던진 횟수가 가장 많은 결과를 써요.)\n\n던진 횟수 $100$ 번: 위로 $66$ 번, $200$ 번: 위로 $128$ 번, $500$ 번: 위로 $320$ 번",
+      "choices": null,
+      "answer": "16/25",
+      "answerType": "fraction",
+      "check": "trials = {100: 66, 200: 128, 500: 320}\nn_max = max(trials)\nans = Rational(trials[n_max], n_max)",
+      "concepts": [
+        "통계적 확률: 같은 시행을 많이 되풀이했을 때 사건이 일어난 상대도수로 정하는 확률이에요."
+      ],
+      "steps": [
+        {
+          "title": "가장 많이 던진 결과",
+          "body": "$500$ 번 중 $320$ 번 위로 향했어요."
+        },
+        {
+          "title": "상대도수",
+          "body": "$$\\frac{320}{500}=\\frac{16}{25}$$"
+        }
+      ],
+      "tip": "던진 횟수가 많을수록 상대도수가 실제 확률에 가까워져요. 그래서 가장 많이 던진 결과를 써요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$1$ 부터 $50$ 까지의 자연수가 하나씩 적힌 카드 $50$ 장 중에서 한 장을 꺼낼 때, 4의 배수 또는 6의 배수가 적힌 카드가 나올 확률을 구하세요.",
+      "choices": null,
+      "answer": "8/25",
+      "answerType": "fraction",
+      "check": "ans = Rational(len([k for k in range(1, 51) if k % 4 == 0 or k % 6 == 0]), 50)",
+      "concepts": [
+        "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$"
+      ],
+      "steps": [
+        {
+          "title": "각각 세기",
+          "body": "4의 배수 $12$ 장, 6의 배수 $8$ 장이에요."
+        },
+        {
+          "title": "겹친 부분",
+          "body": "둘 다인 수는 $4\\times6=24$ 의 배수가 아니라 최소공배수 $12$ 의 배수라 $4$ 장이에요."
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$\\frac{12+8-4}{50}=\\frac{16}{50}=\\frac{8}{25}$$"
+        }
+      ],
+      "tip": "겹친 부분은 두 수의 곱이 아니라 최소공배수의 배수예요. 24의 배수($2$ 장)를 빼면 틀려요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "두 사건 $A$, $B$ 가 서로 배반사건이고 $P(A\\cup B)=\\frac56$, $P(A)=2P(B)$ 일 때, $P(A)$ 를 구하세요.",
+      "choices": null,
+      "answer": "5/9",
+      "answerType": "fraction",
+      "check": "ans = 2 * solve(Eq(2*s + s, Rational(5, 6)), s)[0]",
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "식 세우기",
+          "body": "배반이라 $P(A\\cup B)=P(A)+P(B)=3P(B)=\\frac56$ 이에요."
+        },
+        {
+          "title": "$P(B)$",
+          "body": "$$P(B)=\\frac{5}{18}$$"
+        },
+        {
+          "title": "$P(A)$",
+          "body": "$$P(A)=2\\times\\frac{5}{18}=\\frac59$$"
+        }
+      ],
+      "tip": "구하는 것이 $P(B)$ 가 아니라 $P(A)$ 예요. 마지막에 2를 곱하는 걸 잊지 마세요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "두 사건 $A$, $B$ 에 대하여 $A$ 와 $B^C$ 는 서로 배반사건이고 $P(A)=\\frac15$, $P(B)=\\frac{7}{10}$ 일 때, $P(A^C\\cap B)$ 의 값은?",
+      "choices": [
+        "$\\frac{3}{10}$",
+        "$\\frac25$",
+        "$\\frac12$",
+        "$\\frac35$",
+        "$\\frac{9}{10}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "Rational(7, 10) - Rational(1, 5)",
+      "choiceChecks": [
+        "Rational(3, 10)",
+        "Rational(2, 5)",
+        "Rational(7, 10) - Rational(2, 10)",
+        "Rational(3, 5)",
+        "Rational(1, 5) + Rational(7, 10)"
+      ],
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$",
+        "$A\\cap B^C=\\varnothing$ 이면 $A\\subset B$ 라서 $P(A\\cap B)=P(A)$ 예요."
+      ],
+      "steps": [
+        {
+          "title": "배반의 뜻",
+          "body": "$A\\cap B^C=\\varnothing$ 은 $A$ 가 $B$ 밖으로 나가지 않는다는 뜻이라 $A\\subset B$ 예요."
+        },
+        {
+          "title": "$A^C\\cap B$",
+          "body": "$B$ 에서 $A$ 를 뺀 부분이라 $P(A^C\\cap B)=P(B)-P(A)$ 예요."
+        },
+        {
+          "title": "계산",
+          "body": "$$\\frac{7}{10}-\\frac{2}{10}=\\frac12$$"
+        }
+      ],
+      "tip": "벤 다이어그램에서 $A$ 가 $B$ 안에 들어가게 그리면 바로 보여요. $P(A)+P(B)$ 를 쓰면 ⑤ 가 나와 틀려요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "두 사건 $A$, $B$ 에 대하여 $P(A\\cup B)=\\frac56$, $P(A\\cap B^C)=\\frac13$ 일 때, $P(B)$ 의 값은?",
+      "choices": [
+        "$\\frac16$",
+        "$\\frac13$",
+        "$\\frac12$",
+        "$\\frac23$",
+        "$\\frac56$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "solve(Eq(Rational(1, 3) + s, Rational(5, 6)), s)[0]",
+      "choiceChecks": [
+        "Rational(1, 6)",
+        "Rational(1, 3)",
+        "Rational(5, 6) - Rational(1, 3)",
+        "Rational(2, 3)",
+        "Rational(5, 6)"
+      ],
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$",
+        "$A\\cup B$ 는 서로 배반인 $A\\cap B^C$ 와 $B$ 로 나뉘어요."
+      ],
+      "steps": [
+        {
+          "title": "배반으로 나누기",
+          "body": "$A\\cup B$ 는 '$A$ 에만 있는 부분' $A\\cap B^C$ 와 $B$ 로 겹치지 않게 나뉘어요."
+        },
+        {
+          "title": "식 세우기",
+          "body": "$$P(A\\cup B)=P(A\\cap B^C)+P(B)$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$P(B)=\\frac56-\\frac13=\\frac12$$"
+        }
+      ],
+      "tip": "겹치지 않게 나누면 덧셈정리에서 빼는 부분이 없어져요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "흰 공 $4$ 개와 검은 공 $3$ 개가 들어 있는 주머니에서 임의로 $3$ 개의 공을 동시에 꺼낼 때, 꺼낸 흰 공의 개수가 검은 공의 개수보다 많을 확률은?",
+      "choices": [
+        "$\\frac{18}{35}$",
+        "$\\frac{4}{7}$",
+        "$\\frac{22}{35}$",
+        "$\\frac{24}{35}$",
+        "$\\frac{26}{35}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import combinations\nballs = ['W'] * 4 + ['K'] * 3\ncs = list(combinations(range(7), 3))\nans = Rational(len([c for c in cs if sum(balls[i] == 'W' for i in c) >= 2]), len(cs))",
+      "choiceChecks": [
+        "Rational(18, 35)",
+        "Rational(4, 7)",
+        "Rational(4 + 18, 35)",
+        "Rational(24, 35)",
+        "Rational(26, 35)"
+      ],
+      "concepts": [
+        "$A$, $B$ 가 배반사건($A\\cap B=\\varnothing$)이면 $P(A\\cup B)=P(A)+P(B)$"
+      ],
+      "steps": [
+        {
+          "title": "경우 나누기",
+          "body": "흰 공이 더 많으려면 흰 $3$ 개이거나 흰 $2$ 개·검은 $1$ 개예요. 두 사건은 배반이에요."
+        },
+        {
+          "title": "각각 세기",
+          "body": "흰 $3$: $_4\\mathrm{C}_3=4$, 흰 $2$·검 $1$: $_4\\mathrm{C}_2\\times{}_3\\mathrm{C}_1=18$. 모든 경우 $_7\\mathrm{C}_3=35$."
+        },
+        {
+          "title": "더하기",
+          "body": "$$\\frac{4}{35}+\\frac{18}{35}=\\frac{22}{35}$$"
+        }
+      ],
+      "tip": "흰 $3$ 개인 경우를 빼먹으면 ① $\\frac{18}{35}$ 이 나와요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "$1$ 부터 $8$ 까지의 자연수 중에서 임의로 서로 다른 세 수를 택할 때, 택한 세 수의 곱이 짝수일 확률은?",
+      "choices": [
+        "$\\frac{11}{14}$",
+        "$\\frac{6}{7}$",
+        "$\\frac{13}{14}$",
+        "$\\frac{27}{28}$",
+        "$\\frac{55}{56}$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import combinations\ncs = list(combinations(range(1, 9), 3))\nans = Rational(len([c for c in cs if (c[0] * c[1] * c[2]) % 2 == 0]), len(cs))",
+      "choiceChecks": [
+        "Rational(11, 14)",
+        "Rational(6, 7)",
+        "1 - Rational(binomial(4, 3), binomial(8, 3))",
+        "Rational(27, 28)",
+        "Rational(55, 56)"
+      ],
+      "concepts": [
+        "여사건의 확률: $P(A^C)=1-P(A)$. '적어도 하나'는 '하나도 없음'의 여사건이에요."
+      ],
+      "steps": [
+        {
+          "title": "여사건",
+          "body": "곱이 짝수의 반대는 곱이 홀수, 곧 세 수가 모두 홀수예요."
+        },
+        {
+          "title": "모두 홀수일 확률",
+          "body": "홀수 $1,\\,3,\\,5,\\,7$ 중 셋: $\\dfrac{_4\\mathrm{C}_3}{_8\\mathrm{C}_3}=\\dfrac{4}{56}=\\dfrac{1}{14}$"
+        },
+        {
+          "title": "1 에서 빼기",
+          "body": "$$1-\\frac{1}{14}=\\frac{13}{14}$$"
+        }
+      ],
+      "tip": "곱이 짝수이려면 짝수가 하나만 있어도 돼요. 경우가 많으니 반대쪽(모두 홀수)을 세요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "A, B, C, D, E, F 여섯 명이 원탁에 일정한 간격으로 임의로 둘러앉을 때, A 와 B 가 서로 이웃하거나 C 와 D 가 서로 이웃할 확률은?",
+      "choices": [
+        "$\\frac25$",
+        "$\\frac12$",
+        "$\\frac35$",
+        "$\\frac{7}{10}$",
+        "$\\frac45$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import permutations\nreps = {min(tuple(p[i:] + p[:i]) for i in range(6)) for p in permutations(range(6))}\nans = Rational(len([p for p in reps if (p.index(0) - p.index(1)) % 6 in (1, 5) or (p.index(2) - p.index(3)) % 6 in (1, 5)]), len(reps))",
+      "choiceChecks": [
+        "Rational(2, 5)",
+        "Rational(1, 2)",
+        "Rational(48 + 48 - 24, 120)",
+        "Rational(7, 10)",
+        "Rational(48 + 48, 120)"
+      ],
+      "concepts": [
+        "확률의 덧셈정리: $P(A\\cup B)=P(A)+P(B)-P(A\\cap B)$",
+        "원순열: $n$ 명이 원탁에 앉는 수는 $(n-1)!$"
+      ],
+      "steps": [
+        {
+          "title": "전체",
+          "body": "$6$ 명의 원순열은 $(6-1)!=120$ 이에요."
+        },
+        {
+          "title": "A, B 이웃",
+          "body": "묶으면 $5$ 덩어리: $(5-1)!\\times2=48$, 확률 $\\frac{48}{120}=\\frac25$. C, D 이웃도 같아요."
+        },
+        {
+          "title": "둘 다 이웃",
+          "body": "두 묶음이면 $4$ 덩어리: $(4-1)!\\times2\\times2=24$, 확률 $\\frac{24}{120}=\\frac15$."
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$\\frac25+\\frac25-\\frac15=\\frac35$$"
+        }
+      ],
+      "tip": "두 사건은 동시에 일어날 수 있어서 배반이 아니에요. 그냥 더하면 ⑤ $\\frac45$ 가 나와요."
+    }
+  ]
+}

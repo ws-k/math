@@ -1,0 +1,1169 @@
+{
+  "id": "prob-combination-binomial",
+  "course": "확률과 통계",
+  "unit": "경우의 수",
+  "title": "중복조합과 이항정리",
+  "prereq": [
+    "prob-permutation"
+  ],
+  "suneung": [],
+  "hours": 3,
+  "formulas": [
+    "중복조합: $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$",
+    "$x_1+x_2+\\cdots+x_n=r$ 의 음이 아닌 정수해의 개수: $_n\\mathrm{H}_r$",
+    "이항정리: $(a+b)^n=\\sum_{r=0}^{n}{}_n\\mathrm{C}_r\\,a^{n-r}b^r$",
+    "$_n\\mathrm{C}_r={}_{n-1}\\mathrm{C}_{r-1}+{}_{n-1}\\mathrm{C}_r$, $_n\\mathrm{C}_0+{}_n\\mathrm{C}_1+\\cdots+{}_n\\mathrm{C}_n=2^n$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "h32": {
+        "value": "6",
+        "check": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(3), 2)))"
+      },
+      "c32": {
+        "value": "3",
+        "check": "binomial(3, 2)"
+      },
+      "candy": {
+        "value": "10",
+        "check": "from itertools import product\nans = len([t for t in product(range(0, 4), repeat=3) if sum(t) == 3])"
+      },
+      "c42": {
+        "value": "6",
+        "check": "expand((a + b)**4).coeff(a, 2).coeff(b, 2)"
+      },
+      "c53": {
+        "value": "10",
+        "check": "expand((a + b)**5).coeff(a, 2).coeff(b, 3)"
+      },
+      "sum5": {
+        "value": "32",
+        "check": "expand((1 + x)**5).subs(x, 1)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "확률과 통계 · 경우의 수",
+        "title": "같은 것을 또 골라도 될 때,\n그리고 괄호를 펼칠 때",
+        "lead": "순서 없이 고르는데 같은 것을 여러 번 골라도 되면 어떻게 셀까요? 칸막이 하나로 풀리고, 그 생각이 $(a+b)^n$ 을 펼치는 데로 이어져요.",
+        "meta": [
+          "중복조합",
+          "방정식의 정수해 개수",
+          "이항정리와 파스칼의 삼각형"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "세 가지 맛 중 아이스크림 두 개,\n고르는 방법은 몇 가지일까요?",
+        "lead": "딸기·초코·바닐라 세 가지 맛 중에서 아이스크림 두 개를 사요. 같은 맛 두 개를 사도 되고, 담는 순서는 상관없어요.",
+        "choices": [
+          {
+            "value": "9",
+            "check": "from itertools import product\nans = len(list(product(range(3), repeat=2)))",
+            "feedback": "중복순열로 셌어요. 딸기→초코와 초코→딸기를 따로 셌는데, 담는 순서는 상관없어서 같은 경우예요."
+          },
+          {
+            "value": "6",
+            "check": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(3), 2)))"
+          },
+          {
+            "value": "3",
+            "check": "binomial(3, 2)",
+            "feedback": "서로 다른 맛만 골랐어요. 딸기 두 개처럼 같은 맛 두 개를 사도 돼요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(3), 2)))",
+        "reveal": "**맞아요.** 둘로 나눠 늘어놓으면 보여요.",
+        "thoughts": [
+          "다른 맛 두 개: 딸기·초코, 딸기·바닐라, 초코·바닐라로 {{c32}}가지예요.",
+          "같은 맛 두 개: 딸기·딸기, 초코·초코, 바닐라·바닐라로 {{c32}}가지예요. 모두 {{h32}}가지예요."
+        ],
+        "conclude": "고르는 개수가 많아지면 이렇게 나눠 세기가 금방 어려워져요. 다음 장면에서 ==다른 그림으로 바꿔== 세어 봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "bars",
+        "chip": "손으로 해 보기",
+        "title": "사탕 3개를 세 명에게,\n칸막이 자리를 골라 보세요",
+        "lead": "같은 사탕 3개를 가, 나, 다 세 명에게 나눠요. 못 받는 사람이 있어도 돼요. 사탕 ●●● 사이에 칸막이 | 두 개를 끼우면 나눔 하나가 돼요. 예를 들어 ●|●●| 는 가 1개, 나 2개, 다 0개예요. 다섯 자리 중 칸막이 두 자리를 골라 모든 나눔을 찾아 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "pick",
+            "items": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "k": 2
+          }
+        },
+        "after": "칸막이 두 자리를 고르면 나머지 세 자리는 사탕이라 나눔이 하나로 정해져요. 그래서 $_5\\mathrm{C}_2={{candy}}$ 가지예요. 이건 세 명 중 사탕 받을 사람을 같은 사람도 되게 순서 없이 세 번 고른 수, 곧 $_3\\mathrm{H}_3$ 이에요. ==같은 것을 여러 번 고르는 문제는 칸막이 문제로 바꿔요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "brackets",
+        "chip": "두 번째 해 보기",
+        "title": "괄호 네 개를 펼칠 때,\nb 를 꺼낼 괄호를 골라 보세요",
+        "lead": "$(a+b)^4=(a+b)(a+b)(a+b)(a+b)$ 를 펼치면 괄호마다 $a$ 나 $b$ 중 하나를 꺼내 곱해요. $a^2b^2$ 이 나오려면 네 괄호 중 두 곳에서 $b$ 를 꺼내야 해요. 그 두 괄호를 모두 골라 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "pick",
+            "items": [
+              "①",
+              "②",
+              "③",
+              "④"
+            ],
+            "k": 2
+          }
+        },
+        "after": "$b$ 를 꺼낼 괄호 두 개를 고르는 방법마다 $a^2b^2$ 이 하나씩 나와요. 그래서 $a^2b^2$ 의 계수는 $_4\\mathrm{C}_2={{c42}}$ 예요. ==전개식의 계수는 고르는 방법의 수예요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "pascal",
+        "chip": "세 번째 해 보기",
+        "title": "파스칼의 삼각형,\n맨 아랫줄을 채워 보세요",
+        "lead": "각 수는 바로 위 두 수의 합이에요. 맨 아랫줄의 ? 를 눌러 채워 보세요. 한 줄 한 줄이 $(a+b)^n$ 의 계수예요.",
+        "gate": true,
+        "widget": {
+          "type": "count",
+          "params": {
+            "mode": "pascal",
+            "rows": 5
+          }
+        },
+        "after": "맨 아랫줄이 차례로 $(a+b)^5$ 의 계수예요. 예를 들어 $a^2b^3$ 의 계수는 $_5\\mathrm{C}_3={{c53}}$ 이에요. 위 두 수를 더하는 까닭은, 마지막 괄호에서 $a$ 를 꺼냈느냐 $b$ 를 꺼냈느냐로 나누면 $_5\\mathrm{C}_3={}_4\\mathrm{C}_2+{}_4\\mathrm{C}_3$ 이기 때문이에요. ==한 줄을 모두 더하면 2의 거듭제곱이에요.== 맨 아랫줄의 합은 $2^5={{sum5}}$ 이에요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 센 방법에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "중복조합",
+            "body": "서로 다른 $n$ 개에서 **중복을 허락해 순서 없이** $r$ 개를 고르는 것. 그 수를 $_n\\mathrm{H}_r$ 로 쓰고, 공 $r$ 개와 칸막이 $n-1$ 개를 늘어놓는 수라서 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요."
+          },
+          {
+            "term": "방정식의 정수해 개수",
+            "body": "$x+y+z=r$ 의 음이 아닌 정수해는 $1$ 을 $r$ 개 두고 $x,\\,y,\\,z$ 중 누구에게 줄지 고르는 것이라 $_3\\mathrm{H}_r$ 이에요. **자연수해**면 $1$ 씩 먼저 주고 남은 것만 나눠요."
+          },
+          {
+            "term": "이항정리",
+            "body": "$(a+b)^n={}_n\\mathrm{C}_0a^n+{}_n\\mathrm{C}_1a^{n-1}b+\\cdots+{}_n\\mathrm{C}_nb^n$. 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이고, $_n\\mathrm{C}_r$ 를 **이항계수**라 해요."
+          },
+          {
+            "term": "파스칼의 삼각형",
+            "body": "이항계수를 삼각형으로 늘어놓은 것. 각 수는 위 두 수의 합이라 $_n\\mathrm{C}_r={}_{n-1}\\mathrm{C}_{r-1}+{}_{n-1}\\mathrm{C}_r$ 이고, 줄마다 좌우가 대칭이에요."
+          }
+        ],
+        "aside": "**확인** · 오늘의 질문은 $_3\\mathrm{H}_2={}_4\\mathrm{C}_2$ 이고, 늘어놓아 센 {{h32}}가지와 같아요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $(x+2)^5$ 의 전개식에서 $x^2$ 의 계수예요. 왼쪽은 일반항 $_5\\mathrm{C}_3\\,x^2\\,2^3$ 에서 수만 모은 식이에요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "10*2**3"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "10",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "80",
+              "body": "$x$ 를 꺼내지 않은 괄호 세 개에서는 $2$ 를 꺼내요. 그래서 이항계수에 $2^3$ 도 곱해요. **괄호 속 상수도 거듭제곱해서 곱해요.** 이항계수만 쓰는 건 $(x+1)^5$ 일 때뿐이에요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $x+y+z=7$ 을 만족시키는 **자연수** $x,\\,y,\\,z$ 의 순서쌍의 개수예요. 왼쪽은 셋에게 $1$ 씩 먼저 주고 남은 $4$ 를 나누는 $_3\\mathrm{H}_4={}_6\\mathrm{C}_2$ 예요.",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "6*5/(2*1)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "9*8/(2*1)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "15",
+              "body": "$_3\\mathrm{H}_7={}_9\\mathrm{C}_2$ 는 $x=0$ 처럼 $0$ 이 들어간 해까지 센 수예요. 자연수는 $1$ 이상이라 **하나씩 먼저 주고 남은 것만 나눠요.**"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "pens",
+            "q": "서로 다른 $4$ 종류의 볼펜 중에서 $5$ 자루를 사요. 같은 종류를 여러 자루 사도 될 때, 사는 방법의 수를 구하세요. (각 종류는 넉넉히 있어요.)",
+            "hint": "같은 것을 또 고를 수 있고, 순서는 상관없어요.",
+            "concepts": [
+              "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요."
+            ],
+            "steps": [
+              {
+                "title": "중복조합",
+                "body": "$4$ 종류에서 중복을 허락해 순서 없이 $5$ 자루를 고르니 $_4\\mathrm{H}_5$ 예요."
+              },
+              {
+                "title": "조합으로 바꾸기",
+                "body": "$$_4\\mathrm{H}_5={}_8\\mathrm{C}_5={}_8\\mathrm{C}_3=\\frac{8\\times7\\times6}{3\\times2\\times1}={{answer}}$$"
+              }
+            ],
+            "tip": "볼펜 $5$ 자루 사이에 칸막이 $3$ 개를 끼우는 그림이에요. 자리 $8$ 개 중 칸막이 $3$ 자리를 골라도 같아요.",
+            "answer": "56",
+            "answerType": "int",
+            "check": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(4), 5)))"
+          },
+          {
+            "id": "coef",
+            "q": "$(2x-1)^5$ 의 전개식에서 $x^2$ 의 계수를 구하세요.",
+            "hint": "괄호 다섯 개 중 $2x$ 를 꺼낼 괄호 두 개를 골라요. 나머지 셋에서는 $-1$ 이 나와요.",
+            "concepts": [
+              "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+            ],
+            "steps": [
+              {
+                "title": "일반항",
+                "body": "$$_5\\mathrm{C}_r(2x)^r(-1)^{5-r}$$"
+              },
+              {
+                "title": "$x^2$ 이 되는 $r$",
+                "body": "$r=2$ 예요."
+              },
+              {
+                "title": "계산",
+                "body": "$$_5\\mathrm{C}_2\\times2^2\\times(-1)^3=10\\times4\\times(-1)={{answer}}$$"
+              }
+            ],
+            "tip": "$(-1)^3=-1$ 이라 부호가 바뀌어요. 음수가 들어간 이항정리는 부호까지 거듭제곱해요.",
+            "answer": "-40",
+            "answerType": "int",
+            "check": "expand((2*x - 1)**5).coeff(x, 2)"
+          },
+          {
+            "id": "eq4",
+            "q": "방정식 $x+y+z+w=6$ 을 만족시키는 음이 아닌 정수 $x,\\,y,\\,z,\\,w$ 의 순서쌍의 개수를 구하세요.",
+            "hint": "$1$ 을 여섯 개 두고, 하나씩 네 문자 중 누구에게 줄지 골라요.",
+            "concepts": [
+              "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+              "공 $r$ 개와 칸막이 $n-1$ 개를 한 줄로 늘어놓는 것과 같아서 $_{n+r-1}\\mathrm{C}_r$ 이에요."
+            ],
+            "steps": [
+              {
+                "title": "중복조합으로 보기",
+                "body": "네 문자에서 중복을 허락해 $6$ 번 고르니 $_4\\mathrm{H}_6$ 이에요."
+              },
+              {
+                "title": "계산",
+                "body": "$$_4\\mathrm{H}_6={}_9\\mathrm{C}_6={}_9\\mathrm{C}_3=\\frac{9\\times8\\times7}{3\\times2\\times1}={{answer}}$$"
+              }
+            ],
+            "tip": "$_n\\mathrm{H}_r$ 에서 $n$ 은 고를 대상(문자 $4$ 개), $r$ 은 고르는 횟수($6$)예요. $_6\\mathrm{H}_4$ 로 바꿔 쓰면 틀려요.",
+            "answer": "84",
+            "answerType": "int",
+            "check": "from itertools import product\nans = len([t for t in product(range(0, 7), repeat=4) if sum(t) == 6])"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "중복을 허락해 순서 없이 고르면 중복조합 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$. 공과 칸막이를 늘어놓는 그림으로 바꿔요.",
+          "$x+y+z=r$ 의 음이 아닌 정수해는 $_3\\mathrm{H}_r$. 자연수해는 $1$ 씩 먼저 주고 남은 것을 나눠요.",
+          "$(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$. 계수는 괄호를 고르는 수이고, 상수도 거듭제곱해서 곱해요.",
+          "수능(확률과 통계)에서는 전개식의 계수와 조건이 붙은 정수해 개수로 자주 나와요."
+        ],
+        "done": "중복조합과 이항정리 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "prob-combination-binomial-hrep",
+    "prob-combination-binomial-eqsol",
+    "prob-combination-binomial-coef",
+    "prob-combination-binomial-sum"
+  ],
+  "problems": [
+    {
+      "q": "같은 사탕 $6$ 개를 서로 다른 $5$ 명에게 남김없이 나누어 주는 방법의 수를 구하세요. (사탕을 받지 못하는 사람이 있어도 돼요.)",
+      "choices": null,
+      "answer": "210",
+      "answerType": "int",
+      "check": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(5), 6)))",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "공 $r$ 개와 칸막이 $n-1$ 개를 한 줄로 늘어놓는 것과 같아서 $_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "사탕마다 받을 사람 고르기",
+          "body": "사탕은 서로 같으니, 사탕 $6$ 개마다 받을 사람을 순서 없이 골라요. 같은 사람을 여러 번 골라도 돼요."
+        },
+        {
+          "title": "조합으로 바꾸기",
+          "body": "$${}_{5}\\mathrm{H}_{6}={}_{10}\\mathrm{C}_{6}=210$$"
+        }
+      ],
+      "tip": "공 $6$ 개 사이에 칸막이 $4$ 개를 넣는 그림으로 생각하면, $10$ 자리 중 공 자리 $6$ 개를 고르는 수예요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "prob-combination-binomial-hrep",
+      "seed": 1000
+    },
+    {
+      "q": "방정식 $x+y+z=4$ 를 만족시키는 음이 아닌 정수 $x,\\,y,\\,z$ 의 순서쌍의 개수를 구하세요.",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([t for t in product(range(0, 5), repeat=3) if sum(t) == 4])",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "공 $r$ 개와 칸막이 $n-1$ 개를 한 줄로 늘어놓는 것과 같아서 $_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "1 을 하나씩 나눠 주기",
+          "body": "$1$ 을 $4$ 개 두고, 하나씩 $3$ 개 문자 중 누구에게 줄지 순서 없이 골라요(같은 문자를 또 골라도 돼요)."
+        },
+        {
+          "title": "중복조합",
+          "body": "$${}_{3}\\mathrm{H}_{4}={}_{6}\\mathrm{C}_{4}=15$$"
+        }
+      ],
+      "tip": "문자 $3$ 개를 가르는 칸막이 $2$ 개와 $1$ 을 $4$ 개 늘어놓는 수로 세어도 같아요. $\\dfrac{6!}{4!\\,2!}=15$",
+      "id": "b02",
+      "level": "기초",
+      "generator": "prob-combination-binomial-eqsol",
+      "seed": 1001
+    },
+    {
+      "q": "$(2x-1)^5$ 의 전개식에서 $x^2$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "-40",
+      "answerType": "int",
+      "check": "expand((2*x - 1)**5).coeff(x, 2)",
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "일반항",
+          "body": "괄호 $5$ 개 중 $(2x)$ 를 꺼낼 괄호 $r$ 개를 고르면 ${}_{5}\\mathrm{C}_{r}(2x)^{r}(-1)^{5-r}$ 이에요."
+        },
+        {
+          "title": "$x^2$ 이 되는 $r$",
+          "body": "$x$ 의 지수가 $2$ 이려면 $r=2$ 예요."
+        },
+        {
+          "title": "계수 계산",
+          "body": "$${}_{5}\\mathrm{C}_{2}\\times2^2\\times(-1)^3=10\\times4\\times(-1)=-40$$"
+        }
+      ],
+      "tip": "$x$ 앞의 계수와 상수도 함께 거듭제곱해요. ${}_{5}\\mathrm{C}_{2}$ 만 쓰면 틀려요. 음수 $-1$ 의 거듭제곱이라 부호도 봐요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "prob-combination-binomial-coef",
+      "seed": 1002
+    },
+    {
+      "q": "${}_{7}\\mathrm{C}_{0}+{}_{7}\\mathrm{C}_{1}+{}_{7}\\mathrm{C}_{2}+\\cdots+{}_{7}\\mathrm{C}_{7}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "128",
+      "answerType": "int",
+      "check": "sum(binomial(7, r) for r in range(0, 8))",
+      "concepts": [
+        "$_n\\mathrm{C}_0+{}_n\\mathrm{C}_1+\\cdots+{}_n\\mathrm{C}_n=2^n$ 이에요. $(1+x)^n$ 에 $x=1$ 을 넣은 값이에요."
+      ],
+      "steps": [
+        {
+          "title": "이항정리에 $x=1$",
+          "body": "$(1+x)^7={}_{7}\\mathrm{C}_{0}+{}_{7}\\mathrm{C}_{1}x+\\cdots+{}_{7}\\mathrm{C}_{7}x^{7}$ 에 $x=1$ 을 넣어요."
+        },
+        {
+          "title": "값",
+          "body": "$$2^{7}=128$$"
+        }
+      ],
+      "tip": "원소가 $7$ 개인 집합의 부분집합 수와 같아요. 원소마다 넣을지 뺄지 $2$ 가지씩이에요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "prob-combination-binomial-sum",
+      "seed": 1003
+    },
+    {
+      "q": "서로 다른 $3$ 종류의 음료수 중에서 $4$ 병을 사요. 같은 종류를 여러 병 사도 될 때, 살 수 있는 방법의 수를 구하세요. (각 종류는 넉넉히 있어요.)",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(3), 4)))",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "중복조합으로 보기",
+          "body": "$3$ 가지에서 같은 것을 여러 번 골라도 되고 순서가 없으니 ${}_{3}\\mathrm{H}_{4}$ 예요."
+        },
+        {
+          "title": "조합으로 바꾸기",
+          "body": "$${}_{3}\\mathrm{H}_{4}={}_{6}\\mathrm{C}_{4}=15$$"
+        }
+      ],
+      "tip": "중복순열 $3^4$ 과 헷갈리지 마세요. 음료수를 담는 순서는 상관없어서 순서 없이 고르는 중복조합이에요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "prob-combination-binomial-hrep",
+      "seed": 1004
+    },
+    {
+      "q": "방정식 $x+y+z=7$ 을 만족시키는 자연수 $x,\\,y,\\,z$ 의 순서쌍의 개수를 구하세요.",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([t for t in product(range(1, 8), repeat=3) if sum(t) == 7])",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "공 $r$ 개와 칸막이 $n-1$ 개를 한 줄로 늘어놓는 것과 같아서 $_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "1 씩 먼저 주기",
+          "body": "자연수라 각 문자가 $1$ 이상이에요. $3$ 개에 $1$ 씩 먼저 주면 남는 것은 $7-3=4$ 예요."
+        },
+        {
+          "title": "남은 것 나누기",
+          "body": "남은 $4$ 를 $3$ 개 문자에 $0$ 이상씩 나누는 수예요.\n$${}_{3}\\mathrm{H}_{4}={}_{6}\\mathrm{C}_{4}=15$$"
+        }
+      ],
+      "tip": "1 씩 먼저 주지 않고 ${}_{3}\\mathrm{H}_{7}$ 로 세면 $0$ 이 들어간 해까지 세어져요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "prob-combination-binomial-eqsol",
+      "seed": 1005
+    },
+    {
+      "q": "$(2x-2)^6$ 의 전개식에서 $x^5$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "-384",
+      "answerType": "int",
+      "check": "expand((2*x - 2)**6).coeff(x, 5)",
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "일반항",
+          "body": "괄호 $6$ 개 중 $(2x)$ 를 꺼낼 괄호 $r$ 개를 고르면 ${}_{6}\\mathrm{C}_{r}(2x)^{r}(-2)^{6-r}$ 이에요."
+        },
+        {
+          "title": "$x^5$ 이 되는 $r$",
+          "body": "$x$ 의 지수가 $5$ 이려면 $r=5$ 예요."
+        },
+        {
+          "title": "계수 계산",
+          "body": "$${}_{6}\\mathrm{C}_{5}\\times2^5\\times(-2)^1=6\\times32\\times(-2)=-384$$"
+        }
+      ],
+      "tip": "$x$ 앞의 계수와 상수도 함께 거듭제곱해요. ${}_{6}\\mathrm{C}_{5}$ 만 쓰면 틀려요. 음수 $-2$ 의 거듭제곱이라 부호도 봐요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "prob-combination-binomial-coef",
+      "seed": 1006
+    },
+    {
+      "q": "${}_{10}\\mathrm{C}_{0}+{}_{10}\\mathrm{C}_{1}+{}_{10}\\mathrm{C}_{2}+\\cdots+{}_{10}\\mathrm{C}_{10}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1024",
+      "answerType": "int",
+      "check": "sum(binomial(10, r) for r in range(0, 11))",
+      "concepts": [
+        "$_n\\mathrm{C}_0+{}_n\\mathrm{C}_1+\\cdots+{}_n\\mathrm{C}_n=2^n$ 이에요. $(1+x)^n$ 에 $x=1$ 을 넣은 값이에요."
+      ],
+      "steps": [
+        {
+          "title": "이항정리에 $x=1$",
+          "body": "$(1+x)^{10}={}_{10}\\mathrm{C}_{0}+{}_{10}\\mathrm{C}_{1}x+\\cdots+{}_{10}\\mathrm{C}_{10}x^{10}$ 에 $x=1$ 을 넣어요."
+        },
+        {
+          "title": "값",
+          "body": "$$2^{10}=1024$$"
+        }
+      ],
+      "tip": "원소가 $10$ 개인 집합의 부분집합 수와 같아요. 원소마다 넣을지 뺄지 $2$ 가지씩이에요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "prob-combination-binomial-sum",
+      "seed": 1007
+    },
+    {
+      "q": "같은 사탕 $5$ 개를 서로 다른 $5$ 명에게 남김없이 나누어 주는 방법의 수를 구하세요. (사탕을 받지 못하는 사람이 있어도 돼요.)",
+      "choices": null,
+      "answer": "126",
+      "answerType": "int",
+      "check": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(5), 5)))",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "공 $r$ 개와 칸막이 $n-1$ 개를 한 줄로 늘어놓는 것과 같아서 $_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "사탕마다 받을 사람 고르기",
+          "body": "사탕은 서로 같으니, 사탕 $5$ 개마다 받을 사람을 순서 없이 골라요. 같은 사람을 여러 번 골라도 돼요."
+        },
+        {
+          "title": "조합으로 바꾸기",
+          "body": "$${}_{5}\\mathrm{H}_{5}={}_{9}\\mathrm{C}_{5}=126$$"
+        }
+      ],
+      "tip": "공 $5$ 개 사이에 칸막이 $4$ 개를 넣는 그림으로 생각하면, $9$ 자리 중 공 자리 $5$ 개를 고르는 수예요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "prob-combination-binomial-hrep",
+      "seed": 1008
+    },
+    {
+      "q": "방정식 $x+y+z+w=8$ 을 만족시키는 자연수 $x,\\,y,\\,z,\\,w$ 의 순서쌍의 개수를 구하세요.",
+      "choices": null,
+      "answer": "35",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([t for t in product(range(1, 9), repeat=4) if sum(t) == 8])",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "공 $r$ 개와 칸막이 $n-1$ 개를 한 줄로 늘어놓는 것과 같아서 $_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "1 씩 먼저 주기",
+          "body": "자연수라 각 문자가 $1$ 이상이에요. $4$ 개에 $1$ 씩 먼저 주면 남는 것은 $8-4=4$ 예요."
+        },
+        {
+          "title": "남은 것 나누기",
+          "body": "남은 $4$ 를 $4$ 개 문자에 $0$ 이상씩 나누는 수예요.\n$${}_{4}\\mathrm{H}_{4}={}_{7}\\mathrm{C}_{4}=35$$"
+        }
+      ],
+      "tip": "1 씩 먼저 주지 않고 ${}_{4}\\mathrm{H}_{8}$ 로 세면 $0$ 이 들어간 해까지 세어져요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "prob-combination-binomial-eqsol",
+      "seed": 1009
+    },
+    {
+      "q": "$(2x+2)^6$ 의 전개식에서 $x^2$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "960",
+      "answerType": "int",
+      "check": "expand((2*x + 2)**6).coeff(x, 2)",
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "일반항",
+          "body": "괄호 $6$ 개 중 $(2x)$ 를 꺼낼 괄호 $r$ 개를 고르면 ${}_{6}\\mathrm{C}_{r}(2x)^{r}2^{6-r}$ 이에요."
+        },
+        {
+          "title": "$x^2$ 이 되는 $r$",
+          "body": "$x$ 의 지수가 $2$ 이려면 $r=2$ 예요."
+        },
+        {
+          "title": "계수 계산",
+          "body": "$${}_{6}\\mathrm{C}_{2}\\times2^2\\times2^4=15\\times4\\times16=960$$"
+        }
+      ],
+      "tip": "$x$ 앞의 계수와 상수도 함께 거듭제곱해요. ${}_{6}\\mathrm{C}_{2}$ 만 쓰면 틀려요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "prob-combination-binomial-coef",
+      "seed": 1010
+    },
+    {
+      "q": "${}_{10}\\mathrm{C}_{0}+{}_{10}\\mathrm{C}_{2}+{}_{10}\\mathrm{C}_{4}+\\cdots+{}_{10}\\mathrm{C}_{10}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "512",
+      "answerType": "int",
+      "check": "sum(binomial(10, r) for r in range(0, 11, 2))",
+      "concepts": [
+        "$_n\\mathrm{C}_0+{}_n\\mathrm{C}_1+\\cdots+{}_n\\mathrm{C}_n=2^n$ 이에요. $(1+x)^n$ 에 $x=1$ 을 넣은 값이에요.",
+        "$(1+x)^n$ 에 $x=-1$ 을 넣으면 짝수 번째 합과 홀수 번째 합이 같다는 걸 알 수 있어요."
+      ],
+      "steps": [
+        {
+          "title": "$x=1$ 과 $x=-1$",
+          "body": "$x=1$ 을 넣으면 모든 항의 합이 $2^{10}$, $x=-1$ 을 넣으면 (짝수 번째 합)$-$(홀수 번째 합)$=0$ 이에요."
+        },
+        {
+          "title": "반으로 나누기",
+          "body": "두 합이 같으니 각각 전체의 절반이에요.\n$$\\frac{2^{10}}{2}=2^{9}=512$$"
+        }
+      ],
+      "tip": "부분집합 중 원소가 짝수 개인 것과 홀수 개인 것의 수가 같다는 뜻이에요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "prob-combination-binomial-sum",
+      "seed": 1011
+    },
+    {
+      "q": "서로 다른 $3$ 종류의 음료수 중에서 $5$ 병을 사요. 같은 종류를 여러 병 사도 될 때, 살 수 있는 방법의 수를 구하세요. (각 종류는 넉넉히 있어요.)",
+      "choices": null,
+      "answer": "21",
+      "answerType": "int",
+      "check": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(3), 5)))",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "중복조합으로 보기",
+          "body": "$3$ 가지에서 같은 것을 여러 번 골라도 되고 순서가 없으니 ${}_{3}\\mathrm{H}_{5}$ 예요."
+        },
+        {
+          "title": "조합으로 바꾸기",
+          "body": "$${}_{3}\\mathrm{H}_{5}={}_{7}\\mathrm{C}_{5}=21$$"
+        }
+      ],
+      "tip": "중복순열 $3^5$ 과 헷갈리지 마세요. 음료수를 담는 순서는 상관없어서 순서 없이 고르는 중복조합이에요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "prob-combination-binomial-hrep",
+      "seed": 1012
+    },
+    {
+      "q": "방정식 $x+y+z=7$ 을 만족시키는 음이 아닌 정수 $x,\\,y,\\,z$ 의 순서쌍의 개수를 구하세요.",
+      "choices": null,
+      "answer": "36",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([t for t in product(range(0, 8), repeat=3) if sum(t) == 7])",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "공 $r$ 개와 칸막이 $n-1$ 개를 한 줄로 늘어놓는 것과 같아서 $_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "1 을 하나씩 나눠 주기",
+          "body": "$1$ 을 $7$ 개 두고, 하나씩 $3$ 개 문자 중 누구에게 줄지 순서 없이 골라요(같은 문자를 또 골라도 돼요)."
+        },
+        {
+          "title": "중복조합",
+          "body": "$${}_{3}\\mathrm{H}_{7}={}_{9}\\mathrm{C}_{7}=36$$"
+        }
+      ],
+      "tip": "문자 $3$ 개를 가르는 칸막이 $2$ 개와 $1$ 을 $7$ 개 늘어놓는 수로 세어도 같아요. $\\dfrac{9!}{7!\\,2!}=36$",
+      "id": "b14",
+      "level": "기초",
+      "generator": "prob-combination-binomial-eqsol",
+      "seed": 1013
+    },
+    {
+      "q": "$(x+2)^6$ 의 전개식에서 $x^5$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "expand((1*x + 2)**6).coeff(x, 5)",
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "일반항",
+          "body": "괄호 $6$ 개 중 $x$ 를 꺼낼 괄호 $r$ 개를 고르면 ${}_{6}\\mathrm{C}_{r}x^{r}2^{6-r}$ 이에요."
+        },
+        {
+          "title": "$x^5$ 이 되는 $r$",
+          "body": "$x$ 의 지수가 $5$ 이려면 $r=5$ 예요."
+        },
+        {
+          "title": "계수 계산",
+          "body": "$${}_{6}\\mathrm{C}_{5}\\times2^1=6\\times2=12$$"
+        }
+      ],
+      "tip": "${}_{6}\\mathrm{C}_{5}$ 만 쓰고 $2^1$ 을 빠뜨리기 쉬워요. 괄호 속 상수도 거듭제곱해서 곱해요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "prob-combination-binomial-coef",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$_3\\mathrm{H}_4$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "15",
+      "answerType": "int",
+      "check": "from itertools import combinations_with_replacement\nans = len(list(combinations_with_replacement(range(3), 4)))",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "조합으로 바꾸기",
+          "body": "$$_3\\mathrm{H}_4={}_{3+4-1}\\mathrm{C}_4={}_6\\mathrm{C}_4$$"
+        },
+        {
+          "title": "계산",
+          "body": "$$_6\\mathrm{C}_4={}_6\\mathrm{C}_2=15$$"
+        }
+      ],
+      "tip": "$_n\\mathrm{H}_r$ 는 $r$ 이 $n$ 보다 커도 돼요. 같은 것을 여러 번 고를 수 있으니까요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$_n\\mathrm{H}_2=10$ 을 만족시키는 자연수 $n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "from itertools import combinations_with_replacement\nans = [m for m in range(1, 20) if len(list(combinations_with_replacement(range(m), 2))) == 10][0]",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "조합으로 바꾸기",
+          "body": "$$_n\\mathrm{H}_2={}_{n+1}\\mathrm{C}_2=\\frac{(n+1)n}{2}$$"
+        },
+        {
+          "title": "방정식 풀기",
+          "body": "$(n+1)n=20$ 이라 $n=4$ 예요."
+        }
+      ],
+      "tip": "$_n\\mathrm{H}_2$ 를 $_n\\mathrm{C}_2$ 로 착각하면 $n(n-1)=20$ 에서 $n=5$ 가 나와 틀려요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "방정식 $x+y+z=10$ 을 만족시키는 음이 아닌 정수 $x,\\,y,\\,z$ 중에서 $x\\ge2$ 인 순서쌍 $(x,\\,y,\\,z)$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "45",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([t for t in product(range(11), repeat=3) if sum(t) == 10 and t[0] >= 2])",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "조건이 '몇 이상'이면 그만큼 먼저 주고 남은 것을 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "먼저 주기",
+          "body": "$x$ 에게 $2$ 를 먼저 주면 $x'=x-2\\ge0$ 이고 $x'+y+z=8$ 이에요."
+        },
+        {
+          "title": "중복조합",
+          "body": "$$_3\\mathrm{H}_8={}_{10}\\mathrm{C}_8={}_{10}\\mathrm{C}_2=45$$"
+        }
+      ],
+      "tip": "전체 $_3\\mathrm{H}_{10}=66$ 에서 $x=0,\\,1$ 인 경우 $11+10=21$ 을 빼도 $45$ 예요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "같은 공 $6$ 개를 서로 다른 상자 $3$ 개에 남김없이 넣을 때, 빈 상자가 없도록 넣는 방법의 수를 구하세요.",
+      "choices": null,
+      "answer": "10",
+      "answerType": "int",
+      "check": "from itertools import product\nans = len([t for t in product(range(1, 7), repeat=3) if sum(t) == 6])",
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "빈 상자가 없으면 상자마다 하나씩 먼저 넣고 남은 것을 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "하나씩 먼저",
+          "body": "상자마다 공을 $1$ 개씩 넣으면 $3$ 개가 남아요."
+        },
+        {
+          "title": "남은 공 나누기",
+          "body": "$$_3\\mathrm{H}_3={}_5\\mathrm{C}_3=10$$"
+        }
+      ],
+      "tip": "공이 같으니 공마다 상자를 고르는 중복순열 $3^6$ 이 아니에요. 같은 것을 나누는 건 중복조합이에요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\left(x+\\dfrac{1}{x}\\right)^6$ 의 전개식에서 상수항을 구하세요.",
+      "choices": null,
+      "answer": "20",
+      "answerType": "int",
+      "check": "ans = sum(t for t in Add.make_args(expand((x + 1/x)**6)) if not t.has(x))",
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "일반항",
+          "body": "$$_6\\mathrm{C}_r\\,x^{6-r}\\left(\\frac1x\\right)^r={}_6\\mathrm{C}_r\\,x^{6-2r}$$"
+        },
+        {
+          "title": "상수항이 되는 $r$",
+          "body": "$6-2r=0$ 에서 $r=3$ 이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$_6\\mathrm{C}_3=20$$"
+        }
+      ],
+      "tip": "$x$ 의 지수를 $r$ 로 나타내고 $0$ 이 되는 $r$ 을 찾아요. $\\frac1x=x^{-1}$ 이라 지수가 빠져요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$(1+x)^n$ 의 전개식에서 $x^2$ 의 계수가 $28$ 일 때, 자연수 $n$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "8",
+      "answerType": "int",
+      "check": "ans = [m for m in range(2, 30) if expand((1 + x)**m).coeff(x, 2) == 28][0]",
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "계수 쓰기",
+          "body": "$x^2$ 의 계수는 $_n\\mathrm{C}_2=\\dfrac{n(n-1)}{2}$ 예요."
+        },
+        {
+          "title": "방정식 풀기",
+          "body": "$n(n-1)=56=8\\times7$ 이라 $n=8$ 이에요."
+        }
+      ],
+      "tip": "연속한 두 자연수의 곱으로 $56$ 을 나타내면 빨라요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$\\left(x^2-\\dfrac{1}{x}\\right)^6$ 의 전개식에서 $x^3$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "-20",
+      "answerType": "int",
+      "check": "expand((x**2 - 1/x)**6).coeff(x, 3)",
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "일반항",
+          "body": "$$_6\\mathrm{C}_r(x^2)^{6-r}\\left(-\\frac1x\\right)^r={}_6\\mathrm{C}_r(-1)^r x^{12-3r}$$"
+        },
+        {
+          "title": "$x^3$ 이 되는 $r$",
+          "body": "$12-3r=3$ 에서 $r=3$ 이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$_6\\mathrm{C}_3\\times(-1)^3=-20$$"
+        }
+      ],
+      "tip": "$-\\frac1x$ 를 거듭제곱할 때 $(-1)^r$ 을 빠뜨리면 $20$ 이 나와 틀려요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$_2\\mathrm{C}_2+{}_3\\mathrm{C}_2+{}_4\\mathrm{C}_2+\\cdots+{}_7\\mathrm{C}_2$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "56",
+      "answerType": "int",
+      "check": "sum(binomial(k, 2) for k in range(2, 8))",
+      "concepts": [
+        "파스칼의 삼각형: $_n\\mathrm{C}_r={}_{n-1}\\mathrm{C}_{r-1}+{}_{n-1}\\mathrm{C}_r$. 각 수는 바로 위 두 수의 합이에요."
+      ],
+      "steps": [
+        {
+          "title": "첫 항 바꾸기",
+          "body": "$_2\\mathrm{C}_2=1={}_3\\mathrm{C}_3$ 으로 바꿔요."
+        },
+        {
+          "title": "차례로 합치기",
+          "body": "$_3\\mathrm{C}_3+{}_3\\mathrm{C}_2={}_4\\mathrm{C}_3$, 여기에 $_4\\mathrm{C}_2$ 를 더하면 $_5\\mathrm{C}_3$, … 이렇게 이어져요."
+        },
+        {
+          "title": "결과",
+          "body": "$$_8\\mathrm{C}_3=56$$"
+        }
+      ],
+      "tip": "파스칼의 삼각형에서 비스듬히 내려가는 줄을 더하면 그 끝 아래 한 칸의 수가 돼요. 값으로 더해도 $1+3+6+10+15+21=56$ 이에요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$_{10}\\mathrm{C}_1+{}_{10}\\mathrm{C}_3+{}_{10}\\mathrm{C}_5+{}_{10}\\mathrm{C}_7+{}_{10}\\mathrm{C}_9$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "512",
+      "answerType": "int",
+      "check": "sum(binomial(10, r) for r in range(1, 11, 2))",
+      "concepts": [
+        "$_n\\mathrm{C}_0+{}_n\\mathrm{C}_1+\\cdots+{}_n\\mathrm{C}_n=2^n$ 이에요. $(1+x)^n$ 에 $x=1$ 을 넣은 값이에요.",
+        "$(1+x)^n$ 에 $x=-1$ 을 넣으면 짝수 번째 합과 홀수 번째 합이 같아요."
+      ],
+      "steps": [
+        {
+          "title": "두 가지 대입",
+          "body": "$x=1$ 이면 전체 합 $2^{10}$, $x=-1$ 이면 (짝수 번째 합)$-$(홀수 번째 합)$=0$ 이에요."
+        },
+        {
+          "title": "절반",
+          "body": "$$\\frac{2^{10}}{2}=2^9=512$$"
+        }
+      ],
+      "tip": "$r$ 이 홀수인 것만 더한 합과 짝수인 것만 더한 합이 같아요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$(1+x)+(1+x)^2+(1+x)^3+\\cdots+(1+x)^6$ 의 전개식에서 $x^2$ 의 계수를 구하세요.",
+      "choices": null,
+      "answer": "35",
+      "answerType": "int",
+      "check": "expand(sum((1 + x)**k for k in range(1, 7))).coeff(x, 2)",
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요.",
+        "파스칼의 삼각형: $_n\\mathrm{C}_r={}_{n-1}\\mathrm{C}_{r-1}+{}_{n-1}\\mathrm{C}_r$. 각 수는 바로 위 두 수의 합이에요."
+      ],
+      "steps": [
+        {
+          "title": "각 항의 계수",
+          "body": "$(1+x)^k$ 의 $x^2$ 계수는 $_k\\mathrm{C}_2$ 이고, $k=1$ 이면 $0$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$$_2\\mathrm{C}_2+{}_3\\mathrm{C}_2+\\cdots+{}_6\\mathrm{C}_2={}_7\\mathrm{C}_3$$"
+        },
+        {
+          "title": "값",
+          "body": "$$_7\\mathrm{C}_3=35$$"
+        }
+      ],
+      "tip": "값으로 더해도 $1+3+6+10+15=35$ 예요. 파스칼의 삼각형의 비스듬한 줄 합이에요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "다항식 $(x+3)^5$ 의 전개식에서 $x^3$ 의 계수는?",
+      "choices": [
+        "$10$",
+        "$30$",
+        "$45$",
+        "$90$",
+        "$270$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "expand((x + 3)**5).coeff(x, 3)",
+      "choiceChecks": [
+        "binomial(5, 3)",
+        "binomial(5, 3)*3",
+        "45",
+        "binomial(5, 3)*3**2",
+        "binomial(5, 3)*3**3"
+      ],
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "일반항",
+          "body": "$$_5\\mathrm{C}_r\\,x^r\\,3^{5-r}$$"
+        },
+        {
+          "title": "$x^3$",
+          "body": "$r=3$ 이라 $_5\\mathrm{C}_3\\times3^2$ 이에요."
+        },
+        {
+          "title": "계산",
+          "body": "$$10\\times9=90$$"
+        }
+      ],
+      "tip": "$x^3$ 이면 상수 $3$ 은 나머지 두 괄호에서 나와 $3^2$ 이에요. $3^3$ 을 곱하면 ⑤ $270$ 이 돼요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "방정식 $a+b+c=10$ 을 만족시키는 자연수 $a,\\,b,\\,c$ 의 순서쌍 $(a,\\,b,\\,c)$ 중에서 $a$ 가 짝수인 것의 개수는?",
+      "choices": [
+        "$12$",
+        "$14$",
+        "$16$",
+        "$18$",
+        "$20$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import product\nans = len([t for t in product(range(1, 11), repeat=3) if sum(t) == 10 and t[0] % 2 == 0])",
+      "choiceChecks": [
+        "12",
+        "14",
+        "7+5+3+1",
+        "18",
+        "20"
+      ],
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "합의 법칙: $a$ 의 값마다 나누어 세요."
+      ],
+      "steps": [
+        {
+          "title": "$a$ 의 값",
+          "body": "$b,\\,c\\ge1$ 이라 $a\\le8$ 이고, 짝수 $a$ 는 $2,\\,4,\\,6,\\,8$ 이에요."
+        },
+        {
+          "title": "$a$ 마다 $b+c$",
+          "body": "$b+c=8,\\,6,\\,4,\\,2$ 의 자연수해는 각각 $7,\\,5,\\,3,\\,1$ 개예요(자연수 $b+c=m$ 의 해는 $m-1$ 개)."
+        },
+        {
+          "title": "더하기",
+          "body": "$$7+5+3+1=16$$"
+        }
+      ],
+      "tip": "$a=2a'$ 으로 두고 $a'\\ge1$ 로 바꾸어 $2a'+b+c=10$ 을 풀어도 같아요. 경우가 적으면 나누어 세는 쪽이 빨라요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "$(1+x)^n$ 의 전개식에서 $x^2$ 의 계수와 $x^3$ 의 계수가 같을 때, 자연수 $n$ 의 값은?",
+      "choices": [
+        "$4$",
+        "$5$",
+        "$6$",
+        "$7$",
+        "$8$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "ans = [m for m in range(3, 30) if expand((1 + x)**m).coeff(x, 2) == expand((1 + x)**m).coeff(x, 3)][0]",
+      "choiceChecks": [
+        "4",
+        "2+3",
+        "6",
+        "7",
+        "8"
+      ],
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요.",
+        "$_n\\mathrm{C}_r={}_n\\mathrm{C}_{n-r}$"
+      ],
+      "steps": [
+        {
+          "title": "계수 같게 놓기",
+          "body": "$_n\\mathrm{C}_2={}_n\\mathrm{C}_3$ 이에요."
+        },
+        {
+          "title": "성질 쓰기",
+          "body": "$_n\\mathrm{C}_r={}_n\\mathrm{C}_{n-r}$ 에서 $2+3=n$ 이라 $n=5$ 예요."
+        }
+      ],
+      "tip": "식으로 풀어도 $\\dfrac{n(n-1)}{2}=\\dfrac{n(n-1)(n-2)}{6}$ 에서 $n-2=3$ 이에요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "두 집합 $X=\\{1,\\,2,\\,3,\\,4\\}$, $Y=\\{1,\\,2,\\,3,\\,4,\\,5\\}$ 에 대하여 $X$ 에서 $Y$ 로의 함수 $f$ 중에서 $f(1)\\le f(2)\\le f(3)\\le f(4)$ 를 만족시키는 함수의 개수는?",
+      "choices": [
+        "$35$",
+        "$56$",
+        "$70$",
+        "$84$",
+        "$126$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "from itertools import product\nans = len([f for f in product(range(1, 6), repeat=4) if f[0] <= f[1] <= f[2] <= f[3]])",
+      "choiceChecks": [
+        "binomial(7, 4)",
+        "binomial(8, 3)",
+        "binomial(5 + 4 - 1, 4)",
+        "binomial(9, 3)",
+        "binomial(9, 4)"
+      ],
+      "concepts": [
+        "중복조합: 서로 다른 $n$ 개에서 중복을 허락해 순서 없이 $r$ 개를 고르는 수는 $_n\\mathrm{H}_r={}_{n+r-1}\\mathrm{C}_r$ 이에요.",
+        "크기 순서가 정해진 값들은 고르기만 하면 자리가 정해져요."
+      ],
+      "steps": [
+        {
+          "title": "고르기만 하면 돼요",
+          "body": "$Y$ 에서 중복을 허락해 네 값을 고르면, 작은 것부터 $f(1),\\,f(2),\\,f(3),\\,f(4)$ 로 하나로 정해져요."
+        },
+        {
+          "title": "중복조합",
+          "body": "$$_5\\mathrm{H}_4={}_8\\mathrm{C}_4=70$$"
+        }
+      ],
+      "tip": "등호가 없는 $f(1)<f(2)<f(3)<f(4)$ 이면 같은 값을 고를 수 없어 $_5\\mathrm{C}_4=5$ 예요. 등호가 있으면 중복조합이에요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "$\\left(x+\\dfrac{a}{x}\\right)^6$ 의 전개식에서 $x^2$ 의 계수가 $60$ 일 때, 양수 $a$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "ans = [s for s in solve(Eq(expand((x + t/x)**6).coeff(x, 2), 60), t) if s > 0][0]",
+      "choiceChecks": [
+        "1",
+        "sqrt(Rational(60, 15))",
+        "3",
+        "Rational(60, 15)",
+        "5"
+      ],
+      "concepts": [
+        "이항정리: $(a+b)^n$ 의 일반항은 $_n\\mathrm{C}_r\\,a^{n-r}b^r$ 이에요. 괄호 $n$ 개 중 $b$ 를 꺼낼 $r$ 개를 고르는 수가 계수예요."
+      ],
+      "steps": [
+        {
+          "title": "일반항",
+          "body": "$$_6\\mathrm{C}_r\\,x^{6-r}\\left(\\frac ax\\right)^r={}_6\\mathrm{C}_r\\,a^r\\,x^{6-2r}$$"
+        },
+        {
+          "title": "$x^2$ 이 되는 $r$",
+          "body": "$6-2r=2$ 에서 $r=2$ 예요."
+        },
+        {
+          "title": "방정식",
+          "body": "$_6\\mathrm{C}_2\\,a^2=15a^2=60$ 이라 $a^2=4$, 양수 $a=2$ 예요."
+        }
+      ],
+      "tip": "$\\frac ax$ 를 거듭제곱하면 $a$ 도 함께 $r$ 제곱돼요. $a$ 를 한 번만 곱하면 $a=4$ 가 나와 틀려요."
+    }
+  ]
+}
