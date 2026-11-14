@@ -12,6 +12,7 @@
     "lint": "biome check .",
     "test": "node --test 'test/**/*.test.ts'",
     "setup-python": "python3 -m venv .venv && .venv/bin/pip install -q -r verify/requirements.txt",
+    "verify:diff": "node scripts/verify-diff.ts",
     "verify:unit": "sh -c 'node scripts/dump-problems.ts --unit \"$0\" && .venv/bin/python verify/verify.py .cache/problems-\"$0\".json'"
   },
   "dependencies": {
