@@ -73,3 +73,4 @@
 - coord 할선·접선: 절댓값 곡선(뾰족점) 처리, "접선 없음" 표시 — math2-diff-coefficient
 - coord 직선 그리기 채점: 정답 여러 개 허용(곡선 밖 점에서 접선 2개) — math2-tangent
 - coord 목표 점 숨기기(기울기 12 되는 곳, 평균값 정리) — math2-diff-polynomial, math2-tangent
+- coord: 조각 함수 곡선(지금은 log(Abs(1-x))-log(1-x) 꼼수), 빈 점(○)·찬 점(●) 표시, 슬라이더 목표 — math2-limit, math2-continuity
