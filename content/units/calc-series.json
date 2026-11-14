@@ -1,0 +1,1475 @@
+{
+  "id": "calc-series",
+  "course": "미적분",
+  "unit": "수열의 극한",
+  "title": "급수",
+  "prereq": [
+    "calc-seq-limit",
+    "math1-sigma"
+  ],
+  "suneung": [
+    "미적 29"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$",
+    "$\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}\\ (-1<r<1)$",
+    "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+    "$\\sum a_n$ 수렴 $\\Rightarrow \\lim_{n\\to\\infty}a_n=0$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "one": {
+        "value": "1",
+        "check": "summation(Rational(1,2)**n, (n, 1, oo))"
+      },
+      "two": {
+        "value": "2",
+        "check": "summation(Rational(1,2)**(n-1), (n, 1, oo))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "미적분 · 수열의 극한",
+        "title": "끝없이 더해도\n합이 정해질 수 있을까요?",
+        "lead": "끝없이 이어지는 덧셈을 점으로 찍어 보고, 한 값에 다가가는지 눈으로 확인해요. 등비급수의 합 공식은 마지막에 한 줄로 정리해요.",
+        "meta": [
+          "급수",
+          "등비급수"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "반씩 줄여 가며\n끝없이 더하면?",
+        "lead": "피자 한 판에서 처음엔 반을 먹고, 다음엔 남은 것의 반, 또 남은 것의 반을 먹어요. 이렇게 끝없이 먹으면 모두 몇 판일까요? $\\frac12+\\frac14+\\frac18+\\cdots$ 의 값이에요.",
+        "choices": [
+          {
+            "value": "2",
+            "check": "summation(Rational(1,2)**(n-1), (n, 1, oo))",
+            "feedback": "$1+\\frac12+\\frac14+\\cdots$ 의 값이에요. 처음 먹은 것은 한 판이 아니라 반 판이에요. 피자가 한 판뿐이라 그보다 많이 먹을 수도 없어요."
+          },
+          {
+            "value": "7/8",
+            "check": "summation(Rational(1,2)**n, (n, 1, 3))",
+            "feedback": "세 번까지만 먹은 양이에요. 끝없이 먹으면 그보다 조금씩 더 늘어나요."
+          },
+          {
+            "value": "1",
+            "check": "summation(Rational(1,2)**n, (n, 1, oo))"
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "summation(Rational(1,2)**n, (n, 1, oo))",
+        "reveal": "**맞아요.** 먹을 때마다 남은 양이 반으로 줄어요.",
+        "thoughts": [
+          "먹은 양은 $\\frac12$, $\\frac34$, $\\frac78$, … 로 늘어요.",
+          "남은 양은 $\\frac12$, $\\frac14$, $\\frac18$, … 로 줄어 0 에 다가가요."
+        ],
+        "conclude": "끝없이 더해도 합은 {{one}}판을 넘지 않아요. ==더한 값들이 한 값에 다가가는지==를 보면 돼요."
+      },
+      {
+        "kind": "explore",
+        "id": "plot",
+        "chip": "손으로 해 보기",
+        "title": "더한 값을\n점으로 찍어 보세요",
+        "lead": "처음 $n$ 개를 더한 값을 $S_n$ 이라 해요. $S_1=\\frac12$, $S_2=\\frac12+\\frac14$, $S_3=\\frac12+\\frac14+\\frac18$ 을 계산해 $(n,\\,S_n)$ 자리에 점을 찍어 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "connect",
+            "x": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 1,
+              "step": "1/8"
+            },
+            "objects": [
+              {
+                "id": "S",
+                "curve": "1-(1/2)**x",
+                "label": "점들이 지나는 길",
+                "tone": "soft"
+              },
+              {
+                "id": "L",
+                "curve": "1",
+                "label": "$y=1$",
+                "tone": "accent"
+              }
+            ],
+            "task": {
+              "pointsOn": {
+                "curve": "S",
+                "count": 3
+              }
+            },
+            "intro": "$S_1$, $S_2$, $S_3$ 자리를 눌러 점을 찍어요. 찍은 점은 차례로 이어져요.",
+            "done": "$S_1=\\frac12$, $S_2=\\frac34$, $S_3=\\frac78$ 이에요. 점이 오른쪽으로 갈수록 $y=1$ 에 바짝 붙어요."
+          }
+        },
+        "after": "한 번 더할 때마다 $1$ 까지 남은 간격이 반으로 줄어요. 그래서 점은 $1$ 을 넘지 않고 ==한 값에 한없이 가까워져요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "race",
+        "chip": "두 번째 해 보기",
+        "title": "끝없이 커질까,\n한 값에 머물까",
+        "lead": "P 는 $\\frac12+\\frac14+\\cdots$ 의 부분합이에요. Q 는 $1+(\\sqrt2-1)+(\\sqrt3-\\sqrt2)+\\cdots$ 의 부분합인데, 이웃한 항이 지워져 $\\sqrt n$ 이 돼요. 두 급수 모두 더하는 수가 0 에 다가가요. 두 점을 오른쪽 끝까지 끌어 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 30,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "S",
+                "curve": "1-(1/2)**x",
+                "label": "$\\frac12+\\frac14+\\cdots$ 의 부분합"
+              },
+              {
+                "id": "T",
+                "curve": "sqrt(x)",
+                "label": "$1+(\\sqrt2-1)+\\cdots$ 의 부분합 $\\sqrt n$",
+                "tone": "accent"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "S",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "T",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "Q"
+              },
+              {
+                "readout": "x(P)",
+                "label": "P 의 $n$",
+                "digits": 0
+              },
+              {
+                "readout": "y(P)",
+                "label": "P 의 높이",
+                "digits": 4
+              },
+              {
+                "readout": "x(Q)",
+                "label": "Q 의 $n$",
+                "digits": 0
+              },
+              {
+                "readout": "y(Q)",
+                "label": "Q 의 높이",
+                "digits": 2
+              }
+            ],
+            "intro": "P 와 Q 를 오른쪽으로 끌어 높이를 비교해 보세요.",
+            "done": "P 는 아무리 가도 1 아래에 머물고, Q 는 느리지만 계속 올라가요."
+          }
+        },
+        "after": "Q 의 높이 $\\sqrt n$ 은 $n$ 을 키우면 얼마든지 커져요. ==더하는 수가 0 으로 가도 합이 한 값에 머문다는 보장은 없어요.=="
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "급수",
+            "body": "수열의 항을 끝없이 더한 식 $\\sum_{n=1}^{\\infty}a_n=a_1+a_2+a_3+\\cdots$ 이에요."
+          },
+          {
+            "term": "부분합",
+            "body": "처음 $n$ 개까지 더한 값 $S_n=\\sum_{k=1}^{n}a_k$ 예요. 앞에서 찍은 점의 높이예요."
+          },
+          {
+            "term": "수렴·발산",
+            "body": "$S_n$ 이 한 값 $S$ 에 다가가면 급수가 **수렴**한다고 하고, $S$ 를 급수의 합이라 해요. $\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$. 다가가는 값이 없으면 **발산**해요."
+          },
+          {
+            "term": "일반항의 극한",
+            "body": "급수가 수렴하면 $a_n=S_n-S_{n-1}\\to0$ 이에요. 하지만 Q 처럼 $a_n\\to0$ 이어도 발산할 수 있어요."
+          }
+        ],
+        "aside": "**확인** · P 의 급수는 수렴하고 합은 {{one}}이에요. Q 의 급수는 발산해요."
+      },
+      {
+        "kind": "explore",
+        "id": "geo",
+        "chip": "지름길",
+        "title": "등비급수는\n한 줄로 끝나요",
+        "lead": "첫째항이 $1$, 공비가 $r$ 인 등비급수 $1+r+r^2+\\cdots$ 의 부분합은 $S_n=\\frac{1-r^n}{1-r}$ 이에요. $r$ 를 바꿔 가며 P 를 오른쪽으로 끌어, 점이 선 $y=\\frac{1}{1-r}$ 에 다가가는지 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 20,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 12,
+              "step": 2
+            },
+            "sliders": [
+              {
+                "id": "r",
+                "min": "1/10",
+                "max": "13/10",
+                "step": "1/5",
+                "value": "1/2",
+                "label": "공비 $r$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "S",
+                "curve": "(1-r**x)/(1-r)",
+                "label": "부분합 $S_n$"
+              },
+              {
+                "id": "L",
+                "curve": "1/(1-r)",
+                "label": "$y=\\frac{1}{1-r}$",
+                "tone": "accent"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "S",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": 1
+                },
+                "name": "P"
+              },
+              {
+                "readout": "value(r)",
+                "label": "공비 $r$",
+                "digits": 1
+              },
+              {
+                "readout": "y(P)",
+                "label": "P 의 높이 $S_n$",
+                "digits": 3
+              }
+            ],
+            "intro": "공비를 1 보다 작게도, 크게도 바꿔 보세요.",
+            "done": "공비가 1 보다 작으면 점이 선 $y=\\frac{1}{1-r}$ 에 다가가고, 1 보다 크면 끝없이 올라가요."
+          }
+        },
+        "after": "$-1<r<1$ 이면 $r^n\\to0$ 이라 $S_n\\to\\frac{1}{1-r}$ 이에요. 첫째항이 $a$ 이면 모든 항이 $a$ 배라서 합도 $a$ 배, $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$ 이에요. ==합은 첫째항 ÷ (1 − 공비)==예요. 피자는 첫째항과 공비가 모두 $\\frac12$ 이라 $\\frac{1/2}{1-1/2}={{one}}$ 이었어요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 급수 $\\sum_{n=1}^{\\infty}\\frac{1}{(2n-1)(2n+1)}$ 을 구하려고 부분분수로 나눴어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "1/((2*n-1)*(2*n+1))"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "1/(2*n-1)-1/(2*n+1)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "(1/(2*n-1)-1/(2*n+1))/2",
+              "body": "두 분수를 통분하면 분자가 $(2n+1)-(2n-1)=2$ 라서 원래 식의 두 배예요. 두 인수의 차가 $2$ 이면 $\\frac12$ 을 곱해야 해요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 급수 $\\sum_{n=1}^{\\infty}\\frac{1}{\\sqrt n+\\sqrt{n+1}}$ 의 항을 유리화했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "1/(sqrt(n)+sqrt(n+1))"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sqrt(n)-sqrt(n+1)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "sqrt(n+1)-sqrt(n)",
+              "body": "분모와 분자에 $\\sqrt{n+1}-\\sqrt n$ 을 곱해야 분모가 $(n+1)-n=1$ 이 돼요. 순서를 바꾸면 부호가 뒤집혀요. 이 급수의 부분합은 $\\sqrt{n+1}-1$ 이라 Q 처럼 발산해요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "geo",
+            "q": "등비급수 $\\sum_{n=1}^{\\infty}4\\left(\\frac13\\right)^n$ 의 합을 구하세요.",
+            "hint": "지수가 $n$ 이라 첫째항은 $n=1$ 을 넣은 값이에요. 앞의 $4$ 가 아니에요.",
+            "concepts": [
+              "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$"
+            ],
+            "steps": [
+              {
+                "title": "첫째항 구하기",
+                "body": "$n=1$ 을 넣으면 $4\\cdot\\frac13=\\frac43$ 이에요."
+              },
+              {
+                "title": "공비 구하기",
+                "body": "$n$ 이 1 커질 때마다 $\\frac13$ 이 곱해지니 $r=\\frac13$ 이에요."
+              },
+              {
+                "title": "수렴하는지 확인",
+                "body": "$-1<\\frac13<1$ 이므로 수렴해요."
+              },
+              {
+                "title": "공식에 넣기",
+                "body": "$$\\frac{\\frac43}{1-\\frac13}=\\frac{\\frac43}{\\frac23}={{answer}}$$"
+              }
+            ],
+            "tip": "첫째항을 $4$ 로 두면 $\\frac{4}{1-\\frac13}=6$ 이 나와 틀려요. 지수가 $n-1$ 인지 $n$ 인지 먼저 봐요.",
+            "answer": "2",
+            "answerType": "int",
+            "check": "summation(4*Rational(1,3)**n, (n, 1, oo))"
+          },
+          {
+            "id": "tele",
+            "q": "급수 $\\sum_{n=1}^{\\infty}\\frac{1}{(2n-1)(2n+1)}$ 의 합을 구하세요.",
+            "hint": "함정 1 에서 고친 부분분수로 나누고, 부분합을 늘어놓아 지워 보세요.",
+            "concepts": [
+              "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+              "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+            ],
+            "steps": [
+              {
+                "title": "부분분수로 나누기",
+                "body": "두 인수의 차가 $2$ 이므로\n$$\\frac{1}{(2n-1)(2n+1)}=\\frac12\\left(\\frac{1}{2n-1}-\\frac{1}{2n+1}\\right)$$"
+              },
+              {
+                "title": "부분합 늘어놓기",
+                "body": "$$S_n=\\frac12\\left\\{\\left(1-\\frac13\\right)+\\left(\\frac13-\\frac15\\right)+\\cdots+\\left(\\frac{1}{2n-1}-\\frac{1}{2n+1}\\right)\\right\\}$$"
+              },
+              {
+                "title": "지워지고 남는 항",
+                "body": "이웃한 괄호끼리 지워져 처음과 끝만 남아요.\n$$S_n=\\frac12\\left(1-\\frac{1}{2n+1}\\right)$$"
+              },
+              {
+                "title": "극한 구하기",
+                "body": "$n\\to\\infty$ 이면 $\\frac{1}{2n+1}\\to0$ 이라\n$$\\lim_{n\\to\\infty}S_n=\\frac12\\cdot1={{answer}}$$"
+              }
+            ],
+            "tip": "$\\frac12$ 을 빠뜨리면 답이 $1$ 로 두 배가 돼요. 통분해서 원래 식이 나오는지 확인하는 습관이 좋아요.",
+            "answer": "1/2",
+            "answerType": "fraction",
+            "check": "summation(1/((2*n-1)*(2*n+1)), (n, 1, oo))"
+          },
+          {
+            "id": "cond",
+            "q": "등비급수 $\\sum_{n=1}^{\\infty}\\left(\\frac{x-1}{3}\\right)^n$ 이 수렴하도록 하는 정수 $x$ 의 개수를 구하세요.",
+            "hint": "공비가 $\\frac{x-1}{3}$ 이에요. 수렴 조건은 $-1<r<1$ 이에요.",
+            "concepts": [
+              "등비급수 $\\sum ar^{n-1}$ ($a\\ne0$) 은 $-1<r<1$ 일 때만 수렴해요."
+            ],
+            "steps": [
+              {
+                "title": "공비 찾기",
+                "body": "첫째항과 공비가 모두 $\\frac{x-1}{3}$ 인 등비급수예요."
+              },
+              {
+                "title": "수렴 조건",
+                "body": "$$-1<\\frac{x-1}{3}<1$$"
+              },
+              {
+                "title": "범위 풀기",
+                "body": "모든 변에 $3$ 을 곱하면 $-3<x-1<3$, 모든 변에 $1$ 을 더하면 $-2<x<4$ 예요."
+              },
+              {
+                "title": "정수 세기",
+                "body": "$-1,\\ 0,\\ 1,\\ 2,\\ 3$ 으로 {{answer}}개예요."
+              }
+            ],
+            "tip": "$x=-2$ 이면 공비가 $-1$, $x=4$ 이면 공비가 $1$ 이라 둘 다 발산해요. 끝값은 빼야 해요.",
+            "answer": "5",
+            "answerType": "int",
+            "check": "ans = len([x for x in range(-50, 51) if Abs(Rational(x - 1, 3)) < 1])"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "급수의 합은 부분합 $S_n$ 의 **극한**이에요. 점이 한 값에 다가가면 수렴이에요.",
+          "등비급수 $\\sum_{n=1}^{\\infty}ar^{n-1}$ 은 $-1<r<1$ 일 때만 수렴하고 합은 $\\frac{a}{1-r}$ 이에요. 첫째항은 $n=1$ 을 넣어 확인해요.",
+          "분수 꼴은 부분분수로 나눠 늘어놓으면 이웃끼리 지워져요. 두 인수의 차가 $k$ 이면 $\\frac1k$ 을 곱해요.",
+          "수렴하면 $a_n\\to0$ 이지만 거꾸로는 아니에요. 수능에서는 등비급수의 합과, 도형이 끝없이 되풀이될 때의 넓이 합으로 자주 나와요."
+        ],
+        "done": "급수 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "calc-series-geo-sum",
+    "calc-series-telescope",
+    "calc-series-converge-count",
+    "calc-series-limit-an"
+  ],
+  "problems": [
+    {
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}2\\left(\\frac{3}{5}\\right)^{n}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "fraction",
+      "check": "summation(2*Rational(3,5)**n, (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "첫째항 구하기",
+          "body": "$n=1$ 을 넣은 항이 첫째항이에요. 첫째항은 $\\frac{6}{5}$ 이에요."
+        },
+        {
+          "title": "공비 구하기",
+          "body": "$n$ 이 1 커질 때마다 곱해지는 수라서 공비는 $r=\\frac{3}{5}$ 이에요."
+        },
+        {
+          "title": "수렴하는지 확인",
+          "body": "$-1<\\frac{3}{5}<1$ 이므로 이 급수는 수렴해요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{\\frac{6}{5}}{1-\\frac{3}{5}}=\\frac{\\frac{6}{5}}{\\frac{2}{5}}=3$$"
+        }
+      ],
+      "tip": "지수가 $n$ 이면 첫째항은 앞의 계수가 아니라 $n=1$ 을 넣은 값 $\\frac{6}{5}$ 이에요. 계수를 그대로 첫째항으로 쓰면 $\\frac{2}{\\frac{2}{5}}=5$ 처럼 틀린 값이 나와요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "calc-series-geo-sum",
+      "seed": 1000
+    },
+    {
+      "q": "급수 $\\sum_{n=1}^{\\infty}\\frac{1}{n(n+1)}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "fraction",
+      "check": "summation(1/((n + 0)*(n + 1)), (n, 1, oo))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 인수의 차가 $1$ 이므로\n$$\\frac{1}{n(n+1)}=\\frac{1}{n}-\\frac{1}{n+1}$$"
+        },
+        {
+          "title": "부분합 늘어놓기",
+          "body": "$$S_n=\\left(1-\\frac{1}{2}\\right)+\\left(\\frac{1}{2}-\\frac{1}{3}\\right)+\\left(\\frac{1}{3}-\\frac{1}{4}\\right)+\\cdots$$"
+        },
+        {
+          "title": "지워지고 남는 항",
+          "body": "빼는 항이 바로 다음 괄호의 더하는 항과 지워져요. 앞의 1개와 뒤의 1개만 남아요.\n$$S_n=1-\\frac{1}{n+1}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$n\\to\\infty$ 이면 뒤의 항은 모두 $0$ 으로 가요.\n$$\\lim_{n\\to\\infty}S_n=1$$"
+        }
+      ],
+      "tip": "분모의 두 인수 차가 $1$ 이면 앞에 따로 곱할 수가 없어요. 바로 이웃한 괄호끼리 지워져 처음과 끝 하나씩 남아요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "calc-series-telescope",
+      "seed": 1001
+    },
+    {
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}\\left(\\frac{2x}{5}\\right)^n$ 이 수렴하도록 하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "ans = len([x for x in range(-60, 61) if Abs(Rational(2*x - (0), 5)) < 1])",
+      "concepts": [
+        "등비급수 $\\sum ar^{n-1}$ ($a\\ne0$) 은 $-1<r<1$ 일 때만 수렴해요."
+      ],
+      "steps": [
+        {
+          "title": "공비 찾기",
+          "body": "첫째항과 공비가 모두 $r=\\frac{2x}{5}$ 인 등비급수예요."
+        },
+        {
+          "title": "수렴 조건 세우기",
+          "body": "$$-1<\\frac{2x}{5}<1$$"
+        },
+        {
+          "title": "양변에 $5$ 곱하기",
+          "body": "$$-5<2x<5$$"
+        },
+        {
+          "title": "$x$ 의 범위",
+          "body": "모든 변에 같은 수를 더하고 $x$ 의 계수로 나누면\n$$-\\frac{5}{2}<x<\\frac{5}{2}$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "범위 안의 정수는 $-2,\\ -1,\\ 0,\\ 1,\\ 2$, 모두 $5$ 개예요."
+        }
+      ],
+      "tip": "등비수열 $\\{r^n\\}$ 은 $r=1$ 에서도 수렴하지만, 등비급수는 $r=1$ 이면 같은 수를 끝없이 더해 발산해요. 그래서 등호가 없는 $-1<r<1$ 이에요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "calc-series-converge-count",
+      "seed": 1002
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 에 대하여 급수 $\\sum_{n=1}^{\\infty}\\left(a_n-\\frac{-n-3}{n+5}\\right)$ 이 수렴할 때, $\\lim_{n\\to\\infty}(4a_n)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-4",
+      "answerType": "int",
+      "check": "ans = 4*limit((-1*n + (-3))/(n + 5), n, oo) + (0)",
+      "concepts": [
+        "$\\sum a_n$ 이 수렴하면 $\\lim_{n\\to\\infty}a_n=0$ 이에요(거꾸로는 성립하지 않아요).",
+        "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "일반항의 극한은 0",
+          "body": "급수가 수렴하니 더하는 항은 $0$ 으로 가요.\n$$\\lim_{n\\to\\infty}\\left(a_n-\\frac{-n-3}{n+5}\\right)=0$$"
+        },
+        {
+          "title": "빼는 식의 극한",
+          "body": "분모·분자를 $n$ 으로 나누면 $\\frac{-n-3}{n+5}\\to-1$ 이에요."
+        },
+        {
+          "title": "$a_n$ 의 극한",
+          "body": "$a_n=\\left(a_n-\\frac{-n-3}{n+5}\\right)+\\frac{-n-3}{n+5}$ 이므로 $\\lim a_n=0+(-1)=-1$ 이에요."
+        },
+        {
+          "title": "구하는 극한",
+          "body": "$$\\lim_{n\\to\\infty}(4a_n)=4\\cdot(-1)=-4$$"
+        }
+      ],
+      "tip": "항이 $0$ 으로 간다고 해서 급수가 수렴하는 건 아니에요. 이 문제는 \"수렴한다\"는 조건에서 거꾸로 항의 극한을 끌어낸 거예요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "calc-series-limit-an",
+      "seed": 1003
+    },
+    {
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}2\\left(-\\frac{1}{2}\\right)^{n}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "-2/3",
+      "answerType": "fraction",
+      "check": "summation(2*Rational(-1,2)**n, (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "첫째항 구하기",
+          "body": "$n=1$ 을 넣은 항이 첫째항이에요. 첫째항은 $-1$ 이에요."
+        },
+        {
+          "title": "공비 구하기",
+          "body": "$n$ 이 1 커질 때마다 곱해지는 수라서 공비는 $r=-\\frac{1}{2}$ 이에요."
+        },
+        {
+          "title": "수렴하는지 확인",
+          "body": "$-1<-\\frac{1}{2}<1$ 이므로 이 급수는 수렴해요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{-1}{1-(-\\frac{1}{2})}=\\frac{-1}{\\frac{3}{2}}=-\\frac{2}{3}$$"
+        }
+      ],
+      "tip": "지수가 $n$ 이면 첫째항은 앞의 계수가 아니라 $n=1$ 을 넣은 값 $-1$ 이에요. 계수를 그대로 첫째항으로 쓰면 $\\frac{2}{\\frac{3}{2}}=\\frac{4}{3}$ 처럼 틀린 값이 나와요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "calc-series-geo-sum",
+      "seed": 1004
+    },
+    {
+      "q": "급수 $\\sum_{n=1}^{\\infty}\\frac{6}{(n+1)(n+3)}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "5/2",
+      "answerType": "fraction",
+      "check": "summation(6/((n + 1)*(n + 3)), (n, 1, oo))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 인수의 차가 $2$ 이므로\n$$\\frac{6}{(n+1)(n+3)}=3\\left(\\frac{1}{n+1}-\\frac{1}{n+3}\\right)$$"
+        },
+        {
+          "title": "부분합 늘어놓기",
+          "body": "$$S_n=3\\left\\{\\left(\\frac{1}{2}-\\frac{1}{4}\\right)+\\left(\\frac{1}{3}-\\frac{1}{5}\\right)+\\left(\\frac{1}{4}-\\frac{1}{6}\\right)+\\cdots\\right\\}$$"
+        },
+        {
+          "title": "지워지고 남는 항",
+          "body": "빼는 항이 2칸 뒤 괄호의 더하는 항과 지워져요. 앞의 2개와 뒤의 2개만 남아요.\n$$S_n=3\\left\\{\\frac{1}{2}+\\frac{1}{3}-\\left(\\frac{1}{n+2}+\\frac{1}{n+3}\\right)\\right\\}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$n\\to\\infty$ 이면 뒤의 항은 모두 $0$ 으로 가요.\n$$\\lim_{n\\to\\infty}S_n=3\\left(\\frac{1}{2}+\\frac{1}{3}\\right)=\\frac{5}{2}$$"
+        }
+      ],
+      "tip": "차가 $2$ 이면 $\\frac{1}{2}$ 을 곱해야 해요. 빠뜨리면 답이 $2$ 배로 커져요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "calc-series-telescope",
+      "seed": 1005
+    },
+    {
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}\\left(\\frac{2x+3}{7}\\right)^n$ 이 수렴하도록 하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "ans = len([x for x in range(-60, 61) if Abs(Rational(2*x - (-3), 7)) < 1])",
+      "concepts": [
+        "등비급수 $\\sum ar^{n-1}$ ($a\\ne0$) 은 $-1<r<1$ 일 때만 수렴해요."
+      ],
+      "steps": [
+        {
+          "title": "공비 찾기",
+          "body": "첫째항과 공비가 모두 $r=\\frac{2x+3}{7}$ 인 등비급수예요."
+        },
+        {
+          "title": "수렴 조건 세우기",
+          "body": "$$-1<\\frac{2x+3}{7}<1$$"
+        },
+        {
+          "title": "양변에 $7$ 곱하기",
+          "body": "$$-7<2x+3<7$$"
+        },
+        {
+          "title": "$x$ 의 범위",
+          "body": "모든 변에 같은 수를 더하고 $x$ 의 계수로 나누면\n$$-5<x<2$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "범위 안의 정수는 $-4,\\ -3,\\ -2,\\ -1,\\ 0,\\ 1$, 모두 $6$ 개예요."
+        }
+      ],
+      "tip": "등비수열 $\\{r^n\\}$ 은 $r=1$ 에서도 수렴하지만, 등비급수는 $r=1$ 이면 같은 수를 끝없이 더해 발산해요. 그래서 등호가 없는 $-1<r<1$ 이에요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "calc-series-converge-count",
+      "seed": 1006
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 에 대하여 급수 $\\sum_{n=1}^{\\infty}\\left(a_n-\\frac{4n-3}{n+1}\\right)$ 이 수렴할 때, $\\lim_{n\\to\\infty}(-2a_n-5)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-13",
+      "answerType": "int",
+      "check": "ans = -2*limit((4*n + (-3))/(n + 1), n, oo) + (-5)",
+      "concepts": [
+        "$\\sum a_n$ 이 수렴하면 $\\lim_{n\\to\\infty}a_n=0$ 이에요(거꾸로는 성립하지 않아요).",
+        "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "일반항의 극한은 0",
+          "body": "급수가 수렴하니 더하는 항은 $0$ 으로 가요.\n$$\\lim_{n\\to\\infty}\\left(a_n-\\frac{4n-3}{n+1}\\right)=0$$"
+        },
+        {
+          "title": "빼는 식의 극한",
+          "body": "분모·분자를 $n$ 으로 나누면 $\\frac{4n-3}{n+1}\\to4$ 예요."
+        },
+        {
+          "title": "$a_n$ 의 극한",
+          "body": "$a_n=\\left(a_n-\\frac{4n-3}{n+1}\\right)+\\frac{4n-3}{n+1}$ 이므로 $\\lim a_n=0+4=4$ 예요."
+        },
+        {
+          "title": "구하는 극한",
+          "body": "$$\\lim_{n\\to\\infty}(-2a_n-5)=-2\\cdot4-5=-13$$"
+        }
+      ],
+      "tip": "항이 $0$ 으로 간다고 해서 급수가 수렴하는 건 아니에요. 이 문제는 \"수렴한다\"는 조건에서 거꾸로 항의 극한을 끌어낸 거예요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "calc-series-limit-an",
+      "seed": 1007
+    },
+    {
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}5\\left(\\frac{2}{5}\\right)^{n-1}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "25/3",
+      "answerType": "fraction",
+      "check": "summation(5*Rational(2,5)**(n-1), (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "첫째항 구하기",
+          "body": "$n=1$ 을 넣은 항이 첫째항이에요. 첫째항은 $5$ 예요."
+        },
+        {
+          "title": "공비 구하기",
+          "body": "$n$ 이 1 커질 때마다 곱해지는 수라서 공비는 $r=\\frac{2}{5}$ 예요."
+        },
+        {
+          "title": "수렴하는지 확인",
+          "body": "$-1<\\frac{2}{5}<1$ 이므로 이 급수는 수렴해요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{5}{1-\\frac{2}{5}}=\\frac{5}{\\frac{3}{5}}=\\frac{25}{3}$$"
+        }
+      ],
+      "tip": "공비가 분수여도 $-1<r<1$ 이면 수렴해요. 부분합 $S_n=\\frac{5\\{1-(\\frac{2}{5})^n\\}}{1-\\frac{2}{5}}$ 에서 $(\\frac{2}{5})^n\\to0$ 이 되기 때문이에요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "calc-series-geo-sum",
+      "seed": 1008
+    },
+    {
+      "q": "급수 $\\sum_{n=1}^{\\infty}\\frac{6}{(n+1)(n+4)}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "13/6",
+      "answerType": "fraction",
+      "check": "summation(6/((n + 1)*(n + 4)), (n, 1, oo))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 인수의 차가 $3$ 이므로\n$$\\frac{6}{(n+1)(n+4)}=2\\left(\\frac{1}{n+1}-\\frac{1}{n+4}\\right)$$"
+        },
+        {
+          "title": "부분합 늘어놓기",
+          "body": "$$S_n=2\\left\\{\\left(\\frac{1}{2}-\\frac{1}{5}\\right)+\\left(\\frac{1}{3}-\\frac{1}{6}\\right)+\\left(\\frac{1}{4}-\\frac{1}{7}\\right)+\\cdots\\right\\}$$"
+        },
+        {
+          "title": "지워지고 남는 항",
+          "body": "빼는 항이 3칸 뒤 괄호의 더하는 항과 지워져요. 앞의 3개와 뒤의 3개만 남아요.\n$$S_n=2\\left\\{\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{4}-\\left(\\frac{1}{n+2}+\\frac{1}{n+3}+\\frac{1}{n+4}\\right)\\right\\}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$n\\to\\infty$ 이면 뒤의 항은 모두 $0$ 으로 가요.\n$$\\lim_{n\\to\\infty}S_n=2\\left(\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{4}\\right)=\\frac{13}{6}$$"
+        }
+      ],
+      "tip": "차가 $3$ 이면 $\\frac{1}{3}$ 을 곱해야 해요. 빠뜨리면 답이 $3$ 배로 커져요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "calc-series-telescope",
+      "seed": 1009
+    },
+    {
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}\\left(\\frac{2x-3}{7}\\right)^n$ 이 수렴하도록 하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "ans = len([x for x in range(-60, 61) if Abs(Rational(2*x - (3), 7)) < 1])",
+      "concepts": [
+        "등비급수 $\\sum ar^{n-1}$ ($a\\ne0$) 은 $-1<r<1$ 일 때만 수렴해요."
+      ],
+      "steps": [
+        {
+          "title": "공비 찾기",
+          "body": "첫째항과 공비가 모두 $r=\\frac{2x-3}{7}$ 인 등비급수예요."
+        },
+        {
+          "title": "수렴 조건 세우기",
+          "body": "$$-1<\\frac{2x-3}{7}<1$$"
+        },
+        {
+          "title": "양변에 $7$ 곱하기",
+          "body": "$$-7<2x-3<7$$"
+        },
+        {
+          "title": "$x$ 의 범위",
+          "body": "모든 변에 같은 수를 더하고 $x$ 의 계수로 나누면\n$$-2<x<5$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "범위 안의 정수는 $-1,\\ 0,\\ 1,\\ 2,\\ 3,\\ 4$, 모두 $6$ 개예요."
+        }
+      ],
+      "tip": "등비수열 $\\{r^n\\}$ 은 $r=1$ 에서도 수렴하지만, 등비급수는 $r=1$ 이면 같은 수를 끝없이 더해 발산해요. 그래서 등호가 없는 $-1<r<1$ 이에요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "calc-series-converge-count",
+      "seed": 1010
+    },
+    {
+      "q": "수열 $\\{a_n\\}$ 에 대하여 급수 $\\sum_{n=1}^{\\infty}\\left(a_n-\\frac{5n+2}{n+5}\\right)$ 이 수렴할 때, $\\lim_{n\\to\\infty}(3a_n-2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "13",
+      "answerType": "int",
+      "check": "ans = 3*limit((5*n + (2))/(n + 5), n, oo) + (-2)",
+      "concepts": [
+        "$\\sum a_n$ 이 수렴하면 $\\lim_{n\\to\\infty}a_n=0$ 이에요(거꾸로는 성립하지 않아요).",
+        "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "일반항의 극한은 0",
+          "body": "급수가 수렴하니 더하는 항은 $0$ 으로 가요.\n$$\\lim_{n\\to\\infty}\\left(a_n-\\frac{5n+2}{n+5}\\right)=0$$"
+        },
+        {
+          "title": "빼는 식의 극한",
+          "body": "분모·분자를 $n$ 으로 나누면 $\\frac{5n+2}{n+5}\\to5$ 예요."
+        },
+        {
+          "title": "$a_n$ 의 극한",
+          "body": "$a_n=\\left(a_n-\\frac{5n+2}{n+5}\\right)+\\frac{5n+2}{n+5}$ 이므로 $\\lim a_n=0+5=5$ 예요."
+        },
+        {
+          "title": "구하는 극한",
+          "body": "$$\\lim_{n\\to\\infty}(3a_n-2)=3\\cdot5-2=13$$"
+        }
+      ],
+      "tip": "항이 $0$ 으로 간다고 해서 급수가 수렴하는 건 아니에요. 이 문제는 \"수렴한다\"는 조건에서 거꾸로 항의 극한을 끌어낸 거예요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "calc-series-limit-an",
+      "seed": 1011
+    },
+    {
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}5\\left(\\frac{1}{3}\\right)^{n-1}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "15/2",
+      "answerType": "fraction",
+      "check": "summation(5*Rational(1,3)**(n-1), (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "첫째항 구하기",
+          "body": "$n=1$ 을 넣은 항이 첫째항이에요. 첫째항은 $5$ 예요."
+        },
+        {
+          "title": "공비 구하기",
+          "body": "$n$ 이 1 커질 때마다 곱해지는 수라서 공비는 $r=\\frac{1}{3}$ 이에요."
+        },
+        {
+          "title": "수렴하는지 확인",
+          "body": "$-1<\\frac{1}{3}<1$ 이므로 이 급수는 수렴해요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{5}{1-\\frac{1}{3}}=\\frac{5}{\\frac{2}{3}}=\\frac{15}{2}$$"
+        }
+      ],
+      "tip": "공비가 분수여도 $-1<r<1$ 이면 수렴해요. 부분합 $S_n=\\frac{5\\{1-(\\frac{1}{3})^n\\}}{1-\\frac{1}{3}}$ 에서 $(\\frac{1}{3})^n\\to0$ 이 되기 때문이에요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "calc-series-geo-sum",
+      "seed": 1012
+    },
+    {
+      "q": "급수 $\\sum_{n=1}^{\\infty}\\frac{3}{n(n+1)}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "fraction",
+      "check": "summation(3/((n + 0)*(n + 1)), (n, 1, oo))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 인수의 차가 $1$ 이므로\n$$\\frac{3}{n(n+1)}=3\\left(\\frac{1}{n}-\\frac{1}{n+1}\\right)$$"
+        },
+        {
+          "title": "부분합 늘어놓기",
+          "body": "$$S_n=3\\left\\{\\left(1-\\frac{1}{2}\\right)+\\left(\\frac{1}{2}-\\frac{1}{3}\\right)+\\left(\\frac{1}{3}-\\frac{1}{4}\\right)+\\cdots\\right\\}$$"
+        },
+        {
+          "title": "지워지고 남는 항",
+          "body": "빼는 항이 바로 다음 괄호의 더하는 항과 지워져요. 앞의 1개와 뒤의 1개만 남아요.\n$$S_n=3\\left\\{1-\\frac{1}{n+1}\\right\\}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$n\\to\\infty$ 이면 뒤의 항은 모두 $0$ 으로 가요.\n$$\\lim_{n\\to\\infty}S_n=3\\cdot1=3$$"
+        }
+      ],
+      "tip": "분모의 두 인수 차가 $1$ 이면 앞에 따로 곱할 수가 없어요. 바로 이웃한 괄호끼리 지워져 처음과 끝 하나씩 남아요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "calc-series-telescope",
+      "seed": 1013
+    },
+    {
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}\\left(\\frac{x-3}{7}\\right)^n$ 이 수렴하도록 하는 정수 $x$ 의 개수를 구하세요.",
+      "choices": null,
+      "answer": "13",
+      "answerType": "int",
+      "check": "ans = len([x for x in range(-60, 61) if Abs(Rational(1*x - (3), 7)) < 1])",
+      "concepts": [
+        "등비급수 $\\sum ar^{n-1}$ ($a\\ne0$) 은 $-1<r<1$ 일 때만 수렴해요."
+      ],
+      "steps": [
+        {
+          "title": "공비 찾기",
+          "body": "첫째항과 공비가 모두 $r=\\frac{x-3}{7}$ 인 등비급수예요."
+        },
+        {
+          "title": "수렴 조건 세우기",
+          "body": "$$-1<\\frac{x-3}{7}<1$$"
+        },
+        {
+          "title": "양변에 $7$ 곱하기",
+          "body": "$$-7<x-3<7$$"
+        },
+        {
+          "title": "$x$ 의 범위",
+          "body": "모든 변에 같은 수를 더하면\n$$-4<x<10$$"
+        },
+        {
+          "title": "정수 세기",
+          "body": "범위 안의 정수는 $-3,\\ -2,\\ -1,\\ 0,\\ 1,\\ 2,\\ 3,\\ 4,\\ 5,\\ 6,\\ 7,\\ 8,\\ 9$, 모두 $13$ 개예요."
+        }
+      ],
+      "tip": "등비수열 $\\{r^n\\}$ 은 $r=1$ 에서도 수렴하지만, 등비급수는 $r=1$ 이면 같은 수를 끝없이 더해 발산해요. 그래서 등호가 없는 $-1<r<1$ 이에요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "calc-series-converge-count",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}\\left(\\frac23\\right)^n$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "summation(Rational(2,3)**n, (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$"
+      ],
+      "steps": [
+        {
+          "title": "첫째항과 공비",
+          "body": "$n=1$ 을 넣으면 첫째항은 $\\frac23$, 공비도 $\\frac23$ 이에요."
+        },
+        {
+          "title": "수렴 확인",
+          "body": "$-1<\\frac23<1$ 이라 수렴해요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{\\frac23}{1-\\frac23}=\\frac{\\frac23}{\\frac13}=2$$"
+        }
+      ],
+      "tip": "첫째항을 $1$ 로 두면 $\\frac{1}{1-\\frac23}=3$ 이 나와 틀려요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "급수 $\\sum_{n=1}^{\\infty}\\frac{1}{(n+1)(n+2)}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "1/2",
+      "answerType": "fraction",
+      "check": "summation(1/((n+1)*(n+2)), (n, 1, oo))",
+      "concepts": [
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$",
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "부분분수로 나누기",
+          "body": "두 인수의 차가 $1$ 이라 $\\frac{1}{(n+1)(n+2)}=\\frac{1}{n+1}-\\frac{1}{n+2}$ 예요."
+        },
+        {
+          "title": "부분합 늘어놓기",
+          "body": "$$S_n=\\left(\\frac12-\\frac13\\right)+\\left(\\frac13-\\frac14\\right)+\\cdots+\\left(\\frac{1}{n+1}-\\frac{1}{n+2}\\right)=\\frac12-\\frac{1}{n+2}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$\\frac{1}{n+2}\\to0$ 이므로 합은 $\\frac12$ 이에요."
+        }
+      ],
+      "tip": "$n=1$ 일 때 첫 괄호가 $\\frac12-\\frac13$ 으로 시작해요. $1$ 부터 시작한다고 착각하면 답이 $1$ 이 돼요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "급수 $\\sum_{n=1}^{\\infty}a_n$ 의 첫째항부터 제$n$항까지의 합이 $S_n=\\frac{3n}{n+2}$ 일 때, 급수 $\\sum_{n=1}^{\\infty}a_n$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "limit(3*n/(n+2), n, oo)",
+      "concepts": [
+        "$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}S_n$ (부분합의 극한)"
+      ],
+      "steps": [
+        {
+          "title": "급수의 합은 부분합의 극한",
+          "body": "$$\\sum_{n=1}^{\\infty}a_n=\\lim_{n\\to\\infty}\\frac{3n}{n+2}$$"
+        },
+        {
+          "title": "분모·분자를 $n$ 으로 나누기",
+          "body": "$$\\lim_{n\\to\\infty}\\frac{3}{1+\\frac2n}=3$$"
+        }
+      ],
+      "tip": "$a_n$ 을 따로 구할 필요가 없어요. 부분합이 주어지면 바로 극한을 구해요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "급수 $\\sum_{n=1}^{\\infty}\\frac{3^n+2^n}{6^n}$ 의 합을 구하세요.",
+      "choices": null,
+      "answer": "3/2",
+      "answerType": "fraction",
+      "check": "summation((3**n + 2**n)/6**n, (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$",
+        "두 급수가 수렴하면 $\\sum(a_n+b_n)=\\sum a_n+\\sum b_n$"
+      ],
+      "steps": [
+        {
+          "title": "두 급수로 나누기",
+          "body": "$\\frac{3^n}{6^n}=\\left(\\frac12\\right)^n$, $\\frac{2^n}{6^n}=\\left(\\frac13\\right)^n$ 이에요."
+        },
+        {
+          "title": "앞 급수의 합",
+          "body": "$$\\sum_{n=1}^{\\infty}\\left(\\frac12\\right)^n=\\frac{\\frac12}{1-\\frac12}=1$$"
+        },
+        {
+          "title": "뒤 급수의 합",
+          "body": "$$\\sum_{n=1}^{\\infty}\\left(\\frac13\\right)^n=\\frac{\\frac13}{1-\\frac13}=\\frac12$$"
+        },
+        {
+          "title": "더하기",
+          "body": "$1+\\frac12=\\frac32$ 이에요."
+        }
+      ],
+      "tip": "두 급수가 모두 수렴할 때만 나눠 더할 수 있어요. 여기서는 둘 다 공비가 1 보다 작아 괜찮아요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "수열 $\\{a_n\\}$ 에 대하여 급수 $\\sum_{n=1}^{\\infty}\\left(a_n-\\frac{3n}{n+1}\\right)$ 이 수렴할 때, $\\lim_{n\\to\\infty}(2a_n+1)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "ans = 2*limit(3*n/(n+1), n, oo) + 1",
+      "concepts": [
+        "$\\sum a_n$ 이 수렴하면 $\\lim_{n\\to\\infty}a_n=0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "일반항의 극한은 0",
+          "body": "급수가 수렴하니 $\\lim_{n\\to\\infty}\\left(a_n-\\frac{3n}{n+1}\\right)=0$ 이에요."
+        },
+        {
+          "title": "$a_n$ 의 극한",
+          "body": "$\\frac{3n}{n+1}\\to3$ 이므로 $\\lim a_n=3$ 이에요."
+        },
+        {
+          "title": "구하는 극한",
+          "body": "$2\\cdot3+1=7$ 이에요."
+        }
+      ],
+      "tip": "급수가 수렴한다는 조건은 '항이 0 으로 간다'는 정보로 바꿔 써요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$\\sum_{n=1}^{24}\\frac{1}{\\sqrt n+\\sqrt{n+1}}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "ans = simplify(sum(1/(sqrt(k) + sqrt(k + 1)) for k in range(1, 25)))",
+      "concepts": [
+        "$\\frac{1}{\\sqrt n+\\sqrt{n+1}}=\\sqrt{n+1}-\\sqrt n$ (유리화)"
+      ],
+      "steps": [
+        {
+          "title": "유리화하기",
+          "body": "분모·분자에 $\\sqrt{n+1}-\\sqrt n$ 을 곱하면 $\\frac{1}{\\sqrt n+\\sqrt{n+1}}=\\sqrt{n+1}-\\sqrt n$ 이에요."
+        },
+        {
+          "title": "늘어놓기",
+          "body": "$$(\\sqrt2-1)+(\\sqrt3-\\sqrt2)+\\cdots+(\\sqrt{25}-\\sqrt{24})$$"
+        },
+        {
+          "title": "지우고 남는 항",
+          "body": "$\\sqrt{25}-1=5-1=4$ 예요."
+        }
+      ],
+      "tip": "같은 식을 끝없이 더하면 부분합 $\\sqrt{n+1}-1$ 이 끝없이 커져 발산해요. 항이 0 으로 가도 발산하는 예예요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}r^n$ 의 합이 $3$ 일 때, 공비 $r$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "solve(Eq(r/(1 - r), 3), r)[0]",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$"
+      ],
+      "steps": [
+        {
+          "title": "합을 식으로",
+          "body": "첫째항이 $r$, 공비가 $r$ 이므로 합은 $\\frac{r}{1-r}$ 이에요."
+        },
+        {
+          "title": "방정식 세우기",
+          "body": "$\\frac{r}{1-r}=3$ 에서 $r=3-3r$ 이에요."
+        },
+        {
+          "title": "풀기",
+          "body": "$4r=3$, $r=\\frac34$ 이고 $-1<\\frac34<1$ 이라 조건도 맞아요."
+        }
+      ],
+      "tip": "첫째항을 $1$ 로 두면 $\\frac{1}{1-r}=3$, $r=\\frac23$ 으로 틀려요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "등비급수 $\\sum_{n=1}^{\\infty}\\left(\\frac{2x-1}{5}\\right)^n$ 이 수렴하도록 하는 $x$ 의 값의 범위가 $\\alpha<x<\\beta$ 일 때, $\\beta-\\alpha$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "5",
+      "answerType": "int",
+      "check": "ans = (lambda s: s.sup - s.inf)(solveset(Abs((2*x - 1)/5) < 1, x, S.Reals))",
+      "concepts": [
+        "등비급수 $\\sum ar^{n-1}$ ($a\\ne0$) 은 $-1<r<1$ 일 때만 수렴해요."
+      ],
+      "steps": [
+        {
+          "title": "수렴 조건",
+          "body": "$$-1<\\frac{2x-1}{5}<1$$"
+        },
+        {
+          "title": "모든 변에 5 곱하기",
+          "body": "$$-5<2x-1<5$$"
+        },
+        {
+          "title": "범위 풀기",
+          "body": "$-4<2x<6$, $-2<x<3$ 이에요."
+        },
+        {
+          "title": "차 구하기",
+          "body": "$\\beta-\\alpha=3-(-2)=5$ 예요."
+        }
+      ],
+      "tip": "등비급수의 수렴 조건에는 등호가 없어요. 공비가 $1$ 이면 같은 수를 끝없이 더해 발산해요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "순환소수 $0.363636\\cdots$ 은 $0.36+0.0036+0.000036+\\cdots$ 처럼 등비급수로 쓸 수 있어요. 이 값을 기약분수로 나타내세요.",
+      "choices": null,
+      "answer": "4/11",
+      "answerType": "fraction",
+      "check": "summation(Rational(36,100)*Rational(1,100)**(n-1), (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$"
+      ],
+      "steps": [
+        {
+          "title": "첫째항과 공비",
+          "body": "첫째항은 $\\frac{36}{100}$, 뒤로 갈 때마다 $\\frac{1}{100}$ 이 곱해지니 공비는 $\\frac{1}{100}$ 이에요."
+        },
+        {
+          "title": "공식에 넣기",
+          "body": "$$\\frac{\\frac{36}{100}}{1-\\frac{1}{100}}=\\frac{\\frac{36}{100}}{\\frac{99}{100}}=\\frac{36}{99}$$"
+        },
+        {
+          "title": "약분하기",
+          "body": "$\\frac{36}{99}=\\frac{4}{11}$ 이에요."
+        }
+      ],
+      "tip": "순환마디가 두 자리이면 분모가 $99$ 가 되는 까닭이 바로 이 등비급수예요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "높이 $9\\,\\mathrm{m}$ 에서 떨어뜨린 공이 땅에 닿을 때마다 직전 높이의 $\\frac23$ 만큼 튀어 올라요. 이 공이 끝없이 튈 때 움직인 거리의 합은 몇 m 일까요?",
+      "choices": null,
+      "answer": "45",
+      "answerType": "int",
+      "check": "9 + 2*summation(9*Rational(2,3)**n, (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$"
+      ],
+      "steps": [
+        {
+          "title": "처음 떨어진 거리",
+          "body": "처음에 $9\\,\\mathrm{m}$ 를 내려와요."
+        },
+        {
+          "title": "튀어 오른 높이들",
+          "body": "튀어 오르는 높이는 $9\\cdot\\frac23$, $9\\cdot\\left(\\frac23\\right)^2$, … 이고 올라간 만큼 다시 내려와요."
+        },
+        {
+          "title": "올라간 높이의 합",
+          "body": "$$\\sum_{n=1}^{\\infty}9\\left(\\frac23\\right)^n=\\frac{6}{1-\\frac23}=18$$"
+        },
+        {
+          "title": "전체 거리",
+          "body": "오르내림이 두 번씩이라 $9+2\\times18=45$ 예요."
+        }
+      ],
+      "tip": "처음 9 m 는 내려가기만 하고, 그 뒤 높이는 오르고 내리는 두 번을 세야 해요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "수열 $\\{a_n\\}$ 에 대하여 $\\sum_{n=1}^{\\infty}\\left(\\frac{a_n}{n}-2\\right)=5$ 일 때, $\\lim_{n\\to\\infty}\\frac{a_n+3n}{2n-1}$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$\\frac32$",
+        "$2$",
+        "$\\frac52$",
+        "$3$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "u = 2  # 급수가 수렴하므로 a_n/n - 2 -> 0, 곧 a_n/n 의 극한\nans = limit((u + 3)/(2 - 1/n), n, oo)",
+      "choiceChecks": [
+        "1",
+        "Rational(3,2)",
+        "2",
+        "Rational(5,2)",
+        "3"
+      ],
+      "concepts": [
+        "$\\sum a_n$ 이 수렴하면 $\\lim_{n\\to\\infty}a_n=0$ 이에요.",
+        "$\\frac{\\infty}{\\infty}$ 꼴은 분모의 최고차항으로 나눠요."
+      ],
+      "steps": [
+        {
+          "title": "일반항의 극한",
+          "body": "급수가 수렴하니 $\\lim_{n\\to\\infty}\\left(\\frac{a_n}{n}-2\\right)=0$, 곧 $\\frac{a_n}{n}\\to2$ 예요."
+        },
+        {
+          "title": "분모·분자를 $n$ 으로 나누기",
+          "body": "$$\\frac{a_n+3n}{2n-1}=\\frac{\\frac{a_n}{n}+3}{2-\\frac1n}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$\\frac{2+3}{2-0}=\\frac52$ 예요. 답은 ④번이에요."
+        }
+      ],
+      "tip": "급수의 합 $5$ 는 극한값과 상관없어요. '수렴한다'는 사실만 쓰여요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "첫째항이 양수이고 공비가 $-1<r<1$ 인 등비수열 $\\{a_n\\}$ 이 $\\sum_{n=1}^{\\infty}a_n=4$, $\\sum_{n=1}^{\\infty}{a_n}^2=\\frac{16}{3}$ 을 만족시킬 때, $a_3$ 의 값은?",
+      "choices": [
+        "$\\frac18$",
+        "$\\frac14$",
+        "$\\frac12$",
+        "$1$",
+        "$2$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "sol = [s for s in solve([Eq(a/(1 - r), 4), Eq(a**2/(1 - r**2), Rational(16,3))], [a, r], dict=True) if s[a] > 0 and Abs(s[r]) < 1][0]\nans = sol[a]*sol[r]**2",
+      "choiceChecks": [
+        "Rational(1,8)",
+        "Rational(1,4)",
+        "Rational(1,2)",
+        "1",
+        "2"
+      ],
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$",
+        "$\\{{a_n}^2\\}$ 은 첫째항 $a^2$, 공비 $r^2$ 인 등비수열이에요."
+      ],
+      "steps": [
+        {
+          "title": "두 식 세우기",
+          "body": "$\\frac{a}{1-r}=4$, $\\frac{a^2}{1-r^2}=\\frac{16}{3}$ 이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$1-r^2=(1-r)(1+r)$ 이라 둘째 식을 첫째 식으로 나누면 $\\frac{a}{1+r}=\\frac43$ 이에요."
+        },
+        {
+          "title": "공비 구하기",
+          "body": "$a=4(1-r)=\\frac43(1+r)$ 에서 $12-12r=4+4r$, $r=\\frac12$ 예요."
+        },
+        {
+          "title": "첫째항과 $a_3$",
+          "body": "$a=4\\cdot\\frac12=2$ 이므로 $a_3=2\\cdot\\left(\\frac12\\right)^2=\\frac12$ 이에요. 답은 ③번이에요."
+        }
+      ],
+      "tip": "제곱한 수열도 등비수열이라는 점이 열쇠예요. 두 합을 나누면 $a$ 와 $r$ 의 관계가 간단해져요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "수열 $\\{a_n\\}$ 의 일반항이 $a_n=1+2+3+\\cdots+n$ 일 때, $\\sum_{n=1}^{\\infty}\\frac{1}{a_n}$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$\\frac32$",
+        "$2$",
+        "$\\frac52$",
+        "$3$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "summation(1/summation(k, (k, 1, n)), (n, 1, oo))",
+      "choiceChecks": [
+        "1",
+        "Rational(3,2)",
+        "2",
+        "Rational(5,2)",
+        "3"
+      ],
+      "concepts": [
+        "$1+2+\\cdots+n=\\frac{n(n+1)}{2}$",
+        "$\\frac{1}{AB}=\\frac{1}{B-A}\\left(\\frac1A-\\frac1B\\right)$"
+      ],
+      "steps": [
+        {
+          "title": "일반항 정리",
+          "body": "$a_n=\\frac{n(n+1)}{2}$ 이므로 $\\frac{1}{a_n}=\\frac{2}{n(n+1)}$ 이에요."
+        },
+        {
+          "title": "부분분수로 나누기",
+          "body": "$$\\frac{2}{n(n+1)}=2\\left(\\frac1n-\\frac{1}{n+1}\\right)$$"
+        },
+        {
+          "title": "부분합",
+          "body": "$S_n=2\\left(1-\\frac{1}{n+1}\\right)$ 이에요."
+        },
+        {
+          "title": "극한",
+          "body": "$n\\to\\infty$ 이면 $S_n\\to2$ 예요. 답은 ③번이에요."
+        }
+      ],
+      "tip": "시그마 공식으로 일반항을 먼저 정리하면 익숙한 부분분수 급수가 돼요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "한 변의 길이가 $6$ 인 정사각형의 네 변을 모두 같은 방향으로 $2:4$ 로 나누는 점을 차례로 이으면 안쪽에 정사각형이 생기고, 바깥 귀퉁이에 합동인 직각삼각형 네 개가 남아요. 그중 한 개에 색칠해요. 안쪽 정사각형에서 같은 과정을 끝없이 되풀이할 때, 색칠한 부분의 넓이의 합을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "t = Rational(2*4, 2)\nratio = Rational(2**2 + 4**2, 6**2)\nans = summation(t*ratio**(n-1), (n, 1, oo))",
+      "concepts": [
+        "등비급수: $-1<r<1$ 이면 $\\sum_{n=1}^{\\infty}ar^{n-1}=\\frac{a}{1-r}$",
+        "닮은 도형이 되풀이되면 넓이는 (길이의 비)$^2$ 씩 줄어들어요."
+      ],
+      "steps": [
+        {
+          "title": "첫 번째 색칠 넓이",
+          "body": "직각삼각형의 두 변이 $2$, $4$ 라 넓이는 $\\frac12\\cdot2\\cdot4=4$ 예요."
+        },
+        {
+          "title": "안쪽 정사각형",
+          "body": "안쪽 정사각형의 한 변은 빗변 $\\sqrt{2^2+4^2}$ 이라 넓이는 $20$ 이에요."
+        },
+        {
+          "title": "넓이의 비 = 공비",
+          "body": "정사각형 넓이가 $36$ 에서 $20$ 이 되니 다음 그림은 넓이가 $\\frac{20}{36}=\\frac59$ 배예요."
+        },
+        {
+          "title": "등비급수의 합",
+          "body": "$$\\frac{4}{1-\\frac59}=\\frac{4}{\\frac49}=9$$"
+        }
+      ],
+      "tip": "도형 급수는 '첫 번째 넓이'와 '한 번 되풀이할 때 넓이가 몇 배가 되는지' 두 가지만 찾으면 돼요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "두 등비급수 $\\sum_{n=1}^{\\infty}\\left(\\frac{x-2}{3}\\right)^n$, $\\sum_{n=1}^{\\infty}\\left(\\frac{x+1}{4}\\right)^n$ 이 모두 수렴하도록 하는 정수 $x$ 의 개수는?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "ans = len([x for x in range(-50, 51) if Abs(Rational(x - 2, 3)) < 1 and Abs(Rational(x + 1, 4)) < 1])",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "등비급수 $\\sum ar^{n-1}$ ($a\\ne0$) 은 $-1<r<1$ 일 때만 수렴해요."
+      ],
+      "steps": [
+        {
+          "title": "첫째 급수의 조건",
+          "body": "$-1<\\frac{x-2}{3}<1$ 에서 $-1<x<5$ 예요."
+        },
+        {
+          "title": "둘째 급수의 조건",
+          "body": "$-1<\\frac{x+1}{4}<1$ 에서 $-5<x<3$ 이에요."
+        },
+        {
+          "title": "공통 범위",
+          "body": "둘 다 만족하는 범위는 $-1<x<3$ 이에요."
+        },
+        {
+          "title": "정수 세기",
+          "body": "$0,\\ 1,\\ 2$ 로 3개예요. 답은 ③번이에요."
+        }
+      ],
+      "tip": "두 조건을 모두 만족해야 하니 범위의 겹치는 부분만 남겨요."
+    }
+  ]
+}

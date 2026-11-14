@@ -1,0 +1,1352 @@
+{
+  "id": "calc-trig-addition",
+  "course": "미적분",
+  "unit": "미분법",
+  "title": "삼각함수의 덧셈정리",
+  "prereq": [
+    "math1-trig-graph"
+  ],
+  "suneung": [
+    "미적 27"
+  ],
+  "hours": 3,
+  "formulas": [
+    "$\\sin(\\alpha\\pm\\beta)=\\sin\\alpha\\cos\\beta\\pm\\cos\\alpha\\sin\\beta$",
+    "$\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta$",
+    "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$",
+    "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$, $\\cos2\\theta=2\\cos^2\\theta-1=1-2\\sin^2\\theta$",
+    "$\\csc\\theta=\\frac{1}{\\sin\\theta}$, $\\sec\\theta=\\frac{1}{\\cos\\theta}$, $\\cot\\theta=\\frac{1}{\\tan\\theta}$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "tan13": {
+        "value": "1/3",
+        "check": "simplify(expand_trig(tan(atan(2) - pi/4)))"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "미적분 · 삼각함수",
+        "title": "두 각을 더하면\n사인값도 더해질까요?",
+        "lead": "단위원의 점을 돌려 두 각을 이어 붙이고, 그래프를 겹쳐 보며 덧셈정리를 직접 찾아요. 배각 공식과 두 직선이 이루는 각은 그 공식 하나에서 나와요.",
+        "meta": [
+          "덧셈정리",
+          "배각 공식"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "$\\sin75^\\circ$ 는\n$\\sin30^\\circ+\\sin45^\\circ$ 일까요?",
+        "lead": "$75^\\circ=30^\\circ+45^\\circ$ 예요. 단위원의 점을 $30^\\circ$ 에서 $45^\\circ$ 만큼 더 돌려 $75^\\circ$ 에 놓고 높이를 읽어 보세요. $\\sin75^\\circ$ 에 가장 가까운 값은 무엇일까요?",
+        "widget": {
+          "type": "unitCircle",
+          "params": {
+            "unit": "deg",
+            "start": 30,
+            "snap": 15,
+            "show": [
+              "sin",
+              "cos"
+            ]
+          }
+        },
+        "format": {
+          "approx": true,
+          "digits": 2
+        },
+        "choices": [
+          {
+            "value": "1.21",
+            "check": "sin(rad(30)) + sin(rad(45))",
+            "feedback": "$\\sin30^\\circ+\\sin45^\\circ$ 를 더한 값이에요. 단위원 위 점의 높이는 1 을 넘을 수 없어요."
+          },
+          {
+            "value": "0.97",
+            "check": "sin(rad(30) + rad(45))"
+          },
+          {
+            "value": "0.35",
+            "check": "sin(rad(30))*sin(rad(45))",
+            "feedback": "두 사인값을 곱한 값이에요. $75^\\circ$ 에서 점은 훨씬 높이 있어요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "sin(rad(30) + rad(45))",
+        "reveal": "**맞아요.** 점의 높이는 약 0.966 이에요.",
+        "thoughts": [
+          "$\\sin30^\\circ+\\sin45^\\circ$ 는 약 1.207 이라 단위원 위 점의 높이가 될 수 없어요.",
+          "각을 더하는 것과 사인값을 더하는 것은 달라요."
+        ],
+        "conclude": "==사인값은 각의 덧셈을 그대로 따라가지 않아요.== 어떤 규칙이 있는지 그래프로 찾아봐요."
+      },
+      {
+        "kind": "explore",
+        "id": "overlay",
+        "chip": "손으로 해 보기",
+        "title": "두 후보를\n겹쳐 보세요",
+        "lead": "$y=\\sin(x+b)$ 는 사인 곡선을 $b$ 만큼 옆으로 민 곡선이에요. 여기에 두 후보 식을 겹쳤어요. 슬라이더로 $b$ 를 바꿔 어느 후보가 늘 겹치는지 보세요.",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": "2*pi",
+              "step": "pi/6"
+            },
+            "y": {
+              "min": -2,
+              "max": 2,
+              "step": "1/2"
+            },
+            "sliders": [
+              {
+                "id": "b",
+                "min": 0,
+                "max": "pi",
+                "step": "pi/12",
+                "value": "pi/4",
+                "label": "더하는 각 $b$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "T",
+                "curve": "sin(x+b)",
+                "label": "$y=\\sin(x+b)$"
+              },
+              {
+                "id": "W",
+                "curve": "sin(x)+sin(b)",
+                "label": "후보 ① $y=\\sin x+\\sin b$",
+                "tone": "soft"
+              },
+              {
+                "id": "F",
+                "curve": "sin(x)*cos(b)+cos(x)*sin(b)",
+                "label": "후보 ② $y=\\sin x\\cos b+\\cos x\\sin b$",
+                "tone": "accent"
+              },
+              {
+                "readout": "value(b)",
+                "label": "더하는 각 $b$",
+                "digits": 2
+              }
+            ],
+            "intro": "슬라이더를 끝에서 끝까지 움직여 보세요.",
+            "done": "후보 ② 는 $b$ 가 무엇이든 $y=\\sin(x+b)$ 와 꼭 겹치고, 후보 ① 은 $b=0$ 일 때만 겹쳐요."
+          }
+        },
+        "after": "단위원에서 점 $(\\cos x,\\,\\sin x)$ 를 $b$ 만큼 더 돌리면, 새 높이는 원래 가로·세로를 $\\sin b$, $\\cos b$ 만큼씩 섞은 값이 돼요. 그래서 ==짝을 바꿔 곱해 더해요.== 사인에는 코사인을, 코사인에는 사인을 곱해요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "사인의 덧셈정리",
+            "body": "$\\sin(\\alpha\\pm\\beta)=\\sin\\alpha\\cos\\beta\\pm\\cos\\alpha\\sin\\beta$. 부호는 괄호 안과 같아요."
+          },
+          {
+            "term": "코사인의 덧셈정리",
+            "body": "$\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta$. 부호가 괄호 안과 **거꾸로**예요."
+          },
+          {
+            "term": "탄젠트의 덧셈정리",
+            "body": "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$. 사인 식을 코사인 식으로 나눠 얻어요."
+          },
+          {
+            "term": "csc·sec·cot",
+            "body": "$\\csc\\theta=\\frac{1}{\\sin\\theta}$, $\\sec\\theta=\\frac{1}{\\cos\\theta}$, $\\cot\\theta=\\frac{1}{\\tan\\theta}$ 예요."
+          }
+        ],
+        "aside": "**확인** · $\\sin75^\\circ=\\sin30^\\circ\\cos45^\\circ+\\cos30^\\circ\\sin45^\\circ=\\frac{\\sqrt6+\\sqrt2}{4}\\approx0.966$ 으로, 단위원에서 읽은 높이와 같아요."
+      },
+      {
+        "kind": "question",
+        "id": "double",
+        "chip": "지름길",
+        "title": "같은 각을 두 번 더하면\n배각 공식",
+        "lead": "덧셈정리에서 $\\beta$ 자리에 $\\alpha$ 를 넣으면 $\\cos2\\alpha=\\cos^2\\alpha-\\sin^2\\alpha$ 가 돼요. $\\cos\\theta=\\frac35$ 일 때 $\\cos2\\theta$ 는 얼마일까요?",
+        "choices": [
+          {
+            "value": "6/5",
+            "check": "2*Rational(3,5)",
+            "feedback": "$\\cos$ 값을 2 배 했네요. 각이 2 배라고 값이 2 배가 되지 않아요. 게다가 $\\cos$ 값은 1 을 넘을 수 없어요."
+          },
+          {
+            "value": "7/25",
+            "check": "1 - 2*Rational(3,5)**2",
+            "feedback": "$1-2\\cos^2\\theta$ 로 계산했네요. $1-2\\sin^2\\theta$ 와 헷갈린 거예요. $\\sin^2\\theta=1-\\cos^2\\theta$ 를 넣으면 $2\\cos^2\\theta-1$ 이에요."
+          },
+          {
+            "value": "-7/25",
+            "check": "simplify(expand_trig(cos(2*acos(Rational(3,5)))))"
+          }
+        ],
+        "answer": 2,
+        "answerCheck": "simplify(expand_trig(cos(2*acos(Rational(3,5)))))",
+        "reveal": "**맞아요.** $\\sin^2\\theta=1-\\cos^2\\theta$ 로 바꾸면 $\\cos2\\theta=2\\cos^2\\theta-1$ 이에요.",
+        "thoughts": [
+          "$\\cos2\\theta=2\\left(\\frac35\\right)^2-1=\\frac{18}{25}-1$ 이에요.",
+          "같은 방법으로 $\\sin2\\theta=2\\sin\\theta\\cos\\theta$ 도 나와요."
+        ],
+        "conclude": "==배각 공식은 새로 외울 공식이 아니라 덧셈정리예요.=="
+      },
+      {
+        "kind": "explore",
+        "id": "lines",
+        "chip": "직접 그려 보기",
+        "title": "45° 기울어진 직선을\n그려 보세요",
+        "lead": "직선 $y=2x$ 가 $x$ 축과 이루는 각을 $\\alpha$ 라 하면 $\\tan\\alpha=2$ 예요. 이 직선과 $45^\\circ$ 를 이루면서 기울기가 양수인 직선을 그려요. 기울기 $\\tan(\\alpha-45^\\circ)$ 를 덧셈정리로 먼저 구하고, 두 손잡이를 끌어 맞춘 뒤 '확인하기'를 누르세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "line",
+            "x": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "y": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "m",
+                "curve": "2*x",
+                "label": "$y=2x$",
+                "tone": "soft"
+              }
+            ],
+            "task": {
+              "line": {
+                "slope": {
+                  "value": "1/3",
+                  "check": "simplify(expand_trig(tan(atan(2) - pi/4)))"
+                }
+              }
+            },
+            "intro": "기울기만 맞으면 어디에 그려도 돼요.",
+            "done": "맞아요. $\\tan(\\alpha-45^\\circ)=\\frac{2-1}{1+2\\cdot1}$ 이라 기울기는 {{tan13}}이에요."
+          }
+        },
+        "after": "기울기가 $m_1$, $m_2$ 인 두 직선이 이루는 예각을 $\\theta$ 라 하면 $\\tan\\theta=\\left|\\frac{m_1-m_2}{1+m_1m_2}\\right|$ 예요. 기울기가 음수인 다른 하나는 $\\tan(\\alpha+45^\\circ)$ 를 기울기로 가져요."
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · $\\sin(a+b)$ 를 펼쳤어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "sin(a+b)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "sin(a)+sin(b)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "sin(a)*cos(b)+cos(a)*sin(b)",
+              "body": "각을 더해도 사인값은 더해지지 않아요. 짝을 바꿔 $\\sin a\\cos b$ 와 $\\cos a\\sin b$ 를 더해요. 앞에서 $\\sin75^\\circ$ 로 확인했어요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · $\\cos(a-b)$ 를 펼쳤어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "cos(a-b)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "cos(a)*cos(b)-sin(a)*sin(b)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "cos(a)*cos(b)+sin(a)*sin(b)",
+              "body": "코사인의 덧셈정리는 부호가 괄호 안과 반대예요. 빼면 더해요. $b=a$ 를 넣으면 $\\cos0=\\cos^2a+\\sin^2a$ 가 되어 맞는지 바로 확인할 수 있어요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "sum",
+            "q": "$\\sin\\alpha=\\frac35$, $\\cos\\beta=\\frac{5}{13}$ 일 때, $\\sin(\\alpha+\\beta)$ 의 값을 구하세요. (단, $0<\\alpha<\\frac{\\pi}{2}$, $0<\\beta<\\frac{\\pi}{2}$)",
+            "hint": "$\\cos\\alpha$ 와 $\\sin\\beta$ 를 $\\sin^2\\theta+\\cos^2\\theta=1$ 로 먼저 구해요.",
+            "concepts": [
+              "$\\sin(\\alpha\\pm\\beta)=\\sin\\alpha\\cos\\beta\\pm\\cos\\alpha\\sin\\beta$",
+              "$\\sin^2\\theta+\\cos^2\\theta=1$"
+            ],
+            "steps": [
+              {
+                "title": "$\\cos\\alpha$ 구하기",
+                "body": "$\\alpha$ 가 예각이라 $\\cos\\alpha=\\sqrt{1-\\frac{9}{25}}=\\frac45$ 예요."
+              },
+              {
+                "title": "$\\sin\\beta$ 구하기",
+                "body": "$\\beta$ 도 예각이라 $\\sin\\beta=\\sqrt{1-\\frac{25}{169}}=\\frac{12}{13}$ 이에요."
+              },
+              {
+                "title": "덧셈정리 적용",
+                "body": "$$\\sin(\\alpha+\\beta)=\\sin\\alpha\\cos\\beta+\\cos\\alpha\\sin\\beta$$"
+              },
+              {
+                "title": "값 넣어 계산하기",
+                "body": "$$\\frac35\\cdot\\frac{5}{13}+\\frac45\\cdot\\frac{12}{13}=\\frac{15+48}{65}={{answer}}$$"
+              }
+            ],
+            "tip": "예각이라는 조건이 있어서 $\\cos\\alpha$, $\\sin\\beta$ 를 양수로 골라요. 조건이 다르면 부호부터 살펴요.",
+            "answer": "63/65",
+            "answerType": "fraction",
+            "check": "simplify(expand_trig(sin(asin(Rational(3,5)) + acos(Rational(5,13)))))"
+          },
+          {
+            "id": "tan",
+            "q": "$\\tan\\alpha=2$, $\\tan\\beta=3$ 일 때, $\\tan(\\alpha+\\beta)$ 의 값을 구하세요.",
+            "hint": "분모는 $1-\\tan\\alpha\\tan\\beta$ 예요. 부호를 조심해요.",
+            "concepts": [
+              "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+            ],
+            "steps": [
+              {
+                "title": "덧셈정리 쓰기",
+                "body": "$$\\tan(\\alpha+\\beta)=\\frac{\\tan\\alpha+\\tan\\beta}{1-\\tan\\alpha\\tan\\beta}$$"
+              },
+              {
+                "title": "분자와 분모",
+                "body": "분자는 $2+3=5$, 분모는 $1-2\\cdot3=-5$ 예요."
+              },
+              {
+                "title": "나누기",
+                "body": "$\\frac{5}{-5}={{answer}}$ 이에요."
+              }
+            ],
+            "tip": "답이 $-1$ 이면 $\\alpha+\\beta$ 는 둔각 $135^\\circ$ 예요. 두 예각을 더하면 둔각이 될 수 있어요.",
+            "answer": "-1",
+            "answerType": "int",
+            "check": "simplify(expand_trig(tan(atan(2) + atan(3))))"
+          },
+          {
+            "id": "double",
+            "q": "$\\sin\\theta=\\frac45$ 일 때, $\\sin2\\theta$ 의 값을 구하세요. (단, $0<\\theta<\\frac{\\pi}{2}$)",
+            "hint": "배각 공식 $\\sin2\\theta=2\\sin\\theta\\cos\\theta$ 에 넣을 $\\cos\\theta$ 를 먼저 구해요.",
+            "concepts": [
+              "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$, $\\cos2\\theta=2\\cos^2\\theta-1=1-2\\sin^2\\theta$",
+              "$\\sin^2\\theta+\\cos^2\\theta=1$"
+            ],
+            "steps": [
+              {
+                "title": "$\\cos\\theta$ 구하기",
+                "body": "$\\theta$ 가 예각이라 $\\cos\\theta=\\sqrt{1-\\frac{16}{25}}=\\frac35$ 예요."
+              },
+              {
+                "title": "배각 공식 적용",
+                "body": "$$\\sin2\\theta=2\\sin\\theta\\cos\\theta=2\\cdot\\frac45\\cdot\\frac35={{answer}}$$"
+              }
+            ],
+            "tip": "$\\sin2\\theta$ 를 $2\\sin\\theta=\\frac85$ 로 계산하면 1 을 넘어서 바로 틀린 걸 알 수 있어요.",
+            "answer": "24/25",
+            "answerType": "fraction",
+            "check": "simplify(expand_trig(sin(2*asin(Rational(4,5)))))"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "각을 더해도 삼각함수 값은 더해지지 않아요. $\\sin(\\alpha+\\beta)=\\sin\\alpha\\cos\\beta+\\cos\\alpha\\sin\\beta$, 짝을 바꿔 곱해 더해요.",
+          "$\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta$ 는 부호가 거꾸로예요.",
+          "$\\beta$ 자리에 $\\alpha$ 를 넣으면 배각 공식이에요. $\\sin2\\alpha=2\\sin\\alpha\\cos\\alpha$, $\\cos2\\alpha=2\\cos^2\\alpha-1=1-2\\sin^2\\alpha$.",
+          "두 직선이 이루는 각은 기울기를 $\\tan$ 으로 보고 탄젠트의 덧셈정리를 써요. 수능에서는 도형 속 각의 $\\tan$ 값을 구할 때 자주 나와요."
+        ],
+        "done": "삼각함수의 덧셈정리 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "calc-trig-addition-sin-cos",
+    "calc-trig-addition-tan",
+    "calc-trig-addition-double",
+    "calc-trig-addition-lines"
+  ],
+  "problems": [
+    {
+      "q": "$\\sin\\alpha=\\frac{4}{5}$, $\\cos\\beta=\\frac{12}{13}$ 일 때, $\\cos(\\alpha+\\beta)$ 의 값을 구하세요. (단, $0<\\alpha<\\frac{\\pi}{2}$, $0<\\beta<\\frac{\\pi}{2}$)",
+      "choices": null,
+      "answer": "16/65",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(cos(asin(Rational(4,5)) + acos(Rational(12,13)))))",
+      "concepts": [
+        "$\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\alpha$ 구하기",
+          "body": "$\\alpha$ 가 예각이라 $\\cos\\alpha>0$ 이므로 $\\cos\\alpha=\\sqrt{1-\\left(\\frac{4}{5}\\right)^2}=\\frac{3}{5}$ 이에요."
+        },
+        {
+          "title": "$\\sin\\beta$ 구하기",
+          "body": "$\\beta$ 도 예각이라 $\\sin\\beta=\\sqrt{1-\\left(\\frac{12}{13}\\right)^2}=\\frac{5}{13}$ 예요."
+        },
+        {
+          "title": "덧셈정리 적용",
+          "body": "$$\\cos(\\alpha+\\beta)=\\cos\\alpha\\cos\\beta-\\sin\\alpha\\sin\\beta$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$\\frac{3}{5}\\cdot\\frac{12}{13}-\\frac{4}{5}\\cdot\\frac{5}{13}=\\frac{36-20}{65}=\\frac{16}{65}$$"
+        }
+      ],
+      "tip": "$\\cos$ 의 덧셈정리는 부호가 거꾸로예요. $\\cos(\\alpha+\\beta)$ 에서는 가운데가 $-$ 가 돼요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "calc-trig-addition-sin-cos",
+      "seed": 1000
+    },
+    {
+      "q": "$\\tan\\alpha=\\frac{1}{3}$, $\\tan\\beta=\\frac{1}{4}$ 일 때, $\\tan(\\alpha-\\beta)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/13",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(tan(atan(Rational(1,3)) - atan(Rational(1,4)))))",
+      "concepts": [
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "덧셈정리 쓰기",
+          "body": "$$\\tan(\\alpha-\\beta)=\\frac{\\tan\\alpha-\\tan\\beta}{1+\\tan\\alpha\\tan\\beta}$$"
+        },
+        {
+          "title": "분자 계산",
+          "body": "$\\frac{1}{3}-\\frac{1}{4}=\\frac{1}{12}$"
+        },
+        {
+          "title": "분모 계산",
+          "body": "$\\tan\\alpha\\tan\\beta=\\frac{1}{12}$ 이므로 $1+\\frac{1}{12}=\\frac{13}{12}$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{\\frac{1}{12}}{\\frac{13}{12}}=\\frac{1}{13}$$"
+        }
+      ],
+      "tip": "분모의 부호는 분자와 반대예요. $\\tan(\\alpha-\\beta)$ 의 분모는 $1+\\tan\\alpha\\tan\\beta$ 예요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "calc-trig-addition-tan",
+      "seed": 1001
+    },
+    {
+      "q": "$\\sin\\theta=\\frac{5}{13}$ 일 때, $\\cos2\\theta$ 의 값을 구하세요. (단, $0<\\theta<\\frac{\\pi}{2}$)",
+      "choices": null,
+      "answer": "119/169",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(cos(2*(asin(Rational(5,13))))))",
+      "concepts": [
+        "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$",
+        "$\\cos2\\theta=\\cos^2\\theta-\\sin^2\\theta=1-2\\sin^2\\theta$",
+        "$\\tan2\\theta=\\frac{2\\tan\\theta}{1-\\tan^2\\theta}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\theta$ 구하기",
+          "body": "$\\theta$ 가 제1사분면의 각이라 $\\cos\\theta>0$ 이에요.\n$$\\cos\\theta=\\sqrt{1-\\left(\\frac{5}{13}\\right)^2}=\\frac{12}{13}$$"
+        },
+        {
+          "title": "배각 공식 적용",
+          "body": "$$\\cos2\\theta=1-2\\sin^2\\theta$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$\\cos2\\theta=1-2\\cdot\\left(\\frac{5}{13}\\right)^2=\\frac{119}{169}$$"
+        }
+      ],
+      "tip": "배각 공식은 덧셈정리에서 $\\beta$ 자리에 $\\alpha$ 를 넣은 거예요. $\\sin2\\theta$ 는 $2\\sin\\theta$ 가 아니에요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "calc-trig-addition-double",
+      "seed": 1002
+    },
+    {
+      "q": "두 직선 $y=-x+3$, $y=-2x+3$ 에 대하여, 두 직선이 이루는 예각의 크기를 $\\theta$ 라 할 때 $\\tan\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "check": "Abs(simplify(expand_trig(tan(atan(-1) - atan(-2)))))",
+      "concepts": [
+        "직선의 기울기는 $x$ 축과 이루는 각 $\\alpha$ 의 $\\tan\\alpha$ 예요.",
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "기울기를 각으로 보기",
+          "body": "두 직선이 $x$ 축과 이루는 각을 $\\alpha$, $\\beta$ 라 하면 $\\tan\\alpha=-1$, $\\tan\\beta=-2$ 예요."
+        },
+        {
+          "title": "두 각의 차",
+          "body": "$$\\tan(\\alpha-\\beta)=\\frac{-1-(-2)}{1+(-1)\\cdot(-2)}=\\frac{1}{3}$$"
+        },
+        {
+          "title": "예각으로 고치기",
+          "body": "예각의 $\\tan$ 은 양수라 절댓값을 써요. $\\tan\\theta=\\frac{1}{3}$ 이에요."
+        }
+      ],
+      "tip": "y 절편은 각에 영향을 주지 않아요. 직선을 평행이동해도 기울기, 곧 각은 그대로예요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "calc-trig-addition-lines",
+      "seed": 1003
+    },
+    {
+      "q": "$\\sin\\alpha=\\frac{4}{5}$, $\\cos\\beta=\\frac{5}{13}$ 일 때, $\\cos(\\alpha-\\beta)$ 의 값을 구하세요. (단, $0<\\alpha<\\frac{\\pi}{2}$, $0<\\beta<\\frac{\\pi}{2}$)",
+      "choices": null,
+      "answer": "63/65",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(cos(asin(Rational(4,5)) - acos(Rational(5,13)))))",
+      "concepts": [
+        "$\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\alpha$ 구하기",
+          "body": "$\\alpha$ 가 예각이라 $\\cos\\alpha>0$ 이므로 $\\cos\\alpha=\\sqrt{1-\\left(\\frac{4}{5}\\right)^2}=\\frac{3}{5}$ 이에요."
+        },
+        {
+          "title": "$\\sin\\beta$ 구하기",
+          "body": "$\\beta$ 도 예각이라 $\\sin\\beta=\\sqrt{1-\\left(\\frac{5}{13}\\right)^2}=\\frac{12}{13}$ 예요."
+        },
+        {
+          "title": "덧셈정리 적용",
+          "body": "$$\\cos(\\alpha-\\beta)=\\cos\\alpha\\cos\\beta+\\sin\\alpha\\sin\\beta$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$\\frac{3}{5}\\cdot\\frac{5}{13}+\\frac{4}{5}\\cdot\\frac{12}{13}=\\frac{15+48}{65}=\\frac{63}{65}$$"
+        }
+      ],
+      "tip": "$\\cos$ 의 덧셈정리는 부호가 거꾸로예요. $\\cos(\\alpha-\\beta)$ 에서는 가운데가 $+$ 가 돼요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "calc-trig-addition-sin-cos",
+      "seed": 1004
+    },
+    {
+      "q": "$\\tan\\alpha=3$, $\\tan\\beta=-\\frac{1}{2}$ 일 때, $\\tan(\\alpha+\\beta)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(tan(atan(3) + atan(Rational(-1,2)))))",
+      "concepts": [
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "덧셈정리 쓰기",
+          "body": "$$\\tan(\\alpha+\\beta)=\\frac{\\tan\\alpha+\\tan\\beta}{1-\\tan\\alpha\\tan\\beta}$$"
+        },
+        {
+          "title": "분자 계산",
+          "body": "$3+(-\\frac{1}{2})=\\frac{5}{2}$"
+        },
+        {
+          "title": "분모 계산",
+          "body": "$\\tan\\alpha\\tan\\beta=-\\frac{3}{2}$ 이므로 $1-(-\\frac{3}{2})=\\frac{5}{2}$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{\\frac{5}{2}}{\\frac{5}{2}}=1$$"
+        }
+      ],
+      "tip": "분모의 부호는 분자와 반대예요. $\\tan(\\alpha+\\beta)$ 의 분모는 $1-\\tan\\alpha\\tan\\beta$ 예요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "calc-trig-addition-tan",
+      "seed": 1005
+    },
+    {
+      "q": "$\\sin\\theta=\\frac{12}{13}$ 일 때, $\\tan2\\theta$ 의 값을 구하세요. (단, $\\frac{\\pi}{2}<\\theta<\\pi$)",
+      "choices": null,
+      "answer": "120/119",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(tan(2*(pi - asin(Rational(12,13))))))",
+      "concepts": [
+        "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$",
+        "$\\cos2\\theta=\\cos^2\\theta-\\sin^2\\theta=1-2\\sin^2\\theta$",
+        "$\\tan2\\theta=\\frac{2\\tan\\theta}{1-\\tan^2\\theta}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\theta$ 구하기",
+          "body": "$\\theta$ 가 제2사분면의 각이라 $\\cos\\theta<0$ 이에요.\n$$\\cos\\theta=-\\sqrt{1-\\left(\\frac{12}{13}\\right)^2}=-\\frac{5}{13}$$"
+        },
+        {
+          "title": "$\\tan\\theta$ 구하기",
+          "body": "$\\tan\\theta=\\frac{\\sin\\theta}{\\cos\\theta}=-\\frac{12}{5}$"
+        },
+        {
+          "title": "배각 공식 적용",
+          "body": "$$\\tan2\\theta=\\frac{2\\tan\\theta}{1-\\tan^2\\theta}$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$\\tan2\\theta=\\frac{2\\cdot(-\\frac{12}{5})}{1-\\left(-\\frac{12}{5}\\right)^2}=\\frac{120}{119}$$"
+        }
+      ],
+      "tip": "제2사분면에서는 $\\cos\\theta$ 가 음수예요. 부호를 놓치면 답의 부호가 바뀌어요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "calc-trig-addition-double",
+      "seed": 1006
+    },
+    {
+      "q": "두 직선 $y=3x-3$, $y=-2x-1$ 에 대하여, 두 직선이 이루는 예각의 크기를 $\\theta$ 라 할 때 $\\tan\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "fraction",
+      "check": "Abs(simplify(expand_trig(tan(atan(3) - atan(-2)))))",
+      "concepts": [
+        "직선의 기울기는 $x$ 축과 이루는 각 $\\alpha$ 의 $\\tan\\alpha$ 예요.",
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "기울기를 각으로 보기",
+          "body": "두 직선이 $x$ 축과 이루는 각을 $\\alpha$, $\\beta$ 라 하면 $\\tan\\alpha=3$, $\\tan\\beta=-2$ 예요."
+        },
+        {
+          "title": "두 각의 차",
+          "body": "$$\\tan(\\alpha-\\beta)=\\frac{3-(-2)}{1+3\\cdot(-2)}=-1$$"
+        },
+        {
+          "title": "예각으로 고치기",
+          "body": "예각의 $\\tan$ 은 양수라 절댓값을 써요. $\\tan\\theta=1$ 이에요."
+        }
+      ],
+      "tip": "y 절편은 각에 영향을 주지 않아요. 직선을 평행이동해도 기울기, 곧 각은 그대로예요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "calc-trig-addition-lines",
+      "seed": 1007
+    },
+    {
+      "q": "$\\sin\\alpha=\\frac{7}{25}$, $\\cos\\beta=\\frac{8}{17}$ 일 때, $\\sin(\\alpha+\\beta)$ 의 값을 구하세요. (단, $0<\\alpha<\\frac{\\pi}{2}$, $0<\\beta<\\frac{\\pi}{2}$)",
+      "choices": null,
+      "answer": "416/425",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(sin(asin(Rational(7,25)) + acos(Rational(8,17)))))",
+      "concepts": [
+        "$\\sin(\\alpha\\pm\\beta)=\\sin\\alpha\\cos\\beta\\pm\\cos\\alpha\\sin\\beta$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\alpha$ 구하기",
+          "body": "$\\alpha$ 가 예각이라 $\\cos\\alpha>0$ 이므로 $\\cos\\alpha=\\sqrt{1-\\left(\\frac{7}{25}\\right)^2}=\\frac{24}{25}$ 예요."
+        },
+        {
+          "title": "$\\sin\\beta$ 구하기",
+          "body": "$\\beta$ 도 예각이라 $\\sin\\beta=\\sqrt{1-\\left(\\frac{8}{17}\\right)^2}=\\frac{15}{17}$ 예요."
+        },
+        {
+          "title": "덧셈정리 적용",
+          "body": "$$\\sin(\\alpha+\\beta)=\\sin\\alpha\\cos\\beta+\\cos\\alpha\\sin\\beta$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$\\frac{7}{25}\\cdot\\frac{8}{17}+\\frac{24}{25}\\cdot\\frac{15}{17}=\\frac{56+360}{425}=\\frac{416}{425}$$"
+        }
+      ],
+      "tip": "$\\sin(\\alpha\\pm\\beta)$ 는 $\\sin\\cos$ 짝과 $\\cos\\sin$ 짝을 더하거나 빼요. 부호는 괄호 안과 같아요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "calc-trig-addition-sin-cos",
+      "seed": 1008
+    },
+    {
+      "q": "$\\tan\\alpha=-\\frac{1}{2}$, $\\tan\\beta=\\frac{3}{2}$ 일 때, $\\tan(\\alpha-\\beta)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-8",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(tan(atan(Rational(-1,2)) - atan(Rational(3,2)))))",
+      "concepts": [
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "덧셈정리 쓰기",
+          "body": "$$\\tan(\\alpha-\\beta)=\\frac{\\tan\\alpha-\\tan\\beta}{1+\\tan\\alpha\\tan\\beta}$$"
+        },
+        {
+          "title": "분자 계산",
+          "body": "$-\\frac{1}{2}-\\frac{3}{2}=-2$"
+        },
+        {
+          "title": "분모 계산",
+          "body": "$\\tan\\alpha\\tan\\beta=-\\frac{3}{4}$ 이므로 $1+(-\\frac{3}{4})=\\frac{1}{4}$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{-2}{\\frac{1}{4}}=-8$$"
+        }
+      ],
+      "tip": "분모의 부호는 분자와 반대예요. $\\tan(\\alpha-\\beta)$ 의 분모는 $1+\\tan\\alpha\\tan\\beta$ 예요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "calc-trig-addition-tan",
+      "seed": 1009
+    },
+    {
+      "q": "$\\sin\\theta=\\frac{5}{13}$ 일 때, $\\cos2\\theta$ 의 값을 구하세요. (단, $\\frac{\\pi}{2}<\\theta<\\pi$)",
+      "choices": null,
+      "answer": "119/169",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(cos(2*(pi - asin(Rational(5,13))))))",
+      "concepts": [
+        "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$",
+        "$\\cos2\\theta=\\cos^2\\theta-\\sin^2\\theta=1-2\\sin^2\\theta$",
+        "$\\tan2\\theta=\\frac{2\\tan\\theta}{1-\\tan^2\\theta}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\theta$ 구하기",
+          "body": "$\\theta$ 가 제2사분면의 각이라 $\\cos\\theta<0$ 이에요.\n$$\\cos\\theta=-\\sqrt{1-\\left(\\frac{5}{13}\\right)^2}=-\\frac{12}{13}$$"
+        },
+        {
+          "title": "배각 공식 적용",
+          "body": "$$\\cos2\\theta=1-2\\sin^2\\theta$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$\\cos2\\theta=1-2\\cdot\\left(\\frac{5}{13}\\right)^2=\\frac{119}{169}$$"
+        }
+      ],
+      "tip": "제2사분면에서는 $\\cos\\theta$ 가 음수예요. 부호를 놓치면 답의 부호가 바뀌어요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "calc-trig-addition-double",
+      "seed": 1010
+    },
+    {
+      "q": "두 직선 $y=4x+3$, $y=2x+2$ 에 대하여, 두 직선이 이루는 예각의 크기를 $\\theta$ 라 할 때 $\\tan\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2/9",
+      "answerType": "fraction",
+      "check": "Abs(simplify(expand_trig(tan(atan(4) - atan(2)))))",
+      "concepts": [
+        "직선의 기울기는 $x$ 축과 이루는 각 $\\alpha$ 의 $\\tan\\alpha$ 예요.",
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "기울기를 각으로 보기",
+          "body": "두 직선이 $x$ 축과 이루는 각을 $\\alpha$, $\\beta$ 라 하면 $\\tan\\alpha=4$, $\\tan\\beta=2$ 예요."
+        },
+        {
+          "title": "두 각의 차",
+          "body": "$$\\tan(\\alpha-\\beta)=\\frac{4-2}{1+4\\cdot2}=\\frac{2}{9}$$"
+        },
+        {
+          "title": "예각으로 고치기",
+          "body": "예각의 $\\tan$ 은 양수라 절댓값을 써요. $\\tan\\theta=\\frac{2}{9}$ 예요."
+        }
+      ],
+      "tip": "y 절편은 각에 영향을 주지 않아요. 직선을 평행이동해도 기울기, 곧 각은 그대로예요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "calc-trig-addition-lines",
+      "seed": 1011
+    },
+    {
+      "q": "$\\sin\\alpha=\\frac{12}{13}$, $\\cos\\beta=\\frac{8}{17}$ 일 때, $\\cos(\\alpha-\\beta)$ 의 값을 구하세요. (단, $0<\\alpha<\\frac{\\pi}{2}$, $0<\\beta<\\frac{\\pi}{2}$)",
+      "choices": null,
+      "answer": "220/221",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(cos(asin(Rational(12,13)) - acos(Rational(8,17)))))",
+      "concepts": [
+        "$\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\alpha$ 구하기",
+          "body": "$\\alpha$ 가 예각이라 $\\cos\\alpha>0$ 이므로 $\\cos\\alpha=\\sqrt{1-\\left(\\frac{12}{13}\\right)^2}=\\frac{5}{13}$ 예요."
+        },
+        {
+          "title": "$\\sin\\beta$ 구하기",
+          "body": "$\\beta$ 도 예각이라 $\\sin\\beta=\\sqrt{1-\\left(\\frac{8}{17}\\right)^2}=\\frac{15}{17}$ 예요."
+        },
+        {
+          "title": "덧셈정리 적용",
+          "body": "$$\\cos(\\alpha-\\beta)=\\cos\\alpha\\cos\\beta+\\sin\\alpha\\sin\\beta$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$\\frac{5}{13}\\cdot\\frac{8}{17}+\\frac{12}{13}\\cdot\\frac{15}{17}=\\frac{40+180}{221}=\\frac{220}{221}$$"
+        }
+      ],
+      "tip": "$\\cos$ 의 덧셈정리는 부호가 거꾸로예요. $\\cos(\\alpha-\\beta)$ 에서는 가운데가 $+$ 가 돼요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "calc-trig-addition-sin-cos",
+      "seed": 1012
+    },
+    {
+      "q": "$\\tan\\alpha=\\frac{1}{2}$, $\\tan\\beta=\\frac{2}{3}$ 일 때, $\\tan(\\alpha+\\beta)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7/4",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(tan(atan(Rational(1,2)) + atan(Rational(2,3)))))",
+      "concepts": [
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "덧셈정리 쓰기",
+          "body": "$$\\tan(\\alpha+\\beta)=\\frac{\\tan\\alpha+\\tan\\beta}{1-\\tan\\alpha\\tan\\beta}$$"
+        },
+        {
+          "title": "분자 계산",
+          "body": "$\\frac{1}{2}+\\frac{2}{3}=\\frac{7}{6}$"
+        },
+        {
+          "title": "분모 계산",
+          "body": "$\\tan\\alpha\\tan\\beta=\\frac{1}{3}$ 이므로 $1-\\frac{1}{3}=\\frac{2}{3}$"
+        },
+        {
+          "title": "나누기",
+          "body": "$$\\frac{\\frac{7}{6}}{\\frac{2}{3}}=\\frac{7}{4}$$"
+        }
+      ],
+      "tip": "분모의 부호는 분자와 반대예요. $\\tan(\\alpha+\\beta)$ 의 분모는 $1-\\tan\\alpha\\tan\\beta$ 예요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "calc-trig-addition-tan",
+      "seed": 1013
+    },
+    {
+      "q": "$\\sin\\theta=\\frac{3}{5}$ 일 때, $\\tan2\\theta$ 의 값을 구하세요. (단, $\\frac{\\pi}{2}<\\theta<\\pi$)",
+      "choices": null,
+      "answer": "-24/7",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(tan(2*(pi - asin(Rational(3,5))))))",
+      "concepts": [
+        "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$",
+        "$\\cos2\\theta=\\cos^2\\theta-\\sin^2\\theta=1-2\\sin^2\\theta$",
+        "$\\tan2\\theta=\\frac{2\\tan\\theta}{1-\\tan^2\\theta}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\theta$ 구하기",
+          "body": "$\\theta$ 가 제2사분면의 각이라 $\\cos\\theta<0$ 이에요.\n$$\\cos\\theta=-\\sqrt{1-\\left(\\frac{3}{5}\\right)^2}=-\\frac{4}{5}$$"
+        },
+        {
+          "title": "$\\tan\\theta$ 구하기",
+          "body": "$\\tan\\theta=\\frac{\\sin\\theta}{\\cos\\theta}=-\\frac{3}{4}$"
+        },
+        {
+          "title": "배각 공식 적용",
+          "body": "$$\\tan2\\theta=\\frac{2\\tan\\theta}{1-\\tan^2\\theta}$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$\\tan2\\theta=\\frac{2\\cdot(-\\frac{3}{4})}{1-\\left(-\\frac{3}{4}\\right)^2}=-\\frac{24}{7}$$"
+        }
+      ],
+      "tip": "제2사분면에서는 $\\cos\\theta$ 가 음수예요. 부호를 놓치면 답의 부호가 바뀌어요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "calc-trig-addition-double",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\sin15^\\circ\\cos15^\\circ$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/4",
+      "answerType": "fraction",
+      "check": "simplify(sin(rad(15))*cos(rad(15)))",
+      "concepts": [
+        "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$, $\\cos2\\theta=2\\cos^2\\theta-1=1-2\\sin^2\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "배각 공식 거꾸로 쓰기",
+          "body": "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$ 이므로 $\\sin\\theta\\cos\\theta=\\frac12\\sin2\\theta$ 예요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$\\sin15^\\circ\\cos15^\\circ=\\frac12\\sin30^\\circ=\\frac12\\cdot\\frac12=\\frac14$$"
+        }
+      ],
+      "tip": "$\\sin15^\\circ$ 를 따로 구하지 않아도 돼요. 곱의 꼴이 보이면 배각 공식을 떠올려요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\sin75^\\circ\\cos15^\\circ+\\cos75^\\circ\\sin15^\\circ$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "simplify(sin(rad(75))*cos(rad(15)) + cos(rad(75))*sin(rad(15)))",
+      "concepts": [
+        "$\\sin(\\alpha\\pm\\beta)=\\sin\\alpha\\cos\\beta\\pm\\cos\\alpha\\sin\\beta$"
+      ],
+      "steps": [
+        {
+          "title": "덧셈정리의 모양 찾기",
+          "body": "$\\sin\\alpha\\cos\\beta+\\cos\\alpha\\sin\\beta$ 꼴이라 $\\sin(\\alpha+\\beta)$ 예요."
+        },
+        {
+          "title": "각 더하기",
+          "body": "$$\\sin(75^\\circ+15^\\circ)=\\sin90^\\circ=1$$"
+        }
+      ],
+      "tip": "덧셈정리는 거꾸로, 곧 펼친 식을 하나로 묶을 때도 써요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "두 예각 $\\alpha$, $\\beta$ 에 대하여 $\\tan\\alpha=\\frac12$, $\\tan\\beta=\\frac13$ 일 때, $\\tan(\\alpha+\\beta)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "simplify(expand_trig(tan(atan(Rational(1,2)) + atan(Rational(1,3)))))",
+      "concepts": [
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "덧셈정리 쓰기",
+          "body": "$$\\tan(\\alpha+\\beta)=\\frac{\\frac12+\\frac13}{1-\\frac12\\cdot\\frac13}$$"
+        },
+        {
+          "title": "분자와 분모",
+          "body": "분자는 $\\frac56$, 분모는 $1-\\frac16=\\frac56$ 이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$\\frac{5/6}{5/6}=1$ 이에요."
+        }
+      ],
+      "tip": "$\\tan(\\alpha+\\beta)=1$ 이고 $\\alpha+\\beta$ 가 $0$ 과 $\\pi$ 사이이니 $\\alpha+\\beta=\\frac{\\pi}{4}$ 예요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "$\\sin\\theta=\\frac35$ 일 때, $\\sec\\theta+\\cot\\theta$ 의 값을 구하세요. (단, $0<\\theta<\\frac{\\pi}{2}$)",
+      "choices": null,
+      "answer": "31/12",
+      "answerType": "fraction",
+      "check": "simplify(sec(asin(Rational(3,5))) + cot(asin(Rational(3,5))))",
+      "concepts": [
+        "$\\csc\\theta=\\frac{1}{\\sin\\theta}$, $\\sec\\theta=\\frac{1}{\\cos\\theta}$, $\\cot\\theta=\\frac{1}{\\tan\\theta}$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\theta$ 구하기",
+          "body": "예각이라 $\\cos\\theta=\\sqrt{1-\\frac{9}{25}}=\\frac45$ 예요."
+        },
+        {
+          "title": "$\\sec\\theta$",
+          "body": "$\\sec\\theta=\\frac{1}{\\cos\\theta}=\\frac54$ 예요."
+        },
+        {
+          "title": "$\\cot\\theta$",
+          "body": "$\\cot\\theta=\\frac{\\cos\\theta}{\\sin\\theta}=\\frac43$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$\\frac54+\\frac43=\\frac{15+16}{12}=\\frac{31}{12}$ 이에요."
+        }
+      ],
+      "tip": "$\\csc$·$\\sec$·$\\cot$ 은 각각 $\\sin$·$\\cos$·$\\tan$ 의 역수예요. $\\sec$ 를 $\\sin$ 의 역수로 헷갈리기 쉬워요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "$\\sin\\alpha=\\frac45$, $\\cos\\beta=\\frac{12}{13}$ 일 때, $\\cos(\\alpha-\\beta)$ 의 값을 구하세요. (단, $\\frac{\\pi}{2}<\\alpha<\\pi$, $0<\\beta<\\frac{\\pi}{2}$)",
+      "choices": null,
+      "answer": "-16/65",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(cos((pi - asin(Rational(4,5))) - acos(Rational(12,13)))))",
+      "concepts": [
+        "$\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$"
+      ],
+      "steps": [
+        {
+          "title": "$\\cos\\alpha$ 구하기",
+          "body": "$\\alpha$ 가 제2사분면의 각이라 $\\cos\\alpha=-\\frac35$ 예요."
+        },
+        {
+          "title": "$\\sin\\beta$ 구하기",
+          "body": "$\\beta$ 는 예각이라 $\\sin\\beta=\\frac{5}{13}$ 이에요."
+        },
+        {
+          "title": "덧셈정리 적용",
+          "body": "$$\\cos(\\alpha-\\beta)=\\cos\\alpha\\cos\\beta+\\sin\\alpha\\sin\\beta$$"
+        },
+        {
+          "title": "값 넣어 계산하기",
+          "body": "$$-\\frac35\\cdot\\frac{12}{13}+\\frac45\\cdot\\frac{5}{13}=\\frac{-36+20}{65}=-\\frac{16}{65}$$"
+        }
+      ],
+      "tip": "제2사분면에서는 $\\cos$ 이 음수예요. 부호를 놓치면 답이 $\\frac{56}{65}$ 로 틀려요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "$\\sin\\theta+\\cos\\theta=\\frac12$ 일 때, $\\sin2\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3/4",
+      "answerType": "fraction",
+      "check": "ans = simplify(Rational(1,2)**2 - (sin(x)**2 + cos(x)**2))",
+      "concepts": [
+        "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$, $\\cos2\\theta=2\\cos^2\\theta-1=1-2\\sin^2\\theta$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$"
+      ],
+      "steps": [
+        {
+          "title": "양변 제곱하기",
+          "body": "$$\\sin^2\\theta+2\\sin\\theta\\cos\\theta+\\cos^2\\theta=\\frac14$$"
+        },
+        {
+          "title": "$\\sin^2\\theta+\\cos^2\\theta=1$ 이용",
+          "body": "$1+\\sin2\\theta=\\frac14$ 이에요."
+        },
+        {
+          "title": "답",
+          "body": "$\\sin2\\theta=\\frac14-1=-\\frac34$ 예요."
+        }
+      ],
+      "tip": "$2\\sin\\theta\\cos\\theta$ 가 바로 $\\sin2\\theta$ 예요. 합을 제곱하면 곱이 나온다는 점을 이용해요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "두 직선 $y=3x+1$, $y=-\\frac12x+2$ 가 이루는 예각의 크기를 $\\theta$ 라 할 때, $\\tan\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "Abs(simplify(expand_trig(tan(atan(3) - atan(Rational(-1,2))))))",
+      "concepts": [
+        "직선의 기울기는 $x$ 축과 이루는 각 $\\alpha$ 의 $\\tan\\alpha$ 예요.",
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "기울기를 각으로",
+          "body": "$\\tan\\alpha=3$, $\\tan\\beta=-\\frac12$ 라 두어요."
+        },
+        {
+          "title": "두 각의 차",
+          "body": "$$\\tan(\\alpha-\\beta)=\\frac{3+\\frac12}{1-\\frac32}=\\frac{\\frac72}{-\\frac12}=-7$$"
+        },
+        {
+          "title": "예각으로",
+          "body": "예각의 $\\tan$ 은 양수라 $\\tan\\theta=7$ 이에요."
+        }
+      ],
+      "tip": "기울기의 곱이 −1 이면 분모가 0 이 되어 두 직선이 수직이에요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "$\\tan\\theta=\\frac12$ 일 때, $\\tan2\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4/3",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(tan(2*atan(Rational(1,2)))))",
+      "concepts": [
+        "$\\tan2\\theta=\\frac{2\\tan\\theta}{1-\\tan^2\\theta}$"
+      ],
+      "steps": [
+        {
+          "title": "배각 공식",
+          "body": "$$\\tan2\\theta=\\frac{2\\tan\\theta}{1-\\tan^2\\theta}$$"
+        },
+        {
+          "title": "대입하기",
+          "body": "$$\\frac{2\\cdot\\frac12}{1-\\frac14}=\\frac{1}{\\frac34}=\\frac43$$"
+        }
+      ],
+      "tip": "$\\tan$ 의 배각 공식도 덧셈정리에서 $\\beta=\\alpha$ 로 둔 거예요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$\\sin\\theta=\\frac13$ 일 때, $\\cos2\\theta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7/9",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(cos(2*asin(Rational(1,3)))))",
+      "concepts": [
+        "$\\sin2\\theta=2\\sin\\theta\\cos\\theta$, $\\cos2\\theta=2\\cos^2\\theta-1=1-2\\sin^2\\theta$"
+      ],
+      "steps": [
+        {
+          "title": "어떤 꼴을 쓸지",
+          "body": "$\\sin\\theta$ 가 주어졌으니 $\\cos2\\theta=1-2\\sin^2\\theta$ 를 써요."
+        },
+        {
+          "title": "대입하기",
+          "body": "$$1-2\\cdot\\frac19=\\frac79$$"
+        }
+      ],
+      "tip": "$\\cos2\\theta$ 의 세 가지 꼴 중 주어진 값만으로 계산되는 꼴을 고르면 $\\cos\\theta$ 를 구할 필요가 없어요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "$\\sin\\alpha+\\sin\\beta=1$, $\\cos\\alpha+\\cos\\beta=\\frac12$ 일 때, $\\cos(\\alpha-\\beta)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3/8",
+      "answerType": "fraction",
+      "check": "ans = simplify((Integer(1)**2 + Rational(1,2)**2 - 2*(sin(x)**2 + cos(x)**2))/2)",
+      "concepts": [
+        "$\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta$",
+        "$\\sin^2\\theta+\\cos^2\\theta=1$"
+      ],
+      "steps": [
+        {
+          "title": "두 식을 각각 제곱하기",
+          "body": "$\\sin^2\\alpha+2\\sin\\alpha\\sin\\beta+\\sin^2\\beta=1$, $\\cos^2\\alpha+2\\cos\\alpha\\cos\\beta+\\cos^2\\beta=\\frac14$"
+        },
+        {
+          "title": "더하기",
+          "body": "$\\sin^2+\\cos^2=1$ 이 두 번 나와 $2+2(\\cos\\alpha\\cos\\beta+\\sin\\alpha\\sin\\beta)=\\frac54$ 예요."
+        },
+        {
+          "title": "덧셈정리로 묶기",
+          "body": "괄호 안이 $\\cos(\\alpha-\\beta)$ 라서 $2+2\\cos(\\alpha-\\beta)=\\frac54$ 예요."
+        },
+        {
+          "title": "풀기",
+          "body": "$\\cos(\\alpha-\\beta)=\\frac{\\frac54-2}{2}=-\\frac38$ 이에요."
+        }
+      ],
+      "tip": "두 합을 제곱해 더하면 코사인 덧셈정리 모양이 저절로 나와요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "두 직선 $y=3x$ 와 $y=mx$ 가 이루는 예각의 크기가 $\\frac{\\pi}{4}$ 일 때, 양수 $m$ 의 값은?",
+      "choices": [
+        "$\\frac14$",
+        "$\\frac13$",
+        "$\\frac12$",
+        "$\\frac23$",
+        "$1$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "ans = [v for v in [simplify(expand_trig(tan(atan(3) - pi/4))), simplify(expand_trig(tan(atan(3) + pi/4)))] if v > 0][0]",
+      "choiceChecks": [
+        "Rational(1,4)",
+        "Rational(1,3)",
+        "Rational(1,2)",
+        "Rational(2,3)",
+        "1"
+      ],
+      "concepts": [
+        "직선의 기울기는 $x$ 축과 이루는 각 $\\alpha$ 의 $\\tan\\alpha$ 예요.",
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "각으로 보기",
+          "body": "$y=3x$ 가 $x$ 축과 이루는 각을 $\\alpha$ 라 하면 $\\tan\\alpha=3$ 이에요."
+        },
+        {
+          "title": "두 후보",
+          "body": "$y=mx$ 의 각은 $\\alpha-\\frac{\\pi}{4}$ 또는 $\\alpha+\\frac{\\pi}{4}$ 예요."
+        },
+        {
+          "title": "빼는 쪽",
+          "body": "$$\\tan\\left(\\alpha-\\frac{\\pi}{4}\\right)=\\frac{3-1}{1+3}=\\frac12$$"
+        },
+        {
+          "title": "더하는 쪽",
+          "body": "$\\tan\\left(\\alpha+\\frac{\\pi}{4}\\right)=\\frac{3+1}{1-3}=-2$ 는 음수예요. 그래서 $m=\\frac12$, 답은 ③번이에요."
+        }
+      ],
+      "tip": "기울기가 양수라는 조건으로 두 후보 중 하나를 골라요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "삼각형 $\\mathrm{ABC}$ 에서 $\\tan A=\\frac12$, $\\tan B=\\frac13$ 일 때, $\\tan C$ 의 값은?",
+      "choices": [
+        "$-2$",
+        "$-1$",
+        "$\\frac12$",
+        "$1$",
+        "$2$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "simplify(expand_trig(tan(pi - atan(Rational(1,2)) - atan(Rational(1,3)))))",
+      "choiceChecks": [
+        "-2",
+        "-1",
+        "Rational(1,2)",
+        "1",
+        "2"
+      ],
+      "concepts": [
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$",
+        "$A+B+C=\\pi$"
+      ],
+      "steps": [
+        {
+          "title": "세 각의 합",
+          "body": "$C=\\pi-(A+B)$ 이므로 $\\tan C=-\\tan(A+B)$ 예요."
+        },
+        {
+          "title": "$\\tan(A+B)$",
+          "body": "$$\\frac{\\frac12+\\frac13}{1-\\frac16}=1$$"
+        },
+        {
+          "title": "답",
+          "body": "$\\tan C=-1$ 이에요. 답은 ②번이에요."
+        }
+      ],
+      "tip": "$\\tan(\\pi-x)=-\\tan x$ 예요. $C$ 는 $135^\\circ$ 인 둔각이에요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "좌표평면 위의 세 점 $\\mathrm{O}(0,\\,0)$, $\\mathrm{A}(3,\\,1)$, $\\mathrm{B}(1,\\,3)$ 에 대하여 $\\angle\\mathrm{AOB}=\\theta$ 일 때, $\\tan\\theta$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$\\frac43$",
+        "$\\frac32$",
+        "$2$",
+        "$3$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "simplify(expand_trig(tan(atan(3) - atan(Rational(1,3)))))",
+      "choiceChecks": [
+        "1",
+        "Rational(4,3)",
+        "Rational(3,2)",
+        "2",
+        "3"
+      ],
+      "concepts": [
+        "직선의 기울기는 $x$ 축과 이루는 각 $\\alpha$ 의 $\\tan\\alpha$ 예요.",
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "두 직선의 기울기",
+          "body": "직선 OB 의 기울기는 $3$, 직선 OA 의 기울기는 $\\frac13$ 이에요."
+        },
+        {
+          "title": "각의 차",
+          "body": "$\\theta$ 는 두 직선이 $x$ 축과 이루는 각의 차예요."
+        },
+        {
+          "title": "덧셈정리",
+          "body": "$$\\tan\\theta=\\frac{3-\\frac13}{1+3\\cdot\\frac13}=\\frac{\\frac83}{2}=\\frac43$$"
+        },
+        {
+          "title": "답",
+          "body": "답은 ②번이에요."
+        }
+      ],
+      "tip": "꼭짓점이 원점이면 두 변의 기울기로 각의 tan 을 바로 구할 수 있어요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "$\\tan(\\alpha+\\beta)=2$, $\\tan\\alpha=\\frac12$ 일 때, $\\tan\\beta$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "simplify(expand_trig(tan(atan(2) - atan(Rational(1,2)))))",
+      "concepts": [
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "각을 나눠 보기",
+          "body": "$\\beta=(\\alpha+\\beta)-\\alpha$ 예요."
+        },
+        {
+          "title": "빼기 덧셈정리",
+          "body": "$$\\tan\\beta=\\frac{2-\\frac12}{1+2\\cdot\\frac12}=\\frac{\\frac32}{2}=\\frac34$$"
+        }
+      ],
+      "tip": "모르는 각을 아는 두 각의 차로 나타내면 덧셈정리 한 번으로 끝나요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "높이 $2\\,\\mathrm{m}$ 인 담장 위에 깃대가 똑바로 서 있어요. 담장에서 $6\\,\\mathrm{m}$ 떨어진 땅 위의 점 P 에서 담장 꼭대기를 올려본각을 $\\alpha$, 깃대 꼭대기를 올려본각을 $\\beta$ 라 하면 $\\beta-\\alpha=45^\\circ$ 예요. 깃대의 길이는 몇 m 일까요?",
+      "choices": null,
+      "answer": "10",
+      "answerType": "int",
+      "check": "ans = 6*simplify(expand_trig(tan(atan(Rational(2,6)) + pi/4))) - 2",
+      "concepts": [
+        "$\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}$"
+      ],
+      "steps": [
+        {
+          "title": "$\\tan\\alpha$",
+          "body": "담장 높이 $2$, 거리 $6$ 이라 $\\tan\\alpha=\\frac26=\\frac13$ 이에요."
+        },
+        {
+          "title": "$\\tan\\beta$",
+          "body": "$$\\tan\\beta=\\tan(\\alpha+45^\\circ)=\\frac{\\frac13+1}{1-\\frac13}=2$$"
+        },
+        {
+          "title": "깃대 꼭대기의 높이",
+          "body": "$\\tan\\beta=\\frac{\\text{높이}}{6}$ 이므로 높이는 $12$ 예요."
+        },
+        {
+          "title": "깃대의 길이",
+          "body": "$12-2=10$ 이에요."
+        }
+      ],
+      "tip": "올려본각의 tan 은 (높이)÷(거리)예요. 각의 차가 주어지면 덧셈정리로 다른 각의 tan 을 구해요."
+    }
+  ]
+}
