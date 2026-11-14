@@ -391,6 +391,7 @@ export function SettingsScreen(p: {
         </div>
         <p className="muted">
           켜면 노트에 한 손가락으로 써요. 스크롤은 두 손가락으로 해요. 펜을 처음 쓰면 저절로 꺼져요.
+          <br />이 기기를 쓰는 모두에게 적용돼요.
         </p>
       </section>
       <section className="card">

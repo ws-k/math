@@ -55,6 +55,33 @@ test('쓰던 손가락을 떼고 무시한 손가락만 남아도 다음 손가�
   assert.equal(g.down(3, 0, 0, 600), 'draw');
 });
 
+test('쓰는 중 무시하던 손가락만 취소되면 그 손가락만 빠지고 획은 계속', () => {
+  const g = createFingerGesture();
+  g.down(1, 0, 0, 0);
+  g.down(2, 50, 0, FINGER_GRACE_MS + 50);
+  assert.deepEqual(g.cancel(2), { kind: 'none' });
+  // 쓰던 손가락은 아직 쓰는 중 — 새 손가락은 무시(새 획 시작 아님)
+  assert.equal(g.down(3, 80, 0, FINGER_GRACE_MS + 100), 'ignore');
+  assert.deepEqual(g.up(1, 500), { kind: 'end' });
+});
+
+test('쓰던 손가락 자신이 취소되면 획 마무리', () => {
+  const g = createFingerGesture();
+  g.down(1, 0, 0, 0);
+  assert.deepEqual(g.cancel(1), { kind: 'end' });
+  assert.equal(g.down(2, 0, 0, 100), 'draw');
+});
+
+test('여러 손가락 동작 중 취소는 알림 없이 전체 초기화', () => {
+  const g = createFingerGesture();
+  g.down(1, 0, 0, 0);
+  g.down(2, 100, 0, 20);
+  g.move(1, -200, 0);
+  assert.deepEqual(g.cancel(1), { kind: 'none' });
+  assert.deepEqual(g.up(2, 300), { kind: 'none' });
+  assert.equal(g.down(3, 0, 0, 400), 'draw');
+});
+
 test('reset 하면 처음부터', () => {
   const g = createFingerGesture();
   g.down(1, 0, 0, 0);

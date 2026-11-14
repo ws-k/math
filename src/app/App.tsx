@@ -199,6 +199,7 @@ function Screen(p: {
   const [persisted, setPersisted] = useState(false);
   const [device, setDevice] = useState<DeviceSettings>(DEFAULT_DEVICE);
   // 기기 설정을 읽어 왔는지. 읽기에 실패한 채 펜 감지로 기본값을 저장하면 저장돼 있던 선택을 덮어쓴다
+  // (그때는 펜을 봐도 화면에서만 끈다)
   const [deviceRead, setDeviceRead] = useState(false);
 
   // 레슨 진행은 레슨 화면이 직접 저장하므로, 홈·지도로 돌아올 때마다 다시 읽는다
@@ -258,10 +259,13 @@ function Screen(p: {
   latestDevice.current = device;
   const penSeen = device.penSeen;
   useEffect(() => {
-    if (!deviceRead || penSeen) return;
+    if (penSeen) return;
     const seen = () => {
       const next = penDetected(latestDevice.current);
-      if (next) saveDevice(next);
+      if (!next) return;
+      // 읽기 전·실패면 화면에서만 끈다 — 지금 쥔 값은 기본값이라 저장하면 사용자 선택을 덮을 수 있다
+      if (deviceRead) saveDevice(next);
+      else setDevice(next);
     };
     const onPointer = (e: PointerEvent) => {
       if (e.pointerType === 'pen') seen();

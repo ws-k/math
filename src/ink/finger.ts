@@ -21,6 +21,12 @@ export interface FingerGesture {
   /** 여러 손가락 동작 중이면 손가락 중심이 이번에 움직인 만큼(스크롤용), 아니면 null */
   move(id: number, x: number, y: number): { dx: number; dy: number } | null;
   up(id: number, t: number): FingerUp;
+  /**
+   * 브라우저·시스템이 이 손가락을 가로챔(pointercancel). 여러 손가락 동작 중이면 끝까지 간 게 아니니
+   * 알림 없이 전체를 버리고, 아니면 그 손가락만 뺀다(쓰던 손가락이면 'end' — 획 처리는 부르는 쪽 정책).
+   * 쓰는 중 무시하던 손가락 하나 때문에 전체를 버리면, 판정은 '아무도 없음'인데 획은 그리는 중이라 어긋난다.
+   */
+  cancel(id: number): { kind: 'none' } | { kind: 'end' };
   reset(): void;
 }
 
@@ -107,6 +113,19 @@ export function createFingerGesture(graceMs = FINGER_GRACE_MS): FingerGesture {
         };
         reset();
         return g;
+      }
+      return { kind: 'none' };
+    },
+    cancel(id) {
+      if (mode === 'multi') {
+        if (pos.has(id)) reset();
+        return { kind: 'none' };
+      }
+      if (!pos.delete(id)) return { kind: 'none' };
+      if (mode === 'draw' && id === drawId) {
+        mode = 'idle';
+        drawId = -1;
+        return { kind: 'end' };
       }
       return { kind: 'none' };
     },

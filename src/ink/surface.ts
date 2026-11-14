@@ -494,7 +494,8 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
     // 펜이 닿아 있거나 막 뗐으면 손바닥이다 — 쓰지도, 여러 손가락 동작에 넣지도 않는다
     if (palmBlocked() || (penDown && downType !== 'touch')) return;
     const r = finger.down(e.pointerId, e.clientX, e.clientY, e.timeStamp);
-    if (r === 'draw') begin(e);
+    // 방어: 판정과 엔진 상태가 어긋나도 쓰던 획 위에 새 획을 겹쳐 시작하지 않는다
+    if (r === 'draw' && !penDown) begin(e);
     else if (r === 'cancel') {
       abort();
       panBox = scrollParent(host);
@@ -564,8 +565,9 @@ export const createInkSurface: CreateInkSurface = (host, opts) => {
 
   const onPointerUp = (e: PointerEvent) => {
     if (e.pointerType === 'touch' && fingerInk && e.type === 'pointercancel') {
-      // 브라우저·시스템이 가로챈 동작은 끝까지 간 게 아니다 — 쓸기로 보지 않고 처음부터
-      finger.reset();
+      // 브라우저·시스템이 가로챈 동작은 끝까지 간 게 아니다 — 쓸기로 보지 않는다.
+      // 쓰던 손가락 자신이 취소된 경우의 획 처리는 아래 finish 가 맡는다(쓴 데까지 남김)
+      finger.cancel(e.pointerId);
       panBox = null;
     } else if (e.pointerType === 'touch' && fingerInk) {
       const r = finger.up(e.pointerId, e.timeStamp);
