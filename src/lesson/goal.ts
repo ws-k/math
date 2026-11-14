@@ -118,7 +118,8 @@ export interface GoalCommon {
 
 /**
  * 공통 목표 읽기. num 은 수 글자를 읽는 부품 쪽 함수(식 문법이 부품마다 같지만 오류 위치 글을 맞추려고 받는다).
- * extra 는 부품만의 목표 열쇠(좌표평면의 place·approach) — 그 열쇠가 있으면 null 을 돌려 부품이 읽게 한다.
+ * extra.kinds 는 부품만의 목표 열쇠(좌표평면의 place·approach) — 그 열쇠가 있으면 shape 를 null 로 돌려 부품이 읽게 한다.
+ * extra.keys 는 그 목표들이 더 쓰는 칸(approach 의 within).
  */
 export function parseGoalShape<R, I>(
   raw: unknown,
@@ -128,17 +129,18 @@ export function parseGoalShape<R, I>(
     is(v: unknown, at: string): I;
     num(v: unknown, at: string): GoalNum;
   },
-  extra: string[] = [],
+  extra: { kinds: string[]; keys: string[] } = { kinds: [], keys: [] },
 ): { shape: GoalShape<R, I> | null; common: GoalCommon; o: Record<string, unknown> } {
-  const kinds = ['visit', 'value', ...extra];
-  const o = obj(raw, at, [], [...kinds, 'hint', 'tol', ...(extra.length ? ['within'] : [])]);
+  const kinds = ['visit', 'value', ...extra.kinds];
+  const o = obj(raw, at, [], [...kinds, 'hint', 'tol', ...extra.keys]);
   const present = kinds.filter((k) => o[k] !== undefined);
   if (present.length !== 1) fail(at, `${kinds.join('·')} 중 하나만`);
   const k = present[0] as string;
-  const tol =
-    o.tol === undefined
-      ? { src: '0', n: 0 }
-      : (({ src, n }) => ({ src, n }))(read.num(o.tol, `${at} tol`));
+  let tol = { src: '0', n: 0 };
+  if (o.tol !== undefined) {
+    const t = read.num(o.tol, `${at} tol`);
+    tol = { src: t.src, n: t.n };
+  }
   if (!(tol.n >= 0)) fail(`${at} tol`, '0 이상');
   const common: GoalCommon = { hint: o.hint === undefined ? '' : str(o.hint, `${at} hint`), tol };
   if (k === 'visit') {

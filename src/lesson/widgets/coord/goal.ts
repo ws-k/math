@@ -61,7 +61,7 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
       },
       num: goalNum,
     },
-    ['approach', 'place'],
+    { kinds: ['approach', 'place'], keys: ['within'] },
   );
   if (o.approach !== undefined) return approachGoal(o, p, gx, common.hint);
   if (o.within !== undefined) fail(`${at} within`, 'approach 목표에서만');
