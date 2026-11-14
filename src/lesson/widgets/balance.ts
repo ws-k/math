@@ -55,13 +55,30 @@ export interface Move {
   bundle: boolean;
 }
 
-/** 화면에 그릴 물건 하나(낱개 또는 묶음). move 가 null 이면 지금은 옮길 수 없다 */
+/**
+ * 화면 쪽 물건 배치(누가 어디 있나). 수학(개수)은 s 가 쥐고, 이것은 같은 개수를 물건 id 로 펼친 것이다 —
+ * 그래야 학습자가 끈 바로 그 동전이 바닥으로 가고(5번을 끌면 5번이), 묶음으로 묶이고 풀릴 때 동전마다
+ * 제자리에서 묶음 자리로 옮겨 가는 것을 그릴 수 있다. 검산은 개수(s)만 본다.
+ * id: 컵 c0…, 왼쪽 동전 l0…, 오른쪽 동전 r0…, 묶음 b+첫 동전 id(예: br4)
+ */
+export interface Board {
+  s: BalanceState;
+  pan: { l: string[]; r: string[] };
+  floor: { l: string[]; r: string[] };
+  /** 묶음 id → 든 동전 id. 나뉘지 않았으면 빈 객체 */
+  bundles: Record<string, string[]>;
+}
+
+/** 화면에 그릴 물건 하나(낱개 또는 묶음) */
 export interface Item {
   key: string;
   kind: 'cup' | 'coin';
-  /** 이 물건에 든 낱개 수(묶음이면 2 이상) */
-  n: number;
-  move: Move | null;
+  /** 나누기 묶음인가(동전 하나짜리 묶음도 묶음 모양으로 그린다) */
+  bundle: boolean;
+  /** 이 물건을 이루는 낱개 id(컵은 자기 하나). 날아가기 연출이 낱개마다 옛 자리를 찾는 데 쓴다 */
+  atoms: string[];
+  /** 지금 옮길 수 있나 */
+  can: boolean;
   /** 옮길 수 없는 까닭(화면 안내용) */
   lock?: 'cup' | 'last' | 'split';
 }
@@ -184,54 +201,99 @@ export function view(p: BalanceParams, s: BalanceState) {
   };
 }
 
-/**
- * 접시와 바닥에 놓일 물건 목록. key 는 낱개 번호라 같은 동전이 접시↔바닥을 오가도 같은 key 다
- * (접시 위는 0번부터, 바닥은 그 뒤 번호). 묶음은 첫 낱개 번호로 key 를 붙인다.
- */
-export function layout(p: BalanceParams, s: BalanceState) {
-  const z = start(p);
-  const a = p.left.x;
-  const sp = s.split;
-  const k = sp === null ? 0 : sp / a;
-  const coin = (side: 'l' | 'r', i: number, n: number, mv: Move | null, lock?: Item['lock']) => ({
-    key: `${side}${n > 1 ? 'b' : ''}${i}`,
-    kind: 'coin' as const,
-    n,
-    move: mv,
-    ...(lock ? { lock } : {}),
-  });
-  const can = (m: Move) => (move(p, s, m) ? m : null);
-  const cups = (from: number, to: number, dir: 'off' | 'on'): Item[] =>
-    Array.from({ length: to - from }, (_, j) => {
-      const m = sp === null ? null : can({ side: 'l', dir, bundle: true });
-      const lock: Item['lock'] = sp === null ? 'cup' : 'last';
-      return { key: `c${from + j}`, kind: 'cup', n: 1, move: m, ...(m ? {} : { lock }) };
+export function board0(p: BalanceParams): Board {
+  const s = initial(p);
+  const ids = (pre: string, n: number) => Array.from({ length: n }, (_, i) => `${pre}${i}`);
+  const b: Board = {
+    s: { ...s, split: null },
+    pan: { l: [...ids('c', s.cups), ...ids('l', s.l)], r: ids('r', s.r) },
+    floor: { l: [], r: [] },
+    bundles: {},
+  };
+  return regroup(p, b, s);
+}
+
+/** 개수 상태 n 에 맞춰 묶음을 만들거나 푼다(나뉘는 순간 접시 위 동전을 차례대로 묶는다) */
+function regroup(p: BalanceParams, b: Board, n: BalanceState): Board {
+  if (b.s.split === null && n.split !== null) {
+    const k = n.split / p.left.x;
+    const coins = b.pan.r;
+    const bundles: Record<string, string[]> = {};
+    const pan = Array.from({ length: coins.length / k }, (_, i) => {
+      const g = coins.slice(i * k, i * k + k);
+      bundles[`b${g[0]}`] = g;
+      return `b${g[0]}`;
     });
-  const singles = (side: 'l' | 'r', from: number, to: number, dir: 'off' | 'on'): Item[] =>
-    Array.from({ length: to - from }, (_, j) => {
-      const m = can({ side, dir, bundle: false });
-      return coin(side, from + j, 1, m, m ? undefined : 'split');
-    });
-  const bundles = (from: number, to: number, dir: 'off' | 'on'): Item[] =>
-    k <= 1
-      ? Array.from({ length: to - from }, (_, j) =>
-          coin('r', from + j, 1, can({ side: 'r', dir, bundle: true })),
-        )
-      : Array.from({ length: (to - from) / k }, (_, j) =>
-          coin('r', from + j * k, k, can({ side: 'r', dir, bundle: true })),
-        );
+    return { ...b, s: n, pan: { ...b.pan, r: pan }, bundles };
+  }
+  if (b.s.split !== null && n.split === null) {
+    const flat = b.pan.r.flatMap((id) => b.bundles[id] ?? [id]);
+    return { ...b, s: n, pan: { ...b.pan, r: flat }, bundles: {} };
+  }
+  return { ...b, s: n };
+}
+
+/** 물건 하나가 있는 곳 */
+function locate(b: Board, id: string): { at: 'pan' | 'floor'; side: 'l' | 'r' } | null {
+  for (const at of ['pan', 'floor'] as const)
+    for (const side of ['l', 'r'] as const) if (b[at][side].includes(id)) return { at, side };
+  return null;
+}
+
+/** 물건 id 의 개수 단위 옮김(접시→바닥 또는 바닥→접시) */
+function moveOf(b: Board, id: string): Move | null {
+  const w = locate(b, id);
+  if (!w) return null;
   return {
-    pan: {
-      l: [...cups(0, s.cups, 'off'), ...singles('l', 0, s.l, 'off')],
-      r: sp === null ? singles('r', 0, s.r, 'off') : bundles(0, s.r, 'off'),
-    },
-    floor: {
-      l: [...cups(s.cups, a, 'on'), ...singles('l', s.l, z.l, 'on')],
-      r:
-        sp === null
-          ? singles('r', s.r, z.r, 'on')
-          : [...bundles(s.r, sp, 'on'), ...singles('r', sp, z.r, 'on')],
-    },
+    side: w.side,
+    dir: w.at === 'pan' ? 'off' : 'on',
+    bundle: id[0] !== 'l' && id[0] !== 'r',
+  };
+}
+
+/** 물건 id 를 반대쪽(접시↔바닥)으로 옮긴 배치. 지금 할 수 없으면 null */
+export function moveItem(p: BalanceParams, b: Board, id: string): Board | null {
+  const m = moveOf(b, id);
+  const n = m && move(p, b.s, m);
+  if (!m || !n) return null;
+  const from = m.dir === 'off' ? 'pan' : 'floor';
+  const to = m.dir === 'off' ? 'floor' : 'pan';
+  const moved: Board = {
+    ...b,
+    [from]: { ...b[from], [m.side]: b[from][m.side].filter((x) => x !== id) },
+    [to]: { ...b[to], [m.side]: [...b[to][m.side], id] },
+  };
+  return regroup(p, moved, n);
+}
+
+/** 접시와 바닥에 놓일 물건 목록(배치 순서 그대로) */
+export function layout(p: BalanceParams, b: Board) {
+  const div = hasDiv(p);
+  const item = (id: string): Item => {
+    const m = moveOf(b, id);
+    const can = !!m && !!move(p, b.s, m);
+    const kind = id[0] === 'c' ? 'cup' : 'coin';
+    const bundle = id[0] === 'b';
+    const lock: Item['lock'] | undefined = can
+      ? undefined
+      : kind === 'cup'
+        ? // 나누기가 있는 저울의 컵은 나중에 묶음으로, 없는 저울(컵 하나)은 늘 남겨 둔다
+          b.s.split === null && div
+          ? 'cup'
+          : 'last'
+        : 'split';
+    return {
+      key: id,
+      kind,
+      bundle,
+      atoms: b.bundles[id] ?? [id],
+      can,
+      ...(lock ? { lock } : {}),
+    };
+  };
+  return {
+    pan: { l: b.pan.l.map(item), r: b.pan.r.map(item) },
+    floor: { l: b.floor.l.map(item), r: b.floor.r.map(item) },
   };
 }
 
@@ -254,39 +316,45 @@ export function opResult(p: BalanceParams, s: BalanceState, o: BalanceOp): Balan
 }
 
 /**
- * 옮긴 뒤 보일 안내. anchor = 마지막으로 수평이던 상태, prev = 옮기기 전, next = 옮긴 뒤.
- * 단원 글(ops)이 짚은 조작에 닿았으면 그 글, 아니면 null(화면이 '수평이에요/기울었어요'를 보인다).
- * 한쪽만 바꾼 상태는 실수가 아니라 과정이라 글만 보이고 아무것도 되돌리지 않는다.
+ * 안내 글을 고르려고 기억해 두는 것. levels = 지금까지 지나온 수평 상태(단원 글이 짚은 조작은 그중 어느
+ * 것에서 했어도 알아본다 — 한 번에 하나씩 옮기는 손은 중간 수평을 거치기 쉬워서),
+ * hit = 한쪽만 한 조작의 글이 떴던 기록(그 조작을 시작한 수평 상태로 돌아오면 undo 를 보인다).
+ */
+export interface Guide {
+  levels: BalanceState[];
+  hit: { op: number; from: BalanceState } | null;
+}
+
+export const guide0 = (p: BalanceParams): Guide => ({ levels: [initial(p)], hit: null });
+
+/**
+ * 옮긴 뒤(next) 보일 안내와 새 기억. 단원 글(ops)이 짚은 조작에 닿았으면 그 글, 아니면 null(화면이
+ * '수평이에요/기울었어요'를 보인다). 한쪽만 바꾼 상태는 실수가 아니라 과정이라 글만 보이고 되돌리지 않는다.
  */
 export function talk(
   p: BalanceParams,
-  anchor: BalanceState,
-  prev: BalanceState,
+  g: Guide,
   next: BalanceState,
-): { text: string; tone: '' | 'ok' } | null {
-  const both = p.ops.filter((o) => o.side === 'both');
-  const one = p.ops.filter((o) => o.side !== 'both');
+): { say: { text: string; tone: '' | 'ok' } | null; guide: Guide } {
+  const recent = [...g.levels].reverse();
+  const find = (side: (o: BalanceOp) => boolean) => {
+    for (const [i, o] of p.ops.entries())
+      if (side(o)) for (const L of recent) if (same(opResult(p, L, o), next)) return { i, o, L };
+    return null;
+  };
   if (heavier(p, next) !== 0) {
-    const o = one.find((x) => same(opResult(p, anchor, x), next));
-    return o ? { text: o.say, tone: '' } : null;
+    const f = find((o) => o.side !== 'both');
+    if (!f) return { say: null, guide: g };
+    return { say: { text: f.o.say, tone: '' }, guide: { ...g, hit: { op: f.i, from: f.L } } };
   }
-  const o = both.find((x) => same(opResult(p, anchor, x), next));
-  if (o) return { text: o.say, tone: 'ok' };
-  if (same(anchor, next)) {
-    const u = one.find((x) => same(opResult(p, anchor, x), prev));
-    if (u?.undo) return { text: u.undo, tone: '' };
-  }
-  // 번갈아 내리며 중간 수평을 거쳐 목표에 닿은 경우에도 목표 글을 보인다
-  if (view(p, next).solved) {
-    const fin = both.find((x) =>
-      reachable(p).some((s) => {
-        const t = opResult(p, s, x);
-        return !!t && view(p, t).solved;
-      }),
-    );
-    if (fin) return { text: fin.say, tone: 'ok' };
-  }
-  return null;
+  const guide: Guide = {
+    levels: g.levels.some((L) => same(L, next)) ? g.levels : [...g.levels, next],
+    hit: null,
+  };
+  const u = g.hit && same(g.hit.from, next) ? p.ops[g.hit.op]?.undo : undefined;
+  if (u) return { say: { text: u, tone: '' }, guide };
+  const f = find((o) => o.side === 'both');
+  return { say: f ? { text: f.o.say, tone: 'ok' } : null, guide };
 }
 
 const ALL_MOVES: Move[] = (['l', 'r'] as const).flatMap((side) =>
@@ -296,30 +364,79 @@ const ALL_MOVES: Move[] = (['l', 'r'] as const).flatMap((side) =>
   ]),
 );
 
-/** 처음 상태에서 끌기로 닿을 수 있는 모든 상태(개수가 같으면 하나로). 검산과 형식 검사가 쓴다 */
-export function reachable(p: BalanceParams, limit = MAX_STATES + 1): BalanceState[] {
-  const key = (s: BalanceState) => `${s.cups},${s.l},${s.r},${s.split}`;
-  const seen = new Set<string>();
-  const out = new Map<string, BalanceState>();
+const fullKey = (s: BalanceState) => `${s.cups},${s.l},${s.r},${s.split}`;
+
+/** 끌기로 닿는 모든 상태(묶음 여부까지 구분). 형식 검사가 길을 따질 때 쓴다 */
+function graph(p: BalanceParams, limit: number): BalanceState[] {
+  const seen = new Map<string, BalanceState>();
   const queue = [initial(p)];
-  while (queue.length && out.size < limit) {
+  while (queue.length && seen.size < limit) {
     const s = queue.shift() as BalanceState;
-    if (seen.has(key(s))) continue;
-    seen.add(key(s));
-    const c = `${s.cups},${s.l},${s.r}`;
-    if (!out.has(c)) out.set(c, s);
+    if (seen.has(fullKey(s))) continue;
+    seen.set(fullKey(s), s);
     for (const m of ALL_MOVES) {
       const n = move(p, s, m);
       if (n) queue.push(n);
     }
   }
-  return [...out.values()];
+  return [...seen.values()];
 }
 
-/** 검산 상태 수 상한 — 한 장면이 sympy 를 수백 번 부르지 않게 */
-const MAX_STATES = 120;
-/** 접시 하나에 올릴 동전 수 상한(가장 좁은 화면에서 접시 안에 들어가게) */
+/** 처음 상태에서 끌기로 닿을 수 있는 모든 상태(개수가 같으면 하나로). 검산과 형식 검사가 쓴다 */
+export function reachable(p: BalanceParams, limit = MAX_STATES + 1): BalanceState[] {
+  const out = new Map<string, BalanceState>();
+  for (const s of graph(p, limit * 2)) {
+    const c = `${s.cups},${s.l},${s.r}`;
+    if (!out.has(c)) out.set(c, s);
+  }
+  return [...out.values()].slice(0, limit);
+}
+
+/** 한쪽 조작의 결과 t 에서 기운 상태만 지나 수평 상태 L 로 돌아올 길이 있나(undo 가 보일 길) */
+function backTo(p: BalanceParams, t: BalanceState, L: BalanceState): boolean {
+  const seen = new Set<string>();
+  const queue = [t];
+  while (queue.length) {
+    const s = queue.shift() as BalanceState;
+    if (seen.has(fullKey(s))) continue;
+    seen.add(fullKey(s));
+    for (const m of ALL_MOVES) {
+      const n = move(p, s, m);
+      if (!n) continue;
+      if (same(L, n)) return true;
+      if (heavier(p, n) !== 0) queue.push(n);
+    }
+  }
+  return false;
+}
+
+/** 양쪽 조작을 한 개씩 번갈아(왼쪽·오른쪽) 했을 때 마지막에 그 조작의 글이 뜨나 */
+function alternates(p: BalanceParams, L: BalanceState, o: BalanceOp): boolean {
+  const k = o.op === 'sub' ? o.value / coinOf(p) : p.left.x - 1;
+  let s = L;
+  let g: Guide = { levels: [L], hit: null };
+  let last: string | null = null;
+  for (let i = 0; i < k; i++)
+    for (const side of ['l', 'r'] as const) {
+      const n = move(p, s, { side, dir: 'off', bundle: o.op === 'div' });
+      if (!n) return false;
+      const t = talk(p, g, n);
+      ({ guide: g } = t);
+      last = t.say?.text ?? null;
+      s = n;
+    }
+  return last === o.say;
+}
+
+/** 컵은 가장 좁은 화면(382px)의 접시 한 줄에 들어가는 4개까지 */
+const MAX_X = 4;
+/** 접시 하나에 올릴 동전 수 상한(가장 좁은 화면에서 접시 안에 세 줄 이하로 들어가게) */
 const MAX_COINS = { l: 8, r: 16 };
+/**
+ * 검산 상태 수 상한 — 위 두 한도에서 나올 수 있는 최대(낱개 단계 9×17 + 묶음 단계 4×5)와 맞춘다.
+ * 한도 안의 저울이 이 검사에 걸리는 일은 없고, 한도를 바꿀 때 같이 바뀌게 계산으로 둔다.
+ */
+const MAX_STATES = (MAX_COINS.l + 1) * (MAX_COINS.r + 1) + MAX_X * (MAX_X + 1);
 
 export const balanceDef: WidgetDef<BalanceParams> = {
   parse(raw) {
@@ -348,6 +465,11 @@ export const balanceDef: WidgetDef<BalanceParams> = {
         };
       }),
     };
+    if (p.left.x > MAX_X)
+      fail(
+        '저울 left.x',
+        `컵 ${p.left.x}개 — 가장 좁은 화면의 접시 한 줄에 들어가는 ${MAX_X}개까지`,
+      );
     const x0 = solutionOf(p);
     if (!Number.isInteger(x0) || x0 <= 0)
       fail('저울', `해가 자연수가 아님(${x0}) — 컵 무게를 동전으로 나타낼 수 없음`);
@@ -363,17 +485,31 @@ export const balanceDef: WidgetDef<BalanceParams> = {
     if (z.l > MAX_COINS.l || z.r > MAX_COINS.r)
       fail(
         '저울',
-        `동전이 너무 많음(왼쪽 ${z.l}개·오른쪽 ${z.r}개, 동전 하나 = ${coinOf(p)}) — 각각 ${MAX_COINS.l}·${MAX_COINS.r}개까지`,
+        `동전이 너무 많음(왼쪽 ${z.l}개·오른쪽 ${z.r}개, 동전 하나 = ${coinOf(p)}) — 왼쪽 ${MAX_COINS.l}개·오른쪽 ${MAX_COINS.r}개까지. ` +
+          '금액을 줄이거나, 금액·덜 값·해가 더 큰 수의 배수가 되게 바꾸세요(동전 하나 = 그 최대공약수)',
       );
     const all = reachable(p);
     if (all.length > MAX_STATES) fail('저울', `끌어서 닿는 상태가 ${MAX_STATES}개를 넘음`);
     if (!all.some((s) => view(p, s).solved))
-      fail('저울', '끌어서 x 하나만 남길 수 없음(목표에 닿지 못함)');
-    const level = all.filter((s) => heavier(p, s) === 0);
-    const has = (t: BalanceState | null) => !!t && all.some((s) => same(t, s));
-    for (const [i, op] of p.ops.entries())
-      if (!level.some((s) => has(opResult(p, s, op))))
-        fail(`저울 연산${i + 1}`, '끌어서 이 조작에 닿을 수 없음(안내 글이 보일 일이 없음)');
+      fail(
+        '저울',
+        '끌어서 x 하나만 남길 수 없음(목표에 닿지 못함) — 나누기(div) 조작이 필요한지 보세요',
+      );
+    const states = graph(p, MAX_STATES * 2);
+    const level = states.filter((s) => heavier(p, s) === 0);
+    const at = (t: BalanceState | null) => (t ? states.filter((s) => same(t, s)) : []);
+    for (const [i, op] of p.ops.entries()) {
+      const w = `저울 연산${i + 1}`;
+      const from = level.filter((L) => at(opResult(p, L, op)).length > 0);
+      if (!from.length) fail(w, '끌어서 이 조작에 닿을 수 없음(안내 글이 보일 일이 없음)');
+      if (op.side === 'both' && !from.some((L) => alternates(p, L, op)))
+        fail(w, '한 개씩 번갈아 옮기는 길에서 이 글이 뜨지 않음');
+      if (
+        op.side !== 'both' &&
+        !from.some((L) => at(opResult(p, L, op)).some((t) => backTo(p, t, L)))
+      )
+        fail(w, '도로 올려 처음 수평으로 돌아올 길이 없어 undo 가 보일 일이 없음');
+    }
     return p;
   },
   checks(p) {

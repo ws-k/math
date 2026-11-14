@@ -20,7 +20,7 @@ export interface WidgetProps<P = unknown> {
   params: P;
   /** 부품 목표를 이뤘을 때(gate 장면이 열린다) */
   onDone(): void;
-  /** 틀린 시도(한쪽만 덜기·놓친 끌기). 두 번이면 재생기가 '넘어가기'를 보인다 */
+  /** 틀린 시도(오답·놓친 끌기 등). 두 번이면 재생기가 '넘어가기'를 보인다 */
   onMiss(): void;
 }
 

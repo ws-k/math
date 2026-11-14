@@ -369,7 +369,7 @@
   top: 22.6%;
   /* 접시 높이를 고정해 물건이 늘어도 접시가 내려가지 않게 한다(물건은 접시 위에서 위로 쌓인다) —
      물건 수에 따라 접시 높이가 달라지면 수평인데도 기운 것처럼 보인다 */
-  height: 56%;
+  height: 58%;
   /* 컵 셋과 동전 하나, 또는 묶음 셋이 가장 좁은 화면(382px)에서 한 줄에 들어가는 폭 */
   width: 48%;
   display: flex;
@@ -398,8 +398,13 @@
   flex-wrap: wrap-reverse;
   justify-content: center;
   align-content: flex-start;
-  gap: 4px;
+  gap: 2px 3px;
   padding-bottom: 3px;
+}
+/* 낱개 동전만 놓인 접시: 한 줄 개수(--cols)만큼의 폭으로 줄여 줄마다 고르게 쌓는다(동전 18px + 틈 3px) */
+.lesson .pan .items[style*="--cols"] {
+  width: calc(var(--cols) * 21px - 3px);
+  margin: 0 auto;
 }
 .lesson .pan .plate {
   flex: none;
@@ -494,8 +499,8 @@
 }
 .lesson .coin {
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--coin);
   box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
