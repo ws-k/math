@@ -1,6 +1,7 @@
 // 문제 화면 #/unit/<단원>/<문제>. 넓은 화면은 왼쪽 문제 카드 | 오른쪽 풀이 노트, 좁은 화면은 탭으로 하나씩.
 // 필기는 풀이 노트에만 한다 — 문제 글 위 필기는 화면 폭마다 글자 줄바꿈이 달라 글자와 어긋나서 없앴다.
-// 손가락 가로 쓸기로 이전·다음 문제(필기는 펜 전용이라 손가락 쓸기와 부딪히지 않는다).
+// 손가락 가로 쓸기로 이전·다음 문제. 손가락 쓰기를 켜면 노트 위 한 손가락은 쓰기라서,
+// 노트 위에서는 두 손가락 쓸기로 넘긴다(문제 카드 쪽은 여전히 한 손가락).
 // (파일 이름은 예전 "책 화면"에서 이어 왔다)
 import { useMemo, useRef, useState } from 'react';
 import type { Unit } from '../content/types.ts';
@@ -13,7 +14,7 @@ import type { LayoutMode } from './layout.ts';
 import { ProblemCard } from './Pages.tsx';
 import { cardKey, isGenPid, noteKey, problemIndex, resolveProblem, step } from './pages.ts';
 import { type Route, routeHash, type Side } from './route.ts';
-import { classifySwipe } from './swipe.ts';
+import { classifySwipe, noteSwipe } from './swipe.ts';
 import { Toolbar } from './Toolbar.tsx';
 import type { Cards } from './today.ts';
 
@@ -26,6 +27,8 @@ export interface ProblemScreenProps {
   background: Background;
   onTool(t: Tool): void;
   onBackground(b: Background): void;
+  fingerInk: boolean;
+  onFingerInk(on: boolean): void;
   onGrade(key: string, r: Grade, before: CardState | undefined): void;
 }
 
@@ -36,6 +39,8 @@ export function ProblemScreen(p: ProblemScreenProps) {
   const flipDir = useRef<1 | -1>(1);
   const surface = useRef<InkSurface | null>(null);
   const penAt = useRef(0);
+  // ctl 은 한 번만 만들므로(아래) 지금 문제 기준의 넘기기를 ref 로 읽는다
+  const goRef = useRef<(dir: 1 | -1) => void>(() => {});
 
   // 노트 컴포넌트가 이 객체를 효과 의존성으로 쓰므로, 매 렌더 새로 만들면 엔진이 다시 만들어진다.
   const ctl = useMemo<InkControl>(
@@ -48,11 +53,17 @@ export function ProblemScreen(p: ProblemScreenProps) {
         // 펜이 닿은 채 노트가 사라지면 penAt 이 무한대로 남아 쓸기가 영영 막힌다
         penAt.current = 0;
       },
-      penActive: (_k, a) => {
-        penAt.current = a ? Number.POSITIVE_INFINITY : performance.now();
+      penActive: (_k, a, kind) => {
+        // 뗀 뒤 손바닥 시간은 펜에만 — 마우스·손가락 획 뒤에 문제 카드 쓸기까지 0.5초 막을 까닭이 없다
+        if (kind === 'pen') penAt.current = a ? Number.POSITIVE_INFINITY : performance.now();
         // 손가락이 먼저 닿아 쓸기 후보가 된 뒤 펜이 닿으면(손바닥을 대고 쓰기) 그 후보를 버린다 —
-        // 펜을 뗀 뒤 손가락을 떼면 palm() 시간 창이 지나 쓸기로 오인될 수 있다
+        // 펜을 뗀 뒤 손가락을 떼면 palm() 시간 창이 지나 쓸기로 오인될 수 있다.
+        // 손가락 쓰기면 그 손가락 자체가 획이라 역시 쓸기 후보에서 뺀다.
         if (a) touch.current = null;
+      },
+      swipe: (_k, g) => {
+        const dir = noteSwipe(g);
+        if (dir !== 0) goRef.current(dir);
       },
     }),
     [],
@@ -65,6 +76,7 @@ export function ProblemScreen(p: ProblemScreenProps) {
     // 좁은 화면에서 노트를 보던 중이면 다음 문제도 노트 쪽으로(옛 ?side=note 주소와 같은 뜻)
     location.hash = routeHash({ ...route, pid: to });
   };
+  goRef.current = go;
   const goSide = (side: Side) => {
     if (side !== route.side) location.hash = routeHash({ ...route, side });
   };
@@ -201,6 +213,8 @@ export function ProblemScreen(p: ProblemScreenProps) {
             background={p.background}
             onTool={p.onTool}
             onBackground={p.onBackground}
+            fingerInk={p.fingerInk}
+            onFingerInk={p.onFingerInk}
             onUndo={() => surface.current?.undo()}
             onRedo={() => surface.current?.redo()}
             onClear={() => setAsking(true)}

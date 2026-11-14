@@ -1,11 +1,19 @@
 // 앱 뼈대: 지금 프로필을 정하고(누가 공부하나요), 해시 주소에 따라 화면을 고른다.
 // 필기 내용은 여기서 들고 있지 않는다(풀이 노트마다 InkPage 가 저장소와 직접 주고받는다).
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Background, Tool } from '../ink/types.ts';
 import { LessonBoundary, LessonPlayer } from '../lesson/LessonPlayer.tsx';
 import { type CardState, type Grade, gradeCard } from '../lib/srs.ts';
 import { ProblemScreen } from './Book.tsx';
 import { unitById } from './content.ts';
+import {
+  DEFAULT_DEVICE,
+  DEVICE_KEY,
+  type DeviceSettings,
+  normalizeDevice,
+  penDetected,
+} from './device.ts';
+import { FingerInkContext } from './InkPage.tsx';
 import { type LayoutMode, layoutMode } from './layout.ts';
 import {
   addProfile,
@@ -189,6 +197,10 @@ function Screen(p: {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [last, setLast] = useState<LastRoute | null>(null);
   const [persisted, setPersisted] = useState(false);
+  const [device, setDevice] = useState<DeviceSettings>(DEFAULT_DEVICE);
+  // 기기 설정을 읽어 왔는지. 읽기에 실패한 채 펜 감지로 기본값을 저장하면 저장돼 있던 선택을 덮어쓴다
+  // (그때는 펜을 봐도 화면에서만 끈다)
+  const [deviceRead, setDeviceRead] = useState(false);
 
   // 레슨 진행은 레슨 화면이 직접 저장하므로, 홈·지도로 돌아올 때마다 다시 읽는다
   const lessonView = route.name !== 'lesson';
@@ -213,6 +225,14 @@ function Screen(p: {
         if ((l?.name === 'unit' || l?.name === 'lesson') && unitById.has(l.unitId)) setLast(l);
       })
       .finally(() => setReady(true));
+    // 기기 설정은 따로 읽는다 — 프로필 기록 읽기가 실패해도 이건 살고, 이것만 실패해도 앞의 것은 산다
+    void store
+      .get(DEVICE_KEY)
+      .then((d) => {
+        setDevice(normalizeDevice(d));
+        setDeviceRead(true);
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -227,6 +247,43 @@ function Screen(p: {
   }, []);
   const onTool = (tool: Tool) => saveSettings({ ...settings, tool });
   const onBackground = (background: Background) => saveSettings({ ...settings, background });
+  const saveDevice = useCallback((d: DeviceSettings) => {
+    setDevice(d);
+    saver.save(DEVICE_KEY, d);
+  }, []);
+  const onFingerInk = (fingerInk: boolean) => saveDevice({ ...device, fingerInk });
+
+  // 이 기기에서 펜(Apple Pencil)을 처음 보면 손가락 쓰기를 끈다 — 펜이 있으면 손가락은 스크롤·손바닥이다.
+  // 노트 밖(교재·펜 진단)에서 처음 써도 알아채도록 창 전체에서 본다. 한 번 보면 더 듣지 않는다.
+  const latestDevice = useRef(device);
+  latestDevice.current = device;
+  const penSeen = device.penSeen;
+  useEffect(() => {
+    if (penSeen) return;
+    const seen = () => {
+      const next = penDetected(latestDevice.current);
+      if (!next) return;
+      // 읽기 전·실패면 화면에서만 끈다 — 지금 쥔 값은 기본값이라 저장하면 사용자 선택을 덮을 수 있다
+      if (deviceRead) saveDevice(next);
+      else setDevice(next);
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (e.pointerType === 'pen') seen();
+    };
+    // 옛 iOS 는 pointerType 대신 touch 의 touchType 으로만 펜을 알려 준다
+    const onTouch = (e: TouchEvent) => {
+      for (let i = 0; i < e.changedTouches.length; i++)
+        if ((e.changedTouches[i] as Touch & { touchType?: string }).touchType === 'stylus')
+          return seen();
+    };
+    const opt = { capture: true, passive: true };
+    window.addEventListener('pointerdown', onPointer, opt);
+    window.addEventListener('touchstart', onTouch, opt);
+    return () => {
+      window.removeEventListener('pointerdown', onPointer, opt);
+      window.removeEventListener('touchstart', onTouch, opt);
+    };
+  }, [deviceRead, penSeen, saveDevice]);
   // before = 그 문제에 들어올 때의 카드. 다시 채점하면 거기서 새로 계산해 덮어쓴다.
   const onGrade = (key: string, r: Grade, before: CardState | undefined) => {
     const c = gradeCard(before, r, Date.now());
@@ -267,6 +324,8 @@ function Screen(p: {
           settings={settings}
           persisted={persisted}
           onChange={saveSettings}
+          fingerInk={device.fingerInk}
+          onFingerInk={onFingerInk}
           profiles={p.profiles}
           current={p.current}
           onAdd={p.onAdd}
@@ -278,15 +337,18 @@ function Screen(p: {
     case 'lesson': {
       const unit = unitById.get(route.unitId);
       if (!unit?.lesson) return null;
+      // 레슨의 풀이 노트에도 손가락 쓰기 설정이 닿게 한다(레슨 화면엔 도구 막대가 없다)
       return (
-        <LessonBoundary key={unit.id} unitId={unit.id}>
-          <LessonPlayer
-            unit={unit}
-            lesson={unit.lesson}
-            tool={settings.tool}
-            background={settings.background}
-          />
-        </LessonBoundary>
+        <FingerInkContext value={device.fingerInk}>
+          <LessonBoundary key={unit.id} unitId={unit.id}>
+            <LessonPlayer
+              unit={unit}
+              lesson={unit.lesson}
+              tool={settings.tool}
+              background={settings.background}
+            />
+          </LessonBoundary>
+        </FingerInkContext>
       );
     }
     case 'unit': {
@@ -295,17 +357,21 @@ function Screen(p: {
       if (route.pid === null)
         return shell('map', <UnitHome unit={unit} cards={cards} lessons={lessons} />);
       return (
-        <ProblemScreen
-          unit={unit}
-          route={{ ...route, pid: route.pid }}
-          mode={mode}
-          cards={cards}
-          tool={settings.tool}
-          background={settings.background}
-          onTool={onTool}
-          onBackground={onBackground}
-          onGrade={onGrade}
-        />
+        <FingerInkContext value={device.fingerInk}>
+          <ProblemScreen
+            unit={unit}
+            route={{ ...route, pid: route.pid }}
+            mode={mode}
+            cards={cards}
+            tool={settings.tool}
+            background={settings.background}
+            onTool={onTool}
+            onBackground={onBackground}
+            fingerInk={device.fingerInk}
+            onFingerInk={onFingerInk}
+            onGrade={onGrade}
+          />
+        </FingerInkContext>
       );
     }
   }

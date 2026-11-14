@@ -342,6 +342,9 @@ export function SettingsScreen(p: {
   settings: Settings;
   persisted: boolean;
   onChange(s: Settings): void;
+  /** 손가락으로 쓰기(기기 설정) — 도구 막대가 없는 레슨 노트에서도 끄고 켤 수 있게 여기에도 둔다 */
+  fingerInk: boolean;
+  onFingerInk(on: boolean): void;
   profiles: Profile[];
   current: string;
   onAdd(name: string): void;
@@ -369,6 +372,27 @@ export function SettingsScreen(p: {
             +
           </button>
         </div>
+      </section>
+      <section className="card">
+        <h2>필기</h2>
+        <div className="stepper-row">
+          <button
+            type="button"
+            className="btn big"
+            aria-pressed={p.fingerInk}
+            onClick={() => p.onFingerInk(!p.fingerInk)}
+          >
+            손가락으로 쓰기
+          </button>
+          {/* 켜짐 여부는 aria-pressed 로 읽어 주니 화면용 글자는 읽지 않게 둔다 */}
+          <span className="value" aria-hidden>
+            {p.fingerInk ? '켜짐' : '꺼짐'}
+          </span>
+        </div>
+        <p className="muted">
+          켜면 노트에 한 손가락으로 써요. 스크롤은 두 손가락으로 해요. 펜을 처음 쓰면 저절로 꺼져요.
+          <br />이 기기를 쓰는 모두에게 적용돼요.
+        </p>
       </section>
       <section className="card">
         <h2>프로필</h2>

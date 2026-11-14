@@ -34,13 +34,21 @@ export interface InkOptions {
   tool: Tool;
   /** 획이 끝나거나 지우기·실행 취소로 내용이 바뀔 때마다 (자동 저장용) */
   onChange(doc: InkDoc): void;
-  /** 펜이 닿고 떨어질 때 (손바닥 무시 중 화면이 쓰는 용도) */
-  onPenActive?(active: boolean): void;
+  /**
+   * 펜·마우스·손가락으로 쓰기 시작하고 끝날 때 (쓰는 중 화면이 손가락 쓸기를 막는 용도).
+   * kind = pointerType(pen·mouse·touch) — 뗀 뒤 손바닥 시간은 펜일 때만 둔다.
+   */
+  onPenActive?(active: boolean, kind: string): void;
+  /** 한 손가락으로도 쓸지 (기본 false = 손가락은 스크롤·쪽 넘김·여러 손가락 탭) */
+  fingerInk?: boolean;
+  /** 손가락 쓰기 중 여러 손가락 끌기가 끝났을 때 — 손가락 중심의 전체 이동(쪽 넘김 쓸기 판정용) */
+  onSwipe?(g: { dx: number; dy: number; dt: number; fingers: number }): void;
 }
 
 export interface InkSurface {
   setTool(t: Tool): void;
   setBackground(b: Background): void;
+  setFingerInk(on: boolean): void;
   undo(): void;
   redo(): void;
   /** 전체 지우기 — 이것도 실행 취소 가능 */
