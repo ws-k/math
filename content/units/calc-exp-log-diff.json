@@ -1,0 +1,1423 @@
+{
+  "id": "calc-exp-log-diff",
+  "course": "미적분",
+  "unit": "미분법",
+  "title": "지수·로그함수의 극한과 미분",
+  "prereq": [
+    "math1-log-func",
+    "math2-diff-polynomial",
+    "calc-seq-limit"
+  ],
+  "suneung": [
+    "미적 26"
+  ],
+  "hours": 3.5,
+  "formulas": [
+    "$\\lim_{x\\to0}(1+x)^{\\frac1x}=e$",
+    "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$, $\\lim_{x\\to0}\\frac{\\ln(1+x)}{x}=1$",
+    "$(e^x)'=e^x$, $(a^x)'=a^x\\ln a$",
+    "$(\\ln x)'=\\frac1x$, $(\\log_a x)'=\\frac{1}{x\\ln a}$"
+  ],
+  "lesson": {
+    "minutes": 25,
+    "values": {
+      "one": {
+        "value": "1",
+        "check": "limit((exp(x) - 1)/x, x, 0)"
+      },
+      "q4": {
+        "value": "1/4",
+        "check": "diff(log(x), x).subs(x, 4)"
+      }
+    },
+    "scenes": [
+      {
+        "kind": "intro",
+        "id": "start",
+        "chip": "미적분 · 미분법",
+        "title": "미분해도 그대로인\n함수가 있을까요?",
+        "lead": "지수함수의 밑을 슬라이더로 바꿔 가며 특별한 수 $e$ 를 직접 찾아요. 그 수를 밑으로 하는 함수는 미분해도 모양이 그대로예요.",
+        "meta": [
+          "수 e",
+          "지수·로그함수의 미분"
+        ]
+      },
+      {
+        "kind": "question",
+        "id": "hook",
+        "chip": "오늘의 질문",
+        "title": "기울기가 딱 1 인\n지수함수를 찾아요",
+        "lead": "$y=a^x$ 는 밑이 무엇이든 점 $(0,\\,1)$ 을 지나요. 슬라이더로 밑 $a$ 를 바꾸며 그 점에서의 접선 기울기를 보세요. 기울기가 1 에 가장 가까운 $a$ 는 얼마일까요?",
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -2,
+              "max": 2,
+              "step": "1/2"
+            },
+            "y": {
+              "min": 0,
+              "max": 6,
+              "step": 1
+            },
+            "sliders": [
+              {
+                "id": "a",
+                "min": 2,
+                "max": 3,
+                "step": "1/10",
+                "value": 2,
+                "label": "밑 $a$"
+              }
+            ],
+            "objects": [
+              {
+                "id": "f",
+                "curve": "a**x",
+                "label": "$y=a^x$"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "f",
+                  "x": 0
+                },
+                "name": "P"
+              },
+              {
+                "tangent": {
+                  "on": "f",
+                  "at": "P"
+                }
+              },
+              {
+                "readout": "value(a)",
+                "label": "밑 $a$",
+                "digits": 1
+              },
+              {
+                "readout": "deriv(f,P)",
+                "label": "P 에서 접선의 기울기",
+                "digits": 3
+              }
+            ],
+            "intro": "슬라이더를 움직여 기울기가 1 에 가장 가까운 밑을 찾아보세요."
+          }
+        },
+        "format": {
+          "digits": 1
+        },
+        "choices": [
+          {
+            "value": "5/2",
+            "check": "Rational(2 + 3, 2)",
+            "feedback": "2 와 3 의 한가운데를 골랐네요. 밑이 2.5 이면 기울기는 아직 1 보다 작아요. 슬라이더를 더 오른쪽으로 옮겨 보세요."
+          },
+          {
+            "value": "27/10",
+            "check": "ans = min([Rational(k, 10) for k in range(20, 31)], key=lambda v: Abs(log(v) - 1))"
+          },
+          {
+            "value": "3",
+            "check": "ceiling(E)",
+            "feedback": "밑이 3 이면 기울기가 1 을 조금 넘어요. 조금 더 작은 밑이에요."
+          }
+        ],
+        "answer": 1,
+        "answerCheck": "ans = min([Rational(k, 10) for k in range(20, 31)], key=lambda v: Abs(log(v) - 1))",
+        "reveal": "**맞아요.** 2.7 과 2.8 사이에서 기울기가 1 을 지나가요.",
+        "thoughts": [
+          "밑이 2 이면 기울기가 1 보다 작고, 3 이면 1 보다 커요.",
+          "그 사이 어딘가에 기울기가 **정확히 1** 인 밑이 있어요. 소수로 끝없이 이어지는 2.71828… 이에요."
+        ],
+        "conclude": "이 수를 $e$ 라고 불러요. ==접선 기울기가 1 이 되는 밑==이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "self",
+        "chip": "손으로 해 보기",
+        "title": "높이와 기울기를\n나란히 재 보세요",
+        "lead": "이번엔 밑을 $e$ 로 고정했어요. 곡선 $y=e^x$ 위의 점 P 를 끌며 P 의 높이와 그 점에서의 접선 기울기를 비교해 보세요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": -2,
+              "max": 2,
+              "step": "1/2"
+            },
+            "y": {
+              "min": 0,
+              "max": 8,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "f",
+                "curve": "E**x",
+                "label": "$y=e^x$"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "f",
+                  "x": 2
+                },
+                "name": "Q"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "f",
+                  "x": 0,
+                  "drag": "x",
+                  "snap": "1/4"
+                },
+                "name": "P"
+              },
+              {
+                "tangent": {
+                  "on": "f",
+                  "at": "P"
+                }
+              },
+              {
+                "readout": "y(P)",
+                "label": "P 의 높이",
+                "digits": 3
+              },
+              {
+                "readout": "deriv(f,P)",
+                "label": "P 에서 접선의 기울기",
+                "digits": 3
+              }
+            ],
+            "goal": {
+              "approach": [
+                "P",
+                "Q"
+              ]
+            },
+            "intro": "P 를 끌어 Q 까지 가 보세요. 두 값을 계속 비교해요.",
+            "done": "어디에서든 높이와 기울기가 똑같아요."
+          }
+        },
+        "after": "$\\frac{e^{x+h}-e^x}{h}=e^x\\cdot\\frac{e^h-1}{h}$ 이고, $\\frac{e^h-1}{h}$ 은 점 $(0,\\,1)$ 에서의 기울기로 가요. 그 기울기가 {{one}}이 되도록 고른 밑이 $e$ 라서 $(e^x)'=e^x$ 예요. ==미분해도 자기 자신==이에요."
+      },
+      {
+        "kind": "terms",
+        "id": "name",
+        "chip": "이름 붙이기",
+        "title": "방금 본 것에는\n이름이 있어요",
+        "terms": [
+          {
+            "term": "수 $e$",
+            "body": "$y=a^x$ 의 $(0,\\,1)$ 에서의 기울기가 1 이 되는 밑이에요. 교과서에서는 $\\lim_{x\\to0}(1+x)^{\\frac1x}=e$ 로 정의하고, 값은 $2.71828\\cdots$ 예요."
+          },
+          {
+            "term": "자연로그",
+            "body": "밑이 $e$ 인 로그 $\\log_e x$ 를 $\\ln x$ 로 써요."
+          },
+          {
+            "term": "기본 극한",
+            "body": "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$ 은 $(0,\\,1)$ 에서의 기울기가 1 이라는 뜻이에요. $\\lim_{x\\to0}\\frac{\\ln(1+x)}{x}=1$ 도 같은 사실을 로그로 쓴 거예요."
+          },
+          {
+            "term": "지수함수의 미분",
+            "body": "$(e^x)'=e^x$, 밑이 $a$ 이면 $(a^x)'=a^x\\ln a$ 예요."
+          }
+        ],
+        "aside": "**확인** · 슬라이더에서 본 기울기는 $(a^x)'=a^x\\ln a$ 에 $x=0$ 을 넣은 $\\ln a$ 예요. 밑이 $e$ 이면 $\\ln e=1$ 이에요."
+      },
+      {
+        "kind": "explore",
+        "id": "ln",
+        "chip": "두 번째 해 보기",
+        "title": "$\\ln x$ 의 기울기에서\n규칙을 찾아요",
+        "lead": "$y=\\ln x$ 위의 점 P 를 끌며 $x$ 좌표와 접선의 기울기를 함께 보세요. 둘 사이에 간단한 규칙이 있어요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "explore",
+            "x": {
+              "min": 0,
+              "max": 6,
+              "step": "1/2"
+            },
+            "y": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "g",
+                "curve": "log(x)",
+                "label": "$y=\\ln x$"
+              },
+              {
+                "id": "Q",
+                "point": {
+                  "on": "g",
+                  "x": 4
+                },
+                "name": "Q"
+              },
+              {
+                "id": "P",
+                "point": {
+                  "on": "g",
+                  "x": 1,
+                  "drag": "x",
+                  "snap": "1/4"
+                },
+                "name": "P"
+              },
+              {
+                "tangent": {
+                  "on": "g",
+                  "at": "P"
+                }
+              },
+              {
+                "readout": "x(P)",
+                "label": "P 의 $x$",
+                "digits": 2
+              },
+              {
+                "readout": "deriv(g,P)",
+                "label": "P 에서 접선의 기울기",
+                "digits": 3
+              }
+            ],
+            "goal": {
+              "approach": [
+                "P",
+                "Q"
+              ]
+            },
+            "intro": "P 를 Q 까지 끌어 보세요. $x$ 가 2 배가 되면 기울기는 어떻게 될까요?",
+            "done": "$x=4$ 에서 기울기는 {{q4}}이에요. $x$ 와 기울기를 곱하면 늘 1 이라 $(\\ln x)'=\\frac1x$ 예요."
+          }
+        },
+        "after": "$y=\\ln x$ 는 $y=e^x$ 를 직선 $y=x$ 에 비춘 그래프예요. 비추면 가로와 세로가 바뀌어 ==기울기가 역수==가 돼요. $y=e^x$ 위에서 높이가 $t$ 인 점의 기울기도 $t$ 이니, 비춘 점 $(t,\\,\\ln t)$ 에서의 기울기는 $\\frac1t$ 예요."
+      },
+      {
+        "kind": "explore",
+        "id": "tangent",
+        "chip": "직접 그려 보기",
+        "title": "접선을 직접\n그려 보세요",
+        "lead": "$y=\\ln x$ 위의 점 A 에서의 접선을 그려요. $(\\ln x)'=\\frac1x$ 로 A 에서의 기울기를 먼저 구하고, 두 손잡이를 끌어 직선을 맞춘 뒤 '확인하기'를 누르세요. 끌기 어려우면 격자를 눌러 가까운 손잡이를 옮길 수 있어요.",
+        "gate": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "line",
+            "x": {
+              "min": -1,
+              "max": 5,
+              "step": 1
+            },
+            "y": {
+              "min": -3,
+              "max": 3,
+              "step": 1
+            },
+            "objects": [
+              {
+                "id": "g",
+                "curve": "log(x)",
+                "label": "$y=\\ln x$"
+              },
+              {
+                "id": "A",
+                "point": {
+                  "on": "g",
+                  "x": 1
+                },
+                "name": "A"
+              }
+            ],
+            "task": {
+              "line": {
+                "slope": {
+                  "value": "1",
+                  "check": "diff(log(x), x).subs(x, 1)"
+                },
+                "through": {
+                  "x": {
+                    "value": "1",
+                    "check": "solve(log(x), x)[0]"
+                  },
+                  "y": {
+                    "value": "0",
+                    "check": "log(solve(log(x), x)[0])"
+                  }
+                }
+              }
+            },
+            "intro": "A 를 지나고 A 에서의 기울기를 가진 직선을 만들어 보세요.",
+            "done": "맞아요. A 에서 기울기는 $\\frac11$, 접선은 $y=x-1$ 이에요."
+          }
+        }
+      },
+      {
+        "kind": "spot",
+        "id": "traps",
+        "chip": "틀린 곳 찾기",
+        "title": "다들 여기서 틀려요.\n어디가 틀렸을까요?",
+        "items": [
+          {
+            "prompt": "**함정 1** · 지수함수 $y=2^x$ 를 미분했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "diff(2**x, x)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "x*2**(x-1)",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "2**x*log(2)",
+              "body": "$(x^n)'=nx^{n-1}$ 은 밑에 $x$ 가 있을 때의 공식이에요. $2^x$ 처럼 지수에 $x$ 가 있으면 $(a^x)'=a^x\\ln a$ 예요."
+            }
+          },
+          {
+            "prompt": "**함정 2** · 밑이 2 인 로그함수를 미분했어요. 틀린 부분은?",
+            "mode": "identity",
+            "tokens": [
+              {
+                "sym": "diff(log(x, 2), x)"
+              },
+              {
+                "sep": "="
+              },
+              {
+                "sym": "1/x",
+                "bad": true
+              }
+            ],
+            "fix": {
+              "sym": "1/(x*log(2))",
+              "body": "$\\frac1x$ 은 밑이 $e$ 인 $\\ln x$ 의 도함수예요. $\\log_2 x=\\frac{\\ln x}{\\ln 2}$ 이므로 $\\ln 2$ 로 한 번 더 나눠요."
+            }
+          }
+        ]
+      },
+      {
+        "kind": "solve",
+        "id": "try",
+        "chip": "직접 풀어 보기",
+        "title": "이제 직접 해 볼 차례",
+        "items": [
+          {
+            "id": "lim",
+            "q": "$\\lim_{x\\to0}\\frac{e^{3x}-1}{x}$ 의 값을 구하세요.",
+            "hint": "지수가 $3x$ 이니 분모도 $3x$ 로 맞춰 기본 꼴 $\\frac{e^t-1}{t}$ 을 만들어요.",
+            "concepts": [
+              "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$"
+            ],
+            "steps": [
+              {
+                "title": "분모를 맞추기",
+                "body": "$$\\frac{e^{3x}-1}{x}=\\frac{e^{3x}-1}{3x}\\times3$$"
+              },
+              {
+                "title": "기본 꼴의 극한",
+                "body": "$x\\to0$ 이면 $3x\\to0$ 이라 $\\frac{e^{3x}-1}{3x}\\to1$ 이에요."
+              },
+              {
+                "title": "계산하기",
+                "body": "$1\\times3={{answer}}$ 이에요."
+              }
+            ],
+            "tip": "분모를 맞추지 않고 바로 $1$ 이라고 하면 틀려요. 지수와 분모가 같아야 $1$ 이에요.",
+            "answer": "3",
+            "answerType": "int",
+            "check": "limit((exp(3*x) - 1)/x, x, 0)"
+          },
+          {
+            "id": "e",
+            "q": "$\\lim_{x\\to0}(1+3x)^{\\frac{2}{x}}=e^k$ 일 때, 상수 $k$ 의 값을 구하세요.",
+            "hint": "괄호 안이 $1+3x$ 이니 지수를 $\\frac{1}{3x}$ 이 되도록 나눠 써요.",
+            "concepts": [
+              "$\\lim_{x\\to0}(1+x)^{\\frac1x}=e$"
+            ],
+            "steps": [
+              {
+                "title": "지수를 나눠 쓰기",
+                "body": "$\\frac2x=\\frac{1}{3x}\\times6$ 이므로\n$$(1+3x)^{\\frac2x}=\\left\\{(1+3x)^{\\frac{1}{3x}}\\right\\}^{6}$$"
+              },
+              {
+                "title": "기본 꼴의 극한",
+                "body": "$x\\to0$ 이면 $3x\\to0$ 이라 중괄호 안은 $e$ 로 가요."
+              },
+              {
+                "title": "지수 읽기",
+                "body": "극한값은 $e^6$ 이니 $k={{answer}}$ 이에요."
+              }
+            ],
+            "tip": "지수의 $2$ 만 보고 $e^2$ 로 쓰는 실수가 많아요. 괄호 안의 $3x$ 와 지수의 분모를 같게 맞춰요.",
+            "answer": "6",
+            "answerType": "int",
+            "check": "log(limit((1 + 3*x)**(2/x), x, 0))"
+          },
+          {
+            "id": "diff",
+            "q": "함수 $f(x)=(x^2+1)\\ln x$ 에 대하여 $f'(1)$ 의 값을 구하세요.",
+            "hint": "곱의 미분법을 쓰고, $\\ln 1=0$ 을 이용해요.",
+            "concepts": [
+              "$(\\ln x)'=\\frac1x$",
+              "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+            ],
+            "steps": [
+              {
+                "title": "곱의 미분법 적용",
+                "body": "$$f'(x)=2x\\ln x+(x^2+1)\\cdot\\frac1x$$"
+              },
+              {
+                "title": "$x=1$ 대입",
+                "body": "$\\ln1=0$ 이므로 앞 항은 $0$, 뒤 항은 $2\\cdot1=2$ 예요."
+              },
+              {
+                "title": "계산하기",
+                "body": "$f'(1)=0+2={{answer}}$ 예요."
+              }
+            ],
+            "tip": "$\\ln 1=0$ 이라 앞 항이 사라져요. $x=1$ 에서의 로그 문제는 이 점을 자주 써요.",
+            "answer": "2",
+            "answerType": "int",
+            "check": "diff((x**2 + 1)*log(x), x).subs(x, 1)"
+          }
+        ]
+      },
+      {
+        "kind": "summary",
+        "id": "sum",
+        "chip": "한 장 요약",
+        "title": "이것만 기억하세요",
+        "points": [
+          "$e$ 는 $y=a^x$ 의 $(0,\\,1)$ 에서 접선 기울기가 딱 1 이 되는 밑이에요. $\\lim_{x\\to0}(1+x)^{\\frac1x}=e$.",
+          "$(e^x)'=e^x$ 는 어디서든 높이와 기울기가 같다는 뜻이에요. 밑이 $a$ 이면 $(a^x)'=a^x\\ln a$.",
+          "$(\\ln x)'=\\frac1x$ 는 $e^x$ 를 $y=x$ 에 비춘 결과예요. 밑이 $a$ 이면 $(\\log_a x)'=\\frac{1}{x\\ln a}$.",
+          "극한은 $\\frac{e^t-1}{t}$, $\\frac{\\ln(1+t)}{t}$, $(1+t)^{\\frac1t}$ 꼴로 맞춰요. 수능에서는 이 극한과 지수·로그함수의 미분계수가 함께 나와요."
+        ],
+        "done": "지수·로그함수의 미분 개념 끝!",
+        "next": "다음은 연습문제 {{problems}}개예요."
+      }
+    ]
+  },
+  "generators": [
+    "calc-exp-log-diff-limit-e",
+    "calc-exp-log-diff-limit-basic",
+    "calc-exp-log-diff-deriv-exp",
+    "calc-exp-log-diff-deriv-log"
+  ],
+  "problems": [
+    {
+      "q": "$\\lim_{x\\to0}(1+3x)^{\\frac{3}{x}}=e^k$ 일 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "9",
+      "answerType": "int",
+      "check": "log(limit((1 + (3)*x)**(3/x), x, 0))",
+      "concepts": [
+        "$\\lim_{x\\to0}(1+x)^{\\frac1x}=e$",
+        "$t=ax$ 로 두면 $x\\to0$ 일 때 $t\\to0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "기본 꼴 찾기",
+          "body": "괄호 안이 $1+(3x)$ 이니 지수가 $\\frac{1}{3x}$ 이면 기본 꼴이에요."
+        },
+        {
+          "title": "지수를 나눠 쓰기",
+          "body": "$\\frac{3}{x}=\\frac{1}{3x}\\times9$ 이므로\n$$(1+3x)^{\\frac{3}{x}}=\\left\\{(1+3x)^{\\frac{1}{3x}}\\right\\}^{9}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$x\\to0$ 이면 $3x\\to0$ 이라 중괄호 안은 $e$ 로 가요. 그래서 극한값은 $e^{9}$, $k=9$ 예요."
+        }
+      ],
+      "tip": "지수의 분자만 보고 답을 $e^{3}$ 처럼 쓰는 실수가 많아요. 괄호 안의 $3x$ 와 지수의 분모가 같아지도록 맞춰야 해요.",
+      "id": "b01",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-limit-e",
+      "seed": 1000
+    },
+    {
+      "q": "$\\lim_{x\\to0}\\frac{\\ln(1-4x)}{2x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "fraction",
+      "check": "limit(log(1 + (-4)*x)/(2*x), x, 0)",
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{\\ln(1+x)}{x}=1$",
+        "$t=ax$ 로 두면 $x\\to0$ 일 때 $t\\to0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "분모를 기본 꼴로 맞추기",
+          "body": "분자에 $-4x$ 가 있으니 분모에도 $-4x$ 가 오도록 곱하고 나눠요.\n$$\\frac{\\ln(1-4x)}{2x}=\\frac{\\ln(1-4x)}{-4x}\\times\\frac{-4x}{2x}$$"
+        },
+        {
+          "title": "기본 꼴의 극한",
+          "body": "$x\\to0$ 이면 $-4x\\to0$ 이라 $\\frac{\\ln(1-4x)}{-4x}\\to1$ 이에요."
+        },
+        {
+          "title": "남은 수 계산",
+          "body": "$\\frac{-4x}{2x}=-2$ 이므로 극한값은 $1\\times(-2)=-2$ 예요."
+        }
+      ],
+      "tip": "$\\ln$ 안의 $-4x$ 와 분모가 같을 때만 $1$ 이에요. 결국 (안쪽 계수)÷(분모의 계수)가 답이에요.",
+      "id": "b02",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-limit-basic",
+      "seed": 1001
+    },
+    {
+      "q": "함수 $f(x)=(-x^2+1)e^x$ 에 대하여 $f'(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "diff((-1*x**2 + 1)*exp(x), x).subs(x, 0)",
+      "concepts": [
+        "$(e^x)'=e^x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법 적용",
+          "body": "$(-x^2+1)'=-2x$, $(e^x)'=e^x$ 이므로\n$$f'(x)=(-2x)e^x+(-x^2+1)e^x$$"
+        },
+        {
+          "title": "$x=0$ 대입",
+          "body": "$e^0=1$ 이므로 $f'(0)=0+1=1$ 이에요."
+        }
+      ],
+      "tip": "$e^x$ 는 미분해도 그대로라서 $f'(x)=\\{P'(x)+P(x)\\}e^x$ 처럼 묶을 수 있어요. 다항식과 그 도함수를 더하기만 하면 돼요.",
+      "id": "b03",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-deriv-exp",
+      "seed": 1002
+    },
+    {
+      "q": "함수 $f(x)=-2\\ln x-2x^2+5x$ 에 대하여 $f'(4)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-23/2",
+      "answerType": "fraction",
+      "check": "diff(-2*log(x) + -2*x**2 + 5*x, x).subs(x, 4)",
+      "concepts": [
+        "$(\\ln x)'=\\frac1x$",
+        "$(x^n)'=nx^{n-1}$"
+      ],
+      "steps": [
+        {
+          "title": "항마다 미분하기",
+          "body": "$(\\ln x)'=\\frac1x$ 이므로\n$$f'(x)=-\\frac{2}{x}-4x+5$$"
+        },
+        {
+          "title": "$x=4$ 대입",
+          "body": "$$f'(4)=-\\frac{1}{2}-11=-\\frac{23}{2}$$"
+        }
+      ],
+      "tip": "$\\ln x$ 를 미분하면 $\\frac1x$ 이에요. 값을 넣기 전에 먼저 미분해야 해요. $\\ln 4$ 같은 값이 남으면 순서가 바뀐 거예요.",
+      "id": "b04",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-deriv-log",
+      "seed": 1003
+    },
+    {
+      "q": "$\\lim_{x\\to0}(1-3x)^{\\frac{-1}{x}}=e^k$ 일 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "log(limit((1 + (-3)*x)**(-1/x), x, 0))",
+      "concepts": [
+        "$\\lim_{x\\to0}(1+x)^{\\frac1x}=e$",
+        "$t=ax$ 로 두면 $x\\to0$ 일 때 $t\\to0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "기본 꼴 찾기",
+          "body": "괄호 안이 $1+(-3x)$ 이니 지수가 $\\frac{1}{-3x}$ 이면 기본 꼴이에요."
+        },
+        {
+          "title": "지수를 나눠 쓰기",
+          "body": "$\\frac{-1}{x}=\\frac{1}{-3x}\\times3$ 이므로\n$$(1-3x)^{\\frac{-1}{x}}=\\left\\{(1-3x)^{\\frac{1}{-3x}}\\right\\}^{3}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$x\\to0$ 이면 $-3x\\to0$ 이라 중괄호 안은 $e$ 로 가요. 그래서 극한값은 $e^{3}$, $k=3$ 이에요."
+        }
+      ],
+      "tip": "지수의 분자만 보고 답을 $e^{-1}$ 처럼 쓰는 실수가 많아요. 괄호 안의 $-3x$ 와 지수의 분모가 같아지도록 맞춰야 해요.",
+      "id": "b05",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-limit-e",
+      "seed": 1004
+    },
+    {
+      "q": "$\\lim_{x\\to0}\\frac{e^{3x}-1}{4x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "limit((exp(3*x) - 1)/(4*x), x, 0)",
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$",
+        "$t=ax$ 로 두면 $x\\to0$ 일 때 $t\\to0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "분모를 기본 꼴로 맞추기",
+          "body": "분자에 $3x$ 가 있으니 분모에도 $3x$ 가 오도록 곱하고 나눠요.\n$$\\frac{e^{3x}-1}{4x}=\\frac{e^{3x}-1}{3x}\\times\\frac{3x}{4x}$$"
+        },
+        {
+          "title": "기본 꼴의 극한",
+          "body": "$x\\to0$ 이면 $3x\\to0$ 이라 $\\frac{e^{3x}-1}{3x}\\to1$ 이에요."
+        },
+        {
+          "title": "남은 수 계산",
+          "body": "$\\frac{3x}{4x}=\\frac{3}{4}$ 이므로 극한값은 $1\\times\\frac{3}{4}=\\frac{3}{4}$ 이에요."
+        }
+      ],
+      "tip": "$e^{3x}$ 의 지수와 분모가 같을 때만 $1$ 이에요. 결국 (지수의 계수)÷(분모의 계수)가 답이에요.",
+      "id": "b06",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-limit-basic",
+      "seed": 1005
+    },
+    {
+      "q": "함수 $f(x)=(-x^2-3x+5)e^x$ 에 대하여 $f'(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "diff((-1*x**2 - 3*x + 5)*exp(x), x).subs(x, 0)",
+      "concepts": [
+        "$(e^x)'=e^x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법 적용",
+          "body": "$(-x^2-3x+5)'=-2x-3$, $(e^x)'=e^x$ 이므로\n$$f'(x)=(-2x-3)e^x+(-x^2-3x+5)e^x$$"
+        },
+        {
+          "title": "$x=0$ 대입",
+          "body": "$e^0=1$ 이므로 $f'(0)=(-3)+5=2$ 예요."
+        }
+      ],
+      "tip": "$e^x$ 는 미분해도 그대로라서 $f'(x)=\\{P'(x)+P(x)\\}e^x$ 처럼 묶을 수 있어요. 다항식과 그 도함수를 더하기만 하면 돼요.",
+      "id": "b07",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-deriv-exp",
+      "seed": 1006
+    },
+    {
+      "q": "함수 $f(x)=5\\ln x-2x^2-4x$ 에 대하여 $f'(2)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-19/2",
+      "answerType": "fraction",
+      "check": "diff(5*log(x) + -2*x**2 - 4*x, x).subs(x, 2)",
+      "concepts": [
+        "$(\\ln x)'=\\frac1x$",
+        "$(x^n)'=nx^{n-1}$"
+      ],
+      "steps": [
+        {
+          "title": "항마다 미분하기",
+          "body": "$(\\ln x)'=\\frac1x$ 이므로\n$$f'(x)=\\frac{5}{x}-4x-4$$"
+        },
+        {
+          "title": "$x=2$ 대입",
+          "body": "$$f'(2)=\\frac{5}{2}-12=-\\frac{19}{2}$$"
+        }
+      ],
+      "tip": "$\\ln x$ 를 미분하면 $\\frac1x$ 이에요. 값을 넣기 전에 먼저 미분해야 해요. $\\ln 2$ 같은 값이 남으면 순서가 바뀐 거예요.",
+      "id": "b08",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-deriv-log",
+      "seed": 1007
+    },
+    {
+      "q": "$\\lim_{x\\to0}(1+3x)^{\\frac{2}{x}}=e^k$ 일 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "6",
+      "answerType": "int",
+      "check": "log(limit((1 + (3)*x)**(2/x), x, 0))",
+      "concepts": [
+        "$\\lim_{x\\to0}(1+x)^{\\frac1x}=e$",
+        "$t=ax$ 로 두면 $x\\to0$ 일 때 $t\\to0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "기본 꼴 찾기",
+          "body": "괄호 안이 $1+(3x)$ 이니 지수가 $\\frac{1}{3x}$ 이면 기본 꼴이에요."
+        },
+        {
+          "title": "지수를 나눠 쓰기",
+          "body": "$\\frac{2}{x}=\\frac{1}{3x}\\times6$ 이므로\n$$(1+3x)^{\\frac{2}{x}}=\\left\\{(1+3x)^{\\frac{1}{3x}}\\right\\}^{6}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$x\\to0$ 이면 $3x\\to0$ 이라 중괄호 안은 $e$ 로 가요. 그래서 극한값은 $e^{6}$, $k=6$ 이에요."
+        }
+      ],
+      "tip": "지수의 분자만 보고 답을 $e^{2}$ 처럼 쓰는 실수가 많아요. 괄호 안의 $3x$ 와 지수의 분모가 같아지도록 맞춰야 해요.",
+      "id": "b09",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-limit-e",
+      "seed": 1008
+    },
+    {
+      "q": "$\\lim_{x\\to0}\\frac{\\ln(1+3x)}{4x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3/4",
+      "answerType": "fraction",
+      "check": "limit(log(1 + (3)*x)/(4*x), x, 0)",
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{\\ln(1+x)}{x}=1$",
+        "$t=ax$ 로 두면 $x\\to0$ 일 때 $t\\to0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "분모를 기본 꼴로 맞추기",
+          "body": "분자에 $3x$ 가 있으니 분모에도 $3x$ 가 오도록 곱하고 나눠요.\n$$\\frac{\\ln(1+3x)}{4x}=\\frac{\\ln(1+3x)}{3x}\\times\\frac{3x}{4x}$$"
+        },
+        {
+          "title": "기본 꼴의 극한",
+          "body": "$x\\to0$ 이면 $3x\\to0$ 이라 $\\frac{\\ln(1+3x)}{3x}\\to1$ 이에요."
+        },
+        {
+          "title": "남은 수 계산",
+          "body": "$\\frac{3x}{4x}=\\frac{3}{4}$ 이므로 극한값은 $1\\times\\frac{3}{4}=\\frac{3}{4}$ 이에요."
+        }
+      ],
+      "tip": "$\\ln$ 안의 $3x$ 와 분모가 같을 때만 $1$ 이에요. 결국 (안쪽 계수)÷(분모의 계수)가 답이에요.",
+      "id": "b10",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-limit-basic",
+      "seed": 1009
+    },
+    {
+      "q": "함수 $f(x)=(3x+4)e^x$ 에 대하여 $f'(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "diff((3*x + 4)*exp(x), x).subs(x, 0)",
+      "concepts": [
+        "$(e^x)'=e^x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법 적용",
+          "body": "$(3x+4)'=3$, $(e^x)'=e^x$ 이므로\n$$f'(x)=(3)e^x+(3x+4)e^x$$"
+        },
+        {
+          "title": "$x=0$ 대입",
+          "body": "$e^0=1$ 이므로 $f'(0)=3+4=7$ 이에요."
+        }
+      ],
+      "tip": "$e^x$ 는 미분해도 그대로라서 $f'(x)=\\{P'(x)+P(x)\\}e^x$ 처럼 묶을 수 있어요. 다항식과 그 도함수를 더하기만 하면 돼요.",
+      "id": "b11",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-deriv-exp",
+      "seed": 1010
+    },
+    {
+      "q": "함수 $f(x)=6\\ln x+x^2+4x$ 에 대하여 $f'(4)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "27/2",
+      "answerType": "fraction",
+      "check": "diff(6*log(x) + 1*x**2 + 4*x, x).subs(x, 4)",
+      "concepts": [
+        "$(\\ln x)'=\\frac1x$",
+        "$(x^n)'=nx^{n-1}$"
+      ],
+      "steps": [
+        {
+          "title": "항마다 미분하기",
+          "body": "$(\\ln x)'=\\frac1x$ 이므로\n$$f'(x)=\\frac{6}{x}+2x+4$$"
+        },
+        {
+          "title": "$x=4$ 대입",
+          "body": "$$f'(4)=\\frac{3}{2}+12=\\frac{27}{2}$$"
+        }
+      ],
+      "tip": "$\\ln x$ 를 미분하면 $\\frac1x$ 이에요. 값을 넣기 전에 먼저 미분해야 해요. $\\ln 4$ 같은 값이 남으면 순서가 바뀐 거예요.",
+      "id": "b12",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-deriv-log",
+      "seed": 1011
+    },
+    {
+      "q": "$\\lim_{x\\to0}(1-2x)^{\\frac{1}{x}}=e^k$ 일 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-2",
+      "answerType": "int",
+      "check": "log(limit((1 + (-2)*x)**(1/x), x, 0))",
+      "concepts": [
+        "$\\lim_{x\\to0}(1+x)^{\\frac1x}=e$",
+        "$t=ax$ 로 두면 $x\\to0$ 일 때 $t\\to0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "기본 꼴 찾기",
+          "body": "괄호 안이 $1+(-2x)$ 이니 지수가 $\\frac{1}{-2x}$ 이면 기본 꼴이에요."
+        },
+        {
+          "title": "지수를 나눠 쓰기",
+          "body": "$\\frac{1}{x}=\\frac{1}{-2x}\\times(-2)$ 이므로\n$$(1-2x)^{\\frac{1}{x}}=\\left\\{(1-2x)^{\\frac{1}{-2x}}\\right\\}^{-2}$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$x\\to0$ 이면 $-2x\\to0$ 이라 중괄호 안은 $e$ 로 가요. 그래서 극한값은 $e^{-2}$, $k=-2$ 예요."
+        }
+      ],
+      "tip": "지수의 분자만 보고 답을 $e^{1}$ 처럼 쓰는 실수가 많아요. 괄호 안의 $-2x$ 와 지수의 분모가 같아지도록 맞춰야 해요.",
+      "id": "b13",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-limit-e",
+      "seed": 1012
+    },
+    {
+      "q": "$\\lim_{x\\to0}\\frac{e^{-5x}-1}{2x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-5/2",
+      "answerType": "fraction",
+      "check": "limit((exp(-5*x) - 1)/(2*x), x, 0)",
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$",
+        "$t=ax$ 로 두면 $x\\to0$ 일 때 $t\\to0$ 이에요."
+      ],
+      "steps": [
+        {
+          "title": "분모를 기본 꼴로 맞추기",
+          "body": "분자에 $-5x$ 가 있으니 분모에도 $-5x$ 가 오도록 곱하고 나눠요.\n$$\\frac{e^{-5x}-1}{2x}=\\frac{e^{-5x}-1}{-5x}\\times\\frac{-5x}{2x}$$"
+        },
+        {
+          "title": "기본 꼴의 극한",
+          "body": "$x\\to0$ 이면 $-5x\\to0$ 이라 $\\frac{e^{-5x}-1}{-5x}\\to1$ 이에요."
+        },
+        {
+          "title": "남은 수 계산",
+          "body": "$\\frac{-5x}{2x}=-\\frac{5}{2}$ 이므로 극한값은 $1\\times(-\\frac{5}{2})=-\\frac{5}{2}$ 예요."
+        }
+      ],
+      "tip": "$e^{-5x}$ 의 지수와 분모가 같을 때만 $1$ 이에요. 결국 (지수의 계수)÷(분모의 계수)가 답이에요.",
+      "id": "b14",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-limit-basic",
+      "seed": 1013
+    },
+    {
+      "q": "함수 $f(x)=(-2x^2+3x+4)e^x$ 에 대하여 $f'(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "7",
+      "answerType": "int",
+      "check": "diff((-2*x**2 + 3*x + 4)*exp(x), x).subs(x, 0)",
+      "concepts": [
+        "$(e^x)'=e^x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법 적용",
+          "body": "$(-2x^2+3x+4)'=-4x+3$, $(e^x)'=e^x$ 이므로\n$$f'(x)=(-4x+3)e^x+(-2x^2+3x+4)e^x$$"
+        },
+        {
+          "title": "$x=0$ 대입",
+          "body": "$e^0=1$ 이므로 $f'(0)=3+4=7$ 이에요."
+        }
+      ],
+      "tip": "$e^x$ 는 미분해도 그대로라서 $f'(x)=\\{P'(x)+P(x)\\}e^x$ 처럼 묶을 수 있어요. 다항식과 그 도함수를 더하기만 하면 돼요.",
+      "id": "b15",
+      "level": "기초",
+      "generator": "calc-exp-log-diff-deriv-exp",
+      "seed": 1014
+    },
+    {
+      "id": "p101",
+      "level": "표준",
+      "q": "$\\lim_{x\\to0}\\frac{\\ln(1+4x)}{x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "4",
+      "answerType": "int",
+      "check": "limit(log(1 + 4*x)/x, x, 0)",
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{\\ln(1+x)}{x}=1$"
+      ],
+      "steps": [
+        {
+          "title": "분모를 맞추기",
+          "body": "$$\\frac{\\ln(1+4x)}{x}=\\frac{\\ln(1+4x)}{4x}\\times4$$"
+        },
+        {
+          "title": "기본 꼴의 극한",
+          "body": "$4x\\to0$ 이라 $\\frac{\\ln(1+4x)}{4x}\\to1$ 이에요."
+        },
+        {
+          "title": "계산하기",
+          "body": "$1\\times4=4$ 예요."
+        }
+      ],
+      "tip": "$\\ln$ 안의 $4x$ 와 분모를 같게 맞추는 게 핵심이에요."
+    },
+    {
+      "id": "p102",
+      "level": "표준",
+      "q": "$\\lim_{x\\to\\infty}\\left(1+\\frac1x\\right)^{3x}=e^k$ 일 때, 상수 $k$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "log(limit((1 + 1/x)**(3*x), x, oo))",
+      "concepts": [
+        "$\\lim_{x\\to0}(1+x)^{\\frac1x}=e$",
+        "$t=\\frac1x$ 로 두면 $x\\to\\infty$ 일 때 $t\\to0$"
+      ],
+      "steps": [
+        {
+          "title": "바꿔 쓰기",
+          "body": "$t=\\frac1x$ 로 두면 $x\\to\\infty$ 일 때 $t\\to0$ 이고, $3x=\\frac3t$ 예요."
+        },
+        {
+          "title": "기본 꼴 만들기",
+          "body": "$$(1+t)^{\\frac3t}=\\left\\{(1+t)^{\\frac1t}\\right\\}^3\\to e^3$$"
+        },
+        {
+          "title": "지수 읽기",
+          "body": "$k=3$ 이에요."
+        }
+      ],
+      "tip": "$\\lim_{x\\to\\infty}\\left(1+\\frac1x\\right)^x=e$ 도 같은 정의를 뒤집어 쓴 거예요."
+    },
+    {
+      "id": "p103",
+      "level": "표준",
+      "q": "$\\lim_{x\\to0}\\frac{e^{5x}-e^{2x}}{x}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "3",
+      "answerType": "int",
+      "check": "limit((exp(5*x) - exp(2*x))/x, x, 0)",
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$"
+      ],
+      "steps": [
+        {
+          "title": "두 덩어리로 나누기",
+          "body": "분자에 $1$ 을 빼고 더하면\n$$\\frac{e^{5x}-1}{x}-\\frac{e^{2x}-1}{x}$$"
+        },
+        {
+          "title": "각각의 극한",
+          "body": "$\\frac{e^{5x}-1}{x}\\to5$, $\\frac{e^{2x}-1}{x}\\to2$ 예요."
+        },
+        {
+          "title": "빼기",
+          "body": "$5-2=3$ 이에요."
+        }
+      ],
+      "tip": "$-1+1$ 을 끼워 넣어 기본 꼴 두 개로 나누는 방법이에요."
+    },
+    {
+      "id": "p104",
+      "level": "표준",
+      "q": "함수 $f(x)=e^x(x^2-3x)$ 에 대하여 $f'(0)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-3",
+      "answerType": "int",
+      "check": "diff(exp(x)*(x**2 - 3*x), x).subs(x, 0)",
+      "concepts": [
+        "$(e^x)'=e^x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법 적용",
+          "body": "$$f'(x)=e^x(x^2-3x)+e^x(2x-3)$$"
+        },
+        {
+          "title": "$x=0$ 대입",
+          "body": "$e^0=1$ 이므로 $f'(0)=0+(-3)=-3$ 이에요."
+        }
+      ],
+      "tip": "$f'(x)=e^x(x^2-x-3)$ 로 묶어 두면 다른 점에서도 빨리 계산할 수 있어요."
+    },
+    {
+      "id": "p105",
+      "level": "표준",
+      "q": "함수 $f(x)=x\\ln x$ 에 대하여 $f'(e)$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "2",
+      "answerType": "int",
+      "check": "diff(x*log(x), x).subs(x, E)",
+      "concepts": [
+        "$(\\ln x)'=\\frac1x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법 적용",
+          "body": "$$f'(x)=1\\cdot\\ln x+x\\cdot\\frac1x=\\ln x+1$$"
+        },
+        {
+          "title": "$x=e$ 대입",
+          "body": "$\\ln e=1$ 이므로 $f'(e)=1+1=2$ 예요."
+        }
+      ],
+      "tip": "$\\ln e=1$, $\\ln1=0$ 은 미분계수 계산에서 가장 자주 쓰여요."
+    },
+    {
+      "id": "p106",
+      "level": "표준",
+      "q": "원점에서 곡선 $y=\\ln x$ 에 그은 접선의 접점을 $(t,\\,\\ln t)$ 라 할 때, $\\ln t$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "T = solve(Eq(0, diff(log(x), x).subs(x, t)*(0 - t) + log(t)), t)[0]\nans = log(T)",
+      "concepts": [
+        "$(\\ln x)'=\\frac1x$",
+        "점 $(a,\\,f(a))$ 에서의 접선: $y=f'(a)(x-a)+f(a)$"
+      ],
+      "steps": [
+        {
+          "title": "접선의 식",
+          "body": "접점 $(t,\\,\\ln t)$ 에서 기울기는 $\\frac1t$ 이므로 $y=\\frac1t(x-t)+\\ln t$ 예요."
+        },
+        {
+          "title": "원점 대입",
+          "body": "$0=\\frac1t(0-t)+\\ln t=-1+\\ln t$ 예요."
+        },
+        {
+          "title": "풀기",
+          "body": "$\\ln t=1$ 이에요. 곧 접점은 $(e,\\,1)$ 이에요."
+        }
+      ],
+      "tip": "접선이 지나는 점이 곡선 위에 있지 않을 때는 접점을 문자로 두고 그 점을 대입해요."
+    },
+    {
+      "id": "p107",
+      "level": "표준",
+      "q": "$\\lim_{x\\to0}\\frac{e^x-1}{e^{3x}-1}$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1/3",
+      "answerType": "fraction",
+      "check": "limit((exp(x) - 1)/(exp(3*x) - 1), x, 0)",
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$"
+      ],
+      "steps": [
+        {
+          "title": "분모·분자를 $x$ 로 나누기",
+          "body": "$$\\frac{\\frac{e^x-1}{x}}{\\frac{e^{3x}-1}{x}}$$"
+        },
+        {
+          "title": "각각의 극한",
+          "body": "분자는 $1$, 분모는 $\\frac{e^{3x}-1}{3x}\\times3\\to3$ 이에요."
+        },
+        {
+          "title": "나누기",
+          "body": "$\\frac13$ 이에요."
+        }
+      ],
+      "tip": "분모와 분자 모두 $0$ 으로 가는 꼴이라, 둘 다 $x$ 로 나눠 기본 꼴을 만들어요."
+    },
+    {
+      "id": "p108",
+      "level": "표준",
+      "q": "함수 $f(x)=xe^x$ 에 대하여 $f'(x)=0$ 을 만족시키는 $x$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "-1",
+      "answerType": "int",
+      "check": "solve(diff(x*exp(x), x), x)[0]",
+      "concepts": [
+        "$(e^x)'=e^x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$"
+      ],
+      "steps": [
+        {
+          "title": "곱의 미분법 적용",
+          "body": "$$f'(x)=e^x+xe^x=(x+1)e^x$$"
+        },
+        {
+          "title": "$e^x>0$ 이용",
+          "body": "$e^x$ 는 언제나 양수라 $f'(x)=0$ 이려면 $x+1=0$ 이에요."
+        },
+        {
+          "title": "답",
+          "body": "$x=-1$ 이에요."
+        }
+      ],
+      "tip": "$e^x$ 는 절대 $0$ 이 되지 않아요. 그래서 $e^x$ 로 묶인 식은 나머지 인수만 $0$ 으로 두면 돼요."
+    },
+    {
+      "id": "p109",
+      "level": "표준",
+      "q": "$\\lim_{x\\to0}\\frac{e^{ax}-1}{\\ln(1+2x)}=6$ 일 때, 상수 $a$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "12",
+      "answerType": "int",
+      "check": "solve(Eq(limit((exp(a*x) - 1)/log(1 + 2*x), x, 0), 6), a)[0]",
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$",
+        "$\\lim_{x\\to0}\\frac{\\ln(1+x)}{x}=1$"
+      ],
+      "steps": [
+        {
+          "title": "분모·분자를 $x$ 로 나누기",
+          "body": "$$\\frac{\\frac{e^{ax}-1}{x}}{\\frac{\\ln(1+2x)}{x}}$$"
+        },
+        {
+          "title": "각각의 극한",
+          "body": "분자는 $a$, 분모는 $2$ 로 가요."
+        },
+        {
+          "title": "방정식 풀기",
+          "body": "$\\frac a2=6$ 이므로 $a=12$ 예요."
+        }
+      ],
+      "tip": "$\\frac{e^{ax}-1}{x}\\to a$, $\\frac{\\ln(1+bx)}{x}\\to b$ 를 기억해 두면 빨라요."
+    },
+    {
+      "id": "p110",
+      "level": "표준",
+      "q": "곡선 $y=e^x$ 위의 점 $(t,\\,e^t)$ 에서의 접선이 원점을 지날 때, $t$ 의 값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "solve(Eq(0, exp(t)*(0 - t) + exp(t)), t)[0]",
+      "concepts": [
+        "$(e^x)'=e^x$",
+        "점 $(a,\\,f(a))$ 에서의 접선: $y=f'(a)(x-a)+f(a)$"
+      ],
+      "steps": [
+        {
+          "title": "접선의 식",
+          "body": "기울기는 $e^t$ 이므로 $y=e^t(x-t)+e^t$ 예요."
+        },
+        {
+          "title": "원점 대입",
+          "body": "$0=-te^t+e^t=e^t(1-t)$ 예요."
+        },
+        {
+          "title": "풀기",
+          "body": "$e^t>0$ 이므로 $t=1$ 이에요."
+        }
+      ],
+      "tip": "원점을 지나는 $y=e^x$ 의 접선은 $y=ex$ 예요. 접점이 $(1,\\,e)$ 이기 때문이에요."
+    },
+    {
+      "id": "p201",
+      "level": "수능형",
+      "q": "두 상수 $a$, $b$ 에 대하여 $\\lim_{x\\to0}\\frac{e^{2x}+ax+b}{x}=5$ 일 때, $a+b$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$5$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "b0 = solve(Eq(limit(exp(2*x) + a*x + b, x, 0), 0), b)[0]\na0 = solve(Eq(limit((exp(2*x) + a*x + b0)/x, x, 0), 5), a)[0]\nans = a0 + b0",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$",
+        "분모가 $0$ 으로 가는데 극한값이 있으면 분자도 $0$ 으로 가요."
+      ],
+      "steps": [
+        {
+          "title": "분자의 극한은 0",
+          "body": "분모 $x\\to0$ 이고 극한값이 있으니 분자도 $0$ 으로 가요. $1+b=0$, $b=-1$ 이에요."
+        },
+        {
+          "title": "식 나누기",
+          "body": "$$\\frac{e^{2x}-1+ax}{x}=\\frac{e^{2x}-1}{x}+a$$"
+        },
+        {
+          "title": "극한 구하기",
+          "body": "$\\frac{e^{2x}-1}{x}\\to2$ 이므로 $2+a=5$, $a=3$ 이에요."
+        },
+        {
+          "title": "더하기",
+          "body": "$a+b=3+(-1)=2$, 답은 ②번이에요."
+        }
+      ],
+      "tip": "분모가 0 으로 가는 극한에서 값이 있으면 분자도 0 이어야 해요. 수학Ⅱ 극한 단원과 같은 원리예요."
+    },
+    {
+      "id": "p202",
+      "level": "수능형",
+      "q": "함수 $f(x)=e^x(ax+b)$ 의 그래프 위의 점 $(0,\\,f(0))$ 에서의 접선이 직선 $y=3x+2$ 일 때, 두 상수 $a$, $b$ 의 곱 $ab$ 의 값은?",
+      "choices": [
+        "$1$",
+        "$2$",
+        "$3$",
+        "$4$",
+        "$6$"
+      ],
+      "answer": "2",
+      "answerType": "choice",
+      "check": "s = solve([Eq((exp(x)*(a*x + b)).subs(x, 0), 2), Eq(diff(exp(x)*(a*x + b), x).subs(x, 0), 3)], [a, b], dict=True)[0]\nans = s[a]*s[b]",
+      "choiceChecks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "6"
+      ],
+      "concepts": [
+        "$(e^x)'=e^x$",
+        "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$",
+        "점 $(a,\\,f(a))$ 에서의 접선: $y=f'(a)(x-a)+f(a)$"
+      ],
+      "steps": [
+        {
+          "title": "접점의 $y$ 좌표",
+          "body": "$x=0$ 에서 접선의 높이는 $2$ 이므로 $f(0)=b=2$ 예요."
+        },
+        {
+          "title": "기울기",
+          "body": "$f'(x)=e^x(ax+b)+ae^x$ 이므로 $f'(0)=b+a=3$ 이에요."
+        },
+        {
+          "title": "$a$ 구하기",
+          "body": "$a=3-2=1$ 이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$ab=1\\cdot2=2$, 답은 ②번이에요."
+        }
+      ],
+      "tip": "접선 조건은 늘 두 가지예요. 접점에서 함숫값이 같고, 기울기가 같아요."
+    },
+    {
+      "id": "p203",
+      "level": "수능형",
+      "q": "$\\lim_{x\\to0}\\frac{\\ln(1+3x)}{e^{2x}-1}$ 의 값은?",
+      "choices": [
+        "$\\frac12$",
+        "$\\frac23$",
+        "$1$",
+        "$\\frac32$",
+        "$2$"
+      ],
+      "answer": "4",
+      "answerType": "choice",
+      "check": "limit(log(1 + 3*x)/(exp(2*x) - 1), x, 0)",
+      "choiceChecks": [
+        "Rational(1,2)",
+        "Rational(2,3)",
+        "1",
+        "Rational(3,2)",
+        "2"
+      ],
+      "concepts": [
+        "$\\lim_{x\\to0}\\frac{e^x-1}{x}=1$",
+        "$\\lim_{x\\to0}\\frac{\\ln(1+x)}{x}=1$"
+      ],
+      "steps": [
+        {
+          "title": "분모·분자를 $x$ 로 나누기",
+          "body": "$$\\frac{\\frac{\\ln(1+3x)}{x}}{\\frac{e^{2x}-1}{x}}$$"
+        },
+        {
+          "title": "각각의 극한",
+          "body": "분자는 $3$, 분모는 $2$ 로 가요."
+        },
+        {
+          "title": "나누기",
+          "body": "$\\frac32$, 답은 ④번이에요."
+        }
+      ],
+      "tip": "로그와 지수가 섞여도 각각 기본 꼴로 바꾸면 계수의 비만 남아요."
+    },
+    {
+      "id": "p204",
+      "level": "수능형",
+      "q": "$x>0$ 에서 정의된 함수 $f(x)=x^2-2\\ln x$ 의 극솟값을 구하세요.",
+      "choices": null,
+      "answer": "1",
+      "answerType": "int",
+      "check": "c = [v for v in solve(diff(x**2 - 2*log(x), x), x) if v > 0][0]\nans = (x**2 - 2*log(x)).subs(x, c)",
+      "concepts": [
+        "$(\\ln x)'=\\frac1x$",
+        "$f'(x)$ 의 부호가 $-$ 에서 $+$ 로 바뀌는 곳이 극소예요."
+      ],
+      "steps": [
+        {
+          "title": "미분하기",
+          "body": "$$f'(x)=2x-\\frac2x=\\frac{2(x^2-1)}{x}$$"
+        },
+        {
+          "title": "$f'(x)=0$ 인 곳",
+          "body": "$x>0$ 이므로 $x=1$ 이에요."
+        },
+        {
+          "title": "부호 확인",
+          "body": "$0<x<1$ 에서 $f'(x)<0$, $x>1$ 에서 $f'(x)>0$ 이라 $x=1$ 에서 극소예요."
+        },
+        {
+          "title": "극솟값",
+          "body": "$f(1)=1-2\\ln1=1$ 이에요."
+        }
+      ],
+      "tip": "로그가 있으면 정의역이 $x>0$ 이라는 점을 먼저 챙겨요. $x=-1$ 은 정의역 밖이에요."
+    },
+    {
+      "id": "p205",
+      "level": "수능형",
+      "q": "$\\lim_{n\\to\\infty}\\left(1+\\frac2n\\right)^n\\times\\lim_{x\\to0}(1-x)^{\\frac1x}=e^k$ 일 때, 상수 $k$ 의 값은?",
+      "choices": [
+        "$-1$",
+        "$0$",
+        "$1$",
+        "$2$",
+        "$3$"
+      ],
+      "answer": "3",
+      "answerType": "choice",
+      "check": "log(limit((1 + 2/n)**n, n, oo)*limit((1 - x)**(1/x), x, 0))",
+      "choiceChecks": [
+        "-1",
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "concepts": [
+        "$\\lim_{x\\to0}(1+x)^{\\frac1x}=e$"
+      ],
+      "steps": [
+        {
+          "title": "앞의 극한",
+          "body": "$t=\\frac2n$ 으로 두면 $\\left(1+t\\right)^{\\frac2t}=\\left\\{(1+t)^{\\frac1t}\\right\\}^2\\to e^2$ 이에요."
+        },
+        {
+          "title": "뒤의 극한",
+          "body": "$(1-x)^{\\frac1x}=\\left\\{(1+(-x))^{\\frac{1}{-x}}\\right\\}^{-1}\\to e^{-1}$ 이에요."
+        },
+        {
+          "title": "곱하기",
+          "body": "$e^2\\times e^{-1}=e^1$, $k=1$ 이에요. 답은 ③번이에요."
+        }
+      ],
+      "tip": "괄호 안이 $1-x$ 이면 지수의 분모를 $-x$ 로 맞춰야 해서 $-1$ 제곱이 붙어요."
+    }
+  ]
+}
