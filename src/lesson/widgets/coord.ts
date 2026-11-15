@@ -11,7 +11,7 @@
 import { compareAnswer } from '../../lib/answer.ts';
 import { parseSym } from '../sym.ts';
 import { coordChecks } from './coord/checks.ts';
-import { goalTexts } from './coord/goal.ts';
+import { checkReachable, goalTexts } from './coord/goal.ts';
 import { kindOf } from './coord/kinds.ts';
 import { parseCoord } from './coord/parse.ts';
 import type { CoordParams } from './coord/types.ts';
@@ -83,6 +83,7 @@ export const sameValue = (a: string, b: string) => compareAnswer(a, b, 'fraction
 
 export const coordDef: WidgetDef<CoordParams> = {
   parse: parseCoord,
+  deep: checkReachable,
   checks: coordChecks,
   texts(p) {
     const out: string[] = [];

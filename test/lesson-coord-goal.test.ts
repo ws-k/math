@@ -8,6 +8,7 @@ import {
   type CoordParams,
   type CoordState,
   coordChecks,
+  coordDef,
   dragPoint,
   draw,
   frame,
@@ -339,8 +340,9 @@ for (const [name, raw] of [
     },
   ],
 ] as const) {
+  // 형식 검사 전체(읽기 + 닿는 자리 검사 deep) — 검사기(schema.ts)가 부르는 그대로
   test(`parse 오류(목표): ${name}`, () => {
-    assert.throws(() => parseCoord(raw));
+    assert.throws(() => coordDef.deep?.(parseCoord(raw)));
   });
 }
 
@@ -414,4 +416,12 @@ test('parse 오류(목표): 목표가 보는 곡선 위 점의 끄는 칸이 좁
     'id' in o && o.id === 'R' ? { ...o, point: { ...o.point, snap: '1/8' } } : o,
   );
   assert.throws(() => parseCoord({ ...mvtRaw(), objects: objs }), /좁은 화면/);
+});
+
+test('닿는 자리 검사(상태를 모두 늘어놓는 무거운 검사)는 형식 검사(deep)에서만 — 장면을 열 때는 건너뜀', () => {
+  // 화면은 매개변수 읽기(parse)만 하므로, 검사기가 통과시킨 목표를 장면마다 다시 늘어놓지 않는다(최악 46ms)
+  const raw = { ...doubleRaw(), goal: { value: { of: 'roots(f)', is: 3 }, hint: 'h' } };
+  const p = parseCoord(raw);
+  assert.throws(() => coordDef.deep?.(p), /닿을 수 없음/);
+  assert.doesNotThrow(() => coordDef.deep?.(parseCoord(doubleRaw())));
 });

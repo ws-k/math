@@ -696,20 +696,26 @@ export const shapeDef: WidgetDef<ShapeParams> = {
       const g = { ...(shape as GoalShape<number, GoalNum>), ...common };
       if (!goalMovers(p, g).length) fail(at, '그 측정값을 바꾸는 끄는 점이 없음');
       p.goal = g;
-      checkNotAtStart(shGoalHits(p, shInit(p)), shGoalNeed(p), at);
-      checkHitTable(
-        goalTable(
-          p,
-          g,
-          goalStates(p, g).map((x) => x.s),
-        ),
-        g.kind === 'value' ? g.places : 1,
-        g.tol,
-        at,
-        (k) => (g.kind === 'visit' ? `가 볼 곳 ${g.at[k]?.src}` : '목표'),
-      );
     } else if (o.done !== undefined) fail('도형판 done', '목표(goal)가 있을 때만');
     return p;
+  },
+  // 닿을 수 있는 목표인가(닿는 자리를 모두 늘어놓음)는 형식 검사에서만 — 장면을 열 때는 건너뛴다
+  deep(p) {
+    const g = p.goal;
+    if (!g) return;
+    const at = '도형판 goal';
+    checkNotAtStart(shGoalHits(p, shInit(p)), shGoalNeed(p), at);
+    checkHitTable(
+      goalTable(
+        p,
+        g,
+        goalStates(p, g).map((x) => x.s),
+      ),
+      g.kind === 'value' ? g.places : 1,
+      g.tol,
+      at,
+      (k) => (g.kind === 'visit' ? `가 볼 곳 ${g.at[k]?.src}` : '목표'),
+    );
   },
   checks(p) {
     const s = shInit(p);

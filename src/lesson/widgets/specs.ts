@@ -21,6 +21,11 @@ export type WidgetCheck = Named<CheckItem>;
 export interface WidgetDef<P> {
   /** 매개변수를 검사해 타입 붙은 값으로. 모르는 칸·잘못된 값은 ParseError */
   parse(raw: unknown): P;
+  /**
+   * 형식 검사에서만 돌리는 무거운 검사(목표에 닿을 수 있는가 — 닿는 상태를 모두 늘어놓는다). 화면은 장면을 열 때
+   * parse 만 한다: 검사기가 이미 통과시킨 매개변수를 장면마다 다시 늘어놓을 까닭이 없다(최악 46ms). 오류는 ParseError
+   */
+  deep?(p: P): void;
   checks(p: P): WidgetCheck[];
   /** 화면에 보일 글 칸들(원문). 검사기가 {{…}} 를 채운 뒤 수식·강조 표기를 검사한다 */
   texts(p: P): string[];

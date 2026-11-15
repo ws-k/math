@@ -3,7 +3,7 @@
 import type { GridPt } from '../../grade.ts';
 import { arr, fail, type Obj, obj, oneOf, str } from '../../parse.ts';
 import { axis, ID, MAX_CELLS, numExpr, toIndex } from './common.ts';
-import { checkReachable, parseGoal } from './goal.ts';
+import { parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
 import { parseSliders } from './slider.ts';
 import { parseTask } from './task.ts';
@@ -108,7 +108,6 @@ export function parseCoord(raw: unknown): CoordParams {
     if (pts[0].i === pts[1].i && pts[0].j === pts[1].j) fail('좌표 start', '두 점이 같음');
     p.start = pts;
   }
-  // 목표에 닿을 수 있는가는 모든 칸을 읽은 뒤에(닿는 상태를 늘어놓아 앱 판정으로 확인)
-  checkReachable(p);
+  // 목표에 닿을 수 있는가(닿는 상태를 늘어놓아 앱 판정으로 확인)는 형식 검사에서만 — coordDef.deep
   return p;
 }

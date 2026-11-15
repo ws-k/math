@@ -202,6 +202,7 @@ export function validateLesson(
         let p: unknown;
         try {
           p = def.parse(w.params);
+          def.deep?.(p);
         } catch (e) {
           return fail(`${at} 부품 ${type}`, (e as Error).message);
         }

@@ -115,8 +115,9 @@ for (const [name, raw] of [
     },
   ],
 ] as const) {
+  // 형식 검사 전체(읽기 + 닿는 자리 검사 deep) — 검사기(schema.ts)가 부르는 그대로
   test(`parse 오류(도형판 목표): ${name}`, () => {
-    assert.throws(() => parse(raw));
+    assert.throws(() => shapeDef.deep?.(parse(raw)));
   });
 }
 
