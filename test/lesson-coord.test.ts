@@ -339,3 +339,17 @@ test('슬라이더: 곡선 식에 쓰는 값, 과제 곡선에는 못 씀', () =
   const c = coordChecks(p);
   assert.deepEqual((c[0] as { points: Record<string, string>[] }).points[0], { x: '-2', a: '1' });
 });
+
+test('parse 오류: 슬라이더 max 가 칸 위가 아님(끝 값에 못 닿아 범위 끝이 거짓이 됨)', () => {
+  const raw = {
+    mode: 'explore',
+    x: { min: -2, max: 2, step: 1 },
+    y: { min: -4, max: 4, step: 1 },
+    sliders: [{ id: 'a', min: 0, max: 5, step: 2, value: 2, label: '$a$' }],
+    objects: [{ id: 'f', curve: 'a*x**2' }],
+  };
+  assert.throws(() => parseCoord(raw), /max/);
+  assert.doesNotThrow(() =>
+    parseCoord({ ...raw, sliders: [{ ...raw.sliders[0], max: 6 }] as typeof raw.sliders }),
+  );
+});

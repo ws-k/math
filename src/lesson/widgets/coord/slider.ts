@@ -19,6 +19,9 @@ export function parseSliders(raw: unknown): Slider[] {
     const value = numExpr(s.value, `${at} value`).n;
     if (!(max > min.n) || value < min.n || value > max) fail(at, '범위가 이상함');
     toIndex(value - min.n, step.n, `${at} value`);
+    // 끝 값이 칸 위가 아니면 슬라이더는 그 앞 칸에서 멈춘다 — 적힌 범위 끝과 닿는 값이 어긋나
+    // 목표·검산이 늘어놓는 값(sliderValues)이 화면과 달라진다
+    toIndex(max - min.n, step.n, `${at} max`);
     const exclude = (s.exclude === undefined ? [] : arr(s.exclude, `${at} exclude`, 1, 3)).map(
       (v, i) => {
         const e = numExpr(v, `${at} exclude${i + 1}`).n;
