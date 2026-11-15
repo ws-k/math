@@ -6,7 +6,7 @@ import { compile, derivative, evalExact, evalNum, varsOf } from '../../expr.ts';
 import { GOAL_MAX_STATES, type Val } from '../../goal.ts';
 import { fail, int, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
-import { div, qi, sub } from '../q.ts';
+import { div, qi, ratStr, sub } from '../q.ts';
 import { curveOf, dfAt } from './curve.ts';
 import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
@@ -279,7 +279,8 @@ export function readoutMovers(
 
 export const readoutKind: KindDef<ReadoutObj> = {
   parse(ro, at, cx) {
-    const c = obj(ro, at, ['readout', 'label'], ['digits']);
+    const c = obj(ro, at, ['readout', 'label'], ['digits', 'frac']);
+    if (c.frac !== undefined && c.frac !== true) fail(`${at} frac`, 'true 만');
     const src = str(c.readout, `${at} readout`);
     const e = parseReadoutExpr(src, at, cx);
     const count = e.f === 'roots' || e.f === 'meet';
@@ -290,14 +291,15 @@ export const readoutKind: KindDef<ReadoutObj> = {
       label: str(c.label, `${at} label`),
       // 개수는 늘 정수로 보인다
       digits: count ? 0 : c.digits === undefined ? 2 : int(c.digits, `${at} digits`, 0, 4),
+      ...(c.frac === true ? { frac: true as const } : {}),
     };
   },
   draw(o, k, { p, s, readouts }) {
-    readouts.push({
-      key: `r${k}`,
-      label: o.label,
-      text: fmtNum(readout(p, s, o.expr), o.digits),
-    });
+    let text: string;
+    const v = o.frac ? readoutVal(p, s, o.expr) : null;
+    if (v?.q && Number.isFinite(v.n)) text = ratStr(v.q).replace('-', '−');
+    else text = fmtNum(v ? v.n : readout(p, s, o.expr), o.digits);
+    readouts.push({ key: `r${k}`, label: o.label, text });
   },
   derivOf(p, o) {
     if (o.expr.f === 'deriv') return o.expr.curve;

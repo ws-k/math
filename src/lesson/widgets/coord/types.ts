@@ -84,6 +84,8 @@ export interface ReadoutObj {
   expr: ReadoutExpr;
   label: string;
   digits: number;
+  /** 유리수면 분수로 보인다(1/2 — 글이 분수로 말하는 값을 0.5 로 보이지 않게). 무리수면 digits 자리 소수 */
+  frac?: true;
 }
 export type CoordObj = CurveObj | PointObj | SecantObj | TangentObj | ReadoutObj;
 

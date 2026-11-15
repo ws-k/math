@@ -425,3 +425,22 @@ test('닿는 자리 검사(상태를 모두 늘어놓는 무거운 검사)는 �
   assert.throws(() => coordDef.deep?.(p), /닿을 수 없음/);
   assert.doesNotThrow(() => coordDef.deep?.(parseCoord(doubleRaw())));
 });
+
+test('읽는 값 frac: 유리수면 분수로 보인다(글의 1/2 과 같은 꼴), 정의 안 되면 —', () => {
+  const p = parseCoord({
+    mode: 'explore',
+    x: { min: -3, max: 5, step: 1 },
+    y: { min: -3, max: 7, step: 1 },
+    objects: [
+      { id: 'A', point: { x: 0, y: 1 }, name: 'A' },
+      { id: 'B', point: { x: 2, y: 5, drag: 'xy' }, name: 'B' },
+      { readout: 'slope(A,B)', label: '기울기', frac: true },
+    ],
+  });
+  const text = (i: number, j: number) =>
+    draw(p, { ...initial(p), pts: { ...initial(p).pts, B: { i, j } } }, BOX).readouts[0]?.text;
+  assert.equal(text(2, 2), '1/2');
+  assert.equal(text(2, 5), '2');
+  assert.equal(text(3, -1), '−2/3');
+  assert.equal(text(0, 3), '—');
+});
