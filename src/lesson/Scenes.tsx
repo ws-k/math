@@ -33,6 +33,8 @@ export interface SceneEnv {
   background: Background;
   /** 끝낸 장면 id */
   done: readonly string[];
+  /** 지금 머무는 장면(보이는 장면 중 맨 아래). 이보다 앞 장면은 '계속하기'로 떠난 장면이다 */
+  current: string;
   onDone(id: string): void;
 }
 
@@ -158,9 +160,12 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
 }
 
 function Explore({ s, env }: { s: ExploreScene; env: SceneEnv }) {
-  // afterGoal 이면 결론 글은 목표를 이룬 뒤에(이어 보기로 이미 끝낸 장면이면 바로)
+  // afterGoal 이면 결론 글은 목표를 이룬 뒤에(이어 보기로 이미 끝낸 장면이면 바로). 목표를 못 이뤄도
+  // '계속하기'로 그 장면을 떠나면 보인다 — 결론 글에만 있는 용어 정의를 넘어간 학습자도 읽게.
+  // 떠났다고 완료(done)로 적지는 않는다(완료 기록은 목표를 이뤘을 때 onDone 만)
   const [reached, setReached] = useState(false);
-  const showAfter = !s.afterGoal || reached || env.done.includes(s.id);
+  const left = env.current !== s.id;
+  const showAfter = !s.afterGoal || reached || left || env.done.includes(s.id);
   return (
     <>
       <Head s={s} />

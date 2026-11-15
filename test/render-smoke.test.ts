@@ -12,7 +12,11 @@ import type { Lesson } from '../src/lesson/types.ts';
 import { unit } from './app-fixture.ts';
 import { goodLesson } from './lesson-fixture.ts';
 
-type Entry = { units: Unit[]; renderLesson(u: Unit): string; renderScreens(u: Unit): string[] };
+type Entry = {
+  units: Unit[];
+  renderLesson(u: Unit, shown?: number): string;
+  renderScreens(u: Unit): string[];
+};
 
 async function load(): Promise<Entry> {
   const r = await esbuild.build({
@@ -122,4 +126,18 @@ test('부품 6종 시험 레슨의 모든 장면이 그려진다', async () => {
     '확률 실험',
   ])
     assert.ok(html.includes(t), t);
+});
+
+test('결론 글 미루기(afterGoal): 목표를 못 이뤄도 다음 장면을 열면(그 장면을 떠나면) 결론 글이 보인다', async () => {
+  // 용어 정의가 결론 글(after)에만 있는 장면도 있어, 넘어간 학습자가 끝내 그 글을 못 보면 안 된다.
+  // 완료 기록(done)은 그대로 비어 있다 — 목표를 이룬 것으로 치지 않는다
+  const { units, renderLesson } = await entry;
+  const u = units.find((x) => x.id === 'm3-quadratic-eq');
+  const scenes = u?.lesson?.scenes ?? [];
+  const k = scenes.findIndex((s) => s.id === 'zero');
+  assert.ok(u && k >= 0 && scenes[k]?.kind === 'explore' && scenes[k].afterGoal);
+  const mark = '하나만 0 이어도 곱은 0';
+  assert.ok(scenes[k]?.after?.includes(mark));
+  assert.ok(!renderLesson(u, k + 1).includes(mark), '머무는 동안은 숨김');
+  assert.ok(renderLesson(u, k + 2).includes(mark), '떠나면 보임');
 });

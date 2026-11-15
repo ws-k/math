@@ -145,6 +145,7 @@ export function LessonPlayer(p: {
     tool: p.tool,
     background: p.background,
     done: st.done,
+    current: lesson.scenes[st.shown - 1]?.id ?? '',
     onDone,
   };
 
