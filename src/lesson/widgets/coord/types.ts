@@ -263,6 +263,10 @@ export interface DrawCtx {
   items: Item[];
   handles: HandleItem[];
   readouts: Drawing['readouts'];
+  /** 자리를 나중에 고를 점 이름표(점 px 자리와 함께) — 다른 이름표·점과 겹치지 않게 draw 가 한꺼번에 놓는다 */
+  pins: { it: Extract<Item, { t: 'label' }>; x: number; y: number }[];
+  /** 이름표가 피할 점 자리(px) */
+  spots: { x: number; y: number }[];
 }
 
 /** 검산 중의 공용 자리 */

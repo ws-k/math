@@ -22,6 +22,7 @@ import {
 import { arr, fail, int, obj, optStr, str } from '../parse.ts';
 import { type Rational, reduce } from '../sym.ts';
 import { type Drawing, type Mark, r2 } from './draw.ts';
+import { placeLabels } from './labels.ts';
 import { ratStr } from './q.ts';
 import type { WidgetCheck, WidgetDef } from './specs.ts';
 
@@ -351,6 +352,9 @@ const goalTable = (p: ShapeParams, g: ShGoal, states: ShState[]) =>
 
 // ---- 그릴 목록 ----
 
+/** 이름표(13px 굵게, 대문자 한 자) 상자. 틈은 예전 자리(가운데가 점에서 오른쪽 12, 기준선이 위 10)와 같게 */
+const LABEL = { charW: 9, h: 13, gx: 7.5, gy: 7, dotR: 6 };
+
 const pts = (p: ShapeParams, ps: { x: number; y: number }[]) =>
   ps.map((a) => `${X(p, a.x)},${Y(p, a.y)}`).join(' ');
 
@@ -424,10 +428,17 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
       },
     });
   }
-  for (const pt of p.points) {
-    const a = P(s, pt.id);
-    const x = X(p, a.x);
-    const y = Y(p, a.y);
+  const at = p.points.map((pt) => ({ x: X(p, P(s, pt.id).x), y: Y(p, P(s, pt.id).y) }));
+  // 이름표: 가까운 점끼리 겹치지 않고 그림 안에(labels.ts). 아무것도 겹치지 않으면 예전처럼 점의 오른쪽 위
+  const labs = placeLabels(
+    at.map((q) => ({ ...q, n: 1 })),
+    at,
+    { l: 0, t: 0, r: W, b: shGeom(p).h },
+    LABEL,
+  );
+  p.points.forEach((pt, i) => {
+    const { x, y } = at[i] as { x: number; y: number };
+    const r = labs[i] as { l: number; t: number; r: number };
     marks.push(
       pt.drag
         ? { k: `h:${pt.id}`, tag: 'g', a: { transform: `translate(${x} ${y})` } }
@@ -436,10 +447,11 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
     marks.push({
       k: `lab:${pt.id}`,
       tag: 'text',
-      a: { x: r2(x + 12), y: r2(y - 10), class: 'sh-lab' },
+      // 가운데 맞춤 글자(.wgt-svg text)라 상자 가운데에 둔다
+      a: { x: r2((r.l + r.r) / 2), y: r2(r.t + 10), class: 'sh-lab' },
       text: pt.id,
     });
-  }
+  });
   const texts: Record<string, string> = {};
   shMeasures(p, s).forEach((t, i) => {
     texts[`m${i}`] = t;

@@ -159,7 +159,7 @@ export const pointKind: KindDef<PointObj> = {
       return po;
     }
   },
-  draw(o, k, { p, s, f, items, handles }) {
+  draw(o, k, { p, s, f, items, handles, pins, spots }) {
     const [x, y] = pointXY(p, s, o.id);
     // 숨긴 목표 점은 맞히기 전에는 자리(좌표)를 그릴 목록에 아예 넣지 않는다 — 숨김 표시만 하면 자리가 DOM 에 남는다
     const ok = Number.isFinite(y) && !(o.hide && !s.solved);
@@ -172,15 +172,13 @@ export const pointKind: KindDef<PointObj> = {
       cls: o.drag === 'none' ? 'pt' : 'pt drag',
       hidden: !ok || o.drag !== 'none',
     });
-    if (o.name)
-      items.push({
-        t: 'label',
-        key: `n${k}`,
-        x: ok ? r1(X + 10) : 0,
-        y: ok ? r1(Y - 10) : 0,
-        text: o.name,
-        hidden: !ok,
-      });
+    if (ok) spots.push({ x: X, y: Y });
+    if (o.name) {
+      // 자리는 draw 가 모든 이름표를 모은 뒤 고른다(labels.ts) — 여기서는 숨김 여부와 글자만
+      const it = { t: 'label' as const, key: `n${k}`, x: 0, y: 0, text: o.name, hidden: !ok };
+      items.push(it);
+      if (ok) pins.push({ it, x: X, y: Y });
+    }
     if (o.drag !== 'none') {
       const [lo, hi] = o.on ? [p.x.lo, p.x.hi] : [p.x.lo, p.x.hi];
       handles.push({
