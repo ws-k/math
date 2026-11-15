@@ -3,7 +3,7 @@
 import type { GridPt } from '../../grade.ts';
 import { arr, fail, type Obj, obj, oneOf, str } from '../../parse.ts';
 import { axis, ID, MAX_CELLS, numExpr, toIndex } from './common.ts';
-import { parseGoal } from './goal.ts';
+import { goalPoints, parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
 import { parseSliders } from './slider.ts';
 import { parseTask } from './task.ts';
@@ -84,7 +84,10 @@ export function parseCoord(raw: unknown): CoordParams {
     ...(o.done !== undefined ? { done: str(o.done, '좌표 done') } : {}),
   };
 
-  if (o.goal !== undefined) p.goal = parseGoal(o.goal, p, goalCtx);
+  if (o.goal !== undefined) {
+    p.goal = parseGoal(o.goal, p, goalCtx);
+    p.goalPts = goalPoints(p);
+  }
 
   if (o.task !== undefined) p.task = parseTask(o.task, p, curves);
   else if (mode !== 'explore') fail('좌표', `${mode} 모드에는 task 가 필요함`);

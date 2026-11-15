@@ -444,3 +444,24 @@ test('읽는 값 frac: 유리수면 분수로 보인다(글의 1/2 과 같은 �
   assert.equal(text(3, -1), '−2/3');
   assert.equal(text(0, 3), '—');
 });
+
+test('목표가 보는 점은 끌기 칸을 묶지 않음 — 옛 approach 목표(40칸, within 1/20)도 좁은 화면에서 끌어 닿음', () => {
+  // math2-continuity pop 과 같은 꼴: x=1 에서 정의되지 않는 곡선이라 닿는 자리는 0.95·1.05 뿐(홀수 칸)
+  const p = parseCoord({
+    mode: 'explore',
+    x: { min: 0, max: 2, step: '1/2' },
+    y: { min: 0, max: 4, step: 1 },
+    objects: [
+      { id: 'f', curve: '(x**2-1)/(x-1)' },
+      { id: 'A', point: { x: 1, y: 2 }, name: 'A' },
+      { id: 'Q', point: { on: 'f', x: '1/5', drag: 'x', snap: '1/20' }, name: 'Q' },
+    ],
+    goal: { approach: ['Q', 'A'], within: '1/20' },
+  });
+  const box = { w: NARROW_BOX_W, h: 220 };
+  const f = frame(box);
+  const seen = new Set<number>();
+  for (let px = 0; px <= box.w; px += 0.25)
+    seen.add(dragPoint(p, initial(p), 'Q', px, toPx(p, f, 0, 0)[1], box).pts.Q?.i ?? -1);
+  assert.ok(seen.has(19) && seen.has(21), [...seen].join(','));
+});

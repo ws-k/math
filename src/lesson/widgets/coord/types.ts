@@ -148,6 +148,8 @@ export interface CoordParams {
   sliders: Slider[];
   task?: Task;
   goal?: Goal;
+  /** 목표가 보는 끄는 점 id. 이 점은 끌 때 칸을 묶지 않는다(snapMult 1 — 좁은 화면에서도 목표 칸을 건너뛰지 않게) */
+  goalPts?: string[];
   /** 처음 안내(Rich) */
   intro?: string;
   /** 목표를 이뤘을 때(Rich) */

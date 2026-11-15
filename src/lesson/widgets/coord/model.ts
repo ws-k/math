@@ -47,7 +47,9 @@ export function dragPoint(
   const [wx, wy] = toWorld(p, f, px, py);
   if (o.on) {
     const pxPerStep = (o.snapN / (p.x.hi - p.x.lo)) * (f.r - f.l);
-    const k = snapMult(pxPerStep, MIN_SNAP_PX);
+    // 목표가 보는 점은 묶지 않는다: 묶으면 좁은 화면에서 목표 칸(예: 정의 안 되는 x=1 옆 0.95)을 건너뛴다.
+    // 손떨림 방지(묶기)보다 '끌어서 닿는다'가 먼저 — 새 목표는 31칸 상한(goal.ts)으로 칸 폭도 지킨다
+    const k = p.goalPts?.includes(id) ? 1 : snapMult(pxPerStep, MIN_SNAP_PX);
     const [lo, hi] = iRange(p.x.lo, p.x.hi, o.snapN);
     const i = Math.min(hi as number, Math.max(lo as number, Math.round(wx / (o.snapN * k)) * k));
     if (Number.isNaN(fAt(p, s, o.on, i * o.snapN))) return s;

@@ -91,9 +91,10 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
 }
 
 /**
- * 목표가 보는 곡선 위 점은 가장 좁은 화면에서도 끌기가 칸을 건너뛰지 않을 만큼만 촘촘하게(MAX_GOAL_SNAPS).
- * 한 칸이 8px 보다 작으면 끌기가 2·5칸씩 묶여(snapMult) 목표 자리를 건너뛸 수 있다 — 화면 폭마다 닿는 자리를
- * 따로 세는 대신 이렇게 막아, 형식 검사·검산이 늘어놓는 자리가 어느 화면에서나 끌어서 닿는 자리와 같게 한다.
+ * 목표가 보는 곡선 위 점은 가장 좁은 화면에서도 한 칸이 8px 이상(MAX_GOAL_SNAPS)이게.
+ * 닿을 수 있는가는 끌기가 목표 점의 칸을 묶지 않는 것(model.ts dragPoint, goalPts)이 보장하고, 이 상한은
+ * 손가락으로 그 한 칸에 놓을 수 있는 폭을 지킨다 — 정확한 값 하나를 맞히는 새 목표에만. 옛 approach 목표는
+ * 허용 거리(within) 안에 여러 칸이 들어 칸이 좁아도 놓을 자리가 넓어 이 상한을 걸지 않는다(40칸 장면이 있음).
  */
 function snapsOk(p: CoordParams, g: NewGoal): NewGoal {
   for (const id of movers(p, g).points) {
@@ -145,6 +146,14 @@ function movers(p: CoordParams, g: NewGoal): { points: string[]; sliders: string
     };
   }
   return a;
+}
+
+/** 목표가 보는 끄는 점(옛 approach 목표는 다가가는 쪽 점). 끌기가 칸을 묶지 않을 점들 */
+export function goalPoints(p: CoordParams): string[] {
+  const g = p.goal;
+  if (!g) return [];
+  if (!isNew(g)) return g.approach.filter((id) => pointOf(p, id).drag !== 'none');
+  return movers(p, g).points;
 }
 
 /** 자리 열쇠(여러 자리 목표에서 같은 자리를 두 번 세지 않게) */
