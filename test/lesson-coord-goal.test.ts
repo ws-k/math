@@ -465,3 +465,13 @@ test('목표가 보는 점은 끌기 칸을 묶지 않음 — 옛 approach 목�
     seen.add(dragPoint(p, initial(p), 'Q', px, toPx(p, f, 0, 0)[1], box).pts.Q?.i ?? -1);
   assert.ok(seen.has(19) && seen.has(21), [...seen].join(','));
 });
+
+test('parse 오류(목표): 목표가 보는 슬라이더 칸이 30칸 넘음(좁은 화면에서 한 칸이 7px 아래)', () => {
+  const withMax = (max: number | string) => ({
+    ...doubleRaw(),
+    sliders: [{ id: 'c', min: -2, max, step: '1/4', value: 0, label: 'c' }],
+  });
+  assert.throws(() => parseCoord(withMax(7)), /슬라이더/);
+  // 30칸이면 통과(−2~5.5, 1/4 칸)
+  assert.doesNotThrow(() => parseCoord(withMax('11/2')));
+});

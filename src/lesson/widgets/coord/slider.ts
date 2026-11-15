@@ -48,6 +48,14 @@ export function parseSliders(raw: unknown): Slider[] {
   });
 }
 
+/**
+ * 목표가 보는 슬라이더의 칸 수 상한. 가장 좁은 화면(상자 298px, frame.ts NARROW_BOX_W)에서 슬라이더 줄은
+ * 이름(짧은 글자 약 20px)·값 숫자(약 24px)·틈 10px×2 를 빼고, 손잡이 폭(약 20px)만큼 끝이 줄어 길이가 약 214px —
+ * 30칸이면 한 칸이 약 7px. 이보다 촘촘하면 손가락으로 목표 칸에 멈추기 어렵다(◀▶ 버튼 대신 상한을 둔 까닭:
+ * 접은 화면은 이미 높이가 모자라 버튼 줄을 더할 자리가 없다).
+ */
+export const MAX_GOAL_SLIDER_STEPS = 30;
+
 const clean = (v: number) => Number(v.toPrecision(12));
 const excluded = (sl: Slider, v: number) => sl.exclude.some((e) => near(v, e));
 

@@ -24,7 +24,7 @@ import { iRange, MAX_GOAL_SNAPS } from './frame.ts';
 import { initial } from './model.ts';
 import { pointOf, pointState, pointXY, worldX, xSym, ySym } from './point.ts';
 import { parseReadoutExpr, readoutMovers, readoutSym, readoutVal } from './readout.ts';
-import { sliderSym, sliderValues } from './slider.ts';
+import { MAX_GOAL_SLIDER_STEPS, sliderSym, sliderValues } from './slider.ts';
 import type {
   CoordParams,
   CoordState,
@@ -97,6 +97,15 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
  * 허용 거리(within) 안에 여러 칸이 들어 칸이 좁아도 놓을 자리가 넓어 이 상한을 걸지 않는다(40칸 장면이 있음).
  */
 function snapsOk(p: CoordParams, g: NewGoal): NewGoal {
+  for (const id of movers(p, g).sliders) {
+    const sl = p.sliders.find((x) => x.id === id);
+    const n = sl ? Math.round((sl.max - sl.min) / sl.step) : 0;
+    if (n > MAX_GOAL_SLIDER_STEPS)
+      fail(
+        '좌표 goal',
+        `슬라이더 ${id} 가 ${n}칸 — 가장 좁은 화면에서 한 칸이 7px 보다 작아 목표 칸에 멈추기 어려움(${MAX_GOAL_SLIDER_STEPS}칸 이하로)`,
+      );
+  }
   for (const id of movers(p, g).points) {
     const o = pointOf(p, id);
     const n = (p.x.hi - p.x.lo) / o.snapN;
