@@ -2,7 +2,8 @@
 // 분수로 다시 만들어 써야 해서(소수 0.1+0.2 오차로 '중근'을 놓치지 않게) 한곳에 모았다.
 import { exactOf } from '../../expr.ts';
 import { arr, fail, obj, str } from '../../parse.ts';
-import { type Rational, reduce } from '../../sym.ts';
+import type { Rational } from '../../sym.ts';
+import { add, mul, qi, ratStr } from '../q.ts';
 import { near, numExpr, toIndex } from './common.ts';
 import type { Slider } from './types.ts';
 
@@ -88,17 +89,13 @@ export function sliderQ(sl: Slider, v: number): Rational | null {
   const m = exactOf(sl.minSrc);
   const st = exactOf(sl.stepSrc);
   if (!m || !st) return null;
-  const k = BigInt(Math.round((v - sl.min) / sl.step));
-  return reduce(m[0] * st[1] + k * st[0] * m[1], m[1] * st[1]);
+  return add(m, mul(qi(Math.round((v - sl.min) / sl.step)), st));
 }
 
 /** 칸 번호 k 의 값을 sympy 글자로(검산 상태) */
 export function sliderSym(sl: Slider, k: number): string {
   const m = exactOf(sl.minSrc);
   const st = exactOf(sl.stepSrc);
-  if (m && st) {
-    const [a, b] = reduce(m[0] * st[1] + BigInt(k) * st[0] * m[1], m[1] * st[1]);
-    return b === 1n ? `${a}` : `${a}/${b}`;
-  }
+  if (m && st) return ratStr(add(m, mul(qi(k), st)));
   return `(${sl.minSrc})+${k}*(${sl.stepSrc})`;
 }

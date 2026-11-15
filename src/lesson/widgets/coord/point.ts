@@ -2,7 +2,8 @@
 // 점 좌표는 칸 번호(정수)로 쥔다 — 세계 좌표 = 칸 번호 × 칸 간격. 부동소수 찌꺼기 없이 "같은 점"을 판정하려고.
 import { evalExact, evalNum, exactOf } from '../../expr.ts';
 import { fail, obj, oneOf, optStr } from '../../parse.ts';
-import { type Rational, reduce } from '../../sym.ts';
+import type { Rational } from '../../sym.ts';
+import { mul, qi, ratStr } from '../q.ts';
 import { MAX_SNAPS, near, numExpr, toIndex } from './common.ts';
 import { curveOf, fAt } from './curve.ts';
 import { fmtNum, r1, toPx } from './frame.ts';
@@ -31,7 +32,7 @@ export function pointXY(p: CoordParams, s: CoordState, id: string): [number, num
 }
 
 const times = (k: number, step: Rational | null): Rational | null =>
-  step ? reduce(BigInt(k) * step[0], step[1]) : null;
+  step ? mul(qi(k), step) : null;
 
 /** 점의 정확한 좌표(분수). π 칸·무리수 곡선 값이면 그 성분은 null — 목표 판정이 분수로 견줄 때 쓴다 */
 export function pointQ(
@@ -57,10 +58,7 @@ export function pointQ(
 /** 칸 번호 k × 간격(원문)을 sympy 글자로 */
 const symAt = (k: number, step: string) => {
   const q = exactOf(step);
-  if (q) {
-    const [a, b] = reduce(BigInt(k) * q[0], q[1]);
-    return b === 1n ? `${a}` : `${a}/${b}`;
-  }
+  if (q) return ratStr(mul(qi(k), q));
   return `${k}*(${step})`;
 };
 

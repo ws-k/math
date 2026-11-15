@@ -2,16 +2,13 @@
 // 중근(곡선이 가로축에 닿기만 하는 자리)에서 부동소수 오차로 0개·2개를 오가므로, 분수로 정확히 센다(원칙 P10).
 // 맨 아래층(식 구조만 안다) — 곡선·읽는 값이 이 파일을 빌려 쓴다.
 import { derivative, evalExact } from '../../expr.ts';
-import { type Node, type Rational, reduce } from '../../sym.ts';
+import type { Node, Rational } from '../../sym.ts';
+import { add as qadd, div as qdiv, mul as qmul, neg as qneg } from '../q.ts';
 
 /** 계수 목록(낮은 차수부터). 끝의 0 은 떼어 둔다 — 빈 목록 = 0 인 다항식 */
 export type Poly = Rational[];
 
 const Z: Rational = [0n, 1n];
-const qadd = (a: Rational, b: Rational) => reduce(a[0] * b[1] + b[0] * a[1], a[1] * b[1]);
-const qmul = (a: Rational, b: Rational) => reduce(a[0] * b[0], a[1] * b[1]);
-const qdiv = (a: Rational, b: Rational) => reduce(a[0] * b[1], a[1] * b[0]);
-const qneg = (a: Rational): Rational => [-a[0], a[1]];
 
 function trim(p: Poly): Poly {
   let n = p.length;

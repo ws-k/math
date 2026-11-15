@@ -5,7 +5,8 @@
 import { compile, derivative, evalExact, evalNum, varsOf } from '../../expr.ts';
 import { GOAL_MAX_STATES, type Val } from '../../goal.ts';
 import { fail, int, obj, str } from '../../parse.ts';
-import { type Rational, reduce } from '../../sym.ts';
+import type { Rational } from '../../sym.ts';
+import { div, qi, sub } from '../q.ts';
 import { curveOf, dfAt } from './curve.ts';
 import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
@@ -122,11 +123,9 @@ function rootsOf(p: CoordParams, s: CoordState, a: string, b?: string): number {
   const pa = polyOf(curveOf(p, a).node, env);
   const pb = b === undefined ? [] : polyOf(curveOf(p, b).node, env);
   if (!pa || !pb) return Number.NaN;
-  const diff = Array.from({ length: Math.max(pa.length, pb.length) }, (_, i) => {
-    const x = pa[i] ?? ([0n, 1n] as Rational);
-    const y = pb[i] ?? ([0n, 1n] as Rational);
-    return reduce(x[0] * y[1] - y[0] * x[1], x[1] * y[1]);
-  });
+  const diff = Array.from({ length: Math.max(pa.length, pb.length) }, (_, i) =>
+    sub(pa[i] ?? qi(0), pb[i] ?? qi(0)),
+  );
   return rootCount(diff) ?? Number.NaN;
 }
 
@@ -159,9 +158,6 @@ export function readout(p: CoordParams, s: CoordState, e: ReadoutExpr): number {
   }
 }
 
-const qsub = (a: Rational, b: Rational) => reduce(a[0] * b[1] - b[0] * a[1], a[1] * b[1]);
-const qdiv = (a: Rational, b: Rational) => reduce(a[0] * b[1], a[1] * b[0]);
-
 /** 판정용 값: 수와, 분수로 정확히 구해지면 그 분수(무리수·π 칸이면 null) */
 export function readoutVal(p: CoordParams, s: CoordState, e: ReadoutExpr): Val {
   const env = envQ(p, s);
@@ -177,7 +173,7 @@ export function readoutVal(p: CoordParams, s: CoordState, e: ReadoutExpr): Val {
         if (c) return xa ? evalExact(derivative(curveOf(p, c).node, 'x'), { ...env, x: xa }) : null;
         const [xb, yb] = pointQ(p, s, e.b);
         if (!xa || !ya || !xb || !yb || xa[0] * xb[1] === xb[0] * xa[1]) return null;
-        return qdiv(qsub(yb, ya), qsub(xb, xa));
+        return div(sub(yb, ya), sub(xb, xa));
       }
       case 'deriv': {
         const xa = pointQ(p, s, e.at)[0];

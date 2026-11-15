@@ -11,6 +11,7 @@ export const add = (a: Q, b: Q): Q => reduce(a[0] * b[1] + b[0] * a[1], a[1] * b
 export const sub = (a: Q, b: Q): Q => reduce(a[0] * b[1] - b[0] * a[1], a[1] * b[1]);
 export const mul = (a: Q, b: Q): Q => reduce(a[0] * b[0], a[1] * b[1]);
 export const div = (a: Q, b: Q): Q => reduce(a[0] * b[1], a[1] * b[0]);
+export const neg = (a: Q): Q => [-a[0], a[1]];
 /** 크기 비교: a<b 이면 −1, 같으면 0, 크면 1 */
 export const cmp = (a: Q, b: Q): -1 | 0 | 1 => {
   const d = a[0] * b[1] - b[0] * a[1];
