@@ -3,14 +3,14 @@
 // 목표가 읽는 값을 견주므로(조각 ②) 같은 값을 세 갈래로 낸다 — 화면 수(readout), 판정용 분수(readoutVal),
 // 검산용 sympy 글자(readoutSym). 세 갈래가 어긋나면 검산의 goal 항목(앱 판정 = sympy 판정)이 잡는다.
 import { compile, derivative, evalExact, evalNum, varsOf } from '../../expr.ts';
-import type { Val } from '../../goal.ts';
+import { GOAL_MAX_STATES, type Val } from '../../goal.ts';
 import { fail, int, obj, str } from '../../parse.ts';
 import { type Rational, reduce } from '../../sym.ts';
 import { curveOf, dfAt } from './curve.ts';
 import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
 import { polyOf, rootCount } from './poly.ts';
-import { sliderQ } from './slider.ts';
+import { sliderQ, sliderValues } from './slider.ts';
 import type {
   CoordParams,
   CoordState,
@@ -30,17 +30,36 @@ const MEET_RE = /^meet\((\w+),(\w+)\)$/;
 
 const FORMS = 'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·슬라이더 식(b**2-4*a*c)';
 
-/** 실근 개수를 셀 곡선: 슬라이더가 늘 분수 값이고(π 칸이 아님) x 의 다항식이어야 한다 */
+/**
+ * 실근 개수를 셀 곡선: 슬라이더가 늘 분수 값이고(π 칸이 아님) **슬라이더의 모든 값에서** x 의 다항식이어야 한다.
+ * 처음 값에서만 보면 x**n 의 n=2 는 통과하고 n=3/2 로 옮기는 순간 개수를 셀 수 없게 된다.
+ */
 function polyCurve(cx: ParseCtx, v: string, at: string): CurveObj {
   const c = cx.curveRef(v, at);
-  const env: Record<string, Rational> = {};
+  const used = varsOf(c.node);
+  let envs: Record<string, Rational>[] = [{}];
   for (const sl of cx.sliders) {
-    const q = sliderQ(sl, sl.value);
-    if (q) env[sl.id] = q;
-    else if (varsOf(c.node).has(sl.id))
+    if (!used.has(sl.id)) continue;
+    const qs = sliderValues(sl).map(({ v: x }) => sliderQ(sl, x));
+    if (qs.some((q) => !q))
       fail(at, `슬라이더 ${sl.id} 의 칸이 분수가 아니라 실근을 정확히 셀 수 없음`);
+    if (envs.length * qs.length > GOAL_MAX_STATES)
+      fail(
+        at,
+        `슬라이더 칸 조합이 ${GOAL_MAX_STATES}개를 넘어 모든 값에서 다항식인지 확인할 수 없음`,
+      );
+    envs = envs.flatMap((e) => qs.map((q) => ({ ...e, [sl.id]: q as Rational })));
   }
-  if (!polyOf(c.node, env)) fail(at, `곡선 ${c.id} 이 x 의 다항식이 아니라 실근을 셀 수 없음`);
+  for (const env of envs)
+    if (!polyOf(c.node, env)) {
+      const at2 = Object.entries(env)
+        .map(([k, [a, b]]) => `${k}=${b === 1n ? a : `${a}/${b}`}`)
+        .join(', ');
+      fail(
+        at,
+        `곡선 ${c.id} 이 x 의 다항식이 아닌 자리가 있어 실근을 셀 수 없음${at2 ? ` (${at2})` : ''}`,
+      );
+    }
   return c;
 }
 

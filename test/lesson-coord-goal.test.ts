@@ -262,6 +262,18 @@ for (const [name, raw] of [
     },
   ],
   [
+    '어떤 슬라이더 값에서 다항식이 아닌 곡선의 실근 개수(x^n, n=3/2)',
+    {
+      ...doubleRaw(),
+      sliders: [{ id: 'n', min: 1, max: 3, step: '1/2', value: 2, label: 'n' }],
+      objects: [
+        { id: 'f', curve: 'x**n-1' },
+        { readout: 'roots(f)', label: 'n' },
+      ],
+      goal: undefined,
+    },
+  ],
+  [
     '닿을 수 없는 가 볼 곳',
     { ...doubleRaw(), goal: { visit: { of: 'value(c)', at: [1, 8] }, hint: 'h' } },
   ],
