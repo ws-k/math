@@ -128,25 +128,66 @@ test('부품 6종 시험 레슨의 모든 장면이 그려진다', async () => {
     assert.ok(html.includes(t), t);
 });
 
+// 실제 단원 글이 바뀌어도 깨지지 않게 시험용 레슨(goodLesson)에 장면을 끼워 본다
+const MARK = '결론 글 표시';
+const goalScenes = (): Lesson => {
+  const l = goodLesson();
+  l.scenes.splice(1, 0, {
+    kind: 'explore',
+    id: 'g-after',
+    title: '목표',
+    widget: {
+      type: 'coord',
+      params: {
+        mode: 'explore',
+        x: { min: -1, max: 5, step: 1 },
+        y: { min: -6, max: 10, step: 1 },
+        sliders: [{ id: 'c', min: -2, max: 7, step: 1, value: 0, label: '$c$' }],
+        objects: [{ id: 'f', curve: 'x**2-4*x+c' }],
+        goal: { value: { of: 'roots(f)', is: 1 }, hint: '닿기만 하게' },
+      },
+    },
+    after: MARK,
+    afterGoal: true,
+  });
+  l.scenes.splice(2, 0, {
+    kind: 'explore',
+    id: 'g-seg',
+    title: '선분 위 점',
+    widget: {
+      type: 'shape',
+      params: {
+        grid: { w: 10, h: 5 },
+        points: [
+          { id: 'A', x: 0, y: 0 },
+          { id: 'B', x: 8, y: 0 },
+          { id: 'S', x: 0, y: 4, aux: true },
+          { id: 'M', x: 5, y: 4, aux: true },
+          { id: 'T', x: 10, y: 4, aux: true },
+          { id: 'D', x: 2, y: 4, drag: true, on: { seg: ['S', 'M'] } },
+          { id: 'C', x: 6, y: 4, drag: true, on: { seg: ['M', 'T'] } },
+        ],
+        polygons: [['A', 'B', 'C', 'D']],
+        measures: [{ area: 0 }],
+        digits: 0,
+      },
+    },
+  });
+  return l;
+};
+
 test('결론 글 미루기(afterGoal): 목표를 못 이뤄도 다음 장면을 열면(그 장면을 떠나면) 결론 글이 보인다', async () => {
   // 용어 정의가 결론 글(after)에만 있는 장면도 있어, 넘어간 학습자가 끝내 그 글을 못 보면 안 된다.
   // 완료 기록(done)은 그대로 비어 있다 — 목표를 이룬 것으로 치지 않는다
-  const { units, renderLesson } = await entry;
-  const u = units.find((x) => x.id === 'm3-quadratic-eq');
-  const scenes = u?.lesson?.scenes ?? [];
-  const k = scenes.findIndex((s) => s.id === 'zero');
-  assert.ok(u && k >= 0 && scenes[k]?.kind === 'explore' && scenes[k].afterGoal);
-  const mark = '하나만 0 이어도 곱은 0';
-  assert.ok(scenes[k]?.after?.includes(mark));
-  assert.ok(!renderLesson(u, k + 1).includes(mark), '머무는 동안은 숨김');
-  assert.ok(renderLesson(u, k + 2).includes(mark), '떠나면 보임');
+  const { renderLesson } = await entry;
+  const u = withLesson(goalScenes());
+  assert.ok(!renderLesson(u, 2).includes(MARK), '머무는 동안은 숨김');
+  assert.ok(renderLesson(u, 3).includes(MARK), '떠나면 보임');
 });
 
-test('도형판: 선분 위 끄는 점마다 ◀▶ 버튼(끌기 대체) — 사다리꼴 장면의 D·C 둘 다', async () => {
-  const { units, renderLesson } = await entry;
-  const u = units.find((x) => x.id === 'e-polygon-area');
-  const k = u?.lesson?.scenes.findIndex((s) => s.id === 'trap') ?? -1;
-  assert.ok(u && k >= 0);
-  const html = renderLesson(u, k + 1);
+test('도형판: 선분 위 끄는 점마다 ◀▶ 버튼(끌기 대체), 보조점 이름은 그리지 않음', async () => {
+  const { renderLesson } = await entry;
+  const html = renderLesson(withLesson(goalScenes()), 3);
   for (const t of ['◀ 점 D', '점 D ▶', '◀ 점 C', '점 C ▶']) assert.ok(html.includes(t), t);
+  assert.ok(!html.includes('data-k="lab:S"'));
 });

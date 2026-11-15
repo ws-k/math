@@ -104,10 +104,8 @@ export function evalExact(n: Node, env: Record<string, Rational>): Rational | nu
 
 function ex(n: Node, env: Record<string, Rational>): Rational {
   switch (n.t) {
-    case 'num': {
-      const [ip, fp = ''] = n.v.split('.');
-      return reduce(BigInt(ip + fp), 10n ** BigInt(fp.length));
-    }
+    case 'num':
+      return numQ(n.v);
     case 'var': {
       const v = env[n.v];
       if (!v) throw new Error('값 없음');
