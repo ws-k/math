@@ -293,9 +293,10 @@ def check_root(it):
 
 
 def _root_count(v):
-    """x 의 식 v 의 서로 다른 실근 개수(앱은 스투름 열로 센다 — 여기서는 solveset 으로 따로). 무수히 많으면 None"""
-    sols = sympy.solveset(v, sympy.Symbol("x"), domain=sympy.S.Reals)
-    return sympy.Integer(len(sols)) if sols.is_FiniteSet else None
+    """x 의 다항식 v 의 서로 다른 실근 개수. 앱(poly.ts)과 같은 스투름 셈이지만 sympy 구현(Poly.count_roots)으로 따로 —
+    solveset 은 3차 441상태에 25초가 걸려 검산이 느려졌다. 0 인 다항식(무수히 많음)이면 None"""
+    p = sympy.Poly(v, sympy.Symbol("x"))
+    return None if p.is_zero else sympy.Integer(p.count_roots())
 
 
 def _goal_match(v, t, tol):
@@ -317,8 +318,13 @@ def check_goal(it):
     sympy 로 다시 판정한 것과 같은가. 목표마다 need 곳 이상 닿을 수 있어야 하고(닿을 수 없는 목표 금지),
     허용 오차가 있으면(무리수 목표, 원칙 P10) 닿는 자리가 정확히 need 곳이어야 한다 — 오차 안에 자리가 여럿이면
     더듬어 맞히기가 되거나 정답이 아닌 자리를 맞았다고 하게 된다."""
-    comps = [(read(c["expr"]), bool(c.get("roots"))) for c in it["of"]]
-    targets = [[read(t) for t in tg] for tg in it["targets"]]
+    # 곡선 식의 소수(0.1)는 분수로 — 앱은 소수 계수를 분수로 정확히 계산하므로(expr.ts evalExact) 실수로 읽으면
+    # 0.1·3 = 0.30000000000000004 처럼 어긋나 앱과 다른 판정이 난다
+    def exact(s):
+        return sympy.nsimplify(read(s), rational=True)
+
+    comps = [(exact(c["expr"]), bool(c.get("roots"))) for c in it["of"]]
+    targets = [[exact(t) for t in tg] for tg in it["targets"]]
     tol = read(it["tol"])
     got = [[] for _ in targets]
     for k, st in enumerate(it["states"]):

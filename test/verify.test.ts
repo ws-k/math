@@ -323,3 +323,29 @@ for (const [name, it] of [
     assert.equal(r.status, 1, r.stdout);
   });
 }
+
+test('목표 판정(goal): 곡선 식의 소수는 분수로 읽는다(0.1·3 이 3/10 과 정확히 같게)', () => {
+  // 앱은 소수 계수를 분수로 정확히 계산한다(expr.ts evalExact). sympy 가 소수를 실수(Float)로 읽으면
+  // 0.1·3 = 0.30000000000000004 가 되어 앱과 다른 판정을 낸다
+  const r = runVerify([
+    {
+      ...goal,
+      of: [{ expr: '0.1*pt_R_x' }],
+      targets: [['3/10']],
+      tol: '0',
+      states: [{ pt_R_x: '3' }, { pt_R_x: '2' }],
+      hits: [[0]],
+      need: 1,
+    },
+    {
+      ...goal,
+      of: [{ expr: '0.5*x**2-0.5*c', roots: true }],
+      targets: [['1']],
+      tol: '0',
+      states: [{ c: '0' }, { c: '1' }],
+      hits: [[0]],
+      need: 1,
+    },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
