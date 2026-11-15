@@ -128,6 +128,8 @@ export function parseGoalShape<R, I>(
     of(v: unknown, at: string): R;
     is(v: unknown, at: string): I;
     num(v: unknown, at: string): GoalNum;
+    /** is 가 수면 그 수(허용 오차 검사용), 다른 읽는 값과 견주면 null */
+    isNum(i: I): GoalNum | null;
   },
   extra: { kinds: string[]; keys: string[] } = { kinds: [], keys: [] },
 ): { shape: GoalShape<R, I> | null; common: GoalCommon; o: Record<string, unknown> } {
@@ -149,6 +151,7 @@ export function parseGoalShape<R, I>(
     if (!Array.isArray(v.at) || v.at.length < 2 || v.at.length > 6)
       fail(`${at} visit.at`, '가 볼 곳 2~6개');
     const pts = (v.at as unknown[]).map((x, i) => read.num(x, `${at} visit.at${i + 1}`));
+    tolOnlyIrrational(tol, pts, at);
     for (let i = 0; i < pts.length; i++)
       for (let j = 0; j < i; j++)
         if (sameVal(pts[i] as GoalNum, pts[j] as GoalNum, tol.n))
@@ -159,6 +162,8 @@ export function parseGoalShape<R, I>(
     const v = obj(o.value, `${at} value`, ['of', 'is'], ['places']);
     const of = read.of(v.of, `${at} value.of`);
     const is = read.is(v.is, `${at} value.is`);
+    const n = read.isNum(is);
+    if (n) tolOnlyIrrational(tol, [n], at);
     let places = 1;
     if (v.places !== undefined) {
       if (
@@ -173,6 +178,16 @@ export function parseGoalShape<R, I>(
     return { shape: { kind: 'value', of, is, places }, common, o };
   }
   return { shape: null, common, o };
+}
+
+/**
+ * 허용 오차는 무리수 목표만(원칙 P10). 유리수 목표는 칸 위 값과 정확히 견줄 수 있어, 오차를 두면 정답이 아닌
+ * 이웃 자리까지 맞았다고 하거나 계산 대신 더듬어 맞히게 된다.
+ */
+function tolOnlyIrrational(tol: { src: string; n: number }, nums: GoalNum[], at: string) {
+  if (!(tol.n > 0)) return;
+  const q = nums.find((x) => x.q);
+  if (q) fail(`${at} tol`, `유리수 목표(${q.src})에는 허용 오차를 두지 않음 — 무리수 목표만`);
 }
 
 /** 새 목표(visit·value 와 부품의 새 열쇠)는 힌트가 필수 — 손을 여러 번 떼도 못 이룬 학습자에게 보일 글 */

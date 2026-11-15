@@ -60,6 +60,7 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
         }
       },
       num: goalNum,
+      isNum: (i) => ('num' in i ? i.num : null),
     },
     { kinds: ['approach', 'place'], keys: ['within'] },
   );

@@ -274,6 +274,35 @@ for (const [name, raw] of [
     },
   ],
   [
+    '유리수 목표에 허용 오차',
+    { ...mvtRaw(), goal: { value: { of: 'x(R)', is: '1/2' }, tol: '1/8', hint: 'h' } },
+  ],
+  [
+    '유리수 가 볼 곳에 허용 오차',
+    { ...doubleRaw(), goal: { visit: { of: 'value(c)', at: [1, 3] }, tol: '1/2', hint: 'h' } },
+  ],
+  [
+    '목표·과제 없는 장면의 숨긴 곡선(드러날 때가 없음)',
+    {
+      mode: 'explore',
+      x: { min: -2, max: 2, step: 1 },
+      y: { min: -1, max: 4, step: 1 },
+      objects: [{ id: 'f', curve: 'x**2', hide: true }],
+    },
+  ],
+  [
+    '목표·과제 없는 장면의 숨긴 점',
+    {
+      mode: 'explore',
+      x: { min: -2, max: 2, step: 1 },
+      y: { min: -1, max: 4, step: 1 },
+      objects: [
+        { id: 'f', curve: 'x**2' },
+        { id: 'C', point: { on: 'f', x: 1 }, hide: true },
+      ],
+    },
+  ],
+  [
     '닿을 수 없는 가 볼 곳',
     { ...doubleRaw(), goal: { visit: { of: 'value(c)', at: [1, 8] }, hint: 'h' } },
   ],

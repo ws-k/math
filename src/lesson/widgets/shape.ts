@@ -690,6 +690,7 @@ export const shapeDef: WidgetDef<ShapeParams> = {
         of: (v, w) => int(v, w, 0, p.measures.length - 1),
         is: goalNum,
         num: goalNum,
+        isNum: (i) => i,
       });
       needHint(common, at);
       const g = { ...(shape as GoalShape<number, GoalNum>), ...common };

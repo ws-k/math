@@ -88,6 +88,13 @@ export function parseCoord(raw: unknown): CoordParams {
 
   if (o.task !== undefined) p.task = parseTask(o.task, p, curves);
   else if (mode !== 'explore') fail('좌표', `${mode} 모드에는 task 가 필요함`);
+  // 숨긴 정답은 목표·과제를 이뤄야 드러난다 — 둘 다 없으면 끝내 그려지지 않는 객체가 된다
+  const hidden = objects.find((x) => 'hide' in x && x.hide);
+  if (hidden && !p.goal && !p.task)
+    fail(
+      '좌표',
+      `숨긴 ${'id' in hidden ? hidden.id : '객체'} 가 있는데 목표(goal)·과제(task)가 없어 드러날 때가 없음`,
+    );
 
   if (o.start !== undefined) {
     if (mode !== 'line') fail('좌표 start', 'line 모드에서만');

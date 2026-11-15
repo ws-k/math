@@ -80,6 +80,11 @@ for (const [name, raw] of [
   ['닿을 수 없는 넓이', { ...trapRaw(), goal: { value: { of: 1, is: 100 }, hint: 'h' } }],
   ['없는 측정 번호', { ...trapRaw(), goal: { value: { of: 5, is: 24 }, hint: 'h' } }],
   ['힌트 없음', { ...trapRaw(), goal: { value: { of: 1, is: 20 } } }],
+  // 허용 오차는 무리수 목표만 — 유리수 목표에 두면 정답이 아닌 이웃 자리도 맞았다고 하게 된다
+  [
+    '유리수 목표에 허용 오차',
+    { ...trapRaw(), goal: { value: { of: 1, is: 20, places: 3 }, tol: '1/4', hint: 'h' } },
+  ],
   // 처음 자리가 이미 목표면 한 번 만지면 끝나는 탐색으로 되돌아간다
   ['처음 자리가 이미 목표', { ...trapRaw(), goal: { value: { of: 1, is: 24 }, hint: 'h' } }],
   [
