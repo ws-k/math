@@ -206,15 +206,6 @@
                 "id": "f",
                 "curve": "x**2-4*x+c",
                 "label": "$y=x^2-4x+c$"
-              },
-              {
-                "readout": "value(c)",
-                "label": "$c$",
-                "digits": 0
-              },
-              {
-                "readout": "roots(f)",
-                "label": "가로축과 만나는 점(개)"
               }
             ],
             "intro": "$c$ 를 키우면 곡선이 위로 올라가요.",
