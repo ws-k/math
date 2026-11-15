@@ -31,6 +31,7 @@ import {
   type Item,
   initial,
   keyMove,
+  labelWidth,
   MIN_BOX_H,
   moveUser,
   type PointObj,
@@ -513,7 +514,13 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
               </text>
             )}
             {yName && (
-              <text x={f.l - 6} y={f.t - 4} className="axname">
+              // 눈금 숫자 열 위에 오른쪽 맞춤('30' 위 '(m)'). 그 열보다 길면 상자 왼쪽 끝부터
+              <text
+                x={labelWidth(yName) <= f.l - 6 ? f.l - 6 : 0}
+                y={f.t - 6}
+                textAnchor={labelWidth(yName) <= f.l - 6 ? 'end' : 'start'}
+                className="axname"
+              >
                 {yName}
               </text>
             )}
@@ -607,72 +614,75 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
           {msg.text && <LRich inline src={msg.text} />}
         </div>
       )}
-      <div className="actions">
-        {dragPts.length > 0 && (
-          <div className="row2">
-            {dragPts.flatMap((o) => [
+      {/* 버튼이 하나도 없으면(슬라이더만 있는 탐색) 칸을 두지 않는다 — 빈 칸도 카드 간격(14px)을 먹어 접은 화면에서 넘친다 */}
+      {(dragPts.length > 0 || p.mode !== 'explore') && (
+        <div className="actions">
+          {dragPts.length > 0 && (
+            <div className="row2">
+              {dragPts.flatMap((o) => [
+                <button
+                  type="button"
+                  key={`${o.id}-`}
+                  className="lbtn soft"
+                  onClick={() => settle(keyMove(p, st, o.id, 'ArrowLeft') ?? st, 'key')}
+                  onBlur={judge.flush}
+                >
+                  {o.name ?? o.id} 왼쪽으로
+                </button>,
+                <button
+                  type="button"
+                  key={`${o.id}+`}
+                  className="lbtn soft"
+                  onClick={() => settle(keyMove(p, st, o.id, 'ArrowRight') ?? st, 'key')}
+                  onBlur={judge.flush}
+                >
+                  {o.name ?? o.id} 오른쪽으로
+                </button>,
+              ])}
+            </div>
+          )}
+          {(p.mode === 'plot' || p.mode === 'connect') && (
+            <div className="row2">
               <button
                 type="button"
-                key={`${o.id}-`}
                 className="lbtn soft"
-                onClick={() => settle(keyMove(p, st, o.id, 'ArrowLeft') ?? st, 'key')}
-                onBlur={judge.flush}
+                onClick={() => {
+                  const g0 = freeSpot(p, st);
+                  if (g0) settle(addUser(st, g0));
+                }}
               >
-                {o.name ?? o.id} 왼쪽으로
-              </button>,
+                점 더하기
+              </button>
               <button
                 type="button"
-                key={`${o.id}+`}
                 className="lbtn soft"
-                onClick={() => settle(keyMove(p, st, o.id, 'ArrowRight') ?? st, 'key')}
-                onBlur={judge.flush}
+                disabled={st.user.length === 0}
+                onClick={() => settle({ ...st, user: [] })}
               >
-                {o.name ?? o.id} 오른쪽으로
-              </button>,
-            ])}
-          </div>
-        )}
-        {(p.mode === 'plot' || p.mode === 'connect') && (
-          <div className="row2">
+                모두 지우기
+              </button>
+            </div>
+          )}
+          {p.mode === 'sketch' && (
             <button
               type="button"
               className="lbtn soft"
+              aria-pressed={sketching}
               onClick={() => {
-                const g0 = freeSpot(p, st);
-                if (g0) settle(addUser(st, g0));
+                if (sketching) settle({ ...st, stroke: [] });
+                setSketching(true);
               }}
             >
-              점 더하기
+              {sketching ? '지우고 다시 긋기' : '그리기 시작'}
             </button>
-            <button
-              type="button"
-              className="lbtn soft"
-              disabled={st.user.length === 0}
-              onClick={() => settle({ ...st, user: [] })}
-            >
-              모두 지우기
+          )}
+          {p.mode !== 'explore' && (
+            <button type="button" className="lbtn blue" onClick={check}>
+              확인하기
             </button>
-          </div>
-        )}
-        {p.mode === 'sketch' && (
-          <button
-            type="button"
-            className="lbtn soft"
-            aria-pressed={sketching}
-            onClick={() => {
-              if (sketching) settle({ ...st, stroke: [] });
-              setSketching(true);
-            }}
-          >
-            {sketching ? '지우고 다시 긋기' : '그리기 시작'}
-          </button>
-        )}
-        {p.mode !== 'explore' && (
-          <button type="button" className="lbtn blue" onClick={check}>
-            확인하기
-          </button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

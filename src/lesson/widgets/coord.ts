@@ -29,6 +29,7 @@ export {
   fmtNum,
   frame,
   grid,
+  labelWidth,
   MAX_GOAL_SNAPS,
   MIN_BOX_H,
   MIN_SNAP_PX,
