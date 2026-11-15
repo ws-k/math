@@ -77,9 +77,9 @@ worktree 경로·브랜치, 그리고 장면마다 한 줄씩:
 
 ---
 
-## 부록 A — 남은 장면 (목표 없는 탐색 55장면 / 38단원, 2026-11-14 코드에서 셈)
+## 부록 A — 남은 장면 (목표 없는 탐색 51장면 / 35단원, 2026-11-14 코드에서 셈 → 2026-11-15 실생활 계획으로 4장면 제외)
 
-본보기 3단원(5장면)은 끝났습니다. 아래 묶음은 제안이며 메인이 배정합니다. 괄호 안은 부품, 뒤는 관련 요청 줄(`docs/widget-wishlist.md`).
+본보기 3단원(5장면)은 끝났습니다. 아래 묶음은 제안이며 메인이 배정합니다. **제외 4장면**(그림이 통째로 바뀌어 `docs/plan-real-world.md` 에서 목표까지 한 번에 함): `math2-definite` rects, `calc-integral-app` slices, `math2-velocity` move, `e-circle-area` ratio — 조각 ② 지표 "목표 없는 탐색 0"의 예외입니다. 괄호 안은 부품, 뒤는 관련 요청 줄(`docs/widget-wishlist.md`).
 
 | 묶음 | 단원 · 장면 | 참고 |
 |---|---|---|
@@ -87,13 +87,13 @@ worktree 경로·브랜치, 그리고 장면마다 한 줄씩:
 | 나 | `m2-similarity` parallel·area·centroid (도형판) / `m3-circle` slide·diameter·cyclic (도형판) / `m3-radical-ops` rect·add (도형판) | |
 | 다 | `math1-sine-cosine-law` cosine·sine·area (도형판) / `geo-ellipse` find (도형판)·circles (좌표) / `geo-parabola` measure (도형판)·rings (좌표) | 67(60°·90°·120° 모두 보기), 106 |
 | 라 | `geo-hyperbola` drag (도형판) / `geo-space-coord` section (도형판) / `geo-space-figures` perp (도형판) | 106 |
-| 마 | `e-circle-area` ratio (좌표)·poly (도형판) / `m1-expressions` value (좌표) / `m2-linear-func-eq` slope (좌표) | 37(기울기 목표) |
+| 마 | `e-circle-area` poly (도형판) / `m1-expressions` value (좌표) / `m2-linear-func-eq` slope (좌표) | 37(기울기 목표) |
 | 바 | `m3-sqrt` find·zoom (좌표) / `m3-quadratic-func` move (좌표) / `m3-trig-ratio` same (좌표) | 50(슬라이더 목표) |
 | 사 | `h1-circle-eq` move (좌표) / `h1-rational-irrational` slide (좌표) / `h1-remainder-factor` slide·identity (좌표) | 56 |
 | 아 | `h1-transform` graph (좌표) / `math1-exp-func` slider (좌표) / `math1-log-func` base (좌표) | 56, 60(밑 a≠1 → 슬라이더 `exclude`) |
-| 자 | `math1-sigma` general (좌표) / `math1-trig-graph` slider (좌표) / `math2-definite` rects (좌표) | 64·67, ③ |
+| 자 | `math1-sigma` general (좌표) / `math1-trig-graph` slider (좌표) | 64·67 |
 | 차 | `math2-diff-coefficient` corner (좌표) / `math2-diff-polynomial` rules (좌표) / `math2-indefinite` shift (좌표) | 75(목표 점 숨김), 82(두 값 같게) |
-| 카 | `math2-tangent` mvt (좌표) / `math2-velocity` move (좌표) / `calc-integral-app` slices (좌표) | 75 |
+| 카 | `math2-tangent` mvt (좌표) | 75 |
 | 타 | `calc-quotient-chain` chain (좌표) / `calc-series` race·geo (좌표) / `calc-trig-addition` overlay (좌표) | 98(내용 점검) |
 | 파 | `geo-conic-tangent` slide (좌표) / `geo-vector-ops` scale (좌표) | 108(xy 점 목표), ⑤ |
 
@@ -107,3 +107,15 @@ worktree 경로·브랜치, 그리고 장면마다 한 줄씩:
 - 목표 점 숨김·식 값(판별식): `h1-inequalities`·`h1-quad-eq-func`·`h1-higher-eq`(55 — 판별식은 슬라이더 식 읽는 값 `b**2-4*a*c`)
 - 끄는 점 목표 칸(x,y): `h1-circle-eq`·`h1-coord-line`·`h1-transform`(56), `geo-vector-ops`·`geo-vector-dot`·`geo-conic-tangent`(108)
 - 슬라이더 제외 값: `math1-log-func`(60)
+
+## 부록 C — 실생활 글 (2026-11-15, `docs/plan-real-world.md`)
+맡은 단원이 `docs/plan-real-world.md` 의 '나'·'다'·'라' 에 있으면 목표와 실생활 글을 **한 번에** 고칩니다. 그 문서의 해당 단원 항목(바꿀 장면·상황·깨닫게 할 것·숫자)을 그대로 따르고, 아래 규칙을 지킵니다.
+- **R1 그림이 곧 수학 객체**: 배경 삽화·사진·외부 그림 금지. 밭·길·물은 앱이 그리는 곡선·영역·점과 한글 이름표로.
+- **R2 들어갈 때 실생활, 나올 때 표기**: 결론 글이나 다음 '이름 붙이기'에 대응 한 줄("밭의 넓이 → $\int_0^3 f(x)\,dx$"). 요약의 "수능에서는"과 직접 풀기 중 2문제 이상은 수능 표기 그대로.
+- **R3 같은 id 로 교체**: 장면 추가·삭제·id 변경 금지(추가는 메인 승인 장면만).
+- **R4 숫자는 그대로**: 곡선·점·숫자가 같으면 검산 항목이 안 바뀝니다. 글만 바꾼 장면에서 `verify:diff` 가 바뀌면 원인부터 보고.
+- **R5 음수가 되는 양은 위치·높이로만**: "거리·넓이·양"은 음수가 될 수 없습니다. "집 기준 위치(동쪽 +)", "기준 지점에서 본 높이".
+- **R6 현실 수치 점검표**: 새로 쓴 상황마다 `docs/plan-real-world.md` 점검표 형식의 한 줄(장면 | 수치 | 판단)을 보고에 적습니다.
+- **직접 풀기 교체**: 3문제 중 1문제만 실생활로, **새 문제 id** 로 바꿉니다(옛 id 의 필기가 엉뚱한 문제에 붙지 않게). 수능 표기 문제 2개는 남깁니다.
+- **소재**: 고등 단원도 술·대출·투자 수익·세금·도박·실존 브랜드 금지. 용돈 저축 이자는 허용. 캐릭터·이모지·과한 칭찬 금지.
+- 단위 붙은 숫자는 '글 속 숫자' 경고를 늘립니다 → 레슨 값(`values`·`{{…}}`)으로.
