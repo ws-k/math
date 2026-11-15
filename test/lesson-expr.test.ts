@@ -90,3 +90,14 @@ test('paritySamples: 범위 안 표본 점 9개, 각 점에서 TS 값(정의 안
   assert.deepEqual(t.points[8], { x: '1', a: '3' });
   assert.equal(t.values[8], 3);
 });
+
+test('미분의 숫자 정리는 분수로: 0.1·3 이 0.30000000000000004 가 되지 않음', () => {
+  // 읽는 값(readoutVal)이 미분 식을 evalExact 로 분수로 믿고 쓴다 — 접은 숫자가 부동소수면 3/10 이 아니게 된다
+  const d = derivative(parseSym('0.1*(3*x)'), 'x');
+  assert.deepEqual(evalExact(d, { x: [1n, 1n] }), [3n, 10n]);
+  // 지수 1.1 − 1 도 0.1 그대로(0.10000000000000009 아님)
+  assert.ok(!toSym(derivative(parseSym('x**1.1'), 'x')).includes('0000'));
+  // 나누어떨어지지 않는 곱(1/3 처럼)도 정확히
+  const e = derivative(parseSym('(1/3)*(3*x)'), 'x');
+  assert.deepEqual(evalExact(e, { x: [0n, 1n] }), [1n, 1n]);
+});

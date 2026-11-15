@@ -148,9 +148,34 @@ function ex(n: Node, env: Record<string, Rational>): Rational {
 // ---- 미분 ----
 // 접선 기울기·readout 같은 파생값은 작성자가 적지 않고 기준 곡선에서 이 함수로 계산한다.
 // 결과는 sympy 의 diff 와 대조한다(parity·답 검산). 간단한 정리(0·1 지우기, 숫자끼리 계산)만 한다.
+// 숫자끼리 계산은 분수로 한다 — 읽는 값(readoutVal)이 미분 식을 evalExact 로 분수로 믿고 쓰는데,
+// 부동소수로 접으면 0.1·3 이 0.30000000000000004 가 되어 3/10 과 다른 값이 된다.
 
 const N = (v: string | number): Node => ({ t: 'num', v: String(v) });
 const isNum = (n: Node, v: number) => n.t === 'num' && Number(n.v) === v;
+
+/** 숫자 칸(소수 글자)의 정확한 분수 */
+function numQ(v: string): Rational {
+  const [ip, fp = ''] = v.split('.');
+  return reduce(BigInt(ip + fp), 10n ** BigInt(fp.length));
+}
+/**
+ * 분수 → 숫자 식. 유한소수면 소수 글자 하나(0.3), 아니면 나눗셈(1/3 을 0.333… 으로 자르지 않게).
+ * 음수는 neg 로 감싼다 — 파서가 만드는 숫자 칸은 늘 0 이상이라 다른 정리 규칙과 모양을 맞춘다.
+ */
+function qNode([a, b]: Rational): Node {
+  if (a < 0n) return { t: 'neg', a: qNode([-a, b]) };
+  let d = b;
+  let k = 0;
+  for (const f of [2n, 5n])
+    for (let c = 0; d % f === 0n; c++) {
+      d /= f;
+      k = Math.max(k, c + 1);
+    }
+  if (d !== 1n) return { t: 'div', a: N(a.toString()), b: N(b.toString()) };
+  const t = ((a * 10n ** BigInt(k)) / b).toString().padStart(k + 1, '0');
+  return N(k ? `${t.slice(0, -k)}.${t.slice(-k)}` : t);
+}
 
 function add(a: Node, b: Node): Node {
   if (isNum(a, 0)) return b;
@@ -170,7 +195,11 @@ function mul(a: Node, b: Node): Node {
   if (isNum(a, 0) || isNum(b, 0)) return N(0);
   if (isNum(a, 1)) return b;
   if (isNum(b, 1)) return a;
-  if (a.t === 'num' && b.t === 'num') return N(Number(a.v) * Number(b.v));
+  if (a.t === 'num' && b.t === 'num') {
+    const [p, q] = numQ(a.v);
+    const [r, t] = numQ(b.v);
+    return qNode(reduce(p * r, q * t));
+  }
   return { t: 'mul', a, b };
 }
 function div(a: Node, b: Node): Node {
@@ -208,7 +237,8 @@ export function derivative(n: Node, v: string): Node {
       const { a, b } = n;
       if (!has(b, v)) {
         // 지수가 상수: b·a^(b−1)·a'
-        const e: Node = b.t === 'num' ? N(Number(b.v) - 1) : sub(b, N(1));
+        const bq = b.t === 'num' ? numQ(b.v) : null;
+        const e: Node = bq ? qNode(reduce(bq[0] - bq[1], bq[1])) : sub(b, N(1));
         return mul(mul(b, pow(a, e)), d(a));
       }
       // e^b 는 그대로, 그 밖은 a^b·(b'·ln a + b·a'/a)
