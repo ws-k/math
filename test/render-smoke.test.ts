@@ -191,3 +191,10 @@ test('도형판: 선분 위 끄는 점마다 ◀▶ 버튼(끌기 대체), 보�
   for (const t of ['◀ 점 D', '점 D ▶', '◀ 점 C', '점 C ▶']) assert.ok(html.includes(t), t);
   assert.ok(!html.includes('data-k="lab:S"'));
 });
+
+test('도형판 손잡이: 화면 낭독기가 점 이름과 함께 자리(좌표)를 읽는다', async () => {
+  const { renderLesson } = await entry;
+  const html = renderLesson(withLesson(goalScenes()), 3);
+  assert.match(html, /aria-label="점 D"[^>]*aria-valuetext="x 2, y 4"/);
+  assert.match(html, /aria-label="점 C"[^>]*aria-valuetext="x 6, y 4"/);
+});

@@ -80,7 +80,8 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     setSt(n);
   });
 
-  // 크기: 폭은 카드 폭, 높이는 폭의 0.78배를 화면 높이의 절반 안으로(낮은 화면에서 부품이 화면을 다 덮지 않게).
+  // 크기: 폭은 카드 폭, 높이는 폭의 0.78배를 화면 높이의 36% 안으로(최소 200). 접은 화면(382×580)에서
+  // 그림·읽는 값·목표 글·◀▶ 버튼이 위 막대와 '계속하기' 사이(약 444px)에 함께 들어가게 — 절반(290)이면 넘쳤다.
   // 렌더 중에는 window 를 읽지 않는다(서버 렌더·스모크 테스트)
   useEffect(() => {
     const el = host.current;
@@ -88,7 +89,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     const measure = () => {
       const w = Math.round(el.clientWidth);
       if (!w) return;
-      const maxH = Math.max(220, Math.round(window.innerHeight * 0.5));
+      const maxH = Math.max(200, Math.round(window.innerHeight * 0.36));
       const h = Math.min(maxH, Math.max(200, Math.round(w * 0.78)));
       setBox((b) => (b.w === w && b.h === h ? b : { w, h }));
     };

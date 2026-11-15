@@ -199,7 +199,7 @@
               },
               {
                 "readout": "slope(A,B)",
-                "label": "기울기 = ($y$의 증가량) ÷ ($x$의 증가량)",
+                "label": "기울기",
                 "frac": true
               }
             ],

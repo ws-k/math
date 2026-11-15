@@ -131,7 +131,7 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
               value={s.pts[h.id]?.x ?? 0}
               min={0}
               max={p.grid.w}
-              valueText={`점 ${h.id}`}
+              valueText={handleText(h, s.pts[h.id])}
               onKey={(key) => step(h.id, key)}
               onBlur={judge.flush}
               onStart={g2.onStart}
@@ -214,4 +214,17 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
       </div>
     </div>
   );
+}
+
+/**
+ * 손잡이를 화면 낭독기가 읽는 값: 자리. 이름(aria-label "점 D") 바로 뒤에 읽힌다 — 이름만 두 번 읽으면
+ * 키로 옮겨도 어디에 있는지 알 수 없다. 원 위 점은 각도, 나머지는 격자 좌표(좌표평면 손잡이와 같은 꼴)
+ */
+function handleText(
+  h: { on?: ShapeParams['points'][number]['on'] },
+  at: { x: number; y: number; deg?: number } | undefined,
+): string {
+  if (!at) return '';
+  if (h.on && 'circle' in h.on) return `${at.deg ?? 0}°`;
+  return `x ${at.x}, y ${at.y}`.replace(/-/g, '−');
 }

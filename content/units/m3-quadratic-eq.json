@@ -108,7 +108,7 @@
               },
               {
                 "readout": "y(P)",
-                "label": "곱 $(x-3)(x+5)$",
+                "label": "곱",
                 "digits": 0
               }
             ],
