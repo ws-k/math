@@ -12,6 +12,7 @@ import {
   goalHits,
   initial,
   parseCoord,
+  readout,
   rootsBetween,
 } from '../src/lesson/widgets/coord.ts';
 import { q } from '../src/lesson/widgets/q.ts';
@@ -203,6 +204,22 @@ test('구분구적: 내려가는 곡선이면 큰 어림이 왼쪽 끝 합', () 
   assert.deepEqual(
     draw(p, initial(p), BOX).readouts.map((r) => r.text),
     ['24 m²', '8 m²', '16 m²'],
+  );
+});
+
+test('구분구적: 조각 수를 모르는 상태(슬라이더 값 없음)면 읽는 값은 NaN·— (끝없이 돌지 않음)', () => {
+  const raw = fieldRaw();
+  const p = parseCoord({
+    ...raw,
+    objects: [...raw.objects, { readout: 'gap(R)', label: '차이', digits: 0 }],
+  });
+  const s = { ...initial(p), vars: {} };
+  const ro = p.objects.find((o) => o.kind === 'readout' && o.expr.f === 'gap');
+  assert.ok(ro?.kind === 'readout');
+  assert.ok(Number.isNaN(readout(p, s, ro.expr)));
+  assert.deepEqual(
+    draw(p, s, BOX).readouts.map((r) => r.text),
+    ['— ~ —', '—'],
   );
 });
 

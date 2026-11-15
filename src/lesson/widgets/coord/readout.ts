@@ -252,8 +252,13 @@ export function readout(p: CoordParams, s: CoordState, e: ReadoutExpr): number {
       return Number.NaN;
     case 'big':
     case 'small':
-    case 'gap':
-      return readoutVal(p, s, e).n;
+    case 'gap': {
+      // readoutVal 을 부르지 않는다 — 합을 못 구하면 readoutVal 이 다시 이 함수로 돌아와 끝없이 돈다
+      const v = sums(p, s, rectsOf(p, e.rects));
+      if (!v) return Number.NaN;
+      const q = e.f === 'gap' ? sub(v.big, v.small) : v[e.f];
+      return Number(q[0]) / Number(q[1]);
+    }
   }
 }
 
