@@ -14,6 +14,7 @@ import { coordChecks } from './coord/checks.ts';
 import { checkReachable, goalTexts } from './coord/goal.ts';
 import { kindOf } from './coord/kinds.ts';
 import { parseCoord } from './coord/parse.ts';
+import { checkPolyCurves } from './coord/readout.ts';
 import type { CoordParams } from './coord/types.ts';
 import type { WidgetDef } from './specs.ts';
 
@@ -83,7 +84,11 @@ export const sameValue = (a: string, b: string) => compareAnswer(a, b, 'fraction
 
 export const coordDef: WidgetDef<CoordParams> = {
   parse: parseCoord,
-  deep: checkReachable,
+  // 무거운 형식 검사(값 조합·닿는 상태를 늘어놓음)는 검사기에서만 — 화면은 장면을 열 때 parse 만 한다
+  deep(p) {
+    checkPolyCurves(p);
+    checkReachable(p);
+  },
   checks: coordChecks,
   texts(p) {
     const out: string[] = [];

@@ -475,3 +475,24 @@ test('parse 오류(목표): 목표가 보는 슬라이더 칸이 30칸 넘음(�
   // 30칸이면 통과(−2~5.5, 1/4 칸)
   assert.doesNotThrow(() => parseCoord(withMax('11/2')));
 });
+
+test('실근 개수 곡선의 "모든 슬라이더 값에서 다항식" 전수 검사는 형식 검사(deep)에서만 — 장면을 열 때는 처음 값만', () => {
+  const raw = {
+    ...doubleRaw(),
+    sliders: [{ id: 'n', min: 1, max: 3, step: '1/2', value: 2, label: 'n' }],
+    objects: [
+      { id: 'f', curve: 'x**n-1' },
+      { readout: 'roots(f)', label: 'n' },
+    ],
+    goal: undefined,
+  };
+  const p = parseCoord(raw);
+  assert.throws(() => coordDef.deep?.(p), /다항식/);
+  // 처음 값에서부터 다항식이 아니면 읽기에서 바로 오류
+  assert.throws(() =>
+    parseCoord({
+      ...raw,
+      sliders: [{ id: 'n', min: 1, max: 3, step: '1/2', value: '3/2', label: 'n' }],
+    }),
+  );
+});

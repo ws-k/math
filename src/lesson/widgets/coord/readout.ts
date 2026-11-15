@@ -32,36 +32,68 @@ const MEET_RE = /^meet\((\w+),(\w+)\)$/;
 const FORMS = 'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·슬라이더 식(b**2-4*a*c)';
 
 /**
- * 실근 개수를 셀 곡선: 슬라이더가 늘 분수 값이고(π 칸이 아님) **슬라이더의 모든 값에서** x 의 다항식이어야 한다.
- * 처음 값에서만 보면 x**n 의 n=2 는 통과하고 n=3/2 로 옮기는 순간 개수를 셀 수 없게 된다.
+ * 실근 개수를 셀 곡선(읽기): 곡선의 슬라이더가 분수 칸이고(π 칸이 아님) 처음 값에서 x 의 다항식이어야 한다.
+ * 슬라이더의 **모든 값**에서 다항식인지(x**n 의 n=3/2 처럼 옮기면 셀 수 없게 되는 곳)는 값 조합을 다 늘어놓는
+ * 무거운 검사라 형식 검사(checkPolyCurves, coordDef.deep)에서만 한다.
  */
 function polyCurve(cx: ParseCtx, v: string, at: string): CurveObj {
   const c = cx.curveRef(v, at);
   const used = varsOf(c.node);
-  let envs: Record<string, Rational>[] = [{}];
+  const env: Record<string, Rational> = {};
   for (const sl of cx.sliders) {
     if (!used.has(sl.id)) continue;
-    const qs = sliderValues(sl).map(({ v: x }) => sliderQ(sl, x));
-    if (qs.some((q) => !q))
-      fail(at, `슬라이더 ${sl.id} 의 칸이 분수가 아니라 실근을 정확히 셀 수 없음`);
-    if (envs.length * qs.length > GOAL_MAX_STATES)
-      fail(
-        at,
-        `슬라이더 칸 조합이 ${GOAL_MAX_STATES}개를 넘어 모든 값에서 다항식인지 확인할 수 없음`,
-      );
-    envs = envs.flatMap((e) => qs.map((q) => ({ ...e, [sl.id]: q as Rational })));
+    const q = sliderQ(sl, sl.value);
+    if (!q) return fail(at, `슬라이더 ${sl.id} 의 칸이 분수가 아니라 실근을 정확히 셀 수 없음`);
+    env[sl.id] = q;
   }
-  for (const env of envs)
-    if (!polyOf(c.node, env)) {
-      const at2 = Object.entries(env)
-        .map(([k, [a, b]]) => `${k}=${b === 1n ? a : `${a}/${b}`}`)
-        .join(', ');
-      fail(
-        at,
-        `곡선 ${c.id} 이 x 의 다항식이 아닌 자리가 있어 실근을 셀 수 없음${at2 ? ` (${at2})` : ''}`,
-      );
-    }
+  if (!polyOf(c.node, env)) fail(at, `곡선 ${c.id} 이 x 의 다항식이 아니라 실근을 셀 수 없음`);
   return c;
+}
+
+/** 실근 개수를 세는 곡선들(읽는 값·목표의 roots·meet) */
+function countedCurves(p: CoordParams): string[] {
+  const out = new Set<string>();
+  const add = (e: ReadoutExpr) => {
+    if (e.f === 'roots') out.add(e.curve);
+    if (e.f === 'meet') {
+      out.add(e.a);
+      out.add(e.b);
+    }
+  };
+  for (const o of p.objects) if (o.kind === 'readout') add(o.expr);
+  const g = p.goal;
+  if (g && 'kind' in g && g.kind !== 'place') {
+    add(g.of);
+    if (g.kind === 'value' && 'of' in g.is) add(g.is.of);
+  }
+  return [...out];
+}
+
+/** 형식 검사: 실근 개수를 세는 곡선이 슬라이더의 모든 값(조합)에서 x 의 다항식인가 */
+export function checkPolyCurves(p: CoordParams): void {
+  const at = '좌표 roots·meet';
+  for (const id of countedCurves(p)) {
+    const c = curveOf(p, id);
+    const used = varsOf(c.node);
+    let envs: Record<string, Rational>[] = [{}];
+    for (const sl of p.sliders) {
+      if (!used.has(sl.id)) continue;
+      const qs = sliderValues(sl).map(({ v: x }) => sliderQ(sl, x) as Rational);
+      if (envs.length * qs.length > GOAL_MAX_STATES)
+        fail(
+          at,
+          `슬라이더 칸 조합이 ${GOAL_MAX_STATES}개를 넘어 모든 값에서 다항식인지 확인할 수 없음`,
+        );
+      envs = envs.flatMap((e) => qs.map((q) => ({ ...e, [sl.id]: q })));
+    }
+    for (const env of envs)
+      if (!polyOf(c.node, env)) {
+        const where = Object.entries(env)
+          .map(([k, q]) => `${k}=${ratStr(q)}`)
+          .join(', ');
+        fail(at, `곡선 ${id} 이 x 의 다항식이 아닌 자리가 있어 실근을 셀 수 없음 (${where})`);
+      }
+  }
 }
 
 /** 읽는 값 글자 읽기(형식 검사). 목표의 of·is 도 이 함수를 쓴다 */
