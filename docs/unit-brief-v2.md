@@ -5,8 +5,8 @@
 배경: 계획서 `docs/plan-widgets-v2.md` 의 원칙 P1~P10 과 조각 ②. 목표는 **진행을 막지 않습니다**(2026-11-14 결정) — '계속하기'는 늘 열려 있고, 목표는 ① "맞았다" 글 ② 장면 완료 기록 ③ 숨긴 정답 공개 ④ 결론 글 공개에만 씁니다. 손을 8번 떼도 못 이루면 목표의 힌트 글이 보입니다.
 
 ## 0. 준비
-- worktree 에 `node_modules`·`.venv` 가 없으면 원본을 링크하세요:
-  `ln -s /Users/woosoo/projects/Math/node_modules node_modules && ln -s /Users/woosoo/projects/Math/.venv .venv`
+- worktree 에 `node_modules`·`.venv` 가 없으면 원본 저장소 것을 링크하세요(worktree 맨 위에서, 원본 위치는 git 이 알려 줌):
+  `root="$(git rev-parse --git-common-dir)/.." && ln -s "$root/node_modules" node_modules && ln -s "$root/.venv" .venv`
 - 새 의존성 설치 금지. `reference/` 폴더는 읽지 마세요.
 
 ## 1. 먼저 읽기
