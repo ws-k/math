@@ -20,7 +20,7 @@ import {
 import { fail, obj, str } from '../../parse.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { near, numExpr, target, toIndex } from './common.ts';
-import { iRange } from './frame.ts';
+import { iRange, MAX_GOAL_SNAPS } from './frame.ts';
 import { initial } from './model.ts';
 import { pointOf, pointState, pointXY, worldX, xSym, ySym } from './point.ts';
 import { parseReadoutExpr, readoutMovers, readoutSym, readoutVal } from './readout.ts';
@@ -66,7 +66,7 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
   if (o.approach !== undefined) return approachGoal(o, p, gx, common.hint);
   if (o.within !== undefined) fail(`${at} within`, 'approach 목표에서만');
   needHint(common, at);
-  if (shape) return { ...shape, ...common };
+  if (shape) return snapsOk(p, { ...shape, ...common });
   // place: 끄는 점을 (x,y) 에. 답이라 검산식이 필요하다
   const pl = obj(o.place, `${at} place`, ['point'], ['x', 'y']);
   const pt = gx.pointRef(pl.point, `${at} place.point`);
@@ -86,7 +86,25 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
     out.i = toIndex(val(out.x), p.x.st, `${at} place.x`);
     out.j = toIndex(val(out.y), p.y.st, `${at} place.y`);
   }
-  return out;
+  return snapsOk(p, out);
+}
+
+/**
+ * 목표가 보는 곡선 위 점은 가장 좁은 화면에서도 끌기가 칸을 건너뛰지 않을 만큼만 촘촘하게(MAX_GOAL_SNAPS).
+ * 한 칸이 8px 보다 작으면 끌기가 2·5칸씩 묶여(snapMult) 목표 자리를 건너뛸 수 있다 — 화면 폭마다 닿는 자리를
+ * 따로 세는 대신 이렇게 막아, 형식 검사·검산이 늘어놓는 자리가 어느 화면에서나 끌어서 닿는 자리와 같게 한다.
+ */
+function snapsOk(p: CoordParams, g: NewGoal): NewGoal {
+  for (const id of movers(p, g).points) {
+    const o = pointOf(p, id);
+    const n = (p.x.hi - p.x.lo) / o.snapN;
+    if (o.on && n > MAX_GOAL_SNAPS + 1e-9)
+      fail(
+        `좌표 goal`,
+        `${id} 의 끄는 칸이 ${Math.round(n)}칸 — 가장 좁은 화면에서 한 칸이 8px 보다 작아 끌기가 칸을 건너뜀(${MAX_GOAL_SNAPS}칸 이하로)`,
+      );
+  }
+  return g;
 }
 
 /** 옛 형식: 끄는 점이 상대 점에 다가가기 */

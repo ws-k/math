@@ -8,16 +8,20 @@ import {
   type CoordParams,
   type CoordState,
   coordChecks,
+  dragPoint,
   draw,
+  frame,
   goalHits,
   goalNeed,
   initial,
   keyMove,
+  NARROW_BOX_W,
   parseCoord,
   polyOf,
   readout,
   rootCount,
   sliderSnap,
+  toPx,
 } from '../src/lesson/widgets/coord.ts';
 import { runChecks } from './widget-verify.ts';
 
@@ -345,4 +349,28 @@ test('스투름: 서로 다른 실근 개수(중근은 하나), 0 인 다항식�
   assert.equal(count('x-x'), null);
   assert.equal(polyOf(parseSym('sin(x)'), {}), null);
   assert.equal(polyOf(parseSym('1/x'), {}), null);
+});
+
+test('가장 좁은 화면(382pt 접음)에서도 끌기만으로 목표 점의 모든 칸에 닿는다', () => {
+  // 30칸(1/6 간격·x 5칸)이면 좁은 화면 한 칸이 8px 이상 — 끌어서 칸마다 놓을 수 있다
+  const raw = { ...mvtRaw(), x: { min: -2, max: 3, step: '1/2' } };
+  const objs = raw.objects.map((o) =>
+    'id' in o && o.id === 'R' ? { ...o, point: { ...o.point, snap: '1/6', x: '-1/2' } } : o,
+  );
+  const p = parseCoord({ ...raw, objects: objs });
+  const box = { w: NARROW_BOX_W, h: 220 };
+  const f = frame(box);
+  const seen = new Set<number>();
+  for (let px = 0; px <= box.w; px += 0.5) {
+    const s = dragPoint(p, initial(p), 'R', px, toPx(p, f, 0, 0)[1], box);
+    seen.add(s.pts.R?.i ?? Number.NaN);
+  }
+  assert.equal(seen.size, 31);
+});
+
+test('parse 오류(목표): 목표가 보는 곡선 위 점의 끄는 칸이 좁은 화면에서 8px 보다 촘촘함', () => {
+  const objs = mvtRaw().objects.map((o) =>
+    'id' in o && o.id === 'R' ? { ...o, point: { ...o.point, snap: '1/8' } } : o,
+  );
+  assert.throws(() => parseCoord({ ...mvtRaw(), objects: objs }), /좁은 화면/);
 });

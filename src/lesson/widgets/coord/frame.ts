@@ -37,6 +37,19 @@ export function snapMult(stepPx: number, minPx: number): number {
 /** 곡선 위 점을 끌 때 한 간격의 최소 픽셀 */
 export const MIN_SNAP_PX = 8;
 
+/**
+ * 가장 좁은 화면(접음 382pt, docs/design.md)의 좌표평면 상자 폭: 레슨 좌우 여백 20px×2(lesson.css .lesson)와
+ * 카드 안쪽 여백 22px×2(.lesson .card)를 뺀 폭. 상자 폭이 곧 카드 안쪽 폭이다(Coord.tsx measure).
+ */
+export const NARROW_BOX_W = 382 - 2 * 20 - 2 * 22;
+/**
+ * 목표가 보는 곡선 위 점의 끄는 칸 수 상한: 가장 좁은 화면에서도 한 칸이 MIN_SNAP_PX 이상이라 snapMult 가 1 —
+ * 끌기가 칸을 건너뛰지 않아, 형식 검사·검산이 늘어놓는 '닿는 자리'가 어느 화면에서나 끌어서 닿는 자리와 같다.
+ */
+export const MAX_GOAL_SNAPS = Math.floor(
+  (frame({ w: NARROW_BOX_W, h: 0 }).r - frame({ w: NARROW_BOX_W, h: 0 }).l) / MIN_SNAP_PX,
+);
+
 export const iRange = (lo: number, hi: number, st: number) => [
   Math.ceil(lo / st - 1e-9),
   Math.floor(hi / st + 1e-9),
