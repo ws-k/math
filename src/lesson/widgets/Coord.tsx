@@ -302,18 +302,20 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     for (const s of p.sliders) {
       const el = sliderRefs.current.get(s.id);
       if (!el) continue;
-      // 방향키로 움직인 슬라이더는 키마다 change 가 온다 — 끌어 놓기와 달리 멈출 때 한 번만 판정한다
-      let viaKey = false;
-      const key = () => {
-        viaKey = true;
-      };
+      // 손으로 끈 슬라이더(pointerdown ~ 놓을 때의 change)만 '손 뗌'으로 바로 판정한다. 나머지 change —
+      // 방향키, 그리고 키 이벤트 없이 change 만 보내는 보조기기 — 는 키처럼 멈출 때 한 번만 판정한다
+      let hand = false;
       const up = () => {
         sliding.current = false;
         window.removeEventListener('pointerup', up);
         window.removeEventListener('pointercancel', up);
+        // 놓을 때의 change 는 pointerup 바로 뒤에 온다 — 그것까지 손으로 치고 끝낸다
+        setTimeout(() => {
+          hand = false;
+        }, 0);
       };
       const ptr = () => {
-        viaKey = false;
+        hand = true;
         // 손으로 끌기 시작: 기다리던 키 판정을 지금 끝내고(끄는 도중 터지지 않게), 손 뗄 때까지 끄는 중
         judge.flush();
         sliding.current = true;
@@ -334,16 +336,14 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       };
       const change = () => {
         sliding.current = false;
-        settleRef.current(live.current, viaKey ? 'key' : 'hand');
+        settleRef.current(live.current, hand ? 'hand' : 'key');
       };
       const blur = () => judge.flush();
-      el.addEventListener('keydown', key);
       el.addEventListener('pointerdown', ptr);
       el.addEventListener('input', input);
       el.addEventListener('change', change);
       el.addEventListener('blur', blur);
       offs.push(() => {
-        el.removeEventListener('keydown', key);
         el.removeEventListener('pointerdown', ptr);
         el.removeEventListener('input', input);
         el.removeEventListener('change', change);
