@@ -121,3 +121,48 @@ test('parse: 모르는 칸·격자 밖·없는 점·넓이가 다른 결과 모�
   ];
   assert.throws(() => parse(bad), /넓이/);
 });
+
+// 보조점(aux): 선분 끝으로만 쓰는 안 보이는 점. 설명 없는 점 이름이 그림에 나오지 않게(사다리꼴 장면 S·M·T)
+const auxRaw = () => ({
+  grid: { w: 10, h: 5 },
+  points: [
+    { id: 'A', x: 0, y: 0 },
+    { id: 'B', x: 8, y: 0 },
+    { id: 'S', x: 0, y: 4, aux: true },
+    { id: 'M', x: 5, y: 4, aux: true },
+    { id: 'D', x: 2, y: 4, drag: true, on: { seg: ['S', 'M'] } },
+  ],
+  polygons: [['A', 'B', 'D']],
+  measures: [{ area: 0 }],
+  digits: 0,
+});
+
+test('보조점: 점·이름표를 그리지 않고, 선분 끝으로는 쓴다', () => {
+  const p = parse(auxRaw());
+  const ks = shDraw(p, shInit(p)).marks.map((m) => m.k);
+  for (const k of ['pt:S', 'lab:S', 'pt:M', 'lab:M']) assert.ok(!ks.includes(k), k);
+  assert.ok(ks.includes('lab:D') && ks.includes('pt:A'));
+});
+
+for (const [name, f] of [
+  [
+    '보조점을 끌 수 있게',
+    (r: ReturnType<typeof auxRaw>) =>
+      Object.assign(r.points[2] as object, { drag: true, on: { seg: ['A', 'B'] } }),
+  ],
+  ['보조점이 다각형 꼭짓점', (r: ReturnType<typeof auxRaw>) => r.polygons.push(['A', 'B', 'S'])],
+  [
+    '보조점을 재기',
+    (r: ReturnType<typeof auxRaw>) => r.measures.push({ len: ['A', 'M'] } as never),
+  ],
+  [
+    'aux 가 true 아님',
+    (r: ReturnType<typeof auxRaw>) => Object.assign(r.points[2] as object, { aux: 1 }),
+  ],
+] as const) {
+  test(`parse 오류(보조점): ${name}`, () => {
+    const r = auxRaw();
+    f(r);
+    assert.throws(() => parse(r));
+  });
+}

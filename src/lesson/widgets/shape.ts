@@ -35,6 +35,8 @@ export interface ShPoint {
   deg?: number;
   drag: boolean;
   on?: ShOn;
+  /** 보조점: 그리지 않는 고정 점(선분 위 점의 끝·선분 끝으로만). 설명 없는 점 이름이 그림에 나오지 않게 */
+  aux?: true;
 }
 export type ShMeasure =
   | { len: [string, string] }
@@ -428,7 +430,9 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
       },
     });
   }
-  const at = p.points.map((pt) => ({ x: X(p, P(s, pt.id).x), y: Y(p, P(s, pt.id).y) }));
+  // 보조점은 그리지 않는다(점·이름표 모두)
+  const shownPts = p.points.filter((pt) => !pt.aux);
+  const at = shownPts.map((pt) => ({ x: X(p, P(s, pt.id).x), y: Y(p, P(s, pt.id).y) }));
   // 이름표: 가까운 점끼리 겹치지 않고 그림 안에(labels.ts). 아무것도 겹치지 않으면 예전처럼 점의 오른쪽 위
   const labs = placeLabels(
     at.map((q) => ({ ...q, n: 1 })),
@@ -436,7 +440,7 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
     { l: 0, t: 0, r: W, b: shGeom(p).h },
     LABEL,
   );
-  p.points.forEach((pt, i) => {
+  shownPts.forEach((pt, i) => {
     const { x, y } = at[i] as { x: number; y: number };
     const r = labs[i] as { l: number; t: number; r: number };
     marks.push(
@@ -574,12 +578,17 @@ export const shapeDef: WidgetDef<ShapeParams> = {
     };
     const points: ShPoint[] = arr(o.points, '도형판 points', 1, 10).map((rp, i) => {
       const at = `도형판 점${i + 1}`;
-      const x = obj(rp, at, ['id'], ['x', 'y', 'deg', 'drag', 'on']);
+      const x = obj(rp, at, ['id'], ['x', 'y', 'deg', 'drag', 'on', 'aux']);
       const id = str(x.id, `${at} id`);
       if (!ID.test(id)) fail(`${at} id`, '대문자 한 글자');
       if (ids.has(id)) fail(`${at} id`, `중복 (${id})`);
       if (x.drag !== undefined && typeof x.drag !== 'boolean') fail(`${at} drag`, 'true/false 만');
       const pt: ShPoint = { id, drag: x.drag === true };
+      if (x.aux !== undefined) {
+        if (x.aux !== true) fail(`${at} aux`, 'true 만');
+        if (pt.drag || x.on !== undefined) fail(`${at} aux`, '보조점은 고정 점(끌기·제약 없음)');
+        pt.aux = true;
+      }
       if (x.on !== undefined) {
         const on = obj(x.on, `${at} on`, [], ['seg', 'circle']);
         if (on.seg !== undefined) {
@@ -652,6 +661,22 @@ export const shapeDef: WidgetDef<ShapeParams> = {
         return { area: int(m.area, `${at} area`, 0, p.polygons.length - 1) };
       },
     );
+    // 보조점은 선분 위 점의 끝·선분 끝으로만 — 다각형 꼭짓점·측정·원에 쓰면 보이지 않는 점을 읽게 된다
+    const aux = new Set(points.filter((x) => x.aux).map((x) => x.id));
+    const noAux = (ids: string[], what: string) => {
+      const a = ids.find((id) => aux.has(id));
+      if (a) fail(`도형판 ${what}`, `보조점 ${a} 은 선분 끝으로만 씀(그림에 안 보임)`);
+    };
+    p.polygons.forEach((pl, i) => {
+      noAux(pl, `다각형${i + 1}`);
+    });
+    p.measures.forEach((m, i) => {
+      if (!('area' in m)) noAux('len' in m ? m.len : m.angle, `측정${i + 1}`);
+    });
+    p.circles.forEach((c, i) => {
+      noAux([c.c], `원${i + 1}`);
+    });
+    for (const pt of points) if (pt.on && 'circle' in pt.on) noAux([pt.on.circle[0]], `${pt.id}`);
     for (const pt of points)
       if (pt.on && 'seg' in pt.on) {
         const [a, b] = pt.on.seg.map((id) => points.find((x) => x.id === id) as ShPoint);

@@ -1,6 +1,6 @@
 // 도형판 화면. 상태 → 그릴 것은 shape.ts(shDraw)가 정하고 여기서는 그리기만 한다.
 // 꼭짓점·잘라 낸 조각을 끄는 동안은 SVG 직접 고치기, 놓을 때 한 번 상태를 바꾼다.
-// 탭 대체: 고른 점을 화살표 버튼으로 한 칸씩, 잘라 옮기기는 '조각 옮기기' 버튼.
+// 탭 대체: 자유 점은 고른 점을 화살표 버튼으로 한 칸씩, 선분·원 위 점은 점마다 ◀▶, 잘라 옮기기는 '조각 옮기기' 버튼.
 // 목표(goal)는 놓을 때(commit)만 판정한다 — 끄는 도중 지나간 자리는 세지 않는다(원칙 P3).
 // 방향키·화살표 버튼은 누를 때마다가 아니라 멈추거나 포커스가 떠날 때 한 번(useGoal — 연타로 더듬지 않게).
 import { useRef, useState } from 'react';
@@ -163,26 +163,30 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
               {t}
             </button>
           ))}
-        {sel && selPt?.on && (
-          <>
+        {/* 선분·원 위 끄는 점은 점마다 ◀▶(끌기 대체) — 고른 점 하나만 두면 손가락으로 끌 수 없을 때
+            다른 점을 고를 길이 없다(사다리꼴 장면의 C) */}
+        {handles
+          .filter((h) => h.on)
+          .flatMap((h) => [
             <button
               type="button"
+              key={`${h.id}-`}
               className="lbtn soft"
-              onClick={() => step(sel, 'ArrowLeft')}
+              onClick={() => step(h.id, 'ArrowLeft')}
               onBlur={judge.flush}
             >
-              ◀ 점 {sel}
-            </button>
+              ◀ 점 {h.id}
+            </button>,
             <button
               type="button"
+              key={`${h.id}+`}
               className="lbtn soft"
-              onClick={() => step(sel, 'ArrowRight')}
+              onClick={() => step(h.id, 'ArrowRight')}
               onBlur={judge.flush}
             >
-              점 {sel} ▶
-            </button>
-          </>
-        )}
+              점 {h.id} ▶
+            </button>,
+          ])}
         {p.cut && (
           <button
             type="button"

@@ -141,3 +141,12 @@ test('결론 글 미루기(afterGoal): 목표를 못 이뤄도 다음 장면을 
   assert.ok(!renderLesson(u, k + 1).includes(mark), '머무는 동안은 숨김');
   assert.ok(renderLesson(u, k + 2).includes(mark), '떠나면 보임');
 });
+
+test('도형판: 선분 위 끄는 점마다 ◀▶ 버튼(끌기 대체) — 사다리꼴 장면의 D·C 둘 다', async () => {
+  const { units, renderLesson } = await entry;
+  const u = units.find((x) => x.id === 'e-polygon-area');
+  const k = u?.lesson?.scenes.findIndex((s) => s.id === 'trap') ?? -1;
+  assert.ok(u && k >= 0);
+  const html = renderLesson(u, k + 1);
+  for (const t of ['◀ 점 D', '점 D ▶', '◀ 점 C', '점 C ▶']) assert.ok(html.includes(t), t);
+});
