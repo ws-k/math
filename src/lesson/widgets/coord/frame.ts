@@ -13,8 +13,51 @@ export function fmtNum(v: number, digits: number): string {
 
 // ---- 화면 좌표 ----
 
-/** 그림 영역(눈금 글자 자리를 뺀 안쪽) */
-export const frame = (b: Box): Frame => ({ l: 34, r: b.w - 14, t: 14, b: b.h - 26 });
+/** 축 끝 글자: '시간(분)', 단위만이면 '(m)', 이름만이면 '시간'. 둘 다 없으면 null */
+export function axisLabel(a: Axis): string | null {
+  if (a.name && a.unit) return `${a.name}(${a.unit})`;
+  if (a.unit) return `(${a.unit})`;
+  return a.name ?? null;
+}
+
+/** 축 끝 글자(11px 굵게)의 어림 폭: 한글 11px, 그 밖 6.5px */
+export const labelWidth = (t: string) =>
+  [...t].reduce((w, ch) => w + (ch.charCodeAt(0) >= 0x1100 ? 11 : 6.5), 0);
+
+/** 가로축 끝 글자와 마지막 눈금 글자 사이 틈 */
+export const AXIS_LABEL_GAP = 12;
+
+/** 그림 영역을 정하는 데 쓰는 것만(형식 검사 중에도 셀 수 있게 CoordParams 전체가 아니라) */
+export interface View {
+  x: Axis;
+  y: Axis;
+  equal?: boolean;
+}
+
+/**
+ * 그림 영역(눈금 글자 자리를 뺀 안쪽). v 를 주면
+ *  - 가로축 끝 글자(단위) 자리를 오른쪽에 비운다 — 마지막 눈금 글자 오른쪽에 놓여 겹치지 않게
+ *  - 축척 같게(equal)면 가로·세로 한 칸이 같은 길이가 되게 모자란 쪽에 맞추고, 남는 폭은 가운데로 모은다
+ *    (높이가 모자라는 게 보통이라 위·아래 끝은 그대로 — 눈금 글자 자리가 바뀌지 않는다)
+ */
+export function frame(b: Box, v?: View): Frame {
+  const xl = v ? axisLabel(v.x) : null;
+  const f = {
+    l: 34,
+    // 글자는 영역 끝에서 틈만큼 떨어져 시작하고 상자 끝에서 6px 안쪽에서 끝나게(기본 오른쪽 여백 14px 를 넘는 만큼만 더 비움)
+    r: b.w - 14 - (xl ? Math.max(0, AXIS_LABEL_GAP + labelWidth(xl) + 6 - 14) : 0),
+    t: 14,
+    b: b.h - 26,
+  };
+  if (!v?.equal) return f;
+  const sx = (f.r - f.l) / (v.x.hi - v.x.lo);
+  const sy = (f.b - f.t) / (v.y.hi - v.y.lo);
+  const u = Math.min(sx, sy);
+  const w = u * (v.x.hi - v.x.lo);
+  const h = u * (v.y.hi - v.y.lo);
+  const l = f.l + (f.r - f.l - w) / 2;
+  return { l, r: l + w, t: f.b - h, b: f.b };
+}
 
 export function toPx(p: CoordParams, f: Frame, x: number, y: number): [number, number] {
   return [
@@ -42,6 +85,8 @@ export const MIN_SNAP_PX = 8;
  * 카드 안쪽 여백 22px×2(.lesson .card)를 뺀 폭. 상자 폭이 곧 카드 안쪽 폭이다(Coord.tsx measure).
  */
 export const NARROW_BOX_W = 382 - 2 * 20 - 2 * 22;
+/** 좌표평면 상자의 가장 낮은 높이(Coord.tsx measure 의 바닥값). 구분구적 조각 폭 상한을 셀 때 가장 나쁜 경우 */
+export const MIN_BOX_H = 200;
 /**
  * 목표가 보는 곡선 위 점의 끄는 칸 수 상한: 가장 좁은 화면에서도 한 칸이 MIN_SNAP_PX 이상이라 snapMult 가 1 —
  * 끌기가 칸을 건너뛰지 않아, 형식 검사·검산이 늘어놓는 '닿는 자리'가 어느 화면에서나 끌어서 닿는 자리와 같다.
@@ -105,7 +150,7 @@ export function tickText(a: Axis, k: number): string {
 
 /** 격자선과 눈금 글자(글자는 서로 28px 이상 떨어지게 몇 칸 걸러). 크기에만 달려 끄는 동안 바뀌지 않는다 */
 export function grid(p: CoordParams, box: Box): Grid {
-  const f = frame(box);
+  const f = frame(box, p);
   const make = (a: Axis, len: number, horiz: boolean) => {
     const [k0, k1] = iRange(a.lo, a.hi, a.st) as [number, number];
     const per = (a.st / (a.hi - a.lo)) * len;

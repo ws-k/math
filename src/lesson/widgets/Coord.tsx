@@ -12,7 +12,9 @@ import { HANDLE_HIT, Handle, handleAt } from '../Handle.tsx';
 import { LRich } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
 import {
+  AXIS_LABEL_GAP,
   addUser,
+  axisLabel,
   type Box,
   type CoordParams,
   type CoordState,
@@ -26,8 +28,10 @@ import {
   grade,
   grid,
   gridAt,
+  type Item,
   initial,
   keyMove,
+  MIN_BOX_H,
   moveUser,
   type PointObj,
   removeUser,
@@ -89,8 +93,8 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     const measure = () => {
       const w = Math.round(el.clientWidth);
       if (!w) return;
-      const maxH = Math.max(200, Math.round(window.innerHeight * 0.36));
-      const h = Math.min(maxH, Math.max(200, Math.round(w * 0.78)));
+      const maxH = Math.max(MIN_BOX_H, Math.round(window.innerHeight * 0.36));
+      const h = Math.min(maxH, Math.max(MIN_BOX_H, Math.round(w * 0.78)));
       setBox((b) => (b.w === w && b.h === h ? b : { w, h }));
     };
     measure();
@@ -107,11 +111,14 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
   /** 그릴 목록을 DOM 에 바로 적용(끄는 동안). React 가 다음에 그릴 값과 같은 값이다 */
   const apply = (d: Drawing) => {
     const m = els.current;
-    for (const it of d.items) {
+    for (const it of [...d.fills, ...d.items]) {
       const el = m.get(it.key);
       if (!el) continue;
-      if (it.t === 'path') el.setAttribute('d', it.d);
-      else if (it.t === 'line') {
+      if (it.t === 'path') {
+        el.setAttribute('d', it.d);
+        // 조각이 좁아지면 테두리를 가늘게(rect … thin) — 끄는 동안 바뀌는 유일한 class
+        el.setAttribute('class', it.cls);
+      } else if (it.t === 'line') {
         el.setAttribute('x1', String(it.x1));
         el.setAttribute('y1', String(it.y1));
         el.setAttribute('x2', String(it.x2));
@@ -136,8 +143,15 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       el.setAttribute('aria-valuetext', h.valueText);
     }
     for (const r of d.readouts) {
-      const el = m.get(`r:${r.key}`);
-      if (el) el.textContent = r.text;
+      if (r.parts)
+        r.parts.forEach((pt, i) => {
+          const el = m.get(`r:${r.key}:${i}`);
+          if (el) el.textContent = pt.text;
+        });
+      else {
+        const el = m.get(`r:${r.key}`);
+        if (el) el.textContent = r.text;
+      }
     }
   };
 
@@ -202,7 +216,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       judge.flush();
       const c = ctx.current;
       if (c?.kind === 'stroke') {
-        const f = frame(boxRef.current);
+        const f = frame(boxRef.current, p);
         live.current = { ...live.current, stroke: [toWorld(p, f, c.x, c.y)] };
         apply(draw(p, live.current, boxRef.current));
       }
@@ -216,7 +230,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       const y = Math.min(b.h, Math.max(0, c.y + dy));
       const s = live.current;
       if (c.kind === 'stroke') {
-        const f = frame(b);
+        const f = frame(b, p);
         live.current = { ...s, stroke: [...s.stroke, toWorld(p, f, x, y)] };
       } else if (c.key.startsWith('u')) {
         live.current = moveUser(p, s, Number(c.key.slice(1)), x, y, b);
@@ -249,7 +263,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
         return;
       }
       if (!tap) return;
-      const [wx, wy] = toWorld(p, frame(b), c.x, c.y);
+      const [wx, wy] = toWorld(p, frame(b, p), c.x, c.y);
       const g = gridAt(p, wx, wy);
       if (p.mode === 'line') {
         // 빈 곳을 누르면 가까운 손잡이가 그 칸으로 온다(끌기 대체)
@@ -359,7 +373,63 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
 
   const d = useMemo(() => draw(p, st, box), [p, st, box]);
   const g = useMemo(() => grid(p, box), [p, box]);
-  const f = frame(box);
+  const f = frame(box, p);
+  const xName = axisLabel(p.x);
+  const yName = axisLabel(p.y);
+  const looks = new Set(d.fills.flatMap((it) => (it.t === 'path' && it.look ? [it.look] : [])));
+
+  /** 그릴 목록 항목 하나(칠하기·조각·곡선·점·이름표 공용). 끄는 동안 apply 가 같은 key 로 DOM 을 고친다 */
+  const node = (it: Item) => {
+    if (it.t === 'path')
+      return (
+        <path
+          key={it.key}
+          ref={reg(it.key)}
+          d={it.d}
+          className={it.cls}
+          // 무늬 재질(흙·물결)은 이 그림만의 무늬를 가리킨다 — 화면에 좌표평면이 둘이어도 id 가 겹치지 않게
+          fill={it.look === 'soil' || it.look === 'water' ? `url(#${clip}-${it.look})` : undefined}
+        />
+      );
+    if (it.t === 'line')
+      return (
+        <line
+          key={it.key}
+          ref={reg(it.key)}
+          x1={it.x1}
+          y1={it.y1}
+          x2={it.x2}
+          y2={it.y2}
+          className={it.cls}
+          visibility={it.hidden ? 'hidden' : 'visible'}
+        />
+      );
+    if (it.t === 'dot')
+      return (
+        <circle
+          key={it.key}
+          ref={reg(it.key)}
+          cx={it.x}
+          cy={it.y}
+          r={5}
+          className={it.cls}
+          visibility={it.hidden ? 'hidden' : 'visible'}
+        />
+      );
+    return (
+      <text
+        key={it.key}
+        ref={reg(it.key)}
+        x={it.x}
+        y={it.y}
+        className={it.cls ?? 'pname'}
+        textAnchor={it.cls === 'tag' ? 'middle' : undefined}
+        visibility={it.hidden ? 'hidden' : 'visible'}
+      >
+        {it.text}
+      </text>
+    );
+  };
   const dragPts = p.objects.filter((o): o is PointObj => o.kind === 'point' && o.drag === 'x');
   // 숨긴 정답 곡선의 범례는 맞힌 뒤에
   const legend = p.objects.filter((o) => o.kind === 'curve' && o.label && !(o.hide && !st.solved));
@@ -382,7 +452,21 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
             <clipPath id={clip}>
               <rect x={f.l} y={f.t} width={f.r - f.l} height={f.b - f.t} />
             </clipPath>
+            {/* 넓은 영역의 재질 무늬: 흙(밭고랑 줄)·물(물결). 좁은 띠(길)·조각은 단색이라 무늬가 없다 */}
+            {looks.has('soil') && (
+              <pattern id={`${clip}-soil`} width="8" height="6" patternUnits="userSpaceOnUse">
+                <rect width="8" height="6" className="pat-soil" />
+                <line x1="0" y1="5" x2="8" y2="5" className="pat-soil-line" />
+              </pattern>
+            )}
+            {looks.has('water') && (
+              <pattern id={`${clip}-water`} width="12" height="8" patternUnits="userSpaceOnUse">
+                <rect width="12" height="8" className="pat-water" />
+                <path d="M0 5 q3 -2.5 6 0 t6 0" className="pat-water-line" />
+              </pattern>
+            )}
           </defs>
+          {d.fills.length > 0 && <g clipPath={`url(#${clip})`}>{d.fills.map(node)}</g>}
           <g className="grid">
             {g.xs.map((t) => (
               <line
@@ -422,50 +506,19 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
                   </text>
                 ),
             )}
+            {/* 축 끝 글자: 가로는 마지막 눈금 글자 오른쪽(frame 이 그 자리를 비워 둠), 세로는 그림 위 왼쪽 */}
+            {xName && (
+              <text x={f.r + AXIS_LABEL_GAP} y={f.b + 17} className="axname">
+                {xName}
+              </text>
+            )}
+            {yName && (
+              <text x={f.l - 6} y={f.t - 4} className="axname">
+                {yName}
+              </text>
+            )}
           </g>
-          <g clipPath={`url(#${clip})`}>
-            {d.items.map((it) => {
-              if (it.t === 'path')
-                return <path key={it.key} ref={reg(it.key)} d={it.d} className={it.cls} />;
-              if (it.t === 'line')
-                return (
-                  <line
-                    key={it.key}
-                    ref={reg(it.key)}
-                    x1={it.x1}
-                    y1={it.y1}
-                    x2={it.x2}
-                    y2={it.y2}
-                    className={it.cls}
-                    visibility={it.hidden ? 'hidden' : 'visible'}
-                  />
-                );
-              if (it.t === 'dot')
-                return (
-                  <circle
-                    key={it.key}
-                    ref={reg(it.key)}
-                    cx={it.x}
-                    cy={it.y}
-                    r={5}
-                    className={it.cls}
-                    visibility={it.hidden ? 'hidden' : 'visible'}
-                  />
-                );
-              return (
-                <text
-                  key={it.key}
-                  ref={reg(it.key)}
-                  x={it.x}
-                  y={it.y}
-                  className="pname"
-                  visibility={it.hidden ? 'hidden' : 'visible'}
-                >
-                  {it.text}
-                </text>
-              );
-            })}
-          </g>
+          <g clipPath={`url(#${clip})`}>{d.items.map(node)}</g>
         </svg>
         {d.handles.map((h) => (
           <Handle
@@ -501,9 +554,25 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
           {d.readouts.map((r) => (
             <div key={r.key} className="ro">
               <LRich inline src={r.label} />
-              <b className="num" ref={reg(`r:${r.key}`)}>
-                {r.text}
-              </b>
+              {r.parts ? (
+                // 작은 어림 ~ 큰 어림: 조각 색과 같은 색 글자로(초록 = 작은, 노랑 = 큰)
+                <b className="num">
+                  {r.parts.map((pt, i) => (
+                    <span
+                      // biome-ignore lint/suspicious/noArrayIndexKey: 조각 수가 고정(5개)이라 순번이 곧 자리
+                      key={i}
+                      ref={reg(`r:${r.key}:${i}`)}
+                      className={pt.cls || undefined}
+                    >
+                      {pt.text}
+                    </span>
+                  ))}
+                </b>
+              ) : (
+                <b className="num" ref={reg(`r:${r.key}`)}>
+                  {r.text}
+                </b>
+              )}
             </div>
           ))}
         </div>

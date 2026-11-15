@@ -41,7 +41,12 @@ const isNew = (g: Goal | undefined): g is NewGoal => g !== undefined && 'kind' i
 export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
   const at = '좌표 goal';
   if (p.mode !== 'explore') fail(at, 'explore 모드에서만(다른 모드는 task)');
-  const of = (v: unknown, w: string): ReadoutExpr => parseReadoutExpr(str(v, w), w, gx);
+  const of = (v: unknown, w: string): ReadoutExpr => {
+    const e = parseReadoutExpr(str(v, w), w, gx);
+    if (e.f === 'sums')
+      fail(w, '작은 어림 ~ 큰 어림은 값이 둘이라 목표로 못 씀(big·small·gap 중 하나로)');
+    return e;
+  };
   const { shape, common, o } = parseGoalShape<ReadoutExpr, GoalIs>(
     raw,
     at,

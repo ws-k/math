@@ -11,6 +11,7 @@ import { curveOf, dfAt } from './curve.ts';
 import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
 import { polyOf, rootCount } from './poly.ts';
+import { rectsOf, sumSym, sums } from './rects.ts';
 import { sliderQ, sliderValues } from './slider.ts';
 import type {
   CoordParams,
@@ -19,6 +20,7 @@ import type {
   KindDef,
   ParseCtx,
   ReadoutExpr,
+  ReadoutLine,
   ReadoutObj,
 } from './types.ts';
 
@@ -28,8 +30,61 @@ const XY_RE = /^([xy])\((\w+)\)$/;
 const VALUE_RE = /^value\((\w+)\)$/;
 const ROOTS_RE = /^roots\((\w+)\)$/;
 const MEET_RE = /^meet\((\w+),(\w+)\)$/;
+const RECTS_RE = /^(sums|big|small|gap)\((\w+)\)$/;
 
-const FORMS = 'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·슬라이더 식(b**2-4*a*c)';
+const FORMS =
+  'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·sums(R)·big(R)·small(R)·gap(R)·슬라이더 식(b**2-4*a*c)';
+
+// ---- 단위 ----
+
+const isArea = (e: ReadoutExpr) =>
+  e.f === 'sums' || e.f === 'big' || e.f === 'small' || e.f === 'gap';
+
+/**
+ * 읽는 값의 단위 — 축에서 저절로 정한다(읽는 값마다 적지 않아 어긋날 수 없다).
+ * 가로 좌표 → 가로 단위, 세로 좌표 → 세로 단위, 기울기 → 세로/가로, 넓이(조각 합) → 가로×세로(같으면 m²).
+ * 시간 × (km/시) = km 처럼 저절로 만든 글자가 어색하면 세로축의 areaUnit·slopeUnit 이 덮어쓴다.
+ * 슬라이더 값·식 값·개수는 단위가 없다. 정할 수 없으면(넓이인데 가로·세로 단위가 다르거나 한쪽만 있음) 오류 글자.
+ */
+export function unitOf(
+  p: Pick<CoordParams, 'x' | 'y'>,
+  e: ReadoutExpr,
+): string | { error: string } | undefined {
+  const { x, y } = p;
+  switch (e.f) {
+    case 'x':
+      return x.unit;
+    case 'y':
+      return y.unit;
+    case 'slope':
+    case 'deriv':
+      if (y.slopeUnit) return y.slopeUnit;
+      if (x.unit && y.unit) return `${y.unit}/${x.unit}`;
+      if (x.unit || y.unit)
+        return {
+          error: '가로·세로 중 한쪽만 단위가 있어 기울기 단위를 정할 수 없음 — y 의 slopeUnit 으로',
+        };
+      return undefined;
+    case 'sums':
+    case 'big':
+    case 'small':
+    case 'gap':
+      if (y.areaUnit) return y.areaUnit;
+      if (x.unit && y.unit && x.unit === y.unit) return `${x.unit}²`;
+      if (x.unit || y.unit)
+        return {
+          error: `가로(${x.unit ?? '단위 없음'})·세로(${y.unit ?? '단위 없음'}) 단위로 넓이 단위를 정할 수 없음 — y 의 areaUnit 으로 한 번 적으세요`,
+        };
+      return undefined;
+    default:
+      return undefined;
+  }
+}
+
+/** 보이는 자리수로 반올림하면 값이 달라지는가(정확한 분수 q 를 digits 자리로) — 달라지면 앞에 ≈ */
+const inexact = (q: Rational, digits: number) => (q[0] * 10n ** BigInt(digits)) % q[1] !== 0n;
+
+const withUnit = (t: string, u: string | undefined) => (u && t !== '—' ? `${t} ${u}` : t);
 
 /**
  * 실근 개수를 셀 곡선(읽기): 곡선의 슬라이더가 분수 칸이고(π 칸이 아님) 처음 값에서 x 의 다항식이어야 한다.
@@ -124,6 +179,12 @@ export function parseReadoutExpr(s: string, at: string, cx: ParseCtx): ReadoutEx
     const a = polyCurve(cx, m[1] as string, at).id;
     return { f: 'meet', a, b: polyCurve(cx, m[2] as string, at).id };
   }
+  m = t.match(RECTS_RE);
+  if (m) {
+    const id = m[2] as string;
+    if (!cx.rects.has(id)) fail(at, `앞에 없는 구분구적 조각 ${id}`);
+    return { f: m[1] as 'sums' | 'big' | 'small' | 'gap', rects: id };
+  }
   // 나머지는 슬라이더로 계산하는 식(판별식 등). x 를 쓰면 곡선이지 읽는 값이 아니다
   try {
     return {
@@ -187,6 +248,12 @@ export function readout(p: CoordParams, s: CoordState, e: ReadoutExpr): number {
       const v = readoutVal(p, s, e);
       return v.n;
     }
+    case 'sums':
+      return Number.NaN;
+    case 'big':
+    case 'small':
+    case 'gap':
+      return readoutVal(p, s, e).n;
   }
 }
 
@@ -219,6 +286,15 @@ export function readoutVal(p: CoordParams, s: CoordState, e: ReadoutExpr): Val {
       case 'meet': {
         const n = e.f === 'roots' ? rootsOf(p, s, e.curve) : rootsOf(p, s, e.a, e.b);
         return Number.isNaN(n) ? null : [BigInt(n), 1n];
+      }
+      case 'sums':
+        return null;
+      case 'big':
+      case 'small':
+      case 'gap': {
+        const v = sums(p, s, rectsOf(p, e.rects));
+        if (!v) return null;
+        return e.f === 'gap' ? sub(v.big, v.small) : v[e.f];
       }
     }
   };
@@ -260,6 +336,15 @@ export function readoutSym(p: CoordParams, e: ReadoutExpr): { expr: string; root
       return { expr: curveOf(p, e.curve).expr, roots: true };
     case 'meet':
       return { expr: `(${curveOf(p, e.a).expr})-(${curveOf(p, e.b).expr})`, roots: true };
+    case 'sums':
+      // 목표 형식 검사(goal.ts)가 막는다 — 값이 둘이라 견줄 수 없음
+      throw new Error('sums 는 목표로 못 씀');
+    case 'big':
+    case 'small':
+    case 'gap': {
+      const o = rectsOf(p, e.rects);
+      return { expr: sumSym(p, o, e.f, 'count' in o.n ? String(o.n.count) : o.n.slider) };
+    }
   }
 }
 
@@ -305,8 +390,46 @@ export function readoutMovers(
       curve(e.a);
       curve(e.b);
       break;
+    case 'sums':
+    case 'big':
+    case 'small':
+    case 'gap': {
+      const o = rectsOf(p, e.rects);
+      if ('slider' in o.n) sl.add(o.n.slider);
+      break;
+    }
   }
   return { points: [...pts], sliders: [...sl] };
+}
+
+/** 작은 어림 ~ 큰 어림 한 줄. 조각 수(5개)는 늘 같아 끄는 동안 글자만 바꿔 넣는다 */
+function sumsLine(
+  p: CoordParams,
+  s: CoordState,
+  o: ReadoutObj,
+  key: string,
+  u: string | undefined,
+): ReadoutLine {
+  const v = sums(p, s, rectsOf(p, (o.expr as { rects: string }).rects));
+  const parts = v
+    ? [
+        {
+          text: inexact(v.small, o.digits) || inexact(v.big, o.digits) ? '≈ ' : '',
+          cls: '',
+        },
+        { text: fmtNum(Number(v.small[0]) / Number(v.small[1]), o.digits), cls: 'lo' },
+        { text: ' ~ ', cls: '' },
+        { text: fmtNum(Number(v.big[0]) / Number(v.big[1]), o.digits), cls: 'hi' },
+        { text: u ? ` ${u}` : '', cls: '' },
+      ]
+    : [
+        { text: '', cls: '' },
+        { text: '—', cls: 'lo' },
+        { text: ' ~ ', cls: '' },
+        { text: '—', cls: 'hi' },
+        { text: '', cls: '' },
+      ];
+  return { key, label: o.label, text: parts.map((x) => x.text).join(''), parts };
 }
 
 export const readoutKind: KindDef<ReadoutObj> = {
@@ -315,6 +438,8 @@ export const readoutKind: KindDef<ReadoutObj> = {
     if (c.frac !== undefined && c.frac !== true) fail(`${at} frac`, 'true 만');
     const src = str(c.readout, `${at} readout`);
     const e = parseReadoutExpr(src, at, cx);
+    const u = unitOf(cx, e);
+    if (typeof u === 'object') fail(at, u.error);
     const count = e.f === 'roots' || e.f === 'meet';
     return {
       kind: 'readout',
@@ -327,11 +452,21 @@ export const readoutKind: KindDef<ReadoutObj> = {
     };
   },
   draw(o, k, { p, s, readouts }) {
+    const u = unitOf(p, o.expr) as string | undefined;
+    if (o.expr.f === 'sums') {
+      readouts.push(sumsLine(p, s, o, `r${k}`, u));
+      return;
+    }
     let text: string;
-    const v = o.frac ? readoutVal(p, s, o.expr) : null;
-    if (v?.q && Number.isFinite(v.n)) text = ratStr(v.q).replace('-', '−');
-    else text = fmtNum(v ? v.n : readout(p, s, o.expr), o.digits);
-    readouts.push({ key: `r${k}`, label: o.label, text });
+    const exact = o.frac || isArea(o.expr);
+    const v = exact ? readoutVal(p, s, o.expr) : null;
+    if (o.frac && v?.q && Number.isFinite(v.n)) text = ratStr(v.q).replace('-', '−');
+    else {
+      text = fmtNum(v ? v.n : readout(p, s, o.expr), o.digits);
+      // 조각 넓이 합은 정확한 분수를 반올림해 보인다 — 반올림이 값을 바꾸면 ≈ (285 가 정확한 값이라고 읽지 않게)
+      if (isArea(o.expr) && v?.q && inexact(v.q, o.digits)) text = `≈ ${text}`;
+    }
+    readouts.push({ key: `r${k}`, label: o.label, text: withUnit(text, u) });
   },
   derivOf(p, o) {
     if (o.expr.f === 'deriv') return o.expr.curve;

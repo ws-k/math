@@ -17,8 +17,20 @@ const LABEL_ASCENT = 10;
  * 끄는 동안 항목이 생기거나 사라지면 직접 적용이 못 따라가므로, 항목은 늘 같은 key 로 두고 hidden 으로 숨긴다.
  */
 export function draw(p: CoordParams, s: CoordState, box: Box): Drawing {
-  const f = frame(box);
-  const cx: DrawCtx = { p, s, f, items: [], handles: [], readouts: [], pins: [], spots: [] };
+  const f = frame(box, p);
+  const cx: DrawCtx = {
+    p,
+    s,
+    f,
+    fills: [],
+    shapes: [],
+    items: [],
+    tags: [],
+    handles: [],
+    readouts: [],
+    pins: [],
+    spots: [],
+  };
   for (const [k, o] of p.objects.entries()) kindOf(o).draw?.(o, k, cx);
   drawTask(cx);
   // 이름표: 겹치지 않고 그림(잘라 내는 영역) 안에 드는 자리. 아무것도 겹치지 않으면 예전처럼 점의 오른쪽 위
@@ -34,5 +46,11 @@ export function draw(p: CoordParams, s: CoordState, box: Box): Drawing {
     q.it.x = r1(r.l);
     q.it.y = r1(r.t + LABEL_ASCENT);
   });
-  return { items: cx.items, handles: cx.handles, readouts: cx.readouts };
+  // 층: 칠하기(격자 아래, 따로) · 조각 · 곡선·점·직선 · 영역 이름표 — 객체 순서와 상관없이 곡선이 조각에, 이름표가 조각에 가리지 않게
+  return {
+    fills: cx.fills,
+    items: [...cx.shapes, ...cx.items, ...cx.tags],
+    handles: cx.handles,
+    readouts: cx.readouts,
+  };
 }

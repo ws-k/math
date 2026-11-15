@@ -7,14 +7,14 @@ import { goalPoints, parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
 import { parseSliders } from './slider.ts';
 import { parseTask } from './task.ts';
-import type { CoordObj, CoordParams, CurveObj, ParseCtx, PointObj } from './types.ts';
+import type { CoordObj, CoordParams, CurveObj, ParseCtx, PointObj, RectsObj } from './types.ts';
 
 export function parseCoord(raw: unknown): CoordParams {
   const o = obj(
     raw,
     '좌표',
     ['mode', 'x', 'y', 'objects'],
-    ['sliders', 'task', 'goal', 'intro', 'done', 'start'],
+    ['sliders', 'task', 'goal', 'intro', 'done', 'start', 'equal'],
   );
   const mode = oneOf(o.mode, '좌표 mode', [
     'explore',
@@ -24,7 +24,9 @@ export function parseCoord(raw: unknown): CoordParams {
     'sketch',
   ] as const);
   const x = axis(o.x, '좌표 x');
-  const y = axis(o.y, '좌표 y');
+  const y = axis(o.y, '좌표 y', true);
+  if (o.equal !== undefined && o.equal !== true) fail('좌표 equal', 'true 만');
+  const equal = o.equal === true;
   if (mode !== 'explore' && mode !== 'sketch') {
     const cx = (x.hi - x.lo) / x.st;
     const cy = (y.hi - y.lo) / y.st;
@@ -42,6 +44,7 @@ export function parseCoord(raw: unknown): CoordParams {
   const ids = new Set<string>();
   const curves = new Map<string, CurveObj>();
   const points = new Map<string, PointObj>();
+  const rects = new Map<string, RectsObj>();
   const named = (id: unknown, at: string) => {
     const s = str(id, at);
     if (!ID.test(s)) fail(at, `이름은 영문으로 시작하는 6자 이하 (${s})`);
@@ -62,7 +65,7 @@ export function parseCoord(raw: unknown): CoordParams {
     if (p.hide && !hidden) fail(at, `숨긴 점 ${p.id} 은 목표만 가리킬 수 있음`);
     return p;
   };
-  const base = { x, y, sliders, vars, env0, curves, points, named };
+  const base = { x, y, equal, sliders, vars, env0, curves, points, rects, named };
   const ctx: ParseCtx = { ...base, curveRef: curveRef(false), pointRef: pointRef(false) };
   const goalCtx: ParseCtx = { ...base, curveRef: curveRef(true), pointRef: pointRef(true) };
   // 열쇠 이름으로 종류를 알아본다(표에 적힌 순서대로 — 앞 종류가 먼저)
@@ -78,6 +81,7 @@ export function parseCoord(raw: unknown): CoordParams {
     mode,
     x,
     y,
+    ...(equal ? { equal: true as const } : {}),
     objects,
     sliders,
     ...(o.intro !== undefined ? { intro: str(o.intro, '좌표 intro') } : {}),

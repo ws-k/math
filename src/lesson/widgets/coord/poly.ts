@@ -126,6 +126,17 @@ function changes(signs: number[]): number {
   return n;
 }
 
+/** 스투름 열(p, p′, 나머지의 부호를 바꾼 것…). p 는 상수가 아닌 다항식 */
+function sturm(p: Poly): Poly[] {
+  const seq: Poly[] = [shrink(p), shrink(deriv(p))];
+  for (;;) {
+    const r = rem(seq[seq.length - 2] as Poly, seq[seq.length - 1] as Poly);
+    if (!r.length) break;
+    seq.push(shrink(r.map(qneg)));
+  }
+  return seq;
+}
+
 /**
  * 서로 다른 실근의 개수(스투름 정리: −∞ 와 +∞ 에서 스투름 열의 부호 변화 수의 차).
  * 중근은 하나로 센다. 0 인 다항식(모든 x 가 근)이면 null.
@@ -134,14 +145,42 @@ export function rootCount(p0: Poly): number | null {
   const p = trim(p0);
   if (!p.length) return null;
   if (p.length === 1) return 0;
-  const seq: Poly[] = [shrink(p), shrink(deriv(p))];
-  for (;;) {
-    const r = rem(seq[seq.length - 2] as Poly, seq[seq.length - 1] as Poly);
-    if (!r.length) break;
-    seq.push(shrink(r.map(qneg)));
-  }
+  const seq = sturm(p);
   const lead = (q: Poly) => sign(q[q.length - 1] as Rational);
   const atPos = seq.map(lead);
   const atNeg = seq.map((q) => lead(q) * ((q.length - 1) % 2 === 0 ? 1 : -1));
   return changes(atNeg) - changes(atPos);
+}
+
+/** p(x) (호너) */
+function at(p: Poly, x: Rational): Rational {
+  let v = Z;
+  for (let i = p.length - 1; i >= 0; i--) v = qadd(qmul(v, x), p[i] as Rational);
+  return v;
+}
+
+/** p ÷ (x − r) 의 몫(r 이 근일 때 — 나머지 0). 조립제법 */
+function deflate(p: Poly, r: Rational): Poly {
+  const out: Poly = new Array(p.length - 1);
+  let c = Z;
+  for (let i = p.length - 1; i >= 1; i--) {
+    c = qadd(qmul(c, r), p[i] as Rational);
+    out[i - 1] = c;
+  }
+  return trim(out);
+}
+
+/**
+ * 열린 구간 (a, b) 안의 서로 다른 실근 개수(a < b). 0 인 다항식이면 null.
+ * 끝점이 근이면 (x−a)·(x−b) 로 먼저 나눠 낸다 — 스투름 정리는 끝점에서 다항식이 0 이 아니어야 해서.
+ * 구분구적 곡선의 '구간에서 계속 오르거나 내리는가'(도함수가 구간 안에서 0 이 되지 않는가)를 본다.
+ */
+export function rootsBetween(p0: Poly, a: Rational, b: Rational): number | null {
+  let p = trim(p0);
+  if (!p.length) return null;
+  for (const e of [a, b]) while (p.length > 1 && sign(at(p, e)) === 0) p = deflate(p, e);
+  if (p.length === 1) return 0;
+  const seq = sturm(p);
+  const v = (x: Rational) => changes(seq.map((q) => sign(at(q, x))));
+  return v(a) - v(b);
 }

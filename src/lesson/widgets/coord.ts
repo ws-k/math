@@ -1,13 +1,14 @@
 // 좌표평면 부품의 입구. 화면(Coord.tsx)·검산(checks)·채점(grade.ts)·테스트는 이 파일만 가져온다.
 // 실제 코드는 coord/ 폴더에 객체 종류별로 나뉘어 있다 — 그림 객체가 늘어날 때 종류 하나가 파일 하나가 되게.
 //   types(타입) · common(형식 검사 도우미) · frame(px 변환·눈금) ← 아래층
-//   curve · point · line(할선·접선) · readout ← 객체 종류마다 형식 검사·그리기·검산 몫
+//   curve · point · line(할선·접선) · readout · fill(칠하기) · rects(구분구적) ← 객체 종류마다 형식 검사·그리기·검산 몫
 //   kinds(종류 표) · task(과제) · goal(목표) · model(상태·손 조작) · parse · draw · checks ← 나눠 주는 곳
 //   slider(슬라이더) · poly(다항식·실근 개수) ← 목표가 값을 분수로 정확히 견주려고 쓰는 도우미
 //
 // 매개변수는 "이름 붙은 객체 + 참조" 목록이다:
 //   {id:'f', curve:'x**2'} · {id:'P', point:{on:'f', x:1}} · {secant:['P','Q']} ·
-//   {tangent:{on:'f', at:'P'}} · {readout:'slope(P,Q)', label:'…'}
+//   {tangent:{on:'f', at:'P'}} · {readout:'slope(P,Q)', label:'…'} ·
+//   {fill:{top:'f', x:[0,30]}, look:'soil', name:'밭'} · {id:'R', rects:{of:'f', x:[0,30], n:'n'}}
 import { compareAnswer } from '../../lib/answer.ts';
 import { parseSym } from '../sym.ts';
 import { coordChecks } from './coord/checks.ts';
@@ -23,10 +24,13 @@ export { MAX_CELLS, MAX_SNAPS } from './coord/common.ts';
 export { dfAt, fAt } from './coord/curve.ts';
 export { draw } from './coord/draw.ts';
 export {
+  AXIS_LABEL_GAP,
+  axisLabel,
   fmtNum,
   frame,
   grid,
   MAX_GOAL_SNAPS,
+  MIN_BOX_H,
   MIN_SNAP_PX,
   NARROW_BOX_W,
   snapMult,
@@ -47,8 +51,9 @@ export {
 } from './coord/model.ts';
 export { parseCoord } from './coord/parse.ts';
 export { pointXY } from './coord/point.ts';
-export { polyOf, rootCount } from './coord/poly.ts';
-export { readout, readoutVal } from './coord/readout.ts';
+export { polyOf, rootCount, rootsBetween } from './coord/poly.ts';
+export { readout, readoutVal, unitOf } from './coord/readout.ts';
+export { MIN_RECT_PX, sumsAt } from './coord/rects.ts';
 export { sliderSnap } from './coord/slider.ts';
 export { grade, lineTarget, userSlope } from './coord/task.ts';
 export type {
@@ -59,17 +64,22 @@ export type {
   CoordState,
   CurveObj,
   Drawing,
+  Edge,
+  FillObj,
   Frame,
   Goal,
   GoalIs,
   Grid,
   HandleItem,
   Item,
+  Look,
   Mode,
   NewGoal,
   PointObj,
   ReadoutExpr,
+  ReadoutLine,
   ReadoutObj,
+  RectsObj,
   SecantObj,
   Slider,
   TangentObj,

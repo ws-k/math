@@ -26,14 +26,28 @@ export function numExpr(v: unknown, at: string): { src: string; n: number } {
   return { src, n };
 }
 
-export function axis(v: unknown, at: string): Axis {
-  const o = obj(v, at, ['min', 'max', 'step']);
+/** 축 끝 글자·단위 글자: 짧게(가장 좁은 화면에서 축 끝 자리를 넘지 않게) */
+const AXIS_TEXT = 8;
+
+export function axis(v: unknown, at: string, vertical = false): Axis {
+  const o = obj(
+    v,
+    at,
+    ['min', 'max', 'step'],
+    ['name', 'unit', ...(vertical ? ['areaUnit', 'slopeUnit'] : [])],
+  );
   const min = numExpr(o.min, `${at} min`);
   const max = numExpr(o.max, `${at} max`);
   const step = numExpr(o.step, `${at} step`);
   if (!(max.n > min.n)) fail(at, 'max 가 min 보다 커야 함');
   if (!(step.n > 0)) fail(`${at} step`, '0 보다 커야 함');
   if ((max.n - min.n) / step.n > 40) fail(at, '칸이 너무 많음(40칸 이하)');
+  const text = (k: string) => {
+    if (o[k] === undefined) return {};
+    const t = str(o[k], `${at} ${k}`).trim();
+    if (!t || [...t].length > AXIS_TEXT) fail(`${at} ${k}`, `1~${AXIS_TEXT}자`);
+    return { [k]: t };
+  };
   return {
     min: min.src,
     max: max.src,
@@ -42,6 +56,10 @@ export function axis(v: unknown, at: string): Axis {
     hi: max.n,
     st: step.n,
     exact: exactOf(step.src),
+    ...text('name'),
+    ...text('unit'),
+    ...text('areaUnit'),
+    ...text('slopeUnit'),
   };
 }
 

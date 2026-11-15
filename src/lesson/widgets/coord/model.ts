@@ -43,7 +43,7 @@ export function dragPoint(
   box: Box,
 ): CoordState {
   const o = pointOf(p, id);
-  const f = frame(box);
+  const f = frame(box, p);
   const [wx, wy] = toWorld(p, f, px, py);
   if (o.on) {
     const pxPerStep = (o.snapN / (p.x.hi - p.x.lo)) * (f.r - f.l);
@@ -124,7 +124,7 @@ export function moveUser(
   py: number,
   box: Box,
 ) {
-  const [wx, wy] = toWorld(p, frame(box), px, py);
+  const [wx, wy] = toWorld(p, frame(box, p), px, py);
   const g = gridAt(p, wx, wy);
   // 다른 점 위로 옮기면 겹치므로 그 자리는 받지 않는다
   if (s.user.some((u, k) => k !== n && u.i === g.i && u.j === g.j)) return s;

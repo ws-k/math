@@ -21,6 +21,13 @@ export interface Axis {
   st: number;
   /** 칸 간격이 유리수면 분수, π 가 든 간격이면 null */
   exact: Rational | null;
+  /** 축 이름(축 끝 글자 '시간(분)' 의 '시간'). 눈금 숫자는 세계 좌표 그대로라 실제 값을 적으려면 좌표를 실제 단위로 둔다 */
+  name?: string;
+  /** 단위(m·분·km/시). 읽는 값의 단위는 여기서 저절로 정해진다(readout.ts unitOf) — 읽는 값마다 적지 않아 어긋날 수 없다 */
+  unit?: string;
+  /** 세로축만: 넓이(가로×세로)·기울기(세로/가로) 단위 덮어쓰기. 시간×(km/시)=km 처럼 저절로 만든 단위가 어색할 때 한 번 */
+  areaUnit?: string;
+  slopeUnit?: string;
 }
 
 /** 채점 목표값: 앱이 쓰는 값(value)과 그 값을 문제 조건으로 계산하는 sympy 식(check) */
@@ -68,6 +75,10 @@ export interface TangentObj {
   at: string;
 }
 export type ReadoutExpr =
+  /** 구분구적 조각의 작은 어림 ~ 큰 어림(화면 한 줄). 목표에는 못 씀(값이 둘) */
+  | { f: 'sums'; rects: string }
+  /** 큰 어림·작은 어림·두 어림의 차이(정확한 분수) */
+  | { f: 'big' | 'small' | 'gap'; rects: string }
   | { f: 'slope'; a: string; b: string }
   | { f: 'deriv'; curve: string; at: string }
   | { f: 'x' | 'y'; at: string }
@@ -87,7 +98,54 @@ export interface ReadoutObj {
   /** 유리수면 분수로 보인다(1/2 — 글이 분수로 말하는 값을 0.5 로 보이지 않게). 무리수면 digits 자리 소수 */
   frac?: true;
 }
-export type CoordObj = CurveObj | PointObj | SecantObj | TangentObj | ReadoutObj;
+/** 칠하기의 위·아래 경계: 곡선 또는 수평선 y = 값 */
+export type Edge = { curve: string } | { y: string; n: number };
+/** 칠하기 재질. 무늬(soil·water)는 넓은 영역에만 — 좁은 띠(길)·조각은 단색이어야 무늬가 잡음이 되지 않는다 */
+export type Look = 'plain' | 'soil' | 'water' | 'road';
+/** 칠하기 {fill:{top, bottom?, x:[a,b]}, look?, name?, nameAt?, hide?}: 위 경계와 아래 경계(기본 가로축) 사이 */
+export interface FillObj {
+  kind: 'fill';
+  top: Edge;
+  bottom: Edge;
+  /** 가로 구간(원문·수) */
+  from: string;
+  to: string;
+  lo: number;
+  hi: number;
+  look: Look;
+  /** 그림 안 이름표(밭·강·길) */
+  name?: string;
+  /** 이름표 자리(세계 좌표). 없으면 칠한 영역의 무게중심 */
+  nameAt?: [number, number];
+  /** 맞힌 뒤 칠하기: 목표·과제를 이루기 전에는 그리지 않는다 */
+  hide?: true;
+}
+/**
+ * 구분구적 직사각형 {id, rects:{of, x:[a,b], n}}: [a,b] 를 폭이 같은 n 조각으로 나눠 큰 어림·작은 어림을 함께 그린다.
+ * 곡선은 구간에서 계속 오르거나 계속 내리는 다항식만 — 그래야 조각마다 양 끝 높이 중 큰 쪽이 그 조각의 가장 높은 곳이라
+ * '큰 어림 ≥ 넓이 ≥ 작은 어림'이 늘 맞는다.
+ */
+export interface RectsObj {
+  kind: 'rects';
+  id: string;
+  of: string;
+  from: string;
+  to: string;
+  a: Rational;
+  b: Rational;
+  /** 조각 수: 슬라이더 이름 또는 고정 수 */
+  n: { slider: string } | { count: number };
+  /** 구간에서 오르는 곡선인가(오르면 큰 어림 = 오른쪽 끝 높이) */
+  rising: boolean;
+}
+export type CoordObj =
+  | CurveObj
+  | PointObj
+  | SecantObj
+  | TangentObj
+  | ReadoutObj
+  | FillObj
+  | RectsObj;
 
 export interface Slider {
   id: string;
@@ -144,6 +202,8 @@ export interface CoordParams {
   mode: Mode;
   x: Axis;
   y: Axis;
+  /** 축척 같게: 가로·세로 한 칸의 화면 길이를 같게(지도·밭처럼 모양이 곧 정보일 때). '한 칸 = 10 m' 같은 말은 이때만 */
+  equal?: true;
   objects: CoordObj[];
   sliders: Slider[];
   task?: Task;
@@ -196,7 +256,7 @@ export interface Verdict {
 // ---- 그릴 목록 ----
 
 export type Item =
-  | { t: 'path'; key: string; d: string; cls: string }
+  | { t: 'path'; key: string; d: string; cls: string; look?: Look }
   | {
       t: 'line';
       key: string;
@@ -208,7 +268,16 @@ export type Item =
       hidden: boolean;
     }
   | { t: 'dot'; key: string; x: number; y: number; cls: string; hidden: boolean }
-  | { t: 'label'; key: string; x: number; y: number; text: string; hidden: boolean };
+  | {
+      t: 'label';
+      key: string;
+      x: number;
+      y: number;
+      text: string;
+      hidden: boolean;
+      /** 없으면 점 이름(pname). 'tag' 는 칠한 영역의 이름표(가운데 맞춤) */
+      cls?: string;
+    };
 
 export interface HandleItem {
   key: string;
@@ -221,10 +290,20 @@ export interface HandleItem {
   max: number;
 }
 
+/** 읽는 값 한 줄. parts 가 있으면 조각마다 색을 달리 그린다(작은 어림 ~ 큰 어림) — text 는 그 조각을 이은 것 */
+export interface ReadoutLine {
+  key: string;
+  label: string;
+  text: string;
+  parts?: { text: string; cls: string }[];
+}
+
 export interface Drawing {
+  /** 격자 아래에 깔리는 칠하기(밭·강·길) — 격자선이 그 위로 보여 칸을 셀 수 있게 */
+  fills: Item[];
   items: Item[];
   handles: HandleItem[];
-  readouts: { key: string; label: string; text: string }[];
+  readouts: ReadoutLine[];
 }
 
 // ---- 눈금 ----
@@ -249,6 +328,10 @@ export interface ParseCtx {
   env0: Record<string, number>;
   curves: Map<string, CurveObj>;
   points: Map<string, PointObj>;
+  /** 구분구적 조각(읽는 값 sums·big·small·gap 이 가리킨다) */
+  rects: Map<string, RectsObj>;
+  /** 축척 같게(조각 폭 상한을 셀 때 그림 영역이 달라진다) */
+  equal: boolean;
   /** 새 이름을 검사하고 등록한다(중복이면 형식 오류) */
   named(id: unknown, at: string): string;
   /**
@@ -264,7 +347,13 @@ export interface DrawCtx {
   p: CoordParams;
   s: CoordState;
   f: Frame;
+  /** 격자 아래 칠하기 */
+  fills: Item[];
+  /** 격자 위, 곡선·점 아래(구분구적 조각 — 곡선이 조각에 가리지 않게) */
+  shapes: Item[];
   items: Item[];
+  /** 맨 위 이름표(칠한 영역 이름 — 조각·곡선에 가리지 않게) */
+  tags: Item[];
   handles: HandleItem[];
   readouts: Drawing['readouts'];
   /** 자리를 나중에 고를 점 이름표(점 px 자리와 함께) — 다른 이름표·점과 겹치지 않게 draw 가 한꺼번에 놓는다 */

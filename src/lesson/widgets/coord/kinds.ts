@@ -1,9 +1,11 @@
 // 객체 종류 목록 — 나눠 주는 곳(parse·draw·checks·texts)이 보는 단 하나의 표.
 // 종류를 더할 때는 종류 파일을 만들고 여기에 한 줄을 보탠다. CoordObj 에 있는 종류가 빠지면 타입 오류가 난다.
 import { curveKind } from './curve.ts';
+import { fillKind } from './fill.ts';
 import { secantKind, tangentKind } from './line.ts';
 import { pointKind } from './point.ts';
 import { readoutKind } from './readout.ts';
+import { rectsKind } from './rects.ts';
 import type { CoordObj, KindDef } from './types.ts';
 
 /**
@@ -16,6 +18,8 @@ export const KINDS: { [K in CoordObj['kind']]: KindDef<Extract<CoordObj, { kind:
   secant: secantKind,
   tangent: tangentKind,
   readout: readoutKind,
+  fill: fillKind,
+  rects: rectsKind,
 };
 
 /** 객체의 종류 정의. 종류별 정의를 공통 모양으로 다루려고 한 번 넓혀 준다(KindDef 는 메서드 꼴이라 안전) */
