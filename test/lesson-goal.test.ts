@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { GOAL_HINT_AFTER, goalLine, goalRelease, goalStart, sameVal } from '../src/lesson/goal.ts';
+import { goalHits, goalNeed, initial, parseCoord } from '../src/lesson/widgets/coord.ts';
 
 test('여러 곳 가 보기: 닿은 곳을 모아 다 모이면 끝, 같은 곳을 두 번 세지 않음', () => {
   let g = goalStart();
@@ -47,10 +48,24 @@ test('진행 표시는 목표가 여럿일 때만 "3곳 중 2곳"', () => {
 });
 
 test('목표에 닿지 않은 자리에서는 가까워도 같은 글(가까워짐 신호 없음)', () => {
+  // 실제 부품 판정으로: 중근이 되는 c=4 바로 옆(c=3)과 먼 곳(c=−2)에 놓은 뒤의 글이 같아야 한다
+  const p = parseCoord({
+    mode: 'explore',
+    x: { min: -1, max: 5, step: 1 },
+    y: { min: -6, max: 10, step: 1 },
+    sliders: [{ id: 'c', min: -2, max: 7, step: 1, value: 0, label: '$c$' }],
+    objects: [{ id: 'f', curve: 'x**2-4*x+c' }],
+    goal: { value: { of: 'roots(f)', is: 1 }, hint: '힌트' },
+  });
+  const at = (c: number) => ({ ...initial(p), vars: { c } });
   const texts = { intro: '처음', hint: '힌트' };
-  const far = goalRelease(goalStart(), [], 1);
-  const near = goalRelease(goalStart(), [], 1);
-  assert.deepEqual(goalLine(far, 1, texts), goalLine(near, 1, texts));
+  const line = (c: number) =>
+    goalLine(goalRelease(goalStart(), goalHits(p, at(c)), goalNeed(p)), goalNeed(p), texts);
+  assert.deepEqual(goalHits(p, at(3)), []);
+  assert.deepEqual(line(3), line(-2));
+  assert.deepEqual(line(3), { text: '처음', cls: '', progress: null });
+  // 닿은 자리(c=4)만 글이 바뀐다
+  assert.equal(line(4).cls, 'ok');
 });
 
 test('sameVal: 둘 다 분수면 정확히, 아니면 상대오차 1e-9, 허용 오차가 있으면 그 안', () => {
