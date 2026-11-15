@@ -48,7 +48,18 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
     }
     return n;
   };
-  const drag = useWidgetDrag(root, s, draw, commit);
+  const base = useWidgetDrag(root, s, draw, commit);
+  // 끌기 시작 때 기다리던 키·버튼 판정을 지금 끝낸다(좌표평면과 같은 규칙 — 끄는 도중 타이머가 터지지 않게)
+  const drag = (move: Parameters<typeof base>[0]) => {
+    const h = base(move);
+    return {
+      ...h,
+      onStart() {
+        judge.flush();
+        h.onStart();
+      },
+    };
+  };
   const piece = useRef<SVGPolygonElement>(null);
   useSvgDrag(
     piece,

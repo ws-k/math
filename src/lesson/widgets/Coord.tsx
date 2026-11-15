@@ -64,9 +64,12 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
   const clip = useId();
   /** 끄는 동안의 상태(화면에 직접 적용한 것). 손을 떼면 setSt 로 넘긴다 */
   const live = useRef(st);
-  live.current = st;
   const els = useRef(new Map<string, Element>());
   const ctx = useRef<Ctx | null>(null);
+  /** 슬라이더를 손으로 끄는 중(pointerdown ~ 손 뗌) */
+  const sliding = useRef(false);
+  // 끄는 도중에 다른 까닭(목표 판정 글 등)으로 다시 그려져도 끄는 중 상태를 처음 상태로 되돌리지 않는다
+  if (!ctx.current && !sliding.current) live.current = st;
   const boxRef = useRef(box);
   boxRef.current = box;
   // 목표를 이루면 숨긴 정답(곡선·목표 점)을 그린다. 키 판정은 타이머에서 오므로 최신 상태(live)에 붙인다
@@ -159,7 +162,8 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     live.current = n;
     setSt(n);
     if (p.mode === 'explore' && p.goal) {
-      if (via === 'key') judge.later(() => goalHits(p, live.current));
+      // 미룬 판정은 이 키가 만든 자리(n)를 본다 — 판정 전에 끌기가 시작돼도 끄는 중 자리를 보지 않게
+      if (via === 'key') judge.later(() => goalHits(p, n));
       else judge.release(goalHits(p, n));
     }
   };
@@ -192,6 +196,9 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     // 빈 칸 누르기(탭)로 시작한 터치는 스크롤로 남긴다 — 그래프 위에서도 페이지를 내릴 수 있게
     holdTouch: () => ctx.current?.kind !== 'tap',
     onStart() {
+      // 키·버튼으로 옮기고 0.6초가 안 돼 끌기 시작하면, 기다리던 판정을 끌기 전 자리로 지금 끝낸다
+      // (타이머가 끄는 도중에 터지면 판정 글이 바뀌며 다시 그려진다 — 끄는 동안 렌더 0회 규칙)
+      judge.flush();
       const c = ctx.current;
       if (c?.kind === 'stroke') {
         const f = frame(boxRef.current);
@@ -300,8 +307,18 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       const key = () => {
         viaKey = true;
       };
+      const up = () => {
+        sliding.current = false;
+        window.removeEventListener('pointerup', up);
+        window.removeEventListener('pointercancel', up);
+      };
       const ptr = () => {
         viaKey = false;
+        // 손으로 끌기 시작: 기다리던 키 판정을 지금 끝내고(끄는 도중 터지지 않게), 손 뗄 때까지 끄는 중
+        judge.flush();
+        sliding.current = true;
+        window.addEventListener('pointerup', up);
+        window.addEventListener('pointercancel', up);
       };
       const input = () => {
         // 제외 값(밑 a=1 등)은 움직이던 쪽으로 건너뛴다
@@ -315,7 +332,10 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
         const out = els.current.get(`s:${s.id}`);
         if (out) out.textContent = el.value;
       };
-      const change = () => settleRef.current(live.current, viaKey ? 'key' : 'hand');
+      const change = () => {
+        sliding.current = false;
+        settleRef.current(live.current, viaKey ? 'key' : 'hand');
+      };
       const blur = () => judge.flush();
       el.addEventListener('keydown', key);
       el.addEventListener('pointerdown', ptr);
@@ -328,6 +348,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
         el.removeEventListener('input', input);
         el.removeEventListener('change', change);
         el.removeEventListener('blur', blur);
+        up();
       });
     }
     return () => {

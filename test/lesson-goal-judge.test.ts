@@ -101,3 +101,23 @@ test('완료 알림은 한 번만, 취소하면 미룬 판정은 사라짐', () 
     mock.timers.reset();
   }
 });
+
+test('키로 옮긴 뒤 0.6초 안에 끌기 시작: 시작 때 flush 로 키 자리를 판정하고, 끄는 동안 타이머가 터지지 않음', () => {
+  // 좌표평면·도형판은 끌기 시작(onStart)과 슬라이더 pointerdown 에서 flush 한다. 키가 만든 자리는 그 순간의
+  // 자리(n)로 잡혀 있어, 끄는 중 자리를 판정하지 않는다
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    const { j, judged } = setup();
+    j.later(() => ['0']);
+    mock.timers.tick(300);
+    j.flush(); // 끌기 시작
+    assert.equal(judged.length, 1);
+    assert.equal(judged[0]?.done, true);
+    mock.timers.tick(GOAL_KEY_IDLE_MS * 2); // 끄는 동안
+    assert.equal(judged.length, 1);
+    j.release([]); // 손 뗌
+    assert.equal(judged.length, 2);
+  } finally {
+    mock.timers.reset();
+  }
+});
