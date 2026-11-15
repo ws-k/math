@@ -25,6 +25,8 @@ export const Handle = forwardRef<
     /** 화면에 읽어 줄 값(예: "x = 1.5") */
     valueText: string;
     onKey(e: KeyboardEvent): void;
+    /** 포커스가 떠날 때(키로 옮긴 자리의 목표 판정을 기다리지 않고 바로) */
+    onBlur?(): void;
   }
 >(function Handle(p, ref) {
   return (
@@ -39,6 +41,7 @@ export const Handle = forwardRef<
       aria-valuenow={p.value}
       aria-valuetext={p.valueText}
       onKeyDown={p.onKey}
+      onBlur={p.onBlur}
       style={{ transform: handleAt(p.x, p.y), touchAction: 'none' }}
     >
       <i className="dot" />

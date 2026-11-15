@@ -17,6 +17,8 @@ export interface DragHandleProps {
   valueText: string;
   /** 방향키 등. 다룬 키면 true(페이지 스크롤을 막는다) */
   onKey(key: string): boolean;
+  /** 포커스가 떠날 때 */
+  onBlur?(): void;
   onStart?(): void;
   /** 누른 곳에서 움직인 거리(SVG 좌표) */
   onMove(dx: number, dy: number): void;
@@ -41,6 +43,7 @@ export function DragHandle(p: DragHandleProps) {
         max={p.max}
         valueText={p.valueText}
         onKey={key}
+        onBlur={p.onBlur}
       />
     </g>
   );

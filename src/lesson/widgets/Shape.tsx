@@ -2,10 +2,11 @@
 // 꼭짓점·잘라 낸 조각을 끄는 동안은 SVG 직접 고치기, 놓을 때 한 번 상태를 바꾼다.
 // 탭 대체: 고른 점을 화살표 버튼으로 한 칸씩, 잘라 옮기기는 '조각 옮기기' 버튼.
 // 목표(goal)는 놓을 때(commit)만 판정한다 — 끄는 도중 지나간 자리는 세지 않는다(원칙 P3).
+// 방향키·화살표 버튼은 누를 때마다가 아니라 멈추거나 포커스가 떠날 때 한 번(useGoal — 연타로 더듬지 않게).
 import { useRef, useState } from 'react';
-import { type GoalProgress, goalLine, goalRelease, goalStart } from '../goal.ts';
 import { LRich } from '../ui.tsx';
 import { DragHandle } from './DragHandle.tsx';
+import { GoalLine } from './GoalLine.tsx';
 import type { WidgetProps } from './index.tsx';
 import { Marks } from './Marks.tsx';
 import {
@@ -21,6 +22,7 @@ import {
   shKey,
   W,
 } from './shape.ts';
+import { useGoal } from './useGoal.ts';
 import { useSvgDrag, useWidgetDrag } from './useWidgetDrag.ts';
 
 export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
@@ -30,19 +32,13 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
   const done = useRef(false);
   const root = useRef<HTMLDivElement>(null);
   const draw = (x: ShState) => shDraw(p, x);
-  const [prog, setProg] = useState<GoalProgress>(goalStart);
-  const progRef = useRef(prog);
   const need = shGoalNeed(p);
-  const commit = (n: ShState) => {
+  const { prog, judge } = useGoal(need, onDone);
+  const commit = (n: ShState, via: 'hand' | 'key' = 'hand') => {
     setS(n);
     if (p.goal) {
-      const g = goalRelease(progRef.current, shGoalHits(p, n), need);
-      progRef.current = g;
-      setProg(g);
-      if (g.done && !done.current) {
-        done.current = true;
-        onDone();
-      }
+      if (via === 'key') judge.later(() => shGoalHits(p, n));
+      else judge.release(shGoalHits(p, n));
       return n;
     }
     // 잘라 옮기기는 조각이 제자리에 가야, 목표가 없으면 한 번 만져 보면 목표를 이룬 것으로 본다
@@ -64,7 +60,7 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
     const n = shKey(p, s, id, key);
     if (!n) return false;
     setSel(id);
-    commit(n);
+    commit(n, 'key');
     return true;
   };
   const selPt = handles.find((h) => h.id === sel);
@@ -126,6 +122,7 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
               max={p.grid.w}
               valueText={`점 ${h.id}`}
               onKey={(key) => step(h.id, key)}
+              onBlur={judge.flush}
               onStart={g2.onStart}
               onMove={g2.onMove}
               onEnd={(dx, dy, c) => {
@@ -143,7 +140,7 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
           </span>
         ))}
       </div>
-      {p.goal && <GoalLine p={p} prog={prog} need={need} />}
+      {p.goal && <GoalLine prog={prog} need={need} texts={{ done: p.done, hint: p.goal.hint }} />}
       <div className="wgt-ctl">
         {sel &&
           free &&
@@ -161,16 +158,27 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
               className="lbtn soft arrow"
               aria-label={`점 ${sel} ${t} 한 칸`}
               onClick={() => step(sel, k)}
+              onBlur={judge.flush}
             >
               {t}
             </button>
           ))}
         {sel && selPt?.on && (
           <>
-            <button type="button" className="lbtn soft" onClick={() => step(sel, 'ArrowLeft')}>
+            <button
+              type="button"
+              className="lbtn soft"
+              onClick={() => step(sel, 'ArrowLeft')}
+              onBlur={judge.flush}
+            >
               ◀ 점 {sel}
             </button>
-            <button type="button" className="lbtn soft" onClick={() => step(sel, 'ArrowRight')}>
+            <button
+              type="button"
+              className="lbtn soft"
+              onClick={() => step(sel, 'ArrowRight')}
+              onBlur={judge.flush}
+            >
               점 {sel} ▶
             </button>
           </>
@@ -190,18 +198,5 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
         )}
       </div>
     </div>
-  );
-}
-
-/** 목표 줄: 진행("3곳 중 2곳")과 완료·힌트 글. 처음 안내는 위쪽 note 가 맡는다 */
-function GoalLine({ p, prog, need }: { p: ShapeParams; prog: GoalProgress; need: number }) {
-  const line = goalLine(prog, need, { done: p.done, hint: p.goal?.hint });
-  return (
-    <>
-      {line.progress && <p className="gprog num">{line.progress}</p>}
-      <div className={`toast ${line.cls}`} aria-live="polite">
-        {line.text && <LRich inline src={line.text} />}
-      </div>
-    </>
   );
 }

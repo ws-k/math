@@ -18,6 +18,8 @@ export const SvgHandle = forwardRef<
     /** 화면에 읽어 줄 값(예: "x = 1.5") */
     valueText: string;
     onKey(e: KeyboardEvent): void;
+    /** 포커스가 떠날 때(키로 옮긴 자리의 목표 판정을 기다리지 않고 바로) */
+    onBlur?(): void;
   }
 >(function SvgHandle(p, ref) {
   return (
@@ -33,6 +35,7 @@ export const SvgHandle = forwardRef<
       aria-valuetext={p.valueText}
       transform={`translate(${p.x} ${p.y})`}
       onKeyDown={p.onKey}
+      onBlur={p.onBlur}
       style={{ touchAction: 'none', cursor: 'grab' }}
     >
       <circle r={HANDLE_HIT} fill="transparent" />
