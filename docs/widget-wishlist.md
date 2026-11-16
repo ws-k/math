@@ -136,3 +136,5 @@
 - (묶음 자, 다듬기) math1-trig-graph slider 가로 눈금이 "π/2 분" 꼴, start 장면은 관람차 글 아님, 반지름 30·b=3 끝 조합 1.5 m/s 로 빠름
 - (묶음 차) 따라오는 점(R 이 P 와 같은 x) — math2-indefinite shift 는 R 을 x=1 고정
 - (묶음 차, 다듬기) math2-velocity hook 을 "앞에서 본 자동차, 이번엔 3초 순간"으로 이어 쓰기(실생활 ⑤ 때), math2-diff-polynomial slopes 옛 다가가기 목표 → 숨긴 목표 점(요청 75)
+- (묶음 카) 끌기 범위 제한(⑤) — math2-tangent mvt R 을 [P,Q] 안으로, 여러 글자 점 이름(⑤) — '그저께'·'정상'
+- (묶음 카, 다듬기) 옛 '다가가기' 목표가 정답 점을 처음부터 보여 줌: math2-extrema drag(M), math1-exponent halve(A)·half(H), math1-log double(T) → 숨긴 목표/값 맞추기로 바꿀 후보. mvt 레슨 값 mc 검산식이 리스트 문법
