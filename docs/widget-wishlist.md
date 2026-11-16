@@ -123,3 +123,6 @@
 - (묶음 다) **도형판 측정값 묶기(합·차·견주기) — 세 번째 요청, 우선순위 높음**: 지금 대용 목표가 맞지 않는 자리도 맞았다고 셈 → geo-ellipse find(16곳 중 진짜 4곳), geo-parabola measure(21곳 중 진짜 7곳), geo-hyperbola drag. 기능이 생기면 이 세 장면 목표를 바꿀 것
 - (묶음 다) 따라오는 수선의 발(H 가 P 아래를 따라옴) — geo-parabola measure
 - (묶음 다) math1-sine-cosine-law hook 보기 값이 칸 단위 AB²(73·49·121) — 도형판 단위(⑥-가) 생기면 다시 보기
+- (묶음 바) 여러 슬라이더 조합 목표 형식 — m3-quadratic-func move 는 숨은 계산식 (a+1)²+(p-2)²+(q-5)²=0 으로 대신
+- (묶음 바) 끌기 범위 제한(⑤) — m3-trig-ratio same 에서 P=O(크기 0 미끄럼틀)도 3/4 로 셈
+- (묶음 바, 다듬기) m3-quadratic-func move: a 슬라이더 exclude [0] 없음, 읽는 값 이름 "꼭짓점의 x 좌표"가 깨달음을 미리 말함, 공의 길이 음수 시각까지 그려짐
