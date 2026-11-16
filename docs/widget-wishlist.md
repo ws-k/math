@@ -138,3 +138,5 @@
 - (묶음 차, 다듬기) math2-velocity hook 을 "앞에서 본 자동차, 이번엔 3초 순간"으로 이어 쓰기(실생활 ⑤ 때), math2-diff-polynomial slopes 옛 다가가기 목표 → 숨긴 목표 점(요청 75)
 - (묶음 카) 끌기 범위 제한(⑤) — math2-tangent mvt R 을 [P,Q] 안으로, 여러 글자 점 이름(⑤) — '그저께'·'정상'
 - (묶음 카, 다듬기) 옛 '다가가기' 목표가 정답 점을 처음부터 보여 줌: math2-extrema drag(M), math1-exponent halve(A)·half(H), math1-log double(T) → 숨긴 목표/값 맞추기로 바꿀 후보. mvt 레슨 값 mc 검산식이 리스트 문법
+- (묶음 타) **좌표평면 끄는 점 손잡이가 y 범위 밖으로 나가면 그림 위로 떠오름**(잘리지 않음) — calc-series geo 에서 r=1.1·n≥9. 손잡이 자르기/테두리 붙이기 또는 끌기 범위 제한(⑤)
+- (묶음 타, 범위 밖) calc-series p107·calc-trig-addition p110 검산식이 공식을 그대로 담음(요청 98 나머지), calc-quotient-chain recip 옛 다가가기 목표
