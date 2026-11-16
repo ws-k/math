@@ -134,3 +134,5 @@
 - (묶음 마, 다듬기) e-circle-area poly 처음 자리에서 E·F 이름표가 A·B 와 겹침
 - (묶음 자) 두 점 높이 차 읽기 dy(P,Q)(요청 64), 슬라이더 두 개 동시 목표, 수열 점 모드(요청 96) — math1-sigma general 은 Q 높이 16 으로 대신
 - (묶음 자, 다듬기) math1-trig-graph slider 가로 눈금이 "π/2 분" 꼴, start 장면은 관람차 글 아님, 반지름 30·b=3 끝 조합 1.5 m/s 로 빠름
+- (묶음 차) 따라오는 점(R 이 P 와 같은 x) — math2-indefinite shift 는 R 을 x=1 고정
+- (묶음 차, 다듬기) math2-velocity hook 을 "앞에서 본 자동차, 이번엔 3초 순간"으로 이어 쓰기(실생활 ⑤ 때), math2-diff-polynomial slopes 옛 다가가기 목표 → 숨긴 목표 점(요청 75)
