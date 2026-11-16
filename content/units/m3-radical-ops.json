@@ -159,17 +159,26 @@
               }
             ],
             "digits": 2,
-            "note": "M 을 AB 의 가운데로 끌어 보세요."
+            "note": "넓이는 차례로 AMND, ABCD 예요.",
+            "goal": {
+              "value": {
+                "of": 0,
+                "is": "sqrt(2)"
+              },
+              "hint": "AMND 가 정사각형이려면 $\\overline{AM}$ 이 $\\overline{AD}$ 와 같아야 해요."
+            },
+            "done": "AMND 가 정사각형이에요. 넓이를 ABCD 와 견줘 보세요."
           }
         },
-        "after": "M 이 가운데에 오면 넓이 2 인 정사각형 두 개로 나뉘어요. 가로 $\\sqrt{8}$ 은 $\\sqrt{2}$ 두 개, 곧 $2\\sqrt{2}$ 예요. 그래서 넓이는 $\\sqrt{2}\\times\\sqrt{8}=$ {{area}}, 근호 안끼리 곱한 $\\sqrt{16}$ 과 같아요."
+        "after": "M 이 가운데에 오면 넓이 2 인 정사각형 두 개로 나뉘어요. 가로 $\\sqrt{8}$ 은 $\\sqrt{2}$ 두 개, 곧 $2\\sqrt{2}$ 예요. 그래서 넓이는 $\\sqrt{2}\\times\\sqrt{8}=$ {{area}}, 근호 안끼리 곱한 $\\sqrt{16}$ 과 같아요.",
+        "afterGoal": true
       },
       {
         "kind": "explore",
         "id": "add",
         "chip": "두 번째 해 보기",
         "title": "$\\sqrt{2}+\\sqrt{8}$ 은\n$\\sqrt{10}$ 일까요?",
-        "lead": "AB 는 $\\sqrt{2}$, BC 는 $\\sqrt{8}$, AP 는 $\\sqrt{10}$ 이에요. 점 M 을 A 에서 C 까지 끌며 길이를 재 보세요.",
+        "lead": "AB 는 $\\sqrt{2}$, BC 는 $\\sqrt{8}$, AP 는 $\\sqrt{10}$ 이에요. 점 M 을 A 에서 C 까지 한 칸씩 끌어 놓으며 길이를 재 보세요.",
         "gate": true,
         "widget": {
           "type": "shape",
@@ -243,10 +252,23 @@
               }
             ],
             "digits": 2,
-            "note": "M 을 한 칸씩 끌어 C 까지 옮겨 보세요."
+            "note": "M 을 한 칸씩 끌어 C 까지 옮겨 보세요.",
+            "goal": {
+              "visit": {
+                "of": 0,
+                "at": [
+                  "sqrt(2)",
+                  "2*sqrt(2)",
+                  "3*sqrt(2)"
+                ]
+              },
+              "hint": "M 을 C 쪽으로 한 칸 옮길 때마다 손을 떼고 AM 을 보세요."
+            },
+            "done": "한 칸마다 $\\sqrt{2}$ 씩 늘었어요. AC 와 AP 를 견줘 보세요."
           }
         },
-        "after": "AC 는 $\\sqrt{2}$ 짜리 칸 {{count}}개라서 약 4.24, AP 는 약 3.16 이에요. 근호끼리 더할 때는 안의 수를 더하지 않고 ==같은 근호가 몇 개인지== 세요. $\\sqrt{8}=2\\sqrt{2}$ 이니까 $\\sqrt{2}+\\sqrt{8}=3\\sqrt{2}$ 예요."
+        "after": "AC 는 $\\sqrt{2}$ 짜리 칸 {{count}}개라서 약 4.24, AP 는 약 3.16 이에요. 근호끼리 더할 때는 안의 수를 더하지 않고 ==같은 근호가 몇 개인지== 세요. $\\sqrt{8}=2\\sqrt{2}$ 이니까 $\\sqrt{2}+\\sqrt{8}=3\\sqrt{2}$ 예요.",
+        "afterGoal": true
       },
       {
         "kind": "terms",
