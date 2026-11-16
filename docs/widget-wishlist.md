@@ -120,3 +120,6 @@
 - (묶음 라) geo-space-coord formulas·문제 30개·try concepts 에 긴 거리 공식(√) 10여 곳 — 382pt 넘침 가능, 범위 밖이라 남김
 - (묶음 나) **검산기 버그**: 원 위 15°·45° 자리의 각이 실제로 60° 인데 sympy 가 겹근호 식을 60 으로 정리 못 해 goal 판정 실패(verify.py `_goal_match` → `equal`). 최소다항식·고정밀 수치 비교로 고치면 "원주각이 60° 인 자리 3곳" 같은 목표 가능. 지금은 m3-circle slide·cyclic 을 다른 각 목표로 대신함
 - (묶음 나) shape 목표에서 두 측정값 비 견주기(AD:AB = DE:BC)
+- (묶음 다) **도형판 측정값 묶기(합·차·견주기) — 세 번째 요청, 우선순위 높음**: 지금 대용 목표가 맞지 않는 자리도 맞았다고 셈 → geo-ellipse find(16곳 중 진짜 4곳), geo-parabola measure(21곳 중 진짜 7곳), geo-hyperbola drag. 기능이 생기면 이 세 장면 목표를 바꿀 것
+- (묶음 다) 따라오는 수선의 발(H 가 P 아래를 따라옴) — geo-parabola measure
+- (묶음 다) math1-sine-cosine-law hook 보기 값이 칸 단위 AB²(73·49·121) — 도형판 단위(⑥-가) 생기면 다시 보기
