@@ -118,3 +118,5 @@
 - (묶음 라) shape 두 길이의 차·합 측정과 목표(요청 106) — geo-hyperbola drag 는 PF=6 칸 점 3곳이 마침 차 4 곡선 위라 대신함
 - (묶음 라) shape 격자 세로 12칸 제한 완화 또는 선분을 정답보다 길게 — geo-space-coord section 정답이 길 끝(높이 12)
 - (묶음 라) geo-space-coord formulas·문제 30개·try concepts 에 긴 거리 공식(√) 10여 곳 — 382pt 넘침 가능, 범위 밖이라 남김
+- (묶음 나) **검산기 버그**: 원 위 15°·45° 자리의 각이 실제로 60° 인데 sympy 가 겹근호 식을 60 으로 정리 못 해 goal 판정 실패(verify.py `_goal_match` → `equal`). 최소다항식·고정밀 수치 비교로 고치면 "원주각이 60° 인 자리 3곳" 같은 목표 가능. 지금은 m3-circle slide·cyclic 을 다른 각 목표로 대신함
+- (묶음 나) shape 목표에서 두 측정값 비 견주기(AD:AB = DE:BC)
