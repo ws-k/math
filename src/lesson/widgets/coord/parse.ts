@@ -3,6 +3,7 @@
 import type { GridPt } from '../../grade.ts';
 import { arr, fail, type Obj, obj, oneOf, str } from '../../parse.ts';
 import { axis, ID, MAX_CELLS, numExpr, toIndex } from './common.ts';
+import { MIN_PLOT, narrowFrame } from './frame.ts';
 import { goalPoints, parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
 import { parseSliders } from './slider.ts';
@@ -27,6 +28,14 @@ export function parseCoord(raw: unknown): CoordParams {
   const y = axis(o.y, '좌표 y', true);
   if (o.equal !== undefined && o.equal !== true) fail('좌표 equal', 'true 만');
   const equal = o.equal === true;
+  // 축 끝 글자 자리·축척 같게로 줄어든 가장 좁은 화면의 그림이 너무 작으면 칸·곡선을 읽을 수 없다(frame.ts MIN_PLOT)
+  const nf = narrowFrame({ x, y, equal });
+  const [pw, ph] = [nf.r - nf.l, nf.b - nf.t];
+  if (pw < MIN_PLOT.w - 1e-9 || ph < MIN_PLOT.h - 1e-9)
+    fail(
+      '좌표',
+      `가장 좁은 화면에서 그림이 너무 작음(${pw.toFixed(0)}×${ph.toFixed(0)}px, 가로 ${MIN_PLOT.w}·세로 ${MIN_PLOT.h}px 이상) — ${equal ? '축척 같게면 가로·세로 범위 비를 줄이거나 equal 을 빼세요' : '축 끝 글자를 짧게'}`,
+    );
   if (mode !== 'explore' && mode !== 'sketch') {
     const cx = (x.hi - x.lo) / x.st;
     const cy = (y.hi - y.lo) / y.st;

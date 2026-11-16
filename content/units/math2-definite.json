@@ -121,7 +121,7 @@
                 "max": 30,
                 "step": 1,
                 "value": 1,
-                "label": "조각 수 $n$"
+                "label": "$n$"
               }
             ],
             "objects": [

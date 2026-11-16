@@ -5,6 +5,7 @@ import { arr, fail, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { add, mul, qi, ratStr } from '../q.ts';
 import { near, numExpr, toIndex } from './common.ts';
+import { NARROW_BOX_W } from './frame.ts';
 import type { Slider } from './types.ts';
 
 export function parseSliders(raw: unknown): Slider[] {
@@ -49,12 +50,36 @@ export function parseSliders(raw: unknown): Slider[] {
 }
 
 /**
- * 목표가 보는 슬라이더의 칸 수 상한. 가장 좁은 화면(상자 298px, frame.ts NARROW_BOX_W)에서 슬라이더 줄은
- * 이름(짧은 글자 약 20px)·값 숫자(약 24px)·틈 10px×2 를 빼고, 손잡이 폭(약 20px)만큼 끝이 줄어 길이가 약 214px —
- * 30칸이면 한 칸이 약 7px. 이보다 촘촘하면 손가락으로 목표 칸에 멈추기 어렵다(◀▶ 버튼 대신 상한을 둔 까닭:
- * 접은 화면은 이미 높이가 모자라 버튼 줄을 더할 자리가 없다).
+ * 목표가 보는 슬라이더의 한 칸 최소 폭(px). 이보다 촘촘하면 손가락으로 목표 칸에 멈추기 어렵다(◀▶ 버튼 대신
+ * 하한을 둔 까닭: 접은 화면은 이미 높이가 모자라 버튼 줄을 더할 자리가 없다).
  */
-export const MAX_GOAL_SLIDER_STEPS = 30;
+export const MIN_SLIDER_STEP_PX = 7;
+
+/**
+ * 슬라이더 줄(.cslider, 17px) 글자의 어림 폭. 크롬 실측(382pt 접음): 한글 15.5·숫자 10.8·빈칸 4.5·점 5·
+ * 수식 글자 11.3px — 조금 넉넉히 잡는다(좁게 어림하면 상한이 실제보다 느슨해진다). 수식 표기($·\명령·{}^_)는
+ * 글자 하나 또는 0 으로 센다.
+ */
+export function sliderTextWidth(t: string): number {
+  const plain = t.replace(/\\[A-Za-z]+/g, 'x').replace(/[$\\{}^_]/g, '');
+  return [...plain].reduce((w, ch) => {
+    if (ch.charCodeAt(0) >= 0x1100) return w + 16;
+    if (ch === ' ') return w + 4.5;
+    if (ch === '.' || ch === ',') return w + 5;
+    return w + 11;
+  }, 0);
+}
+
+/**
+ * 가장 좁은 화면에서 슬라이더 한 칸의 폭(px). 줄(상자 폭 NARROW_BOX_W)에서 이름·가장 긴 값 글자·틈 10px×2 를
+ * 빼고 손잡이 폭(약 20px)만큼 끝이 줄어든 길이를 칸 수로 나눈다. 값 글자는 화면이 수를 그대로 적는 꼴(−1.75)이라
+ * 칸 간격이 소수면 줄이 짧아진다 — 실측: '조각 수 n'·값 30 이면 입력 칸 189px(예전 어림 214px 보다 짧다).
+ */
+export function sliderStepPx(sl: Slider): number {
+  const value = Math.max(...sliderValues(sl).map(({ v }) => sliderTextWidth(String(v))));
+  const track = NARROW_BOX_W - sliderTextWidth(sl.label) - value - 2 * 10 - 20;
+  return track / lastK(sl);
+}
 
 const clean = (v: number) => Number(v.toPrecision(12));
 const excluded = (sl: Slider, v: number) => sl.exclude.some((e) => near(v, e));

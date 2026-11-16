@@ -6,7 +6,7 @@ import { compile, derivative, evalExact, evalNum, varsOf } from '../../expr.ts';
 import { GOAL_MAX_STATES, type Val } from '../../goal.ts';
 import { fail, int, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
-import { div, qi, ratStr, sub } from '../q.ts';
+import { div, num, qi, ratStr, sub } from '../q.ts';
 import { curveOf, dfAt } from './curve.ts';
 import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
@@ -59,7 +59,8 @@ export function unitOf(
     case 'slope':
     case 'deriv':
       if (y.slopeUnit) return y.slopeUnit;
-      if (x.unit && y.unit) return `${y.unit}/${x.unit}`;
+      // 같은 단위끼리 나누면 단위가 없다(m/m 이 아니라 그냥 수 — 경사의 '오르막 비율')
+      if (x.unit && y.unit) return x.unit === y.unit ? undefined : `${y.unit}/${x.unit}`;
       if (x.unit || y.unit)
         return {
           error: '가로·세로 중 한쪽만 단위가 있어 기울기 단위를 정할 수 없음 — y 의 slopeUnit 으로',
@@ -257,7 +258,7 @@ export function readout(p: CoordParams, s: CoordState, e: ReadoutExpr): number {
       const v = sums(p, s, rectsOf(p, e.rects));
       if (!v) return Number.NaN;
       const q = e.f === 'gap' ? sub(v.big, v.small) : v[e.f];
-      return Number(q[0]) / Number(q[1]);
+      return num(q);
     }
   }
 }
@@ -304,7 +305,7 @@ export function readoutVal(p: CoordParams, s: CoordState, e: ReadoutExpr): Val {
     }
   };
   const q = exact();
-  if (q) return { n: Number(q[0]) / Number(q[1]), q };
+  if (q) return { n: num(q), q };
   // 분수로 안 되면(π 칸 슬라이더·√·무리수 곡선) 수로
   if (e.f === 'calc') return { n: evalNum(e.node, s.vars), q: null };
   return { n: readout(p, s, e), q: null };
@@ -422,9 +423,9 @@ function sumsLine(
           text: inexact(v.small, o.digits) || inexact(v.big, o.digits) ? '≈ ' : '',
           cls: '',
         },
-        { text: fmtNum(Number(v.small[0]) / Number(v.small[1]), o.digits), cls: 'lo' },
+        { text: fmtNum(num(v.small), o.digits), cls: 'lo' },
         { text: ' ~ ', cls: '' },
-        { text: fmtNum(Number(v.big[0]) / Number(v.big[1]), o.digits), cls: 'hi' },
+        { text: fmtNum(num(v.big), o.digits), cls: 'hi' },
         { text: u ? ` ${u}` : '', cls: '' },
       ]
     : [

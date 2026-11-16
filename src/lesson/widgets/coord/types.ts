@@ -99,7 +99,7 @@ export interface ReadoutObj {
   frac?: true;
 }
 /** 칠하기의 위·아래 경계: 곡선 또는 수평선 y = 값 */
-export type Edge = { curve: string } | { y: string; n: number };
+export type Edge = { curve: string } | { n: number };
 /** 칠하기 재질. 무늬(soil·water)는 넓은 영역에만 — 좁은 띠(길)·조각은 단색이어야 무늬가 잡음이 되지 않는다 */
 export type Look = 'plain' | 'soil' | 'water' | 'road';
 /** 칠하기 {fill:{top, bottom?, x:[a,b]}, look?, name?, nameAt?, hide?}: 위 경계와 아래 경계(기본 가로축) 사이 */
@@ -107,9 +107,7 @@ export interface FillObj {
   kind: 'fill';
   top: Edge;
   bottom: Edge;
-  /** 가로 구간(원문·수) */
-  from: string;
-  to: string;
+  /** 가로 구간. 숫자를 보이지 않고 검산 항목도 없어 원문은 두지 않는다 */
   lo: number;
   hi: number;
   look: Look;

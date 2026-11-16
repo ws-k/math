@@ -2,17 +2,19 @@
 // 두 합을 정확한 분수로 낸다(읽는 값 sums·big·small·gap). 검산은 닿는 모든 n 의 두 합 = sympy summation,
 // 넓이 = sympy integrate(원칙 P7).
 //
-// 곡선은 구간에서 계속 오르거나 계속 내리는 다항식만 받는다. 그래야 조각마다 양 끝 높이 중 큰 쪽이 그 조각의
-// 가장 높은 곳이라 '큰 어림 ≥ 넓이 ≥ 작은 어림'이 늘 맞는다(꺾이는 곡선이면 오른쪽 끝 합이 큰 어림이 아니다).
-// 단조인지는 도함수의 구간 안 실근을 분수로 정확히 센다(poly.ts — 소수로 보면 끝점 근에서 흔들린다).
+// 곡선은 구간 안(끝점 제외)에 기울기 0 인 곳이 없는 다항식만 받는다. 그래야 계속 오르거나 계속 내려서 조각마다
+// 양 끝 높이 중 큰 쪽이 그 조각의 가장 높은 곳이라 '큰 어림 ≥ 넓이 ≥ 작은 어림'이 늘 맞는다(꺾이는 곡선이면
+// 오른쪽 끝 합이 큰 어림이 아니다). 기울기 0 인 곳은 도함수의 구간 안 실근을 분수로 정확히 센다(poly.ts — 소수로
+// 보면 끝점 근에서 흔들린다). x³ 처럼 멈췄다 다시 오르는 곡선도 막는다(보수적으로 — 끝점에서만 허용).
+// 곡선은 구간에서 가로축 위(높이 ≥ 0)여야 한다: 음수 높이 조각은 아래로 그려져 노란 띠·초록 조각의 위아래가 뒤집힌다.
 import { derivative, evalExact, exactOf, varsOf } from '../../expr.ts';
 import { arr, fail, int, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
-import { add, cmp, div, mul, qi, ratStr, sub } from '../q.ts';
+import { add, cmp, div, mul, num, qi, ratStr, sub } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { numExpr } from './common.ts';
 import { curveOf, fAt } from './curve.ts';
-import { frame, MIN_BOX_H, NARROW_BOX_W, r1, toPx } from './frame.ts';
+import { clampY, narrowFrame, r1, toPx } from './frame.ts';
 import { polyOf, rootsBetween } from './poly.ts';
 import { sliderValues } from './slider.ts';
 import type { CoordParams, CoordState, KindDef, RectsObj } from './types.ts';
@@ -104,15 +106,27 @@ export const rectsKind: KindDef<RectsObj> = {
     if (cmp(b, a) <= 0) fail(`${at} rects.x`, '끝이 시작보다 커야 함');
     if (A.n < cx.x.lo - 1e-9 || B.n > cx.x.hi + 1e-9) fail(`${at} rects.x`, '화면 밖');
     const dpoly = polyOf(derivative(cv.node, 'x'), {});
-    const turns = dpoly ? rootsBetween(dpoly, a, b) : null;
+    if (!dpoly)
+      return fail(
+        `${at} of`,
+        `곡선 ${cv.id} 의 도함수를 다항식으로 읽지 못함 — 기울기 0 인 곳을 셀 수 없음`,
+      );
+    // 도함수가 0 다항식(곡선이 상수)이면 null — 모든 조각 높이가 같아 큰·작은 어림이 같다(괜찮음)
+    const turns = rootsBetween(dpoly, a, b);
     if (turns)
       fail(
         `${at} of`,
-        `곡선 ${cv.id} 이 ${A.src}~${B.src} 에서 계속 오르거나 계속 내리는 곡선이 아님(기울기 0 인 곳이 구간 안에 ${turns}곳) — 조각의 양 끝 높이가 큰 어림·작은 어림이 되지 않음`,
+        `곡선 ${cv.id} 의 기울기가 0 인 곳이 구간 안에 ${turns}곳(${A.src}~${B.src}, 끝점 제외) — 기울기 0 은 끝점에서만 허용(그래야 조각의 양 끝 높이가 큰 어림·작은 어림임이 보장됨)`,
       );
     const fa = evalExact(cv.node, { x: a });
     const fb = evalExact(cv.node, { x: b });
     if (!fa || !fb) return fail(`${at} rects.x`, '곡선이 구간 끝에서 정의되지 않음');
+    // 계속 오르거나 내리므로 구간의 가장 낮은 높이는 양 끝 중 하나
+    if (cmp(fa, Z) < 0 || cmp(fb, Z) < 0)
+      fail(
+        `${at} of`,
+        `곡선 ${cv.id} 이 ${A.src}~${B.src} 에서 가로축 아래로 내려감 — 높이가 음수인 조각은 아래로 그려져 큰·작은 어림 색 띠가 뒤집힘(구간을 곡선이 0 이상인 곳으로)`,
+      );
 
     // 조각 수: 1 이상의 정수만 닿는 슬라이더, 또는 고정 수
     let n: RectsObj['n'];
@@ -131,7 +145,7 @@ export const rectsKind: KindDef<RectsObj> = {
       n = { slider: sid };
     }
     // 가장 좁은 화면(접은 화면의 상자 폭, 가장 낮은 상자 높이)에서 n 이 가장 클 때의 조각 폭
-    const f0 = frame({ w: NARROW_BOX_W, h: MIN_BOX_H }, { x: cx.x, y: cx.y, equal: cx.equal });
+    const f0 = narrowFrame(cx);
     const px = ((B.n - A.n) / nMax) * ((f0.r - f0.l) / (cx.x.hi - cx.x.lo));
     if (px < MIN_RECT_PX)
       fail(
@@ -154,10 +168,8 @@ export const rectsKind: KindDef<RectsObj> = {
   },
   draw(o, k, { p, s, f, shapes }) {
     const n = countOf(o, s);
-    const lo = Number(o.a[0]) / Number(o.a[1]);
-    const hi = Number(o.b[0]) / Number(o.b[1]);
-    const span = f.b - f.t;
-    const clampY = (Y: number) => Math.max(f.t - span, Math.min(f.b + span, Y));
+    const lo = num(o.a);
+    const hi = num(o.b);
     const [, Y0] = toPx(p, f, lo, 0);
     let big = '';
     let small = '';
@@ -170,7 +182,7 @@ export const rectsKind: KindDef<RectsObj> = {
         const [X0] = toPx(p, f, lo + i * dx, 0);
         const [X1, Yh] = toPx(p, f, lo + (i + 1) * dx, h);
         wPx = X1 - X0;
-        return `M${r1(X0)} ${r1(clampY(Y0))}V${r1(clampY(Yh))}H${r1(X1)}V${r1(clampY(Y0))}Z`;
+        return `M${r1(X0)} ${r1(clampY(f, Y0))}V${r1(clampY(f, Yh))}H${r1(X1)}V${r1(clampY(f, Y0))}Z`;
       };
       for (let i = 0; i < n; i++) {
         const l = hs[i] as number;
@@ -189,9 +201,13 @@ export const rectsKind: KindDef<RectsObj> = {
       'slider' in o.n ? p.sliders.find((x) => 'slider' in o.n && x.id === o.n.slider) : null;
     const ns = sl ? sliderValues(sl).map((x) => x.v) : 'count' in o.n ? [o.n.count] : [];
     const items: WidgetCheck[] = [];
+    const smalls: string[] = [];
+    const bigs: string[] = [];
     for (const n of ns) {
       const v = sumsAt(p, o, n);
       if (!v) continue;
+      smalls.push(`(${ratStr(v.small)})`);
+      bigs.push(`(${ratStr(v.big)})`);
       for (const which of ['big', 'small'] as const)
         items.push({
           name: `조각 ${o.id} ${which === 'big' ? '큰' : '작은'} 어림 n=${n}`,
@@ -200,13 +216,24 @@ export const rectsKind: KindDef<RectsObj> = {
           check: sumSym(p, o, which, String(n)),
         });
     }
+    const integ = `integrate(${curveOf(p, o.of).expr},(x,${o.from},${o.to}))`;
     const area = integral(p, o);
     if (area)
       items.push({
         name: `조각 ${o.id} 넓이`,
         answer: ratStr(area),
         answerType: 'fraction',
-        check: `integrate(${curveOf(p, o.of).expr},(x,${o.from},${o.to}))`,
+        check: integ,
+      });
+    // 큰·작은 배정(rising)의 독립 검증(원칙 P7): 위 항목은 sympy 도 앱과 같은 배정으로 더해 배정이 틀려도 함께 맞는다.
+    // 그래서 앱이 낸 두 어림 값을 그대로 적고, 넓이는 sympy 가 따로 적분해 닿는 모든 n 에서 작은 ≤ 넓이 ≤ 큰 인지 본다
+    // (모든 n 의 작은 어림 ≤ 넓이 ⇔ 그 가장 큰 값 ≤ 넓이 — 적분을 두 번만 하려고 Max·Min 으로 묶는다)
+    if (smalls.length)
+      items.push({
+        name: `조각 ${o.id} 작은 어림 ≤ 넓이 ≤ 큰 어림(닿는 n ${smalls.length}개)`,
+        answer: '1',
+        answerType: 'int',
+        check: `Piecewise((1,(Max(${smalls.join(',')})<=${integ})&(${integ}<=Min(${bigs.join(',')}))),(0,True))`,
       });
     out.push(...items);
   },

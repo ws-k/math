@@ -27,6 +27,37 @@ export const labelWidth = (t: string) =>
 /** 가로축 끝 글자와 마지막 눈금 글자 사이 틈 */
 export const AXIS_LABEL_GAP = 12;
 
+// ---- 가장 좁은 화면(형식 검사가 칸·조각·그림 크기를 셀 때의 가장 나쁜 경우) ----
+
+/**
+ * 가장 좁은 화면(접음 382pt, docs/design.md)의 좌표평면 상자 폭: 레슨 좌우 여백 20px×2(lesson.css .lesson)와
+ * 카드 안쪽 여백 22px×2(.lesson .card)를 뺀 폭. 상자 폭이 곧 카드 안쪽 폭이다(Coord.tsx measure).
+ */
+export const NARROW_BOX_W = 382 - 2 * 20 - 2 * 22;
+/** 좌표평면 상자의 가장 낮은 높이(Coord.tsx measure 의 바닥값) */
+export const MIN_BOX_H = 200;
+/** 그림 영역 바깥 여백(눈금 글자 자리): 왼쪽 34 · 오른쪽 14 · 위 14 · 아래 26 — frame() 과 같은 값 */
+const PAD = { l: 34, r: 14, t: 14, b: 26 };
+
+/**
+ * 축 끝 글자 폭 상한(px). 가로축 글자는 그 폭 + 틈 12 + 끝 여백 6 − 기본 오른쪽 여백 14 만큼 그림 폭을 줄인다 —
+ * 가장 좁은 화면의 기본 그림 폭(250px)의 1/3(83px)을 넘게 먹지 않게: 83 − 4 = 79px(한글 7자 남짓,
+ * '속력(km/시)' 65.5px 는 들어감). 세로축 글자는 그림 위 왼쪽에서 시작하므로 같은 상한이면 그림 폭 안에 든다.
+ * 글자 수(예전 8자)로 세면 '이름 8자 + 단위 8자'가 그림 폭을 57px 까지 줄였다.
+ */
+export const AXIS_LABEL_MAX_PX =
+  Math.floor((NARROW_BOX_W - PAD.l - PAD.r) / 3) - (AXIS_LABEL_GAP + 6 - PAD.r);
+
+/**
+ * 가장 좁은 화면 그림 영역의 하한(px): 기본 그림(250×160)의 절반. 축척 같게(equal)는 모자란 쪽에 맞춰 다른 쪽을
+ * 줄이므로, 가로·세로 범위 비가 크면 그림이 한 줄처럼 납작해진다(가로 40·세로 2 칸이면 높이 12.5px). 절반 아래면
+ * 남는 빈자리가 그림보다 커지고 칸·조각이 손가락보다 한참 작아진다. 밭(가로 30·세로 32, 축척 같게)은 150×160.
+ */
+export const MIN_PLOT = {
+  w: (NARROW_BOX_W - PAD.l - PAD.r) / 2,
+  h: (MIN_BOX_H - PAD.t - PAD.b) / 2,
+};
+
 /** 그림 영역을 정하는 데 쓰는 것만(형식 검사 중에도 셀 수 있게 CoordParams 전체가 아니라) */
 export interface View {
   x: Axis;
@@ -43,11 +74,11 @@ export interface View {
 export function frame(b: Box, v?: View): Frame {
   const xl = v ? axisLabel(v.x) : null;
   const f = {
-    l: 34,
+    l: PAD.l,
     // 글자는 영역 끝에서 틈만큼 떨어져 시작하고 상자 끝에서 6px 안쪽에서 끝나게(기본 오른쪽 여백 14px 를 넘는 만큼만 더 비움)
-    r: b.w - 14 - (xl ? Math.max(0, AXIS_LABEL_GAP + labelWidth(xl) + 6 - 14) : 0),
-    t: 14,
-    b: b.h - 26,
+    r: b.w - PAD.r - (xl ? Math.max(0, AXIS_LABEL_GAP + labelWidth(xl) + 6 - PAD.r) : 0),
+    t: PAD.t,
+    b: b.h - PAD.b,
   };
   if (!v?.equal) return f;
   const sx = (f.r - f.l) / (v.x.hi - v.x.lo);
@@ -57,6 +88,19 @@ export function frame(b: Box, v?: View): Frame {
   const h = u * (v.y.hi - v.y.lo);
   const l = f.l + (f.r - f.l - w) / 2;
   return { l, r: l + w, t: f.b - h, b: f.b };
+}
+
+/**
+ * 가장 좁은 화면(상자 NARROW_BOX_W × MIN_BOX_H)의 그림 영역 — 축 끝 글자 자리와 축척 같게를 반영한 실제 크기.
+ * 형식 검사가 칸 폭(목표 점)·조각 폭(구분구적)·그림 크기 하한을 셀 때 모두 이것 하나로 센다(따로 세면 어긋난다).
+ * 높이가 가장 낮을 때가 가장 나쁜 경우다: 축척 같게면 높이가 줄수록 가로도 줄고, 아니면 가로는 높이와 상관없다.
+ */
+export const narrowFrame = (v: View): Frame => frame({ w: NARROW_BOX_W, h: MIN_BOX_H }, v);
+
+/** 화면 밖으로 멀리 간 세로 px 를 그림 높이 한 배 바깥에서 자른다(SVG 좌표가 너무 커지지 않게, 잘린 부분은 clipPath 가 가린다) */
+export function clampY(f: Frame, Y: number): number {
+  const span = f.b - f.t;
+  return Math.max(f.t - span, Math.min(f.b + span, Y));
 }
 
 export function toPx(p: CoordParams, f: Frame, x: number, y: number): [number, number] {
@@ -77,23 +121,12 @@ export function snapMult(stepPx: number, minPx: number): number {
   for (const k of [1, 2, 5, 10, 20, 50]) if (stepPx * k >= minPx) return k;
   return 100;
 }
-/** 곡선 위 점을 끌 때 한 간격의 최소 픽셀 */
+/**
+ * 곡선 위 점을 끌 때 한 간격의 최소 픽셀. 목표가 보는 점은 가장 좁은 화면의 실제 그림 폭(narrowFrame)에서
+ * 한 칸이 이 값 이상이어야 한다(goal.ts snapsOk) — 그래야 snapMult 가 1 이라 끌기가 칸을 건너뛰지 않고,
+ * 형식 검사·검산이 늘어놓는 '닿는 자리'가 어느 화면에서나 끌어서 닿는 자리와 같다.
+ */
 export const MIN_SNAP_PX = 8;
-
-/**
- * 가장 좁은 화면(접음 382pt, docs/design.md)의 좌표평면 상자 폭: 레슨 좌우 여백 20px×2(lesson.css .lesson)와
- * 카드 안쪽 여백 22px×2(.lesson .card)를 뺀 폭. 상자 폭이 곧 카드 안쪽 폭이다(Coord.tsx measure).
- */
-export const NARROW_BOX_W = 382 - 2 * 20 - 2 * 22;
-/** 좌표평면 상자의 가장 낮은 높이(Coord.tsx measure 의 바닥값). 구분구적 조각 폭 상한을 셀 때 가장 나쁜 경우 */
-export const MIN_BOX_H = 200;
-/**
- * 목표가 보는 곡선 위 점의 끄는 칸 수 상한: 가장 좁은 화면에서도 한 칸이 MIN_SNAP_PX 이상이라 snapMult 가 1 —
- * 끌기가 칸을 건너뛰지 않아, 형식 검사·검산이 늘어놓는 '닿는 자리'가 어느 화면에서나 끌어서 닿는 자리와 같다.
- */
-export const MAX_GOAL_SNAPS = Math.floor(
-  (frame({ w: NARROW_BOX_W, h: 0 }).r - frame({ w: NARROW_BOX_W, h: 0 }).l) / MIN_SNAP_PX,
-);
 
 export const iRange = (lo: number, hi: number, st: number) => [
   Math.ceil(lo / st - 1e-9),

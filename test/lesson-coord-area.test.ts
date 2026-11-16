@@ -11,6 +11,9 @@ import {
   frame,
   goalHits,
   initial,
+  MIN_BOX_H,
+  NARROW_BOX_W,
+  narrowFrame,
   parseCoord,
   readout,
   rootsBetween,
@@ -25,7 +28,7 @@ const fieldRaw = () => ({
   equal: true,
   x: { min: 0, max: 30, step: 10, unit: 'm' },
   y: { min: -2, max: 30, step: 10, unit: 'm' },
-  sliders: [{ id: 'n', min: 1, max: 30, step: 1, value: 1, label: '조각 수 $n$' }],
+  sliders: [{ id: 'n', min: 1, max: 30, step: 1, value: 1, label: '$n$' }],
   objects: [
     { id: 'f', curve: 'x**2/30' } as Record<string, unknown>,
     { fill: { top: 30, bottom: 'f', x: [0, 30] }, look: 'water', name: '강' },
@@ -64,6 +67,24 @@ test('축 이름·단위: 축 끝 글자와 읽는 값 단위(가로 → x, 세�
   assert.ok(frame(BOX, p).r < frame(BOX).r);
 });
 
+test('가로·세로 단위가 같으면 기울기는 단위 없음(m/m 이 아니라) — slopeUnit 이 있으면 그것', () => {
+  const raw = (y: Record<string, unknown>) => ({
+    mode: 'explore',
+    x: { min: 0, max: 4, step: 1, unit: 'm' },
+    y: { min: 0, max: 16, step: 4, unit: 'm', ...y },
+    objects: [
+      { id: 'f', curve: 'x**2' },
+      { id: 'P', point: { on: 'f', x: 1 } },
+      { id: 'Q', point: { on: 'f', x: 3 } },
+      { readout: 'slope(P,Q)', label: '기울기' },
+    ],
+  });
+  const p = parseCoord(raw({}));
+  assert.equal(draw(p, initial(p), BOX).readouts[0]?.text, '4');
+  const q2 = parseCoord(raw({ slopeUnit: '%' }));
+  assert.equal(draw(q2, initial(q2), BOX).readouts[0]?.text, '4 %');
+});
+
 test('축 단위 형식 오류: 넓이 단위를 정할 수 없을 때(가로·세로 단위가 다르고 덮어쓰기 없음)', () => {
   const raw = (y: Record<string, unknown>) => ({
     mode: 'explore',
@@ -95,6 +116,61 @@ test('축척 같게: 가로·세로 한 칸의 화면 길이가 같고, 남는 �
   assert.equal(f.t, base.t);
   assert.equal(f.b, base.b);
   assert.ok(f.l > base.l);
+});
+
+test('가장 좁은 화면의 그림 영역(narrowFrame): 상자 298×200 에 축 글자·축척 같게를 반영한 실제 폭', () => {
+  const p = parseCoord(fieldRaw());
+  assert.deepEqual(narrowFrame(p), frame({ w: NARROW_BOX_W, h: MIN_BOX_H }, p));
+  // 밭: 단위 (m) 자리를 비우고(폭 226.5) 축척 같게로 세로(160px, 32칸)에 맞춰 가로 30칸 = 150px
+  const f = narrowFrame(p);
+  assert.ok(Math.abs(f.r - f.l - 150) < 1e-9);
+});
+
+test('그림이 너무 작아지는 축 조합은 형식 오류(가장 좁은 화면 기본 그림 250×160 의 절반 아래)', () => {
+  // 축척 같게 + 가로 40·세로 2 칸 범위: 세로 그림이 12.5px
+  const raw = (y: Record<string, unknown>) => ({
+    mode: 'explore',
+    equal: true,
+    x: { min: 0, max: 40, step: 10 },
+    y,
+    objects: [{ id: 'f', curve: 'x/40' }],
+  });
+  assert.throws(() => parseCoord(raw({ min: 0, max: 2, step: 1 })), /그림이 너무 작음/);
+  // 세로 범위를 넓히면 그림 높이가 80px 이상 — 통과
+  assert.doesNotThrow(() => parseCoord(raw({ min: 0, max: 20, step: 10 })));
+  // 세로로 긴 축척 같게(가로 2·세로 40): 그림 폭이 8px
+  assert.throws(
+    () =>
+      parseCoord({
+        mode: 'explore',
+        equal: true,
+        x: { min: 0, max: 2, step: 1 },
+        y: { min: 0, max: 40, step: 10 },
+        objects: [{ id: 'f', curve: 'x' }],
+      }),
+    /그림이 너무 작음/,
+  );
+});
+
+test('축 끝 글자는 글자 수가 아니라 폭(labelWidth)으로 제한 — 이름8+단위8 은 그림 폭을 57px 로 줄여 오류', () => {
+  const raw = (x: Record<string, unknown>, y: Record<string, unknown> = {}) => ({
+    mode: 'explore',
+    x: { min: 0, max: 4, step: 1, ...x },
+    y: { min: 0, max: 4, step: 1, ...y },
+    objects: [{ id: 'f', curve: 'x' }],
+  });
+  assert.throws(
+    () => parseCoord(raw({ name: '가나다라마바사아', unit: '자차카타파하가나' })),
+    /축 끝 글자/,
+  );
+  // 한글 8자 이름만(88px)도 폭 상한을 넘는다
+  assert.throws(() => parseCoord(raw({ name: '가나다라마바사아' })), /축 끝 글자/);
+  // 세로축 글자도 같은 상한
+  assert.throws(() => parseCoord(raw({}, { name: '가나다라마바사아' })), /축 끝 글자/);
+  // 시간(분)·속력(km/시)은 통과
+  assert.doesNotThrow(() =>
+    parseCoord(raw({ name: '시간', unit: '분' }, { name: '속력', unit: 'km/시' })),
+  );
 });
 
 test('칠하기: 곡선과 축·수평선 사이, 재질과 이름표, 그림 바탕(격자 아래)에 그린다', () => {
@@ -235,7 +311,15 @@ test('구분구적 형식 오류: 단조가 아님·다항식 아님·슬라이�
     ],
   });
   // x(x-2) 는 0~4 에서 내려갔다 오른다(x=1 에서 꺾임) — 오른쪽 끝 합이 큰 어림이 아니다
-  assert.throws(() => parseCoord(base('x*(x-2)', {})), /계속 오르거나 계속 내리는/);
+  assert.throws(() => parseCoord(base('x*(x-2)', {})), /기울기가 0 인 곳이 구간 안에 1곳/);
+  // x³ 은 [-1,1] 에서 계속 오르지만 x=0 에서 기울기 0 — 끝점에서만 허용한다는 사실대로 알린다
+  assert.throws(
+    () => parseCoord({ ...base('x**3', { x: [-1, 1] }), y: { min: -2, max: 30, step: 2 } }),
+    /끝점에서만/,
+  );
+  // 곡선이 가로축 아래로 가면 노란·초록 띠가 뒤집힌다(높이가 음수) — 형식 오류
+  assert.throws(() => parseCoord(base('x-1', {})), /가로축 아래/);
+  assert.doesNotThrow(() => parseCoord(base('x', {})));
   // 구간 끝에서만 기울기 0 인 곡선은 괜찮다(x² 는 0~4 에서 계속 오름)
   assert.doesNotThrow(() => parseCoord(base('x**2', {})));
   assert.throws(() => parseCoord(base('sqrt(x+1)', {})), /다항식/);
@@ -253,7 +337,14 @@ test('구분구적 형식 오류: 단조가 아님·다항식 아님·슬라이�
 test('구분구적 검산: 닿는 모든 n 의 두 합 = sympy summation, 넓이 = integrate', () => {
   const p = parseCoord(fieldRaw());
   const cs = coordChecks(p).filter((c) => c.name.startsWith('조각 R'));
-  assert.equal(cs.length, 30 * 2 + 1);
+  assert.equal(cs.length, 30 * 2 + 2);
+  // 큰·작은 배정의 독립 검증: 닿는 모든 n 에서 앱의 작은 어림 ≤ sympy 정적분 ≤ 앱의 큰 어림
+  const order = cs.find((c) => c.name.includes('≤ 넓이 ≤'));
+  assert.ok(order && 'answer' in order);
+  assert.equal(runChecks([order]).ok, true);
+  // 배정이 뒤바뀐(큰 어림 자리에 작은 어림) 항목은 검산이 잡는다
+  const bad = { ...order, check: order.check.replaceAll('1891/6', '1/6') };
+  assert.equal(runChecks([bad]).ok, false);
   const big30 = cs.find((c) => c.name === '조각 R 큰 어림 n=30');
   assert.ok(big30 && 'answer' in big30);
   assert.equal(big30.answer, '1891/6');
@@ -265,15 +356,15 @@ test('구분구적 검산: 닿는 모든 n 의 두 합 = sympy summation, 넓이
   assert.equal(runChecks(tamper(cs)).ok, false);
 });
 
-test('구분구적 목표: 두 어림의 차이 300·90·30 가 보기(n=3·10·30) — 앱 판정 = sympy 판정', () => {
+test('구분구적 목표: 두 어림의 차이 180·90·30 가 보기(n=5·10·30) — 앱 판정 = sympy 판정', () => {
   const raw = fieldRaw();
   const p = parseCoord({
     ...raw,
     objects: [...raw.objects, { readout: 'gap(R)', label: '차이', digits: 0 }],
-    goal: { visit: { of: 'gap(R)', at: [300, 90, 30] }, hint: '조각을 늘려 보세요' },
+    goal: { visit: { of: 'gap(R)', at: [180, 90, 30] }, hint: '조각을 늘려 보세요' },
   });
   coordDef.deep?.(p);
-  assert.deepEqual(goalHits(p, withN(p, 3)), ['0']);
+  assert.deepEqual(goalHits(p, withN(p, 5)), ['0']);
   assert.deepEqual(goalHits(p, withN(p, 10)), ['1']);
   assert.deepEqual(goalHits(p, withN(p, 30)), ['2']);
   assert.deepEqual(goalHits(p, withN(p, 4)), []);

@@ -3,6 +3,7 @@
 import { LITERAL } from '../../../content/check.ts';
 import { compile, evalNum, exactOf, exactStr } from '../../expr.ts';
 import { fail, obj, str } from '../../parse.ts';
+import { AXIS_LABEL_MAX_PX, axisLabel, labelWidth } from './frame.ts';
 import type { Axis, Target } from './types.ts';
 
 /** 찍기·그리기 모드에서 x·y 방향 칸 수 상한. 가장 좁은 화면(382px)에서도 한 칸이 손가락으로 고를 만큼(약 20px) */
@@ -26,8 +27,8 @@ export function numExpr(v: unknown, at: string): { src: string; n: number } {
   return { src, n };
 }
 
-/** 축 끝 글자·단위 글자: 짧게(가장 좁은 화면에서 축 끝 자리를 넘지 않게) */
-const AXIS_TEXT = 8;
+/** 읽는 값 줄 끝에 붙는 단위 글자(areaUnit·slopeUnit) 수 상한. 축 끝 글자(name·unit)는 폭으로 잰다(AXIS_LABEL_MAX_PX) */
+const UNIT_TEXT = 8;
 
 export function axis(v: unknown, at: string, vertical = false): Axis {
   const o = obj(
@@ -45,10 +46,12 @@ export function axis(v: unknown, at: string, vertical = false): Axis {
   const text = (k: string) => {
     if (o[k] === undefined) return {};
     const t = str(o[k], `${at} ${k}`).trim();
-    if (!t || [...t].length > AXIS_TEXT) fail(`${at} ${k}`, `1~${AXIS_TEXT}자`);
+    if (!t) fail(`${at} ${k}`, '빈 글자');
+    if ((k === 'areaUnit' || k === 'slopeUnit') && [...t].length > UNIT_TEXT)
+      fail(`${at} ${k}`, `1~${UNIT_TEXT}자`);
     return { [k]: t };
   };
-  return {
+  const out: Axis = {
     min: min.src,
     max: max.src,
     step: step.src,
@@ -61,6 +64,14 @@ export function axis(v: unknown, at: string, vertical = false): Axis {
     ...text('areaUnit'),
     ...text('slopeUnit'),
   };
+  // 축 끝 글자는 이름과 단위를 합친 한 줄('시간(분)')이 그림 폭을 줄이므로 글자 수가 아니라 합친 폭으로 잰다
+  const label = axisLabel(out);
+  if (label && labelWidth(label) > AXIS_LABEL_MAX_PX)
+    fail(
+      at,
+      `축 끝 글자 '${label}' 이 ${labelWidth(label)}px — ${AXIS_LABEL_MAX_PX}px 이하로(가장 좁은 화면에서 그림 폭을 너무 줄임, 한글 7자 남짓)`,
+    );
+  return out;
 }
 
 /** 값을 칸 번호로. 칸 위가 아니면 형식 오류 */

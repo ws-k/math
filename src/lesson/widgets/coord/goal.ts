@@ -20,11 +20,11 @@ import {
 import { fail, obj, str } from '../../parse.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { near, numExpr, target, toIndex } from './common.ts';
-import { iRange, MAX_GOAL_SNAPS } from './frame.ts';
+import { iRange, MIN_SNAP_PX, narrowFrame } from './frame.ts';
 import { initial } from './model.ts';
 import { pointOf, pointState, pointXY, worldX, xSym, ySym } from './point.ts';
 import { parseReadoutExpr, readoutMovers, readoutSym, readoutVal } from './readout.ts';
-import { MAX_GOAL_SLIDER_STEPS, sliderSym, sliderValues } from './slider.ts';
+import { MIN_SLIDER_STEP_PX, sliderStepPx, sliderSym, sliderValues } from './slider.ts';
 import type {
   CoordParams,
   CoordState,
@@ -96,28 +96,33 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
 }
 
 /**
- * 목표가 보는 곡선 위 점은 가장 좁은 화면에서도 한 칸이 8px 이상(MAX_GOAL_SNAPS)이게.
- * 닿을 수 있는가는 끌기가 목표 점의 칸을 묶지 않는 것(model.ts dragPoint, goalPts)이 보장하고, 이 상한은
+ * 목표가 보는 곡선 위 점은 가장 좁은 화면에서도 한 칸이 MIN_SNAP_PX(8px) 이상이게. 칸 폭은 그 화면의 실제 그림 폭
+ * (narrowFrame — 축 끝 글자 자리·축척 같게로 줄어든 폭)으로 센다: 상자 폭으로 세면 단위·축척 같게 장면에서
+ * 실제 칸이 8px 아래로 내려가도 통과했다.
+ * 닿을 수 있는가는 끌기가 목표 점의 칸을 묶지 않는 것(model.ts dragPoint, goalPts)이 보장하고, 이 하한은
  * 손가락으로 그 한 칸에 놓을 수 있는 폭을 지킨다 — 정확한 값 하나를 맞히는 새 목표에만. 옛 approach 목표는
- * 허용 거리(within) 안에 여러 칸이 들어 칸이 좁아도 놓을 자리가 넓어 이 상한을 걸지 않는다(40칸 장면이 있음).
+ * 허용 거리(within) 안에 여러 칸이 들어 칸이 좁아도 놓을 자리가 넓어 이 하한을 걸지 않는다(40칸 장면이 있음).
  */
 function snapsOk(p: CoordParams, g: NewGoal): NewGoal {
   for (const id of movers(p, g).sliders) {
     const sl = p.sliders.find((x) => x.id === id);
-    const n = sl ? Math.round((sl.max - sl.min) / sl.step) : 0;
-    if (n > MAX_GOAL_SLIDER_STEPS)
+    const px = sl ? sliderStepPx(sl) : Number.POSITIVE_INFINITY;
+    if (px < MIN_SLIDER_STEP_PX)
       fail(
         '좌표 goal',
-        `슬라이더 ${id} 가 ${n}칸 — 가장 좁은 화면에서 한 칸이 7px 보다 작아 목표 칸에 멈추기 어려움(${MAX_GOAL_SLIDER_STEPS}칸 이하로)`,
+        `슬라이더 ${id} 의 한 칸이 가장 좁은 화면에서 ${px.toFixed(1)}px — ${MIN_SLIDER_STEP_PX}px 보다 작아 목표 칸에 멈추기 어려움(칸 수를 줄이거나 이름·값 글자를 짧게)`,
       );
   }
+  const f = narrowFrame(p);
+  const w = f.r - f.l;
   for (const id of movers(p, g).points) {
     const o = pointOf(p, id);
     const n = (p.x.hi - p.x.lo) / o.snapN;
-    if (o.on && n > MAX_GOAL_SNAPS + 1e-9)
+    const px = w / n;
+    if (o.on && px < MIN_SNAP_PX - 1e-9)
       fail(
         `좌표 goal`,
-        `${id} 의 끄는 칸이 ${Math.round(n)}칸 — 가장 좁은 화면에서 한 칸이 8px 보다 작아 끌기가 칸을 건너뜀(${MAX_GOAL_SNAPS}칸 이하로)`,
+        `${id} 의 끄는 칸이 ${Math.round(n)}칸 — 가장 좁은 화면 그림 폭 ${w.toFixed(1)}px 에서 한 칸이 ${px.toFixed(1)}px 로 ${MIN_SNAP_PX}px 보다 작아 끌기가 칸을 건너뜀(${Math.floor(w / MIN_SNAP_PX)}칸 이하로)`,
       );
   }
   return g;

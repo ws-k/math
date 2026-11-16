@@ -4,7 +4,7 @@
 import { arr, fail, obj, oneOf, optStr } from '../../parse.ts';
 import { ID, numExpr } from './common.ts';
 import { fAt } from './curve.ts';
-import { r1, toPx } from './frame.ts';
+import { clampY, r1, toPx } from './frame.ts';
 import type {
   CoordParams,
   CoordState,
@@ -26,8 +26,7 @@ const CONSTS = new Set(['pi', 'E']);
 function edge(v: unknown, at: string, cx: ParseCtx): Edge {
   if (typeof v === 'string' && ID.test(v.trim()) && !CONSTS.has(v.trim()))
     return { curve: cx.curveRef(v.trim(), at).id };
-  const e = numExpr(v, at);
-  return { y: e.src, n: e.n };
+  return { n: numExpr(v, at).n };
 }
 
 const edgeY = (p: CoordParams, s: CoordState, e: Edge, x: number) =>
@@ -36,15 +35,13 @@ const edgeY = (p: CoordParams, s: CoordState, e: Edge, x: number) =>
 /** 칠할 영역의 꼭짓점(px): 위 경계를 왼쪽 → 오른쪽, 아래 경계를 오른쪽 → 왼쪽. 정의 안 되는 자리는 건너뛴다 */
 function polygon(p: CoordParams, s: CoordState, o: FillObj, f: Frame): [number, number][] {
   const n = Math.max(40, Math.round((f.r - f.l) / 3));
-  const span = f.b - f.t;
   const xs = Array.from({ length: n + 1 }, (_, k) => o.lo + ((o.hi - o.lo) * k) / n);
   const side = (e: Edge, order: number[]) =>
     order.flatMap((x) => {
       const y = edgeY(p, s, e, x);
       if (!Number.isFinite(y)) return [];
       const [X, Y] = toPx(p, f, x, y);
-      // 화면 밖으로 멀리 간 값은 잘라 둔다(잘린 부분은 clipPath 가 가린다) — 곡선 경로와 같은 까닭
-      return [[X, Math.max(f.t - span, Math.min(f.b + span, Y))] as [number, number]];
+      return [[X, clampY(f, Y)] as [number, number]];
     });
   return [...side(o.top, xs), ...side(o.bottom, [...xs].reverse())];
 }
@@ -93,9 +90,7 @@ export const fillKind: KindDef<FillObj> = {
     return {
       kind: 'fill',
       top: edge(r.top, `${at} fill.top`, cx),
-      bottom: r.bottom === undefined ? { y: '0', n: 0 } : edge(r.bottom, `${at} fill.bottom`, cx),
-      from: a.src,
-      to: b.src,
+      bottom: r.bottom === undefined ? { n: 0 } : edge(r.bottom, `${at} fill.bottom`, cx),
       lo: a.n,
       hi: b.n,
       look: c.look === undefined ? 'plain' : oneOf(c.look, `${at} look`, LOOKS),

@@ -3,7 +3,7 @@
 import { compile, derivative, evalNum, paritySamples } from '../../expr.ts';
 import { fail, obj, oneOf, str } from '../../parse.ts';
 import type { Node } from '../../sym.ts';
-import { r1, toPx } from './frame.ts';
+import { clampY, r1, toPx } from './frame.ts';
 import type { CoordParams, CoordState, CurveObj, Frame, KindDef } from './types.ts';
 
 const TONES = ['main', 'soft', 'accent'] as const;
@@ -34,8 +34,7 @@ function curvePath(p: CoordParams, s: CoordState, c: CurveObj, f: Frame): string
       continue;
     }
     const [X, Y0] = toPx(p, f, x, y);
-    // 화면 밖으로 멀리 간 값은 잘라 둔다(SVG 좌표가 너무 커지지 않게, 잘린 부분은 clipPath 가 가린다)
-    const Y = Math.max(f.t - span, Math.min(f.b + span, Y0));
+    const Y = clampY(f, Y0);
     const jump = prev !== null && Math.abs(Y - prev) > span * 1.5;
     d += `${prev === null || jump ? 'M' : 'L'}${r1(X)} ${r1(Y)}`;
     prev = Y;

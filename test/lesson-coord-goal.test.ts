@@ -411,6 +411,16 @@ test('가장 좁은 화면(382pt 접음)에서도 끌기만으로 목표 점의 
   assert.equal(seen.size, 31);
 });
 
+test('목표 점 칸 폭은 축 글자·축척 같게로 줄어든 실제 그림 폭으로 센다', () => {
+  // 30칸(1/6 간격·x 5칸): 축 글자가 없으면 250px/30 = 8.3px 라 통과, 가로 단위 (m) 자리를 비우면 226.5/30 = 7.55px 라 오류
+  const objs = mvtRaw().objects.map((o) =>
+    'id' in o && o.id === 'R' ? { ...o, point: { ...o.point, snap: '1/6', x: '-1/2' } } : o,
+  );
+  assert.doesNotThrow(() => parseCoord({ ...mvtRaw(), objects: objs }));
+  const withUnit = { ...mvtRaw(), objects: objs, x: { ...mvtRaw().x, unit: 'm' } };
+  assert.throws(() => parseCoord(withUnit), /226\.5px 에서 한 칸이 7\.5px/);
+});
+
 test('parse 오류(목표): 목표가 보는 곡선 위 점의 끄는 칸이 좁은 화면에서 8px 보다 촘촘함', () => {
   const objs = mvtRaw().objects.map((o) =>
     'id' in o && o.id === 'R' ? { ...o, point: { ...o.point, snap: '1/8' } } : o,
@@ -466,14 +476,18 @@ test('목표가 보는 점은 끌기 칸을 묶지 않음 — 옛 approach 목�
   assert.ok(seen.has(19) && seen.has(21), [...seen].join(','));
 });
 
-test('parse 오류(목표): 목표가 보는 슬라이더 칸이 30칸 넘음(좁은 화면에서 한 칸이 7px 아래)', () => {
-  const withMax = (max: number | string) => ({
+test('parse 오류(목표): 목표가 보는 슬라이더 한 칸이 좁은 화면에서 7px 아래(이름·값 글자 폭을 뺀 실제 길이로)', () => {
+  const withMax = (max: number | string, step: number | string, label = '$c$') => ({
     ...doubleRaw(),
-    sliders: [{ id: 'c', min: -2, max, step: '1/4', value: 0, label: 'c' }],
+    sliders: [{ id: 'c', min: -2, max, step, value: 0, label }],
   });
-  assert.throws(() => parseCoord(withMax(7)), /슬라이더/);
-  // 30칸이면 통과(−2~5.5, 1/4 칸)
-  assert.doesNotThrow(() => parseCoord(withMax('11/2')));
+  // 30칸(−2~28, 1칸): 이름 '$c$'·값 두 자리면 줄이 약 226px — 한 칸 7.5px 라 통과
+  assert.doesNotThrow(() => parseCoord(withMax(28, 1)));
+  // 같은 30칸이라도 값이 '−1.75' 처럼 길면(1/4 칸) 줄이 짧아져 한 칸이 7px 아래
+  assert.throws(() => parseCoord(withMax('11/2', '1/4')), /슬라이더 c/);
+  // 이름이 '조각 수 $n$' 처럼 길어도 줄이 짧아진다(실측: 이름 63px, 줄 189px)
+  assert.throws(() => parseCoord(withMax(28, 1, '조각 수 $c$')), /슬라이더 c/);
+  assert.throws(() => parseCoord(withMax(34, 1)), /슬라이더 c/);
 });
 
 test('실근 개수 곡선의 "모든 슬라이더 값에서 다항식" 전수 검사는 형식 검사(deep)에서만 — 장면을 열 때는 처음 값만', () => {
