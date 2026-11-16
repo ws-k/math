@@ -32,6 +32,24 @@ test('renderRich 는 글자를 이스케이프하고 줄바꿈을 살린다', ()
   assert.ok(html.includes('katex'));
 });
 
+test('문장 속 수식과 빈칸 없이 붙은 글자(쉼표·조사·괄호)는 한 덩어리(mglue)로 묶는다 — 쉼표가 다음 줄 맨 앞으로 떨어지지 않게', () => {
+  const html = renderRich('그래서 $i^4=1$, 끝($x$)이에요');
+  const glued = html.match(/<span class="mglue">/g) ?? [];
+  assert.equal(glued.length, 2);
+  // 앞이 빈칸이면 글자를 묶지 않고 뒤에 붙은 쉼표만 묶는다
+  assert.ok(html.startsWith('그래서 <span class="mglue"><span class="katex">'));
+  assert.ok(/<\/span>,<\/span> /.test(html));
+  // 괄호와 조사는 수식 앞뒤 모두 묶는다
+  assert.ok(html.includes('<span class="mglue">끝(<span class="katex">'));
+  assert.ok(html.endsWith(')이에요</span>'));
+  // 빈칸으로 떨어진 수식·가운데 수식은 묶지 않는다
+  assert.ok(!renderRich('$x$ 는').includes('mglue'));
+  assert.ok(!renderRich('값$$x$$끝').includes('mglue'));
+  // 강조 태그를 가르지 않는다(묶을 글자에 태그가 걸리면 묶지 않음)
+  const em = renderRich('**값**$x$', false, { emph: true });
+  assert.ok(em.includes('<b>값</b>'));
+});
+
 test('강조 옵션: **굵게** 와 ==강조== 를 태그로 바꾼다', () => {
   const html = renderRich('규칙은 **하나**, ==양쪽에 똑같이== $x$', false, { emph: true });
   assert.ok(html.includes('<b>하나</b>'));

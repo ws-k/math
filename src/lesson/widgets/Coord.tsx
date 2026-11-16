@@ -468,7 +468,8 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
             )}
           </defs>
           {d.fills.length > 0 && <g clipPath={`url(#${clip})`}>{d.fills.map(node)}</g>}
-          <g className="grid">
+          {/* 칠하기가 있는 그림은 격자를 칠한 면 위에서도 보이는 색으로(on-fill). 칠하기 수는 매개변수로 정해져 끄는 동안 바뀌지 않는다 */}
+          <g className={d.fills.length > 0 ? 'grid on-fill' : 'grid'}>
             {g.xs.map((t) => (
               <line
                 key={`gx${t.k}`}

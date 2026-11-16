@@ -71,20 +71,35 @@ export function renderRich(src: string, strict = false, opt: RichOptions = {}): 
   const key = `${strict ? '!' : ''}${opt.emph ? '*' : ''}|${src}`;
   const hit = cache.get(key);
   if (hit !== undefined) return hit;
-  const html = splitMath(src)
-    .map((s) => {
-      if (s.type === 'text') {
-        const t = escapeHtml(s.value).replace(/\n/g, '<br>');
-        return opt.emph ? emphasize(t, strict) : t;
-      }
-      return katex.renderToString(s.value, {
-        displayMode: s.type === 'display',
-        throwOnError: strict,
-        strict: strict ? 'error' : 'ignore',
-        output: 'html',
-      });
-    })
-    .join('');
+  const parts = splitMath(src).map((s) => {
+    if (s.type === 'text') {
+      const t = escapeHtml(s.value).replace(/\n/g, '<br>');
+      return { inline: false, html: opt.emph ? emphasize(t, strict) : t };
+    }
+    const html = katex.renderToString(s.value, {
+      displayMode: s.type === 'display',
+      throwOnError: strict,
+      strict: strict ? 'error' : 'ignore',
+      output: 'html',
+    });
+    return { inline: s.type === 'inline', html };
+  });
+  // 문장 속 수식과 빈칸 없이 붙은 글자('$i^4=1$,'·'끝($x$)이에요')를 한 덩어리(mglue)로 묶는다. 레슨은 문장 속
+  // 수식을 inline-block 덩어리로 두는데(lesson.css), 브라우저는 덩어리 앞뒤를 늘 줄바꿈 자리로 봐서 쉼표가 다음 줄
+  // 맨 앞으로 떨어졌다(단어 잇기 문자 U+2060 도 크롬은 덩어리 옆에서 무시한다). 레슨 CSS 가 mglue 를 줄바꿈
+  // 없게 하고, 레슨 밖에서는 아무 모양도 없는 span 이다. 묶을 글자에 태그(<b> 등)가 걸리면 가르지 않게 묶지 않는다
+  parts.forEach((p, i) => {
+    if (!p.inline) return;
+    const prev = parts[i - 1];
+    const next = parts[i + 1];
+    const l = prev && !prev.inline ? (/[^\s<>]+$/.exec(prev.html)?.[0] ?? '') : '';
+    const r = next && !next.inline ? (/^[^\s<>]+/.exec(next.html)?.[0] ?? '') : '';
+    if (!l && !r) return;
+    if (prev && l) prev.html = prev.html.slice(0, -l.length);
+    if (next && r) next.html = next.html.slice(r.length);
+    p.html = `<span class="mglue">${l}${p.html}${r}</span>`;
+  });
+  const html = parts.map((p) => p.html).join('');
   if (cache.size > 2000) cache.clear();
   cache.set(key, html);
   return html;
