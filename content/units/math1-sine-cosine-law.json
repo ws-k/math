@@ -61,6 +61,10 @@
       "smax": {
         "value": "16",
         "check": "Rational(1, 2)*8*4*sin(pi/2)"
+      },
+      "m70": {
+        "value": "70",
+        "check": "10*sqrt((8 - 3*cos(pi/3))**2 + (3*sin(pi/3))**2)"
       }
     },
     "scenes": [
@@ -80,8 +84,8 @@
         "kind": "question",
         "id": "hook",
         "chip": "오늘의 질문",
-        "title": "두 변이 3, 8 이고 사이 각이 60°\n남은 변의 제곱은?",
-        "lead": "$\\overline{CA}=3$, $\\overline{CB}=8$, $\\angle C=60^\\circ$ 예요. 직각삼각형이 아니라서 피타고라스 정리를 바로 쓸 수 없어요. $\\overline{AB}^2$ 은 얼마일까요?",
+        "title": "강 건너 두 나무 사이,\n줄자 없이 잴 수 있을까요?",
+        "lead": "강 이쪽 C 에 서서 측량기로 강 건너 나무 A 까지 30 m, 나무 B 까지 80 m, 두 방향 사이 각 $\\angle C=60^\\circ$ 를 쟀어요. 두 나무 사이는 강 건너라 줄자를 댈 수 없어요. 그림은 한 칸이 10 m 라서 $\\overline{CA}=3$, $\\overline{CB}=8$ 칸이에요. 직각삼각형이 아니라 피타고라스 정리를 바로 쓸 수 없어요. 그림에서 $\\overline{AB}^2$ 은 얼마일까요?",
         "widget": {
           "type": "shape",
           "params": {
@@ -166,7 +170,7 @@
           "수선의 길이는 $3\\sin60^\\circ=\\frac{3\\sqrt3}{2}$, 수선의 발에서 C 까지는 $3\\cos60^\\circ=\\frac32$ 예요.",
           "수선의 발에서 B 까지는 $8-\\frac32=\\frac{13}{2}$ 이라 $\\overline{AB}^2=\\frac{169}{4}+\\frac{27}{4}={{c2}}$ 예요."
         ],
-        "conclude": "피타고라스로 구한 {{pyth}} 보다 {{cut}} 작아요. ==이 차이는 각 C 에서 나와요.=="
+        "conclude": "$\\overline{AB}={{c7}}$ 칸, 곧 두 나무 사이는 {{m70}} m 예요. 피타고라스로 구한 {{pyth}} 보다 {{cut}} 작아요. ==이 차이는 각 C 에서 나와요.=="
       },
       {
         "kind": "explore",
@@ -233,10 +237,23 @@
               }
             ],
             "digits": 1,
-            "note": "A 를 60°, 90°, 120° 자리에 차례로 놓아 보세요."
+            "note": "A 를 60°, 90°, 120° 자리에 차례로 놓아 보세요.",
+            "goal": {
+              "visit": {
+                "of": 0,
+                "at": [
+                  60,
+                  90,
+                  120
+                ]
+              },
+              "hint": "A 를 원 위에서 한 칸씩 옮기며 $\\angle C$ 를 보세요. 세 자리 모두 위쪽 반원에 있어요."
+            },
+            "done": "세 각을 다 봤어요. 각 C 가 커질수록 $\\overline{AB}$ 도 길어져요."
           }
         },
-        "after": "$90^\\circ$ 에서는 피타고라스대로 $\\overline{AB}^2={{pyth}}$ 예요. $60^\\circ$ 에서는 $\\overline{AB}={{c7}}$, 곧 {{cut}} 줄었고, $120^\\circ$ 에서는 $\\overline{AB}^2={{c120}}$ 으로 {{cut}} 늘었어요. 이 {{cut}} 은 $2\\cdot3\\cdot8\\cos60^\\circ$ 예요. 각 C 가 예각이면 $2ab\\cos C$ 만큼 빼고, 둔각이면 $\\cos C<0$ 이라 ==빼는 것이 오히려 더해져요.=="
+        "after": "$90^\\circ$ 에서는 피타고라스대로 $\\overline{AB}^2={{pyth}}$ 예요. $60^\\circ$ 에서는 $\\overline{AB}={{c7}}$, 곧 {{cut}} 줄었고, $120^\\circ$ 에서는 $\\overline{AB}^2={{c120}}$ 으로 {{cut}} 늘었어요. 이 {{cut}} 은 $2\\cdot3\\cdot8\\cos60^\\circ$ 예요. 각 C 가 예각이면 $2ab\\cos C$ 만큼 빼고, 둔각이면 $\\cos C<0$ 이라 ==빼는 것이 오히려 더해져요.==",
+        "afterGoal": true
       },
       {
         "kind": "explore",
@@ -331,10 +348,19 @@
               }
             ],
             "digits": 1,
-            "note": "원의 반지름은 5 예요."
+            "note": "원의 반지름은 5 예요.",
+            "goal": {
+              "value": {
+                "of": 3,
+                "is": 90
+              },
+              "hint": "지름의 두 끝은 중심 O 를 사이에 두고 마주 봐요. B 에서 O 를 지나 똑바로 건너간 자리예요."
+            },
+            "done": "$\\overline{AB}$ 가 지름이 되자 $\\angle ACB$ 가 직각이 됐어요. $\\angle A$ 는 그대로예요."
           }
         },
-        "after": "A 가 위쪽 호 어디에 있든 $\\angle A={{angA}}^\\circ$, $\\overline{BC}$ 도 그대로예요. A 가 B 의 정반대에 오면 $\\overline{AB}$ 는 지름 {{diam}} 이고 $\\angle ACB=90^\\circ$ 가 돼요. 그 직각삼각형에서 $\\sin A=\\frac{\\overline{BC}}{2R}$ 이라서 $\\overline{BC}\\div\\sin A={{ratio}}$, 곧 ==변 ÷ (맞은편 각의 사인) = 외접원의 지름==이에요."
+        "after": "A 가 위쪽 호 어디에 있든 $\\angle A={{angA}}^\\circ$, $\\overline{BC}$ 도 그대로예요. A 가 B 의 정반대에 오면 $\\overline{AB}$ 는 지름 {{diam}} 이고 $\\angle ACB=90^\\circ$ 가 돼요. 그 직각삼각형에서 $\\sin A=\\frac{\\overline{BC}}{2R}$ 이라서 $\\overline{BC}\\div\\sin A={{ratio}}$, 곧 ==변 ÷ (맞은편 각의 사인) = 외접원의 지름==이에요.",
+        "afterGoal": true
       },
       {
         "kind": "terms",
@@ -355,14 +381,14 @@
             "body": "삼각형의 세 꼭짓점을 모두 지나는 원이에요. 반지름을 보통 $R$ 로 적어요."
           }
         ],
-        "aside": "**확인** · 처음 삼각형에서 $3^2+8^2-2\\cdot3\\cdot8\\cos60^\\circ={{c2}}$ 이라 $\\overline{AB}={{c7}}$ 이었어요."
+        "aside": "**확인** · 강 건너 측량에서 $3^2+8^2-2\\cdot3\\cdot8\\cos60^\\circ={{c2}}$ 이라 $\\overline{AB}={{c7}}$ 칸, 곧 두 나무 사이는 {{m70}} m 였어요."
       },
       {
         "kind": "explore",
         "id": "area",
         "chip": "넓이도 같은 생각으로",
-        "title": "넓이가 가장 커지는\n각을 찾아보세요",
-        "lead": "$\\overline{CA}=4$, $\\overline{CB}=8$ 은 그대로예요. A 를 원을 따라 끌며 넓이를 보세요. 밑변 CB 에 대한 높이는 $4\\sin C$ 예요.",
+        "title": "울타리 두 개로 만든 텃밭,\n언제 가장 넓을까요?",
+        "lead": "길이 4 m, 8 m 인 울타리 두 개를 모퉁이 C 에서 이어 세모난 텃밭을 만들어요. 두 끝 A, B 는 곧은 줄로 이어요. 그림 한 칸은 1 m 예요. A 를 원을 따라 끌어 두 울타리 사이 각 C 를 바꾸며 넓이(m²)를 보세요. 밑변 CB 에 대한 높이는 $4\\sin C$ 예요.",
         "widget": {
           "type": "shape",
           "params": {
@@ -419,10 +445,19 @@
               }
             ],
             "digits": 1,
-            "note": "A 를 30°, 90°, 150° 자리에 놓아 보세요."
+            "note": "넓이가 가장 큰 자리를 찾아요. 30° 와 150° 자리도 견줘 보세요.",
+            "goal": {
+              "value": {
+                "of": 1,
+                "is": 16
+              },
+              "hint": "넓이는 높이 $4\\sin C$ 에 달려 있어요. A 가 밑변 CB 에서 가장 높이 뜨는 자리는 어디일까요?"
+            },
+            "done": "두 울타리가 직각을 이룰 때 텃밭이 가장 넓어요."
           }
         },
-        "after": "넓이는 $\\frac12\\cdot8\\cdot4\\sin C$ 예요. $30^\\circ$ 에서 {{s30}}, $90^\\circ$ 에서 가장 큰 {{smax}} 이고, $150^\\circ$ 에서 다시 {{s30}} 이에요. $\\sin150^\\circ=\\sin30^\\circ$ 이기 때문이에요. ==넓이는 두 변과 그 끼인각의 사인으로 정해져요.== $S=\\frac12ab\\sin C$"
+        "after": "넓이는 $\\frac12\\cdot8\\cdot4\\sin C$ 예요. $30^\\circ$ 에서 {{s30}} m², $90^\\circ$ 에서 가장 큰 {{smax}} m² 이고, $150^\\circ$ 에서 다시 {{s30}} m² 이에요. $\\sin150^\\circ=\\sin30^\\circ$ 이기 때문이에요. ==넓이는 두 변과 그 끼인각의 사인으로 정해져요.== 텃밭 넓이를 식으로 쓰면 $S=\\frac12ab\\sin C$",
+        "afterGoal": true
       },
       {
         "kind": "spot",
@@ -480,27 +515,27 @@
         "title": "이제 직접 해 볼 차례",
         "items": [
           {
-            "id": "cos-side",
-            "q": "삼각형 ABC 에서 $b=5$, $c=3$, $A=120^\\circ$ 일 때 $a$ 의 값을 구하세요.",
-            "hint": "두 변과 그 끼인각을 알아요. $\\cos120^\\circ$ 의 부호를 조심해요.",
+            "id": "pond",
+            "q": "연못 양쪽 끝에 말뚝 B, C 를 박았어요. 연못 밖 한 지점 A 에서 재니 $\\overline{AB}=5$ m, $\\overline{AC}=3$ m, $\\angle BAC=120^\\circ$ 였어요. 두 말뚝 사이 거리 $\\overline{BC}$ 는 몇 m 인지 구하세요.",
+            "hint": "말뚝 사이는 연못 때문에 못 재지만, 두 변과 그 끼인각을 알아요. $\\cos120^\\circ$ 의 부호를 조심해요.",
             "concepts": [
               "코사인법칙: $a^2=b^2+c^2-2bc\\cos A$"
             ],
             "steps": [
               {
                 "title": "어느 법칙인지 고르기",
-                "body": "두 변과 끼인각을 아니까 코사인법칙이에요.\n$$a^2=b^2+c^2-2bc\\cos A$$"
+                "body": "두 변과 끼인각을 아니까 코사인법칙이에요.\n$$\\overline{BC}^2=\\overline{AB}^2+\\overline{AC}^2-2\\cdot\\overline{AB}\\cdot\\overline{AC}\\cos A$$"
               },
               {
                 "title": "값 넣기",
-                "body": "$\\cos120^\\circ=-\\frac12$ 이므로\n$$a^2=25+9-2\\cdot5\\cdot3\\cdot\\left(-\\frac12\\right)=34+15=49$$"
+                "body": "$\\cos120^\\circ=-\\frac12$ 이므로\n$$\\overline{BC}^2=25+9-2\\cdot5\\cdot3\\cdot\\left(-\\frac12\\right)=34+15=49$$"
               },
               {
                 "title": "제곱근 구하기",
-                "body": "$a>0$ 이므로 $a={{answer}}$ 이에요."
+                "body": "거리는 양수이므로 $\\overline{BC}={{answer}}$ m 예요."
               }
             ],
-            "tip": "둔각을 끼고 있어서 $a$ 가 세 변 중 가장 길어요. 답이 $5$ 보다 짧게 나오면 부호를 다시 봐요.",
+            "tip": "둔각을 끼고 있어서 $\\overline{BC}$ 가 세 변 중 가장 길어요. 답이 $5$ m 보다 짧게 나오면 부호를 다시 봐요.",
             "answer": "7",
             "answerType": "int",
             "check": "sqrt(5**2 + 3**2 - 2*5*3*cos(2*pi/3))"
