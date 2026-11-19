@@ -349,3 +349,58 @@ test('목표 판정(goal): 곡선 식의 소수는 분수로 읽는다(0.1·3 �
   ]);
   assert.equal(r.status, 0, r.stdout + r.stderr);
 });
+
+// 원 위 15° 간격 자리의 각: cos 값이 겹근호 식이라 sympy simplify 가 120 과 같음을 증명하지 못했다(요청 106 묶음).
+// 고친 뒤에도 정말 다른 값은 같다고 하지 않아야 한다 — 30자리까지 같은 가까운 값으로 확인한다.
+const onCircle = (d: string) => `Point(4 + 3*cos(rad(${d})), 4 + 3*sin(rad(${d})))`;
+const [cA, cB, cC] = [onCircle('15'), onCircle('pt_B_d'), onCircle('135')];
+const inscribed = `deg(acos((${cA} - ${cB}).dot(${cC} - ${cB}) / (${cA}.distance(${cB})*${cC}.distance(${cB}))))`;
+const arcStates = ['45', '195', '300'].map((d) => ({ pt_B_d: d }));
+
+test('목표 판정(goal): 겹근호로 나오는 각(120°·60°)과 근호 값도 정확히 같다고 본다', () => {
+  const r = runVerify([
+    {
+      ...goal,
+      of: [{ expr: inscribed }],
+      targets: [['120'], ['60']],
+      tol: '0',
+      states: arcStates,
+      hits: [[0], [1, 2]],
+      need: 1,
+    },
+    // 겹근호 √(2+√3) 과 (√6+√2)/2
+    {
+      ...goal,
+      of: [{ expr: 'sqrt(2+sqrt(3))*pt_R_x' }],
+      targets: [['(sqrt(6)+sqrt(2))/2']],
+      tol: '0',
+      states: [{ pt_R_x: '1' }, { pt_R_x: '2' }],
+      hits: [[0]],
+      need: 1,
+    },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+for (const [name, target] of [
+  // 30자리까지 같아 빠른 길(수치 비교)을 지나 기호 확인까지 가는 반례들
+  ['유리수만큼 다른 값', '120 + 1/10**40'],
+  ['근호만큼 다른 값', '120 + sqrt(2)/10**40'],
+  ['cos 값이 아주 조금 다른 각', 'deg(acos(-1/2 + 1/10**40))'],
+] as const) {
+  test(`실패해야 함(goal): 겹근호 각과 ${name}을 같다고 하지 않음`, () => {
+    const r = runVerify([
+      {
+        ...goal,
+        of: [{ expr: inscribed }],
+        targets: [[target]],
+        tol: '0',
+        states: arcStates,
+        hits: [[0]],
+        need: 1,
+      },
+    ]);
+    assert.equal(r.status, 1, r.stdout);
+    assert.match(r.stdout, /앱 판정 \[\[0\]\] ≠ sympy 판정 \[\[\]\]/);
+  });
+}

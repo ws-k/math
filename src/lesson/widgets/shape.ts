@@ -5,6 +5,9 @@
 // 잘라 옮기기(cut): 조각(piece)을 끌어 by 만큼 옮기면 다른 모양(result)이 되고 넓이는 그대로임을 보인다.
 // 목표(goal, 조각 ②): 측정값 하나를 목표값으로("넓이를 20으로") 또는 여러 값에 한 번씩("60°·90°·120°").
 // 공통 규칙(손을 뗀 자리만 판정·진행 표시·힌트)은 src/lesson/goal.ts.
+// 측정값 묶기(요청 106): 앞 측정값들의 합·차·비도 측정값(PF+PG, |PF−PG|, AD÷AB)이고, 목표는 수 대신 다른
+// 측정값과 견줄 수 있다(PF = PH). 이차곡선의 정의·닮음비를 "읽어서 계산"이 아니라 "끌어서 같게"로 보이려는 것.
+// 수선의 발(foot): 끄는 점에서 고정 직선에 내린 발 — 상태의 일부로 늘 다시 계산해 끄는 점을 따라온다.
 import {
   checkHitTable,
   checkNotAtStart,
@@ -35,15 +38,26 @@ export interface ShPoint {
   deg?: number;
   drag: boolean;
   on?: ShOn;
-  /** 보조점: 그리지 않는 고정 점(선분 위 점의 끝·선분 끝으로만). 설명 없는 점 이름이 그림에 나오지 않게 */
+  /** 보조점: 그리지 않는 고정 점(선분 위 점의 끝·선분 끝·수선의 발 직선으로만). 설명 없는 점 이름이 그림에 나오지 않게 */
   aux?: true;
+  /** 수선의 발: from 에서 직선 line(고정 점 둘)에 내린 발. 자리는 적지 않고 늘 계산한다 */
+  foot?: { from: string; line: [string, string] };
 }
+/**
+ * 측정값. sum·diff·ratio 의 수는 앞 측정값의 번호(길이·각만 — 묶은 값을 다시 묶지 않아 순환·긴 이름이 없다).
+ * diff 는 |a − b|(이차곡선 정의가 차의 크기라 부호를 두지 않는다).
+ */
 export type ShMeasure =
   | { len: [string, string] }
   | { angle: [string, string, string] }
-  | { area: number };
+  | { area: number }
+  | { sum: number[] }
+  | { diff: [number, number] }
+  | { ratio: [number, number] };
+/** 목표가 견주는 것: 수, 또는 다른 측정값의 번호(PF = PH) */
+export type ShIs = { num: GoalNum } | { of: number };
 /** 목표: of 는 measures 의 번호(보이는 측정값만 목표로 — 학습자가 읽을 수 있어야 맞출 수 있다) */
-export type ShGoal = GoalShape<number, GoalNum> & GoalCommon;
+export type ShGoal = GoalShape<number, ShIs> & GoalCommon;
 
 export interface ShapeParams {
   grid: { w: number; h: number };
@@ -98,7 +112,28 @@ export function shInit(p: ShapeParams): ShState {
   for (const pt of p.points)
     if (pt.deg !== undefined && pt.on && 'circle' in pt.on)
       pts[pt.id] = circlePos(s, pt.on, pt.deg);
-  return s;
+  return settle(p, s);
+}
+
+/**
+ * 수선의 발 자리를 지금 점들로 다시 계산한 상태. 점을 옮기는 모든 길(끌기·키·검산용 상태 늘어놓기)이 이것을
+ * 거쳐야 발이 끄는 점을 따라온다. 정수 좌표면 (내적×방향)/길이² 순서로 나눠 0.3×10 같은 부동소수 찌꺼기를 피한다.
+ */
+function settle(p: ShapeParams, s: ShState): ShState {
+  if (!p.points.some((x) => x.foot)) return s;
+  const pts = { ...s.pts };
+  for (const pt of p.points) {
+    if (!pt.foot) continue;
+    const a = pts[pt.foot.line[0]] as { x: number; y: number };
+    const b = pts[pt.foot.line[1]] as { x: number; y: number };
+    const q = pts[pt.foot.from] as { x: number; y: number };
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dot = (q.x - a.x) * dx + (q.y - a.y) * dy;
+    const l2 = dx * dx + dy * dy;
+    pts[pt.id] = { x: a.x + (dot * dx) / l2, y: a.y + (dot * dy) / l2 };
+  }
+  return { ...s, pts };
 }
 
 const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : Math.abs(a));
@@ -128,7 +163,7 @@ function place(p: ShapeParams, s: ShState, id: string, tx: number, ty: number): 
       y: Math.min(p.grid.h, Math.max(0, Math.round(ty))),
     };
   }
-  return { ...s, pts: { ...s.pts, [id]: n } };
+  return settle(p, { ...s, pts: { ...s.pts, [id]: n } });
 }
 
 /** 끌기: 시작 상태 s 에서 점(또는 'cut' 조각)을 화면 거리 (dx,dy)(SVG 단위)만큼 */
@@ -159,7 +194,7 @@ export function shKey(p: ShapeParams, s: ShState, id: string, key: string): ShSt
   if (!pt || !cur) return null;
   if (pt.on && 'circle' in pt.on) {
     const deg = ((((cur.deg ?? 0) + (v[0] + v[1]) * CIRCLE_STEP) % 360) + 360) % 360;
-    return { ...s, pts: { ...s.pts, [id]: circlePos(s, pt.on, deg) } };
+    return settle(p, { ...s, pts: { ...s.pts, [id]: circlePos(s, pt.on, deg) } });
   }
   if (pt.on && 'seg' in pt.on) {
     const a = s.pts[pt.on.seg[0]] as { x: number; y: number };
@@ -216,22 +251,51 @@ const shown = (v: number, digits: number, unit = '') => {
   return `${r.exact ? '=' : '≈'} ${r.s.replace('-', '−')}${unit}`;
 };
 
+/** 묶은 측정값(합·차·비)의 항 번호. 길이·각·넓이는 빈 목록 */
+const operands = (m: ShMeasure): number[] =>
+  'sum' in m ? m.sum : 'diff' in m ? m.diff : 'ratio' in m ? m.ratio : [];
+const sub = (p: ShapeParams, i: number) => p.measures[i] as ShMeasure;
+
 function measureValue(p: ShapeParams, s: ShState, m: ShMeasure): number | null {
   if ('len' in m) return dist(P(s, m.len[0]), P(s, m.len[1]));
   if ('angle' in m) return angleAt(P(s, m.angle[0]), P(s, m.angle[1]), P(s, m.angle[2]));
-  return shoelace((p.polygons[m.area] ?? []).map((id) => P(s, id)));
+  if ('area' in m) return shoelace((p.polygons[m.area] ?? []).map((id) => P(s, id)));
+  const v = operands(m).map((i) => measureValue(p, s, sub(p, i)));
+  if (v.some((x) => x === null)) return null;
+  const [a, b] = v as [number, number];
+  if ('sum' in m) return (v as number[]).reduce((t, x) => t + x, 0);
+  if ('diff' in m) return Math.abs(a - b);
+  // 분모 길이가 0(두 점이 겹침)이면 비를 정할 수 없다 — 각을 정할 수 없을 때와 같은 글
+  return b < 1e-12 ? null : a / b;
+}
+
+/** 측정값의 종류(같은 종류끼리만 묶고 견준다 — 길이와 각을 더하거나 같다고 하면 뜻이 없다) */
+function measureKind(p: ShapeParams, m: ShMeasure): 'len' | 'angle' | 'area' | 'ratio' {
+  if ('len' in m) return 'len';
+  if ('angle' in m) return 'angle';
+  if ('area' in m) return 'area';
+  if ('ratio' in m) return 'ratio';
+  return measureKind(p, sub(p, operands(m)[0] as number));
+}
+
+/** 화면에 적는 측정값 이름(PF, ∠ABC, PF + PG, |PF − PG|, AD ÷ AB) */
+function measureName(p: ShapeParams, m: ShMeasure): string {
+  if ('len' in m) return m.len.join('');
+  if ('angle' in m) return `∠${m.angle.join('')}`;
+  if ('area' in m) return '넓이';
+  const n = operands(m).map((i) => measureName(p, sub(p, i)));
+  if ('sum' in m) return n.join(' + ');
+  if ('diff' in m) return `|${n[0]} − ${n[1]}|`;
+  return `${n[0]} ÷ ${n[1]}`;
 }
 
 /** 측정 글들(화면에 보이는 그대로) */
 export function shMeasures(p: ShapeParams, s: ShState): string[] {
   return p.measures.map((m) => {
     const v = measureValue(p, s, m);
-    if ('len' in m) return `${m.len.join('')} ${shown(v as number, p.digits)}`;
-    if ('angle' in m)
-      return v === null
-        ? `∠${m.angle.join('')} 은 정할 수 없어요`
-        : `∠${m.angle.join('')} ${shown(v, p.digits, '°')}`;
-    return `넓이 ${shown(v as number, p.digits)}`;
+    const name = measureName(p, m);
+    if (v === null) return `${name} 은 정할 수 없어요`;
+    return `${name} ${shown(v, p.digits, measureKind(p, m) === 'angle' ? '°' : '')}`;
   });
 }
 
@@ -239,8 +303,12 @@ const cutArea = (s: ShState, ids: string[]) => shoelace(ids.map((id) => P(s, id)
 
 // ---- 목표 ----
 
+// 수선의 발은 격자점이 아닐 수 있다 — 격자점으로 반올림해 분수로 견주면 틀린 판정이 나므로 수로만 견준다
 const isLattice = (p: ShapeParams, ids: string[]) =>
-  ids.every((id) => p.points.find((x) => x.id === id)?.deg === undefined);
+  ids.every((id) => {
+    const pt = p.points.find((x) => x.id === id);
+    return pt?.deg === undefined && !pt?.foot;
+  });
 const isqrt = (n: bigint) => {
   if (n < 0n) return null;
   let r = BigInt(Math.round(Math.sqrt(Number(n))));
@@ -260,7 +328,23 @@ const ints = (s: ShState, id: string) => {
 function measureVal(p: ShapeParams, s: ShState, m: ShMeasure): Val {
   const n = measureValue(p, s, m) ?? Number.NaN;
   let q: Rational | null = null;
-  if ('area' in m) {
+  const ops = operands(m);
+  if (ops.length) {
+    // 묶은 값은 항이 모두 분수일 때만 분수(PF+PG 가 정수여도 항이 무리수면 수로 견주고 sympy 가 정확히 다시 본다)
+    const qs = ops.map((i) => measureVal(p, s, sub(p, i)).q);
+    if (Number.isFinite(n) && qs.every((x) => x)) {
+      const [a, b] = qs as [Rational, Rational];
+      if ('sum' in m)
+        q = (qs as Rational[]).reduce((t, x) => reduce(t[0] * x[1] + x[0] * t[1], t[1] * x[1]), [
+          0n,
+          1n,
+        ] as Rational);
+      else if ('diff' in m) {
+        const d = reduce(a[0] * b[1] - b[0] * a[1], a[1] * b[1]);
+        q = [d[0] < 0n ? -d[0] : d[0], d[1]];
+      } else if (b[0] !== 0n) q = reduce(a[0] * b[1], a[1] * b[0]);
+    }
+  } else if ('area' in m) {
     const ids = p.polygons[m.area] ?? [];
     if (isLattice(p, ids)) {
       let t = 0n;
@@ -292,7 +376,8 @@ export function shGoalHits(p: ShapeParams, s: ShState): string[] {
   const v = measureVal(p, s, p.measures[g.of] as ShMeasure);
   if (g.kind === 'visit')
     return g.at.flatMap((t, k) => (sameVal(v, t, g.tol.n) ? [String(k)] : []));
-  if (!sameVal(v, g.is, g.tol.n)) return [];
+  const t = 'num' in g.is ? g.is.num : measureVal(p, s, sub(p, g.is.of));
+  if (!sameVal(v, t, g.tol.n)) return [];
   if (g.places === 1) return ['0'];
   return [
     goalMovers(p, g)
@@ -305,16 +390,24 @@ export function shGoalHits(p: ShapeParams, s: ShState): string[] {
 export const shGoalNeed = (p: ShapeParams) =>
   !p.goal ? 1 : p.goal.kind === 'visit' ? p.goal.at.length : p.goal.places;
 
-/** 측정이 쓰는 점들 */
+/** 측정이 쓰는 점들(묶은 값은 항들의 점, 수선의 발은 그 발을 내린 점까지 — 발은 그 점을 따라 움직이므로) */
 function measurePoints(p: ShapeParams, m: ShMeasure): string[] {
-  if ('len' in m) return m.len;
-  if ('angle' in m) return m.angle;
-  return p.polygons[m.area] ?? [];
+  let ids: string[];
+  if ('len' in m) ids = m.len;
+  else if ('angle' in m) ids = m.angle;
+  else if ('area' in m) ids = p.polygons[m.area] ?? [];
+  else ids = operands(m).flatMap((i) => measurePoints(p, sub(p, i)));
+  return ids.flatMap((id) => {
+    const f = p.points.find((x) => x.id === id)?.foot;
+    return f ? [id, f.from] : [id];
+  });
 }
 
-/** 목표가 바라보는 끄는 점(선분 끝·원 중심은 고정이라 끄는 점끼리는 서로 기대지 않는다) */
+/** 목표가 바라보는 끄는 점(선분 끝·원 중심·발의 직선은 고정이라 끄는 점끼리는 서로 기대지 않는다) */
 function goalMovers(p: ShapeParams, g: ShGoal): string[] {
   const ids = new Set(measurePoints(p, p.measures[g.of] as ShMeasure));
+  if (g.kind === 'value' && 'of' in g.is)
+    for (const id of measurePoints(p, sub(p, g.is.of))) ids.add(id);
   return p.points.filter((x) => x.drag && ids.has(x.id)).map((x) => x.id);
 }
 
@@ -325,7 +418,7 @@ function goalStates(p: ShapeParams, g: ShGoal) {
     const pt = p.points.find((x) => x.id === id) as ShPoint;
     const opts: { patch: (s: ShState) => ShState; sym: Record<string, string> }[] = [];
     const set = (pos: { x: number; y: number; deg?: number }, sym: Record<string, string>) =>
-      opts.push({ patch: (s) => ({ ...s, pts: { ...s.pts, [id]: pos } }), sym });
+      opts.push({ patch: (s) => settle(p, { ...s, pts: { ...s.pts, [id]: pos } }), sym });
     if (pt.on && 'circle' in pt.on) {
       const on = pt.on;
       for (let d = 0; d < 360; d += CIRCLE_STEP)
@@ -474,9 +567,14 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
 
 // ---- 검산 ----
 
+/** 수선의 발의 sympy 식. ps 는 발을 내린 점·직선 점의 식(목표 검산에서는 끄는 점이 상태 기호) */
+const footSym = (f: NonNullable<ShPoint['foot']>, ps: (id: string) => string) =>
+  `Line(${ps(f.line[0])}, ${ps(f.line[1])}).projection(${ps(f.from)})`;
+
 /** sympy 점 식 */
 function pointSym(p: ShapeParams, s: ShState, id: string): string {
   const pt = p.points.find((x) => x.id === id) as ShPoint;
+  if (pt.foot) return footSym(pt.foot, (j) => pointSym(p, s, j));
   const a = P(s, id);
   if (pt.on && 'circle' in pt.on) {
     const c = P(s, pt.on.circle[0]);
@@ -500,7 +598,11 @@ function measureSym(p: ShapeParams, m: ShMeasure, ps: (id: string) => string): s
     const [a, b, c] = m.angle.map(ps) as [string, string, string];
     return `deg(acos((${a} - ${b}).dot(${c} - ${b}) / (${a}.distance(${b})*${c}.distance(${b}))))`;
   }
-  return shoelaceSym((p.polygons[m.area] ?? []).map(ps));
+  if ('area' in m) return shoelaceSym((p.polygons[m.area] ?? []).map(ps));
+  const t = operands(m).map((i) => `(${measureSym(p, sub(p, i), ps)})`);
+  if ('sum' in m) return t.join(' + ');
+  if ('diff' in m) return `Abs(${t[0]} - ${t[1]})`;
+  return `${t[0]}/${t[1]}`;
 }
 
 function measureChecks(p: ShapeParams, s: ShState, tag: string): WidgetCheck[] {
@@ -525,9 +627,11 @@ function measureChecks(p: ShapeParams, s: ShState, tag: string): WidgetCheck[] {
 function goalChecks(p: ShapeParams, g: ShGoal): WidgetCheck {
   const s0 = shInit(p);
   const movers = new Set(goalMovers(p, g));
-  const ps = (id: string) => {
-    if (!movers.has(id)) return pointSym(p, s0, id);
+  const ps = (id: string): string => {
     const pt = p.points.find((x) => x.id === id) as ShPoint;
+    // 발은 끄는 점을 따라오므로 그 점의 상태 기호로 식을 세운다(처음 자리 값으로 굳히지 않게)
+    if (pt.foot) return footSym(pt.foot, ps);
+    if (!movers.has(id)) return pointSym(p, s0, id);
     if (pt.on && 'circle' in pt.on) {
       const c = P(s0, pt.on.circle[0]);
       const r = pt.on.circle[1];
@@ -540,7 +644,10 @@ function goalChecks(p: ShapeParams, g: ShGoal): WidgetCheck {
     name: '목표 판정',
     kind: 'goal',
     of: [{ expr: measureSym(p, p.measures[g.of] as ShMeasure, ps) }],
-    targets: g.kind === 'visit' ? g.at.map((t) => [t.src]) : [[g.is.src]],
+    targets:
+      g.kind === 'visit'
+        ? g.at.map((t) => [t.src])
+        : [['num' in g.is ? g.is.num.src : measureSym(p, sub(p, g.is.of), ps)]],
     tol: g.tol.src,
     states: states.map((x) => x.sym),
     hits: goalTable(
@@ -576,14 +683,36 @@ export const shapeDef: WidgetDef<ShapeParams> = {
       if (!ids.has(v)) fail(at, `없는 점 ${v}`);
       return v;
     };
+    const prev = new Map<string, ShPoint>();
     const points: ShPoint[] = arr(o.points, '도형판 points', 1, 10).map((rp, i) => {
       const at = `도형판 점${i + 1}`;
-      const x = obj(rp, at, ['id'], ['x', 'y', 'deg', 'drag', 'on', 'aux']);
+      const x = obj(rp, at, ['id'], ['x', 'y', 'deg', 'drag', 'on', 'aux', 'foot']);
       const id = str(x.id, `${at} id`);
       if (!ID.test(id)) fail(`${at} id`, '대문자 한 글자');
       if (ids.has(id)) fail(`${at} id`, `중복 (${id})`);
       if (x.drag !== undefined && typeof x.drag !== 'boolean') fail(`${at} drag`, 'true/false 만');
       const pt: ShPoint = { id, drag: x.drag === true };
+      if (x.foot !== undefined) {
+        // 발은 자리를 늘 계산하는 점 — 자리·끌기·제약을 적으면 계산한 자리와 어긋난다
+        const bad = ['x', 'y', 'deg', 'drag', 'on', 'aux'].find((k) => x[k] !== undefined);
+        if (bad) fail(`${at} foot`, `수선의 발에는 ${bad} 를 적지 않음(자리는 계산함)`);
+        const f = obj(x.foot, `${at} foot`, ['from', 'line']);
+        const from = need(f.from, `${at} foot.from`);
+        const line = arr(f.line, `${at} foot.line`, 2, 2).map((v, j) =>
+          need(v, `${at} foot.line${j + 1}`),
+        ) as [string, string];
+        if (prev.get(from)?.foot) fail(`${at} foot.from`, '발에서 다시 발을 내리지 않음');
+        // 직선을 고정해 두면 발은 내린 점 하나만 따라간다(검산이 늘어놓는 상태도 그 점의 자리뿐)
+        const [a, b] = line.map((v) => prev.get(v) as ShPoint);
+        for (const e of [a, b])
+          if (e?.drag || e?.on || e?.foot)
+            fail(`${at} foot.line`, `직선 위 점 ${e.id} 은 고정된 격자점이어야 함`);
+        if (a?.x === b?.x && a?.y === b?.y) fail(`${at} foot.line`, '직선의 두 점이 같은 자리');
+        pt.foot = { from, line };
+        ids.add(id);
+        prev.set(id, pt);
+        return pt;
+      }
       if (x.aux !== undefined) {
         if (x.aux !== true) fail(`${at} aux`, 'true 만');
         if (pt.drag || x.on !== undefined) fail(`${at} aux`, '보조점은 고정 점(끌기·제약 없음)');
@@ -614,6 +743,7 @@ export const shapeDef: WidgetDef<ShapeParams> = {
         if (x.deg !== undefined) fail(`${at} deg`, '원 위 점에만');
       }
       ids.add(id);
+      prev.set(id, pt);
       return pt;
     });
     const p: ShapeParams = {
@@ -646,22 +776,42 @@ export const shapeDef: WidgetDef<ShapeParams> = {
     if (note !== undefined) p.note = note;
     const done = optStr(o.done, '도형판 done');
     if (done !== undefined) p.done = done;
-    p.measures = (o.measures === undefined ? [] : arr(o.measures, '도형판 measures', 0, 6)).map(
-      (rm, i) => {
-        const at = `도형판 측정${i + 1}`;
-        const m = obj(rm, at, [], ['len', 'angle', 'area']);
-        if (m.len !== undefined) {
-          const l = arr(m.len, `${at} len`, 2, 2).map((v) => need(v, `${at} len`));
-          return { len: [l[0], l[1]] as [string, string] };
-        }
-        if (m.angle !== undefined) {
-          const l = arr(m.angle, `${at} angle`, 3, 3).map((v) => need(v, `${at} angle`));
-          return { angle: [l[0], l[1], l[2]] as [string, string, string] };
-        }
-        return { area: int(m.area, `${at} area`, 0, p.polygons.length - 1) };
-      },
-    );
-    // 보조점은 선분 위 점의 끝·선분 끝으로만 — 다각형 꼭짓점·측정·원에 쓰면 보이지 않는 점을 읽게 된다
+    // 차례로 읽는다 — 합·차·비는 앞에서 읽은 측정값만 가리킨다(순환이 생기지 않게)
+    const rawMeasures = o.measures === undefined ? [] : arr(o.measures, '도형판 measures', 0, 6);
+    rawMeasures.forEach((rm, i) => {
+      const at = `도형판 측정${i + 1}`;
+      const m = obj(rm, at, [], ['len', 'angle', 'area', 'sum', 'diff', 'ratio']);
+      const combo = (['sum', 'diff', 'ratio'] as const).find((k) => m[k] !== undefined);
+      if (m.len !== undefined) {
+        const l = arr(m.len, `${at} len`, 2, 2).map((v) => need(v, `${at} len`));
+        p.measures.push({ len: [l[0], l[1]] as [string, string] });
+      } else if (m.angle !== undefined) {
+        const l = arr(m.angle, `${at} angle`, 3, 3).map((v) => need(v, `${at} angle`));
+        p.measures.push({ angle: [l[0], l[1], l[2]] as [string, string, string] });
+      } else if (combo) {
+        const n = combo === 'sum' ? 4 : 2;
+        const ops = arr(m[combo], `${at} ${combo}`, 2, n).map((v, j) => {
+          const w = `${at} ${combo}${j + 1}`;
+          if (i === 0) fail(w, '앞 측정값이 없음(묶을 측정값을 먼저 적으세요)');
+          const k = int(v, w, 0, i - 1);
+          const t = p.measures[k] as ShMeasure;
+          if (!('len' in t || 'angle' in t))
+            fail(w, '길이·각 측정값만 묶음(묶은 값·넓이는 다시 묶지 않음)');
+          return k;
+        });
+        const kinds = new Set(ops.map((k) => measureKind(p, p.measures[k] as ShMeasure)));
+        if (kinds.size > 1) fail(at, '길이는 길이끼리, 각은 각끼리 묶음');
+        if (combo === 'ratio' && !kinds.has('len')) fail(at, '비는 길이끼리만');
+        p.measures.push(
+          combo === 'sum'
+            ? { sum: ops }
+            : combo === 'diff'
+              ? { diff: ops as [number, number] }
+              : { ratio: ops as [number, number] },
+        );
+      } else p.measures.push({ area: int(m.area, `${at} area`, 0, p.polygons.length - 1) });
+    });
+    // 보조점은 선분 위 점의 끝·선분 끝·수선의 발 직선으로만 — 다각형 꼭짓점·측정·원에 쓰면 보이지 않는 점을 읽게 된다
     const aux = new Set(points.filter((x) => x.aux).map((x) => x.id));
     const noAux = (ids: string[], what: string) => {
       const a = ids.find((id) => aux.has(id));
@@ -671,7 +821,8 @@ export const shapeDef: WidgetDef<ShapeParams> = {
       noAux(pl, `다각형${i + 1}`);
     });
     p.measures.forEach((m, i) => {
-      if (!('area' in m)) noAux('len' in m ? m.len : m.angle, `측정${i + 1}`);
+      // 묶은 값은 항들이 이미 검사됨
+      if ('len' in m || 'angle' in m) noAux('len' in m ? m.len : m.angle, `측정${i + 1}`);
     });
     p.circles.forEach((c, i) => {
       noAux([c.c], `원${i + 1}`);
@@ -680,13 +831,14 @@ export const shapeDef: WidgetDef<ShapeParams> = {
     for (const pt of points)
       if (pt.on && 'seg' in pt.on) {
         const [a, b] = pt.on.seg.map((id) => points.find((x) => x.id === id) as ShPoint);
-        if (a?.drag || b?.drag || a?.on || b?.on)
+        if (a?.drag || b?.drag || a?.on || b?.on || a?.foot || b?.foot)
           fail(`도형판 ${pt.id}`, '선분 끝점은 고정된 격자점이어야 함');
         if (gcd((b?.x ?? 0) - (a?.x ?? 0), (b?.y ?? 0) - (a?.y ?? 0)) < 2)
           fail(`도형판 ${pt.id}`, '선분 위 격자점이 양끝뿐이라 움직일 곳이 없음');
       } else if (pt.on && 'circle' in pt.on) {
         const c = points.find((x) => x.id === (pt.on as { circle: [string, number] }).circle[0]);
-        if (c?.drag || c?.on) fail(`도형판 ${pt.id}`, '원 중심은 고정된 격자점이어야 함');
+        if (c?.drag || c?.on || c?.foot)
+          fail(`도형판 ${pt.id}`, '원 중심은 고정된 격자점이어야 함');
       }
     if (o.cut !== undefined) {
       const c = obj(o.cut, '도형판 cut', ['piece', 'rest', 'by', 'result']);
@@ -723,14 +875,24 @@ export const shapeDef: WidgetDef<ShapeParams> = {
     if (o.goal !== undefined) {
       const at = '도형판 goal';
       if (p.cut) fail(at, '잘라 옮기기는 조각을 제자리에 옮기는 것이 목표 — 따로 두지 않음');
-      const { shape, common } = parseGoalShape<number, GoalNum>(o.goal, at, {
-        of: (v, w) => int(v, w, 0, p.measures.length - 1),
-        is: goalNum,
+      const of = (v: unknown, w: string) => int(v, w, 0, p.measures.length - 1);
+      const { shape, common } = parseGoalShape<number, ShIs>(o.goal, at, {
+        of,
+        // 수면 목표값, { of: 번호 } 면 그 측정값과 견준다(PF = PH, AD÷AB = AE÷AC)
+        is: (v, w) =>
+          typeof v === 'object' && v !== null && !Array.isArray(v)
+            ? { of: of(obj(v, w, ['of']).of, `${w}.of`) }
+            : { num: goalNum(v, w) },
         num: goalNum,
-        isNum: (i) => i,
+        isNum: (i) => ('num' in i ? i.num : null),
       });
       needHint(common, at);
-      const g = { ...(shape as GoalShape<number, GoalNum>), ...common };
+      const g = { ...(shape as GoalShape<number, ShIs>), ...common };
+      if (g.kind === 'value' && 'of' in g.is) {
+        if (g.is.of === g.of) fail(`${at} value.is`, '같은 측정값끼리는 늘 같음');
+        if (measureKind(p, sub(p, g.of)) !== measureKind(p, sub(p, g.is.of)))
+          fail(`${at} value.is`, '같은 종류의 측정값끼리만 견줌(길이는 길이, 각은 각)');
+      }
       if (!goalMovers(p, g).length) fail(at, '그 측정값을 바꾸는 끄는 점이 없음');
       p.goal = g;
     } else if (o.done !== undefined) fail('도형판 done', '목표(goal)가 있을 때만');
