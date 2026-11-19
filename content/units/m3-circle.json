@@ -156,7 +156,7 @@
         "id": "slide",
         "chip": "손으로 해 보기",
         "title": "P 를 원 위에서\n끌어 보세요",
-        "lead": "A, B 는 고정이에요. P 를 위쪽 호에서 끌어 $\\angle\\mathrm{PBA}$ 가 $60^\\circ$, $75^\\circ$, $90^\\circ$ 인 자리에 놓아 보세요. 그동안 $\\angle\\mathrm{APB}$ 는 어떻게 될까요?",
+        "lead": "A, B 는 고정이에요. P 를 위쪽 호에서 끌어 서로 다른 세 곳에 놓아 보세요. 삼각형 모양이 바뀌는 동안($\\angle\\mathrm{PBA}$ 를 보세요) $\\angle\\mathrm{APB}$ 는 어떻게 될까요?",
         "widget": {
           "type": "shape",
           "params": {
@@ -252,17 +252,14 @@
             "digits": 0,
             "note": "삼각형이 정삼각형에서 직각삼각형으로 바뀌어도 첫째 각을 보세요.",
             "goal": {
-              "visit": {
-                "of": 2,
-                "at": [
-                  60,
-                  75,
-                  90
-                ]
+              "value": {
+                "of": 0,
+                "is": 60,
+                "places": 3
               },
-              "hint": "P 를 위쪽 호에서 B 쪽으로 옮길수록 $\\angle\\mathrm{PBA}$ 가 커져요."
+              "hint": "P 를 A 와 B 를 잇는 긴 호(위쪽) 위, 서로 다른 세 곳에 놓아 보세요. 놓을 때마다 첫째 각을 보세요."
             },
-            "done": "삼각형 모양이 바뀌어도 $\\angle\\mathrm{APB}$ 는 그대로였어요. 중심각 $\\angle\\mathrm{AOB}$ 와 견줘 보세요."
+            "done": "세 곳 모두 $\\angle\\mathrm{APB}$ 가 같았어요. 삼각형 모양이 바뀌어도 그대로예요. 중심각 $\\angle\\mathrm{AOB}$ 와 견줘 보세요."
           }
         },
         "after": "P 가 위쪽 호 어디에 있든 $\\angle\\mathrm{APB}$ 는 {{ins}}° 그대로예요. 변의 길이는 바뀌어도 ==각은 늘 중심각의 절반==이에요.",
@@ -398,7 +395,7 @@
         "id": "cyclic",
         "chip": "두 번째 해 보기",
         "title": "P 가 아래쪽 호로\n넘어가면",
-        "lead": "Q 는 위쪽 호에, P 는 아래쪽 호에 있어요. 네 점 A, P, B, Q 는 원에 내접하는 사각형을 이뤄요. P 를 아래쪽 호에서 끌어 $\\angle\\mathrm{QAP}$ 가 $75^\\circ$, $90^\\circ$, $105^\\circ$ 인 자리에 놓으며 마주 보는 각끼리 더해 보세요.",
+        "lead": "Q 는 위쪽 호에, P 는 아래쪽 호에 있어요. 네 점 A, P, B, Q 는 원에 내접하는 사각형을 이뤄요. P 를 아래쪽 호에서 끌어 서로 다른 세 곳에 놓으며 마주 보는 두 각을 더한 값을 보세요.",
         "widget": {
           "type": "shape",
           "params": {
@@ -496,20 +493,23 @@
                   "B",
                   "Q"
                 ]
+              },
+              {
+                "sum": [
+                  2,
+                  3
+                ]
               }
             ],
             "digits": 0,
             "note": "P 는 A 와 B 사이 아래쪽 호에서 움직여 보세요.",
             "goal": {
-              "visit": {
-                "of": 2,
-                "at": [
-                  75,
-                  90,
-                  105
-                ]
+              "value": {
+                "of": 4,
+                "is": 180,
+                "places": 3
               },
-              "hint": "P 를 A 와 B 사이 아래쪽 호에 두세요. P 를 A 쪽으로 옮길수록 $\\angle\\mathrm{QAP}$ 가 커져요."
+              "hint": "P 를 A 와 B 사이 아래쪽 호 위, 서로 다른 세 곳에 놓아 보세요. 놓을 때마다 마지막 줄의 합을 보세요."
             },
             "done": "세 자리 모두 $\\angle\\mathrm{QAP}+\\angle\\mathrm{PBQ}$ 가 같았어요. $\\angle\\mathrm{AQB}+\\angle\\mathrm{APB}$ 도 더해 보세요."
           }

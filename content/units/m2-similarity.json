@@ -268,7 +268,9 @@
             "goal": {
               "value": {
                 "of": 0,
-                "is": 90,
+                "is": {
+                  "of": 1
+                },
                 "places": 3
               },
               "hint": "$\\angle ABC$ 는 직각이에요. $\\overline{DE}$ 가 밑변처럼 가로로 눕게 D 와 E 의 높이를 맞춰 보세요."
