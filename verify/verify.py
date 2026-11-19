@@ -72,7 +72,45 @@ def evaluate(code):
 
 def equal(a, b):
     try:
-        return simplify(a - b) == 0
+        if simplify(a - b) == 0:
+            return True
+    except Exception:
+        return False
+    return _exact_zero(a - b)
+
+
+# 역삼각함수 → (원래 함수, 각/π 의 범위). acos 의 값은 [0, π], asin·atan 은 [−π/2, π/2]
+_INVERSE = {sympy.acos: (sympy.cos, 0, 1), sympy.asin: (sympy.sin, -Rational(1, 2), Rational(1, 2)),
+            sympy.atan: (sympy.tan, -Rational(1, 2), Rational(1, 2))}
+_Z = sympy.Symbol("_z")
+
+
+def _exact_zero(d):
+    """simplify 가 0 을 못 보인 수 d 가 정확히 0 인가(변수 없는 수만). 원 위 15° 자리의 각처럼 cos 값이 겹근호 식이면
+    acos(겹근호) 가 풀리지 않아 simplify 가 deg(acos(…)) − 60 을 0 으로 줄이지 못한다(요청 106 묶음).
+
+    수치는 '어디를 볼지' 정하는 데만 쓰고, 같다는 결론은 늘 대수적 증명으로 낸다(가까운 다른 값을 같다고 하지 않게):
+    1) 30자리에서 이미 다르면 다르다.
+    2) acos(z) 마다 각/π 를 수치로 어림한 분수 q 를 구하고, z − cos(qπ) 의 최소다항식이 x 일 때만(= 정확히 0)
+       acos(z) 를 qπ 로 바꾼다. asin·atan 도 같다.
+    3) 바꾼 뒤의 수가 대수적 수이고 그 최소다항식이 x 면 0. 증명 못 하면(초월수·계산 실패) 다르다고 본다 —
+       틀리게 '같다'고 하는 것보다 검산 실패로 드러나는 쪽이 안전하다."""
+    try:
+        if d.free_symbols or abs(sympy.N(d, 30)) > sympy.Float("1e-25"):
+            return False
+        rep = {}
+        for f in d.atoms(sympy.acos, sympy.asin, sympy.atan):
+            fwd, lo, hi = _INVERSE[type(f)]
+            th = sympy.N(f / sympy.pi, 40)
+            q = sympy.nsimplify(th, rational=True, tolerance=sympy.Rational(1, 10**30))
+            if not (q.is_Rational and q.q <= 720 and lo <= q <= hi):
+                continue
+            if sympy.minimal_polynomial(f.args[0] - fwd(q * sympy.pi), _Z) == _Z:
+                rep[f] = q * sympy.pi
+        e = sympy.simplify(d.xreplace(rep))
+        if e.is_Rational:
+            return e == 0
+        return sympy.minimal_polynomial(e, _Z) == _Z
     except Exception:
         return False
 
