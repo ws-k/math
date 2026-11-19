@@ -38,6 +38,14 @@
       "kmin": {
         "value": "-2",
         "check": "(x**3-3*x).subs(x, solve(diff(x**3-3*x,x),x)[1])"
+      },
+      "bx": {
+        "value": "2",
+        "check": "solveset(diff(x*(12-2*x)**2, x), x, Interval.open(0, 6)).args[0]"
+      },
+      "bv": {
+        "value": "128",
+        "check": "(x*(12-2*x)**2).subs(x, solveset(diff(x*(12-2*x)**2, x), x, Interval.open(0, 6)).args[0])"
       }
     },
     "scenes": [
@@ -178,6 +186,46 @@
           }
         ],
         "aside": "**확인** · $-1\\le x\\le2$ 에서 $f(x)=2x^3-3x^2$ 의 후보는 $f(-1)={{minv}}$, $f(0)={{lmax}}$, $f(1)={{lmin}}$, $f(2)={{maxv}}$ 예요."
+      },
+      {
+        "kind": "explore",
+        "id": "box",
+        "chip": "직접 찍어 보기",
+        "title": "부피가 가장 큰\n종이 상자를 찾아보세요",
+        "lead": "한 변이 12 cm 인 정사각형 종이의 네 귀퉁이에서 한 변이 $x$ cm 인 정사각형을 잘라 내고, 날개를 접어 뚜껑 없는 상자를 만들어요. 밑면은 한 변이 $(12-2x)$ cm, 높이는 $x$ cm 예요. 부피 $V$ 를 $x$ 의 식으로 세우고, $V$ 가 가장 큰 $x$ 와 그때의 $V$ 를 계산해 점 $(x,\\ V)$ 를 찍은 뒤 '확인하기'를 누르세요.",
+        "gate": true,
+        "afterGoal": true,
+        "widget": {
+          "type": "coord",
+          "params": {
+            "mode": "plot",
+            "x": { "min": 0, "max": 6, "step": "1/2", "name": "자른 길이", "unit": "cm" },
+            "y": { "min": 0, "max": 160, "step": 16, "name": "부피", "unit": "cm³" },
+            "objects": [
+              {
+                "id": "V",
+                "curve": "x*(12-2*x)**2",
+                "label": "$V(x)=x(12-2x)^2$",
+                "hide": true
+              }
+            ],
+            "task": {
+              "point": {
+                "x": {
+                  "value": "2",
+                  "check": "solveset(diff(x*(12-2*x)**2, x), x, Interval.open(0, 6)).args[0]"
+                },
+                "y": {
+                  "value": "128",
+                  "check": "(x*(12-2*x)**2).subs(x, solveset(diff(x*(12-2*x)**2, x), x, Interval.open(0, 6)).args[0])"
+                }
+              }
+            },
+            "intro": "먼저 $x$ 가 될 수 있는 범위부터 생각해요. 잘라 낸 뒤에도 밑면이 남아야 해요.",
+            "done": "맞아요. 부피 $V(x)=x(12-2x)^2$ 은 $x={{bx}}$ 에서 가장 크고, 그때 부피는 {{bv}} cm³ 예요. 나타난 곡선의 양 끝에서는 부피가 0 이에요."
+          }
+        },
+        "after": "$x$ 의 범위 $0<x<6$ 은 종이가 정했어요. 6 cm 씩 자르면 밑면이 남지 않아요. 양 끝으로 갈수록 부피가 0 에 가까워져서, 이번에는 ==구간 안의 극대가 곧 최대==예요. 앞 장면에서는 끝점이 최대였죠. 그래서 늘 후보를 모두 비교해요. 식으로는 상자의 부피 → $V(x)=x(12-2x)^2$, 가장 큰 상자 → $0<x<6$ 에서 $V(x)$ 의 최댓값이에요."
       },
       {
         "kind": "question",
