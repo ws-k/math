@@ -141,3 +141,8 @@
 - (묶음 타) **좌표평면 끄는 점 손잡이가 y 범위 밖으로 나가면 그림 위로 떠오름**(잘리지 않음) — calc-series geo 에서 r=1.1·n≥9. 손잡이 자르기/테두리 붙이기 또는 끌기 범위 제한(⑤)
 - (묶음 타, 범위 밖) calc-series p107·calc-trig-addition p110 검산식이 공식을 그대로 담음(요청 98 나머지), calc-quotient-chain recip 옛 다가가기 목표
 - (화면 점검) **목표를 이룬 뒤 화면 측정 필요**: done·힌트 글(2~4줄)이 나오면 카드가 다시 444px 를 넘을 수 있음(어림: math1-log-func base 505, math2-tangent mvt·math1-exp-func slider 480, rules·trip 470). 목표 달성 상태 측정 + done 글 줄이기. math2-continuity hook 여유 3px. math2-indefinite power 점 P·Q 이름 겹침. 범례 뺀 5장면(shift·rules·power·limit hook·sides) — 범례를 그림 안에 겹쳐 그리는 부품 기능이 있으면 되살릴 것
+- (넘침 정리) **보기가 있는 좌표평면 카드가 늘 7px 넘침**(그림+범례 1줄+읽는 값 1줄+안내 1줄+좌우 버튼+보기 = 451px) — 그림 상자 상한(209px)이나 카드 여백(14px)을 조금 줄이면 이번에 뺀 범례들을 되살릴 수 있음. 여유 6px 장면: calc-seq-limit ratio, prob-binomial spread, prob-normal binom, math2-continuity hook(3px)
+- (넘침 정리) **prob-normal binom 보기 단추 4개가 가로 339px > 298px 로 넘침**(전부터) — 보기 단추 줄바꿈/2열
+- (넘침 정리) m3-circle cyclic 12px 넘침(측정값 5개 3줄 + 진행 표시 한 줄) — 진행 표시를 측정값 줄에 붙이거나 측정값 줄 간격 줄이기. e-decimal mul 45px·e-fraction-mul area·cancel 11px — 분수 곱 상태 줄 한 줄·± 버튼 한 줄
+- (넘침 정리) prob-normal shape 에서 평균 m 슬라이더를 뺌(σ 만) — 한 화면 공간이 생기면 되살리기
+- (도형판 검토 반영) 수 목표에서도 "글은 같은데 미달성" 가능(digits 0 타원 PF+PG≈10 이 14곳) — 수 목표에도 같은 검사 확장, verify.py check_parity 차례 대입 버그 가능성, equal() 앞 simplify 가 근호 많은 식에서 2분 넘게 걸림
