@@ -359,3 +359,202 @@ test('검산: 합·차·비·발·측정값끼리 목표를 sympy 가 다시 판
   );
   assert.equal(runChecks(bad).ok, false);
 });
+
+// ---- 검토 지적(75896c3) 보강 ----
+
+test('측정값끼리 견주는 목표에 허용 오차를 두면 형식 오류(두 값 모두 정확히 계산 — 원칙 P10)', () => {
+  assert.throws(
+    () => parse({ ...parabolaRaw(), goal: { ...parabolaRaw().goal, tol: '1/10' } }),
+    /견주는 목표/,
+  );
+});
+
+// 화면 글이 똑같은데 '맞았다'가 안 나오면 학습자는 왜인지 알 수 없다 — digits 를 늘리라고 형식 검사가 막는다
+test('견주는 두 측정값이 화면에 같은 글로 보이는데 목표가 아닌 자리가 있으면 형식 오류', () => {
+  // digits 0: P(1,9) 에서 PA ≈ 9, PB ≈ 9 로 보이지만 같지 않음
+  const pab = (digits: number) => ({
+    grid: { w: 16, h: 12 },
+    digits,
+    points: [
+      { id: 'A', x: 0, y: 0 },
+      { id: 'B', x: 4, y: 0 },
+      { id: 'P', x: 0, y: 12, drag: true },
+    ],
+    segments: [
+      ['P', 'A'],
+      ['P', 'B'],
+    ],
+    measures: [{ len: ['P', 'A'] }, { len: ['P', 'B'] }],
+    goal: { value: { of: 0, is: { of: 1 }, places: 2 }, hint: 'h' },
+  });
+  assert.throws(() => deep(pab(0)), /digits/);
+  // 비: digits 1 이면 D(2,0)·E(0,2) 에서 AD÷AB ≈ 0.3, AE÷AC ≈ 0.3(실제 1/4 와 1/3)
+  const ratio = (digits: number) => ({
+    grid: { w: 8, h: 6 },
+    digits,
+    points: [
+      { id: 'A', x: 0, y: 0 },
+      { id: 'B', x: 8, y: 0 },
+      { id: 'C', x: 0, y: 6 },
+      { id: 'D', x: 1, y: 0, drag: true, on: { seg: ['A', 'B'] } },
+      { id: 'E', x: 0, y: 3, drag: true, on: { seg: ['A', 'C'] } },
+    ],
+    polygons: [['A', 'B', 'C']],
+    segments: [['D', 'E']],
+    measures: [
+      { len: ['A', 'D'] },
+      { len: ['A', 'B'] },
+      { len: ['A', 'E'] },
+      { len: ['A', 'C'] },
+      { ratio: [0, 1] },
+      { ratio: [2, 3] },
+    ],
+    goal: { value: { of: 4, is: { of: 5 }, places: 2 }, hint: 'h' },
+  });
+  assert.throws(() => deep(ratio(1)), /digits/);
+  assert.doesNotThrow(() => deep(ratio(2)));
+  assert.doesNotThrow(() => deep(parabolaRaw()));
+  assert.doesNotThrow(() => deep(ratioRaw()));
+});
+
+// 발 H 가 그림 밖·그린 직선 밖에 놓이면 '수선의 발'이 허공에 뜬 점으로 보인다(목표가 없어도)
+const footRaw = (o: { L: number[]; R: number[]; P: object; seg?: boolean; goal?: boolean }) => ({
+  grid: { w: 10, h: 8 },
+  points: [
+    { id: 'L', x: o.L[0], y: o.L[1], aux: true },
+    { id: 'R', x: o.R[0], y: o.R[1], aux: true },
+    { id: 'F', x: 6, y: 2 },
+    { id: 'P', ...o.P },
+    { id: 'H', foot: { from: 'P', line: ['L', 'R'] } },
+  ],
+  segments: [...(o.seg === false ? [] : [['L', 'R']]), ['P', 'H'], ['P', 'F']],
+  measures: [{ len: ['P', 'F'] }, { len: ['P', 'H'] }],
+  ...(o.goal ? { goal: { value: { of: 0, is: { of: 1 } }, hint: 'h' } } : {}),
+});
+test('수선의 발: 끄는 점이 닿는 모든 자리에서 발이 그린 직선(격자 안) 위에 있어야 함', () => {
+  // 비스듬한 직선 LR(2,2)–(4,4): P 를 (10,8) 로 끌면 발이 (9,9) — 격자 밖
+  assert.throws(
+    () => deep(footRaw({ L: [2, 2], R: [4, 4], P: { x: 5, y: 3, drag: true }, goal: true })),
+    /수선의 발 H/,
+  );
+  assert.throws(
+    () => deep(footRaw({ L: [2, 2], R: [4, 4], P: { x: 5, y: 3, drag: true } })),
+    /수선의 발 H/,
+  );
+  // 가로 직선이 x=5 에서 끝남: P 를 오른쪽으로 끌면 발이 그린 선분 밖(격자 안이어도)
+  assert.throws(
+    () => deep(footRaw({ L: [0, 2], R: [5, 2], P: { x: 3, y: 6, drag: true } })),
+    /수선의 발 H/,
+  );
+  // 끌지 않는 점에서 내린 발도
+  assert.throws(() => deep(footRaw({ L: [0, 2], R: [5, 2], P: { x: 8, y: 6 } })), /수선의 발 H/);
+  // 직선을 그리지 않음
+  assert.throws(
+    () => deep(footRaw({ L: [0, 2], R: [10, 2], P: { x: 3, y: 6, drag: true }, seg: false })),
+    /그린 직선/,
+  );
+  assert.doesNotThrow(() =>
+    deep(footRaw({ L: [0, 2], R: [10, 2], P: { x: 3, y: 6, drag: true } })),
+  );
+  // 다각형의 변도 그린 직선
+  assert.doesNotThrow(() =>
+    deep({
+      grid: { w: 6, h: 6 },
+      points: [
+        { id: 'A', x: 0, y: 0 },
+        { id: 'B', x: 6, y: 0 },
+        { id: 'C', x: 2, y: 4 },
+        { id: 'P', x: 3, y: 5, drag: true },
+        { id: 'H', foot: { from: 'P', line: ['A', 'B'] } },
+      ],
+      polygons: [['A', 'B', 'C']],
+      segments: [['P', 'H']],
+      measures: [{ len: ['P', 'H'] }],
+    }),
+  );
+});
+
+for (const [name, measures, goal, re] of [
+  ['합의 항이 같은 번호', [{ len: ['P', 'F'] }, { sum: [0, 0] }], undefined, /같은 측정값/],
+  ['차의 항이 같은 번호', [{ len: ['P', 'F'] }, { diff: [0, 0] }], undefined, /같은 측정값/],
+  ['비의 항이 같은 번호', [{ len: ['P', 'F'] }, { ratio: [0, 0] }], undefined, /같은 측정값/],
+  [
+    '합의 항이 내용이 같은 측정값(PF·FP)',
+    [{ len: ['P', 'F'] }, { len: ['F', 'P'] }, { sum: [0, 1] }],
+    undefined,
+    /같은 측정값/,
+  ],
+  [
+    '내용이 같은 길이끼리 견줌(PF 대 FP)',
+    [{ len: ['P', 'F'] }, { len: ['F', 'P'] }],
+    { value: { of: 0, is: { of: 1 }, places: 3 }, hint: 'h' },
+    /늘 같음/,
+  ],
+  [
+    '같은 측정값을 두 번 적고 견줌',
+    [{ len: ['P', 'F'] }, { len: ['P', 'F'] }],
+    { value: { of: 0, is: { of: 1 }, places: 2 }, hint: 'h' },
+    /늘 같음/,
+  ],
+  [
+    '거꾸로 적은 같은 각끼리 견줌(∠FPG 대 ∠GPF)',
+    [{ angle: ['F', 'P', 'G'] }, { angle: ['G', 'P', 'F'] }],
+    { value: { of: 0, is: { of: 1 }, places: 2 }, hint: 'h' },
+    /늘 같음/,
+  ],
+  [
+    '항 순서만 다른 합끼리 견줌',
+    [{ len: ['P', 'F'] }, { len: ['P', 'G'] }, { sum: [0, 1] }, { sum: [1, 0] }],
+    { value: { of: 2, is: { of: 3 }, places: 2 }, hint: 'h' },
+    /늘 같음/,
+  ],
+  [
+    '측정 하나에 열쇠 둘',
+    [{ len: ['P', 'F'] }, { len: ['P', 'F'], sum: [0, 0] }],
+    undefined,
+    /하나만/,
+  ],
+] as const) {
+  test(`parse 오류(검토 보강): ${name}`, () => {
+    assert.throws(() => deep({ ...ellipseRaw(), measures, goal, done: undefined }), re);
+  });
+}
+
+// 각의 합·차 목표: 격자점 각은 대개 π 의 유리수배가 아니어서(∠PAB = arctan(3) 등) 각을 하나씩 π 의 분수배로
+// 바꿔 끼우는 증명으로는 '합이 90°'를 못 보였다. 아주 가까울 때 cos(차)=1 을 대수적으로 보여 증명한다
+test('검산: 각의 합(탈레스 90°)·각의 차(|∠PAB − ∠PBA| = 90°) 목표를 sympy 가 정확히 다시 판정', () => {
+  const thales = {
+    grid: { w: 10, h: 6 },
+    points: [
+      { id: 'A', x: 0, y: 0 },
+      { id: 'B', x: 10, y: 0 },
+      { id: 'P', x: 5, y: 2, drag: true },
+    ],
+    polygons: [['A', 'B', 'P']],
+    measures: [{ angle: ['P', 'A', 'B'] }, { angle: ['P', 'B', 'A'] }, { sum: [0, 1] }],
+    digits: 0,
+    goal: { value: { of: 2, is: 90, places: 3 }, hint: 'h' },
+  };
+  const diff = {
+    grid: { w: 8, h: 8 },
+    points: [
+      { id: 'A', x: 0, y: 0 },
+      { id: 'B', x: 6, y: 0 },
+      { id: 'P', x: 3, y: 3, drag: true },
+    ],
+    polygons: [['A', 'B', 'P']],
+    measures: [{ angle: ['P', 'A', 'B'] }, { angle: ['P', 'B', 'A'] }, { diff: [0, 1] }],
+    digits: 0,
+    goal: { value: { of: 2, is: 90 }, hint: 'h' },
+  };
+  const cs = [thales, diff].flatMap((raw, k) => {
+    const p = parse(raw);
+    shapeDef.deep?.(p);
+    return shapeDef.checks(p).map((c) => ({ ...c, name: `${k}:${c.name}` }));
+  });
+  // 탈레스: (1,3)·(2,4)·(5,5)·(8,4)·(9,3) 다섯 곳, 차: (8,4) 한 곳
+  const hits = cs.flatMap((c) => ('kind' in c && c.kind === 'goal' ? [c.hits[0]?.length] : []));
+  assert.deepEqual(hits, [5, 1]);
+  const r = runChecks(cs);
+  assert.ok(r.ok, r.out);
+});

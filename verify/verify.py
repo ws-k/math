@@ -82,7 +82,111 @@ def equal(a, b):
 # 역삼각함수 → (원래 함수, 각/π 의 범위). acos 의 값은 [0, π], asin·atan 은 [−π/2, π/2]
 _INVERSE = {sympy.acos: (sympy.cos, 0, 1), sympy.asin: (sympy.sin, -Rational(1, 2), Rational(1, 2)),
             sympy.atan: (sympy.tan, -Rational(1, 2), Rational(1, 2))}
+_ARC = (sympy.acos, sympy.asin, sympy.atan)
 _Z = sympy.Symbol("_z")
+
+# 최소다항식 차수 상한. 소수 다섯 개의 제곱근 합(64차)은 3초에 끝나지만 여섯 개(128차)는 90초를 넘겼다(검토 실험) —
+# 검산 한 항목이 몇 분씩 붙잡히지 않게, 이보다 클 수 있는 수는 계산을 시작하지 않는다. 도형판(격자점·15° 칸 원)에서
+# 나오는 수는 근호 몇 개짜리라 이 안에 든다
+MINPOLY_MAX_DEG = 64
+
+
+class ProofTooHard(Exception):
+    """수치로는 같아 보이는데 최소다항식 차수가 상한을 넘어 정확히 같은지 증명하지 않았다. '다르다'로 넘기면 맞는 항목이
+    소리 없이 다르다고 판정되므로, 어느 항목인지 드러나게 검산 실패로 올린다."""
+
+
+def _deg_bound(e):
+    """수 e 가 든 수체의 차수 상한(계산 전에 어림). 유리수의 제곱근들은 근호 안의 제곱 인수 없는 부분이 서로 몇 개
+    독립인지(GF(2) 위 계수, r)로 정확히 2^r — √2·√3·√6 은 4 이지 8 이 아니다. 나머지 근호는 지수의 분모,
+    π 의 분수배 각의 삼각함수는 원분체 차수 φ(4L), CRootOf 는 그 다항식 차수, 허수 단위는 2 를 곱한다."""
+    basis = []  # 제곱근 안 소인수 집합(비트)들의 GF(2) 기저
+    primes = {}
+    bound = 1
+
+    def add_vec(v):
+        for b in basis:
+            v = min(v, v ^ b)
+        if v:
+            basis.append(v)
+
+    for a in e.atoms(sympy.Pow):
+        x = a.exp
+        if not x.is_Rational or x.is_Integer:
+            continue
+        b = a.base
+        if x.q == 2 and b.is_Rational:
+            n = b.p * b.q  # √(p/q) 와 √(pq) 는 같은 수체
+            # 큰 수는 소인수분해가 느리다 — 다른 것과 독립이라고 치면(상한이 커질 뿐) 안전하다
+            fs = sympy.factorint(abs(n)) if abs(n) < 10**12 else {("big", n): 1}
+            v = 0
+            for pr in [p for p, k in fs.items() if k % 2] + ([-1] if n < 0 else []):
+                v |= 1 << primes.setdefault(pr, len(primes))
+            add_vec(v)
+        else:
+            bound *= x.q
+    # cos·sin·tan(pπ/q) 는 모두 원분체 Q(ζ_4L)(L = 분모들의 최소공배수) 안에 있다 — 각각 곱하면
+    # sin(π/7)·sin(2π/7)·sin(3π/7) 이 432 로 어림되어 3차로 끝날 증명까지 막는다
+    dens = [c.q for f in e.atoms(sympy.cos, sympy.sin, sympy.tan)
+            if (c := f.args[0] / sympy.pi).is_Rational]
+    if dens:
+        bound *= sympy.totient(4 * sympy.ilcm(*dens))
+    for r in e.atoms(sympy.CRootOf):
+        bound *= r.poly.degree()
+    if e.has(sympy.I):
+        bound *= 2
+    return bound * 2 ** len(basis)
+
+
+def _minpoly_is_x(e):
+    """e 의 최소다항식이 x 인가(= e 가 정확히 0). 차수 상한을 넘을 수 있으면 계산하지 않고 ProofTooHard"""
+    b = _deg_bound(e)
+    if b > MINPOLY_MAX_DEG:
+        s = sympy.sstr(e)
+        raise ProofTooHard(f"최소다항식 차수가 최대 {b} 로 상한 {MINPOLY_MAX_DEG} 을 넘어 증명하지 않음: "
+                           f"{s[:120]}{'…' if len(s) > 120 else ''}")
+    return sympy.minimal_polynomial(e, _Z) == _Z
+
+
+def _unabs(d):
+    """Abs(u) 를 부호를 정해 ±u 로(cos 덧셈정리가 Abs 를 풀지 못하므로). u 가 0 에 아주 가까우면 부호를 수치로 정할 수
+    없어 u 가 정확히 0 임을 따로 증명해 0 으로 바꾼다. 못 하면 None"""
+    rep = {}
+    for a in d.atoms(sympy.Abs):
+        u = a.args[0]
+        v = sympy.N(u, 30)
+        if not v.is_real:
+            return None
+        if abs(v) > sympy.Float("1e-20"):
+            rep[a] = u if v > 0 else -u
+        elif _exact_zero(u):
+            rep[a] = sympy.Integer(0)
+        else:
+            return None
+    return d.xreplace(rep)
+
+
+def _cos_proof(d):
+    """|d| 가 아주 작고(호출 전 확인) cos(k·d) = 1 이 정확하면 d = 0 이다 — cos 가 1 이 되는 곳은 2π 의 정수배뿐이고
+    |k·d| < 2π 이므로. k 는 1(라디안)과 π/180(도: deg(acos …) 는 180·acos/π). 격자점 각처럼 π 의 분수배가 아닌 각들의
+    합·차(탈레스 ∠A + ∠B = 90°)에 쓴다: cos(acos a + acos b) 는 덧셈정리로 a·b − √(1−a²)·√(1−b²) 같은 대수적 수가
+    되어 최소다항식으로 판정된다."""
+    d = _unabs(d)
+    if d is None:
+        return False
+    for k in (sympy.Integer(1), sympy.pi / 180):
+        e = sympy.expand(d * k)
+        # 역삼각함수 앞 계수가 작은 정수일 때만 — cos(180·x) 같은 것을 펼치면 180차 다항식이 되어 끝나지 않는다
+        terms = [t for t in sympy.Add.make_args(e) if t.has(*_ARC)]
+        if not all(t.as_independent(*_ARC)[0].is_Integer and abs(t.as_independent(*_ARC)[0]) <= 4
+                   and t.as_independent(*_ARC)[1].func in _ARC for t in terms):
+            continue
+        c = sympy.expand_trig(sympy.cos(e))
+        if c.has(*_ARC):
+            continue
+        if _minpoly_is_x(c - 1):
+            return True
+    return False
 
 
 def _exact_zero(d):
@@ -92,27 +196,61 @@ def _exact_zero(d):
     수치는 '어디를 볼지' 정하는 데만 쓰고, 같다는 결론은 늘 대수적 증명으로 낸다(가까운 다른 값을 같다고 하지 않게):
     1) 30자리에서 이미 다르면 다르다.
     2) acos(z) 마다 각/π 를 수치로 어림한 분수 q 를 구하고, z − cos(qπ) 의 최소다항식이 x 일 때만(= 정확히 0)
-       acos(z) 를 qπ 로 바꾼다. asin·atan 도 같다.
-    3) 바꾼 뒤의 수가 대수적 수이고 그 최소다항식이 x 면 0. 증명 못 하면(초월수·계산 실패) 다르다고 본다 —
-       틀리게 '같다'고 하는 것보다 검산 실패로 드러나는 쪽이 안전하다."""
+       acos(z) 를 qπ 로 바꾼다. asin·atan 도 같다. 한 각에서 난 오류는 그 각만 건너뛴다.
+    3) 바꾼 뒤의 수가 대수적 수이고 그 최소다항식이 x 면 0.
+    4) 역삼각함수가 남으면(π 의 분수배가 아닌 각들의 합·차) cos(d) = 1 을 대수적으로 보인다(_cos_proof).
+    증명 못 하면(초월수·계산 실패) 다르다고 본다 — 틀리게 '같다'고 하는 것보다 검산 실패로 드러나는 쪽이 안전하다.
+    차수 상한 때문에 증명을 건너뛴 길이 있었으면 ProofTooHard 로 알린다."""
     try:
         if d.free_symbols or abs(sympy.N(d, 30)) > sympy.Float("1e-25"):
             return False
-        rep = {}
-        for f in d.atoms(sympy.acos, sympy.asin, sympy.atan):
-            fwd, lo, hi = _INVERSE[type(f)]
-            th = sympy.N(f / sympy.pi, 40)
-            q = sympy.nsimplify(th, rational=True, tolerance=sympy.Rational(1, 10**30))
-            if not (q.is_Rational and q.q <= 720 and lo <= q <= hi):
-                continue
-            if sympy.minimal_polynomial(f.args[0] - fwd(q * sympy.pi), _Z) == _Z:
-                rep[f] = q * sympy.pi
-        e = sympy.simplify(d.xreplace(rep))
-        if e.is_Rational:
-            return e == 0
-        return sympy.minimal_polynomial(e, _Z) == _Z
     except Exception:
         return False
+    hard = []
+
+    def proven(f):
+        try:
+            return f()
+        except ProofTooHard as ex:
+            hard.append(ex)
+        except Exception:
+            pass
+        return False
+
+    rep = {}
+    for f in d.atoms(*_ARC):
+        try:
+            fwd, lo, hi = _INVERSE[type(f)]
+            # 40자리로 어림해 1e-30 안의 분수를 찾는다: 어림 오차(1e-40)보다 넉넉히 크고, 분모 720 이하 분수끼리의
+            # 간격(1/720² ≈ 2e-6)보다는 한참 작아 맞는 분수 하나만 걸린다. 분수는 후보일 뿐 증명은 최소다항식이 한다
+            th = sympy.N(f / sympy.pi, 40)
+            q = sympy.nsimplify(th, rational=True, tolerance=sympy.Rational(1, 10**30))
+        except Exception:
+            continue
+        # 분모 720(= 0.25° 단위)까지만 후보로: 격자점·15° 칸 원에서 나오는 각은 분모가 작고(7.5° = π/24),
+        # 그보다 큰 분모는 π 의 분수배가 아닌 각을 어림한 가짜 분수다(그런 각은 4번 길이 맡는다)
+        if not (q.is_Rational and q.q <= 720 and lo <= q <= hi):
+            continue
+        if proven(lambda f=f, fwd=fwd, q=q: _minpoly_is_x(f.args[0] - fwd(q * sympy.pi))):
+            rep[f] = q * sympy.pi
+    # 바꾼 것이 없으면 다시 정리하지 않는다 — equal 이 같은 수를 이미 simplify 했고, 근호가 많은 수는 simplify 가
+    # 몇 분씩 걸려 차수 상한으로 막기 전에 붙잡힌다
+    e = d
+    if rep:
+        try:
+            e = sympy.simplify(d.xreplace(rep))
+        except Exception:
+            e = d.xreplace(rep)
+    if e.is_Rational:
+        return e == 0
+    if not e.has(*_ARC):
+        if proven(lambda: _minpoly_is_x(e)):
+            return True
+    elif proven(lambda: _cos_proof(e)):
+        return True
+    if hard:
+        raise hard[0]
+    return False
 
 
 def parse_eq(s):
@@ -367,13 +505,18 @@ def check_goal(it):
     got = [[] for _ in targets]
     for k, st in enumerate(it["states"]):
         sub = {sympy.Symbol(n): read(v) for n, v in st.items()}
+        # 한꺼번에 대입: 차례로 넣으면 x/√(x²+y²) 에 x=0 이 먼저 들어가 0 이 되고 y=0 이 들어가도 0 으로 남아,
+        # 점이 꼭짓점과 겹쳐 각을 정할 수 없는 자리(0/0)가 90° 로 나온다
         vals = []
         for e, roots in comps:
-            v = e.subs(sub)
+            v = e.subs(sub, simultaneous=True)
             vals.append(_root_count(v) if roots else v)
-        for ti, tg in enumerate(targets):
-            if all(_goal_match(v, t.subs(sub), tol) for v, t in zip(vals, tg)):
-                got[ti].append(k)
+        try:
+            for ti, tg in enumerate(targets):
+                if all(_goal_match(v, t.subs(sub, simultaneous=True), tol) for v, t in zip(vals, tg)):
+                    got[ti].append(k)
+        except ProofTooHard as ex:
+            return f"상태 {k} {st}: {ex}"
     if got != it["hits"]:
         return f"앱 판정 {it['hits']} ≠ sympy 판정 {got} (상태 번호, 목표마다)"
     need = int(it["need"])

@@ -164,6 +164,10 @@ export function parseGoalShape<R, I>(
     const is = read.is(v.is, `${at} value.is`);
     const n = read.isNum(is);
     if (n) tolOnlyIrrational(tol, [n], at);
+    // 다른 측정값·읽는 값과 견주면 두 값 모두 앱이 정확히 계산하고 sympy 가 정확히 다시 판정한다 — 오차를 두면
+    // 정답이 아닌 이웃 자리까지 맞았다고 하게 된다(원칙 P10, 무리수 '수' 목표만 오차가 필요)
+    else if (tol.n > 0)
+      fail(`${at} tol`, '다른 값과 견주는 목표는 두 값을 정확히 견주므로 허용 오차를 두지 않음');
     let places = 1;
     if (v.places !== undefined) {
       if (
