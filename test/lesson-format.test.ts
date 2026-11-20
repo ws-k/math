@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fill, formatValue, handsOnCount, spotEquation, symToTex } from '../src/lesson/format.ts';
+import {
+  fill,
+  formatValue,
+  handsOnCount,
+  numSplit,
+  spotEquation,
+  symToTex,
+} from '../src/lesson/format.ts';
 import type { Lesson } from '../src/lesson/types.ts';
 
 test('formatValue: 반올림·천 단위 쉼표·단위', () => {
@@ -8,6 +15,15 @@ test('formatValue: 반올림·천 단위 쉼표·단위', () => {
   assert.equal(formatValue('13000/3', { unit: '원', digits: 0 }), '4,333원');
   assert.equal(formatValue('-7/2', { digits: 1 }), '−3.5');
   assert.equal(formatValue('5', {}), '5');
+});
+
+test('numSplit: 보기 글자를 수와 단위로 — 수(4,096) 안에서 줄이 갈리지 않게 화면이 나눠 그린다', () => {
+  // Safari 는 keep-all 에서도 '4,096가지' 를 쉼표 뒤에서 갈랐다(4, / 096가지)
+  assert.deepEqual(numSplit('4,096가지'), ['4,096', '가지']);
+  assert.deepEqual(numSplit('−3.5'), ['−3.5', '']);
+  assert.deepEqual(numSplit('13/4 cm'), ['13/4', ' cm']);
+  assert.deepEqual(numSplit('12,000원'), ['12,000', '원']);
+  assert.equal(numSplit('가지'), null);
 });
 
 test('formatValue: 반올림해 0 이 되면 −0 이 아니라 0', () => {

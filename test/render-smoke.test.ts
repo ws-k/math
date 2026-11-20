@@ -49,7 +49,8 @@ test('시험용 레슨(장면 6종)이 끝까지 그려진다', async () => {
   const html = renderLesson(withLesson(goodLesson()));
   for (const id of goodLesson().scenes.map((s) => s.id))
     assert.ok(html.includes(`data-scene="${id}"`), id);
-  assert.match(html, /4,333원/);
+  // 보기 수는 줄바꿈 없는 덩어리, 단위 앞에만 줄바꿈 자리(NumLabel)
+  assert.match(html, /<span class="mglue">4,333<\/span><wbr\/>원/);
   assert.match(html, /katex/);
 });
 

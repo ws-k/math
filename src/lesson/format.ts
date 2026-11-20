@@ -42,6 +42,16 @@ export function formatValue(value: string, f: NumFormat): string {
   return (neg && !zero ? MINUS : '') + body + (f.unit ?? '');
 }
 
+/**
+ * formatValue 글자('4,096가지')를 [수, 나머지] 로. 화면이 수를 줄바꿈 없는 덩어리로, 단위 앞에만 줄바꿈 자리를 두고
+ * 그린다(NumLabel) — Safari 는 keep-all 에서도 쉼표 뒤를 줄바꿈 자리로 봐 좁은 보기 칸에서 '4, / 096가지' 로 갈랐고,
+ * 크롬은 수와 단위를 한 낱말로 봐 칸 밖으로 넘쳤다. 수로 시작하지 않으면 null
+ */
+export function numSplit(text: string): [string, string] | null {
+  const m = /^([−-]?\d[\d,]*(?:[./]\d+)?)(.*)$/s.exec(text);
+  return m ? [m[1] as string, m[2] as string] : null;
+}
+
 /** 글 속 {{이름}} 을 값으로. 모르는 이름은 오류(검사 단계에서 잡히게) */
 export function fill(text: string, vars: Record<string, string>): string {
   return text.replace(/\{\{(\w+)\}\}/g, (_, k: string) => {

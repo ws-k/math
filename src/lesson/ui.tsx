@@ -2,7 +2,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import { Rich } from '../app/Rich.tsx';
 import { renderRich } from '../lib/math.ts';
-import { fill } from './format.ts';
+import { fill, numSplit } from './format.ts';
 
 /** KaTeX 한 덩어리(글자 이스케이프는 renderRich 가 한다) */
 export function Tex({ tex, className }: { tex: string; className?: string }) {
@@ -13,6 +13,19 @@ export function Tex({ tex, className }: { tex: string; className?: string }) {
       // biome-ignore lint/security/noDangerouslySetInnerHtml: KaTeX 결과만 넣는다. 원문은 검산된 단원 JSON.
       dangerouslySetInnerHTML={{ __html: html }}
     />
+  );
+}
+
+/** formatValue 글자(보기): 수 안에서는 줄을 안 바꾸고 단위 앞에서만 바꿀 수 있게(numSplit 참고) */
+export function NumLabel({ text }: { text: string }) {
+  const sp = numSplit(text);
+  if (!sp) return <>{text}</>;
+  return (
+    <>
+      <span className="mglue">{sp[0]}</span>
+      {sp[1] && <wbr />}
+      {sp[1]}
+    </>
   );
 }
 

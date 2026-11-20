@@ -37,6 +37,7 @@ import {
   type PointObj,
   removeUser,
   sliderSnap,
+  sliderText,
   toWorld,
 } from './coord.ts';
 import { GoalLine } from './GoalLine.tsx';
@@ -347,8 +348,11 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
           vars: { ...live.current.vars, [s.id]: v },
         };
         apply(draw(p, live.current, boxRef.current));
+        const t = sliderText(s, v);
         const out = els.current.get(`s:${s.id}`);
-        if (out) out.textContent = el.value;
+        if (out) out.textContent = t;
+        // 화면 낭독기도 원시 소수(0.785…) 대신 보이는 글자(π/4)를 읽게 — 끄는 동안은 렌더 없이 직접 고친다
+        el.setAttribute('aria-valuetext', t);
       };
       const change = () => {
         sliding.current = false;
@@ -598,9 +602,10 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
             max={s.max}
             step={s.step}
             defaultValue={s.value}
+            aria-valuetext={sliderText(s, st.vars[s.id] ?? s.value)}
           />
           <b className="num" ref={reg(`s:${s.id}`)}>
-            {st.vars[s.id]}
+            {sliderText(s, st.vars[s.id] ?? s.value)}
           </b>
         </label>
       ))}

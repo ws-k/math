@@ -178,3 +178,10 @@ test('tiles 놓기: 판 밖이면 놓는 곳으로, 판 안이면 a·x+b 자리�
     placed: true,
   });
 });
+
+test('넓이 모형 범례: 이름이 이미 "가로"·"세로"로 시작하면 다시 붙이지 않는다(m3-poly-mul grow 의 "가로 가로 x")', async () => {
+  const { sideLabel } = await import('../src/lesson/widgets/areaModel.ts');
+  assert.equal(sideLabel('가로', '가로 $x$'), '가로 $x$');
+  assert.equal(sideLabel('가로', '$f(x)=x^2$'), '가로 $f(x)=x^2$');
+  assert.equal(sideLabel('세로', '세로$x$'), '세로$x$');
+});

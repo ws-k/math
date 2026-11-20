@@ -20,6 +20,7 @@ import {
   placeAt,
   rectangle,
   type SplitParams,
+  sideLabel,
   splitTotal,
   type Tile,
   type TilesParams,
@@ -244,7 +245,8 @@ function Grow({ params: p, onDone }: WidgetProps<GrowParams>) {
       <div className="legend">
         <span className="lg base">
           <i aria-hidden="true" />
-          가로 <LRich inline src={p.wLabel} /> · 세로 <LRich inline src={p.hLabel} />
+          <LRich inline src={sideLabel('가로', p.wLabel)} /> ·{' '}
+          <LRich inline src={sideLabel('세로', p.hLabel)} />
         </span>
       </div>
       <div className="readouts">

@@ -23,7 +23,7 @@ import type {
   SummaryScene,
   TermsScene,
 } from './types.ts';
-import { LRich, reducedMotion, Tex } from './ui.tsx';
+import { LRich, NumLabel, reducedMotion, Tex } from './ui.tsx';
 import { Widget } from './widgets/index.tsx';
 
 export interface SceneEnv {
@@ -135,7 +135,7 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
               disabled={right}
               onClick={() => pick(i)}
             >
-              {labels[i]}
+              <NumLabel text={labels[i] ?? ''} />
             </button>
           ))}
         </div>

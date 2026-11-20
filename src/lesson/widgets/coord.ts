@@ -56,7 +56,7 @@ export { pointXY } from './coord/point.ts';
 export { polyOf, rootCount, rootsBetween } from './coord/poly.ts';
 export { readout, readoutVal, unitOf } from './coord/readout.ts';
 export { MIN_RECT_PX, sumsAt } from './coord/rects.ts';
-export { sliderSnap } from './coord/slider.ts';
+export { sliderSnap, sliderText } from './coord/slider.ts';
 export { grade, lineTarget, userSlope } from './coord/task.ts';
 export type {
   Axis,
