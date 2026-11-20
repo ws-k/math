@@ -167,13 +167,13 @@
           "params": {
             "grid": {
               "w": 12,
-              "h": 8
+              "h": 6
             },
             "points": [
               {
                 "id": "A",
                 "x": 0,
-                "y": 8
+                "y": 6
               },
               {
                 "id": "B",
@@ -188,7 +188,7 @@
               {
                 "id": "D",
                 "x": 0,
-                "y": 6,
+                "y": 4,
                 "drag": true,
                 "on": {
                   "seg": [
@@ -199,7 +199,7 @@
               },
               {
                 "id": "E",
-                "x": 9,
+                "x": 8,
                 "y": 2,
                 "drag": true,
                 "on": {
@@ -264,7 +264,7 @@
               }
             ],
             "digits": 1,
-            "note": "놓을 때마다 두 각을 보고, 길이도 견줘 보세요.",
+            "note": "놓을 때마다 두 각과 길이를 보세요.",
             "goal": {
               "value": {
                 "of": 0,
@@ -273,9 +273,9 @@
                 },
                 "places": 3
               },
-              "hint": "$\\angle ABC$ 는 직각이에요. $\\overline{DE}$ 가 밑변처럼 가로로 눕게 D 와 E 의 높이를 맞춰 보세요."
+              "hint": "D 와 E 의 높이를 맞춰 보세요."
             },
-            "done": "세 곳 모두 평행이에요. 자리마다 $\\overline{AD}:\\overline{AB}$ 와 $\\overline{DE}:\\overline{BC}$ 를 견줘 보세요."
+            "done": "세 곳 모두 평행이에요."
           }
         },
         "after": "평행이 되는 자리마다 $\\overline{AD}:\\overline{AB}=\\overline{DE}:\\overline{BC}$ 예요. 작은 삼각형 $ADE$ 는 큰 삼각형 $ABC$ 를 그대로 줄인 모양이에요. 특히 D 가 $\\overline{AB}$ 의 한가운데일 때 $\\overline{DE}={{midDE}}$, 밑변의 딱 절반이에요. 이것이 ==중점 연결 정리==예요.",
@@ -397,7 +397,7 @@
               }
             ],
             "digits": 1,
-            "note": "넓이는 위가 작은 삼각형 ADE, 아래가 큰 삼각형 ABC 예요.",
+            "note": "넓이는 앞이 $\\triangle ADE$, 뒤가 $\\triangle ABC$ 예요.",
             "goal": {
               "visit": {
                 "of": 2,

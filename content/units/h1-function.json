@@ -98,13 +98,13 @@
               {
                 "id": "g",
                 "curve": "x+1",
-                "label": "$y=g(x)=x+1$",
+                "label": "$g(x)=x+1$",
                 "tone": "soft"
               },
               {
                 "id": "f",
                 "curve": "2*x-3",
-                "label": "$y=f(x)=2x-3$"
+                "label": "$f(x)=2x-3$"
               },
               {
                 "id": "A",

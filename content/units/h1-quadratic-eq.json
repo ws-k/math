@@ -151,11 +151,6 @@
                 "id": "f",
                 "curve": "x**2+b*x+4",
                 "label": "$y=x^2+bx+4$"
-              },
-              {
-                "readout": "value(b)",
-                "label": "$b$",
-                "digits": 0
               }
             ],
             "intro": "지금은 $x$축과 만나지 않아요. $b$ 를 키워 보세요.",
