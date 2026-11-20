@@ -79,6 +79,30 @@
   .lesson .wgt-ctl .lbtn {
     min-height: 44px;
   }
+  /* 읽는 값이 여러 줄(도형판 측정값 5개 = 3줄)이면 줄마다 28px + 간격 6px 이 쌓여 m3-circle cyclic 이 12px,
+     힌트가 두 줄로 뜨면 35px 넘쳤다 — 줄 사이만 좁힌다(글자 크기는 그대로) */
+  .lesson .wgt-read {
+    row-gap: 2px;
+    line-height: 1.3;
+  }
+  /* 분수의 곱(넓이 모형): 상태 셋(가로·세로·겹친 칸)이 두 줄, ± 버튼 넷이 두 줄이라 e-decimal mul 이 45px 넘쳤다.
+     상태는 글자를 조금 줄여 한 줄에, 버튼 넷은 한 줄 버튼 줄(.one-row)로 */
+  .lesson .fmul .wgt-read {
+    column-gap: 10px;
+    font-size: 0.86rem;
+  }
+  /* 한 줄 버튼 줄: 버튼을 줄바꿈 없이 고르게 나눈다(높이 44px 그대로). 확률 실험 1번·10번·100번·다시, 분수 곱 ± 넷 */
+  .lesson .wgt-ctl.one-row {
+    flex-wrap: nowrap;
+  }
+  .lesson .wgt-ctl.one-row .lbtn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 4px;
+  }
+  .lesson .wgt-ctl.one-row .lbtn.quiet {
+    width: auto;
+  }
 }
 
 /* 수직선 */
@@ -433,19 +457,8 @@
     font-weight: 700;
   }
   .lesson .sim .wgt-read {
-    gap: 2px 12px;
+    column-gap: 12px;
     min-height: 0;
-  }
-  .lesson .wgt-ctl.sim-fold {
-    flex-wrap: nowrap;
-  }
-  .lesson .wgt-ctl.sim-fold .lbtn {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 0 6px;
-  }
-  .lesson .wgt-ctl.sim-fold .lbtn.quiet {
-    width: auto;
   }
 }
 

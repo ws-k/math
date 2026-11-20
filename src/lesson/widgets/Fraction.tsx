@@ -346,7 +346,8 @@ function MulBoard({ p, s, settle }: { p: FParams; s: FState; settle(n: FState): 
           </span>
         ))}
       </div>
-      <div className="wgt-ctl">
+      {/* 접은 화면에서는 ± 넷을 한 줄에(widgets.css .one-row — 넓은 화면은 그대로 줄바꿈) */}
+      <div className="wgt-ctl one-row">
         <button type="button" className="lbtn soft" onClick={() => set('wa', s.wa - 1)}>
           가로 −
         </button>

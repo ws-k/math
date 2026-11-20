@@ -1,7 +1,14 @@
 // 레슨 장면들. 장면은 데이터만 그리고, 진행(다음 장면·완료·처음부터)은 LessonPlayer 가 쥔다.
 // 화면 글자 가운데 값에서 나오는 것(보기 글자·식·{{값}})은 format.ts·LRich 로 데이터에서 만든다.
 // React key 는 데이터의 id 나 자리 번호로 — 글 내용을 key 로 쓰면 같은 글이 둘일 때 화면이 섞인다.
-import { type CSSProperties, type ReactNode, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  type RefObject,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { InkControl } from '../app/InkPage.tsx';
 import { InkPage } from '../app/InkPage.tsx';
 import { NumPad } from '../app/NumPad.tsx';
@@ -10,6 +17,7 @@ import type { Background, Tool } from '../ink/types.ts';
 import { compareAnswer } from '../lib/answer.ts';
 import { formatValue, handsOnCount, spotEquation, spotFixed, symToTex } from './format.ts';
 import { legacyInkKey, lessonInkKey, migrateInk } from './inkKeys.ts';
+import { optColumns } from './optCols.ts';
 import type {
   ExploreScene,
   IntroScene,
@@ -100,8 +108,45 @@ function Intro({ s, env }: { s: IntroScene; env: SceneEnv }) {
   );
 }
 
+/**
+ * 보기 단추 열 수(optCols.ts): 가장 넓은 단추가 한 줄 몫에 안 들면 두 줄로. 단추 폭이 아니라 단추 안 글이
+ * 실제로 차지한 폭(Range)으로 잰다 — 수는 끊기지 않고(NumLabel 의 덩어리) 단위만 다음 줄로 내려가므로, 그렇게
+ * 내려간 뒤의 폭이 단추에 필요한 폭이다. 이미 두 줄로 넓어진 단추로 재도 글 폭은 같아 다시 한 줄에 드는지 안다.
+ * 칸 폭이 바뀌면(접기·펴기·회전) 다시 잰다. 그리기 전에 재야 넘친 모양이 한 번 보였다가 바뀌지 않는다(useLayoutEffect)
+ */
+function useOptColumns(ref: RefObject<HTMLDivElement | null>, n: number): number {
+  const [cols, setCols] = useState(n);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const range = document.createRange();
+      let need = 0;
+      for (const b of el.children) {
+        const cs = getComputedStyle(b);
+        const edge =
+          parseFloat(cs.paddingLeft) +
+          parseFloat(cs.paddingRight) +
+          parseFloat(cs.borderLeftWidth) +
+          parseFloat(cs.borderRightWidth);
+        range.selectNodeContents(b);
+        need = Math.max(need, range.getBoundingClientRect().width + edge);
+      }
+      const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
+      setCols(optColumns(n, Math.ceil(need), el.clientWidth, gap));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref, n]);
+  return cols;
+}
+
 function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
   const [picked, setPicked] = useState(false);
+  const optsRef = useRef<HTMLDivElement>(null);
+  const cols = useOptColumns(optsRef, s.choices.length);
   const [wrong, setWrong] = useState<{ i: number; n: number } | null>(null);
   // 이어 보기에서 이미 끝낸 장면도 답과 풀이를 펼쳐 둔다
   const right = picked || env.done.includes(s.id);
@@ -122,8 +167,10 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
     <>
       <Head s={s} />
       <div className="card">
-        {s.widget && <Widget spec={s.widget} onDone={() => {}} onMiss={() => {}} />}
-        <div className="opts" style={{ '--n': s.choices.length } as CSSProperties}>
+        {s.widget && (
+          <Widget spec={s.widget} onDone={() => {}} onMiss={() => {}} answered={right} />
+        )}
+        <div className="opts" ref={optsRef} style={{ '--n': cols } as CSSProperties}>
           {s.choices.map((_, i) => (
             <button
               type="button"
