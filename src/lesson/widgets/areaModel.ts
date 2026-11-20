@@ -242,15 +242,24 @@ export const lenSym = (l: Len) =>
 /** 타일 식 (x² 개수)x² + (x 개수)x + (1 개수) */
 export const tilesSym = (p: TilesParams) => `${p.x2}*x**2+${p.x}*x+${p.one}`;
 
-/** 타일로 직사각형을 만들 수 있나: (a1 x + b1)(a2 x + b2) = 타일 식인 자연수 a·b 가 있나 */
-function factorable(p: TilesParams): boolean {
+/**
+ * 타일로 만들 수 있는 직사각형들: (a1 x + b1)(a2 x + b2) = 타일 식인 자연수 a·b 쌍. 형식 검사(만들 수 있나)와
+ * 접은 화면 판 크기(tilesSides)가 같은 목록을 쓴다 — 따로 세면 둘이 어긋날 수 있다
+ */
+export function tileFactorings(
+  p: TilesParams,
+): { a1: number; b1: number; a2: number; b2: number }[] {
+  const out: { a1: number; b1: number; a2: number; b2: number }[] = [];
   for (let a1 = 1; a1 <= p.x2; a1++)
     for (let a2 = 1; a2 <= p.x2; a2++)
       for (let b1 = 0; b1 <= 9; b1++)
         for (let b2 = 0; b2 <= 9; b2++)
-          if (a1 * a2 === p.x2 && a1 * b2 + a2 * b1 === p.x && b1 * b2 === p.one) return true;
-  return false;
+          if (a1 * a2 === p.x2 && a1 * b2 + a2 * b1 === p.x && b1 * b2 === p.one)
+            out.push({ a1, b1, a2, b2 });
+  return out;
 }
+
+const factorable = (p: TilesParams) => tileFactorings(p).length > 0;
 
 // ---- 형식 검사 ----
 
@@ -480,22 +489,260 @@ export function growStops(p: GrowParams, box: { w: number; h: number }) {
   });
 }
 
+/**
+ * grow 그림 상자. 접은 화면은 낮게 — 238px 이면 아래 읽는 값 6칸·안내·버튼이 '계속하기' 밑으로 밀렸고,
+ * 목표를 이룬 뒤 두 줄 완료 글(math2-diff-product-rule)까지 들어가려면 150px 까지 낮춰야 했다
+ */
+export function growBox(w: number, compact: boolean): { w: number; h: number } {
+  return compact
+    ? { w, h: Math.min(175, Math.max(150, Math.round(w * 0.5))) }
+    : { w, h: Math.min(320, Math.max(220, Math.round(w * 0.8))) };
+}
+
 /** tiles: 판의 한 변(길이 단위). x 둘에 1 여섯까지 들어간다 */
 export const BOARD = 2 * XLEN + 6;
 
 export interface TileRect extends Rect {
   n: number;
   placed: boolean;
+  /** 더미 아래에 깔린 타일(접은 화면). 그리기만 하고 누를 수 없다 */
+  under?: boolean;
+  /** 더미 맨 위 타일의 더미 크기(접은 화면) */
+  count?: number;
+  /** 누르는 영역이 그림보다 클 때(접은 화면 놓는 곳: 44px 이상) */
+  hit?: Rect;
+}
+
+/** 타일로 만들 수 있는 직사각형의 짧은 변·긴 변(길이 단위). 인수분해가 여럿이면 각각 가장 긴 것 */
+export function tilesSides(p: TilesParams): { short: number; long: number } {
+  let short = 0;
+  let long = 0;
+  for (const { a1, b1, a2, b2 } of tileFactorings(p)) {
+    const s = [a1 * XLEN + b1, a2 * XLEN + b2].sort((m, n) => m - n) as [number, number];
+    short = Math.max(short, s[0]);
+    long = Math.max(long, s[1]);
+  }
+  return { short, long };
+}
+
+export interface TilesLayout {
+  /** 길이 1 의 px */
+  u: number;
+  /** 판 크기(길이 단위) */
+  board: { w: number; h: number };
+  /** 놓는 곳에서 같은 타일을 한 더미로 쌓나(접은 화면) */
+  stack: boolean;
+}
+
+/** 판에서 놓는 곳까지 띄우는 px(그 가운데에 점선) — 넓은 배치와 같은 값 */
+const TRAY_GAP = 14;
+/** 누르는 영역 최소(iOS 44pt) */
+const HIT_MIN = 44;
+/**
+ * 접은 화면 놓는 곳의 더미 사이 px. 좁은 더미 둘(세운 x·1, 폭 u)이 이웃하면 둘 다 누르는 영역을 양쪽으로
+ * (44 − u)/2 씩 넓히므로 사이가 44 − u 는 돼야 안 겹친다. 칸이 클 때는 14px(넓은 배치의 판–놓는 곳 사이와 같게)
+ */
+const slotGap = (u: number) => Math.max(14, HIT_MIN - u);
+/** 놓는 곳 한 줄의 폭: x²·누운 x 더미(2.6칸씩)·세운 x·1 더미(1칸씩) + 사이 셋 + 오른쪽 끝(1 의 누르는 영역·개수 표시) */
+const trayWidth = (u: number) =>
+  (2 * XLEN + 2) * u + 3 * slotGap(u) + Math.max(10, (HIT_MIN - u) / 2);
+/** 접은 화면 타일 그림(판 + 놓는 곳)의 높이 상한 px. 382×580 의 카드 몫 444 에서 안내 두 줄·버튼·여백을 빼고
+ * 10여 px 남긴 값 — 고른 뒤 안내 글이 바뀌어도 '계속하기' 밑으로 밀리지 않게 */
+export const FOLD_BUDGET = 288;
+/** 두 방향 다 되는 판에서 한 칸이 이보다 작아지면 누르기 어려워 긴 변을 가로로 눕힌 판을 쓴다 */
+const FOLD_U_MIN = 28;
+
+/**
+ * 타일 판 배치. 넓은 화면은 예전 그대로(정사각 판 BOARD, 놓는 곳에 타일을 줄지어).
+ * 접은 화면(382×580)은 판 BOARD(11.2칸)에 놓는 곳 세 줄이 붙어 그림만 454~489px 이라 한 화면을 넘었고,
+ * 판을 그대로 둔 채 줄이면 1 타일이 26px 아래로 작아진다. 그래서
+ *  ① 답(만들 직사각형)으로 정하는 것은 칸 크기 u 뿐: 긴 변 + 1칸이 가로·세로 어느 방향으로도 들어가는 가장 큰 u.
+ *     그 u 가 FOLD_U_MIN 보다 작아지면(2x²+5x+3: 긴 변 8.2칸) 짧은 변 + 1칸만 세로로 들어가면 되는 u(긴 변을
+ *     가로로 — 단원 글도 '나란히 놓고'라 이끈다).
+ *  ② 판 모양은 u 에서만 나온다: 폭은 부품 폭 전체, 높이는 그림 높이 예산(FOLD_BUDGET)이 허락하는 만큼 전부.
+ *     판을 답 크기에 딱 맞추면 판 모양이 곧 답의 힌트가 된다(리뷰 지적).
+ *  ③ 놓는 곳은 같은 타일을 한 더미(맨 위 하나만 누름, 개수 표시)로 쌓아 한 줄. 줄을 늘리거나 가로로 밀게 하지 않는다.
+ */
+export function tilesLayout(p: TilesParams, width: number, compact: boolean): TilesLayout {
+  if (!compact)
+    return { u: Math.min(width / BOARD, 34), board: { w: BOARD, h: BOARD }, stack: false };
+  const { short, long } = tilesSides(p);
+  // 놓는 곳 한 줄이 폭에 드는 가장 큰 u(사이 간격이 u 에 따라 달라 반으로 나눠 찾는다)
+  let lo = 1;
+  let hi = 34;
+  for (let k = 0; k < 40; k++) {
+    const m = (lo + hi) / 2;
+    if (trayWidth(m) <= width) lo = m;
+    else hi = m;
+  }
+  const room = FOLD_BUDGET - TRAY_GAP - 4;
+  const fit = (bh: number) => Math.min(34, width / (long + 1), room / (bh + XLEN), lo);
+  const free = fit(long + 1);
+  const flat = fit(short + 1);
+  const u = free >= FOLD_U_MIN || flat <= free ? free : flat;
+  return { u, board: { w: width / u, h: Math.min(BOARD, room / u - XLEN) }, stack: true };
 }
 
 /**
- * tiles 의 그릴 것. 판 위 타일은 자리(a·x+b)대로, 판 밖 타일은 판 아래 놓는 곳에 줄지어. u = 길이 1 의 px.
- * 놓는 곳 높이까지 돌려줘 화면이 SVG 높이를 정한다.
+ * 판 크기가 바뀐 뒤(접기·펴기·회전·주소창으로 화면 높이가 바뀜) 판 밖으로 나간 타일 정리.
+ * 판 위 타일을 그대로 두면 판 밖에 떠 있는 타일이 생기고, 그 상태로는 직사각형을 마칠 수 없다.
+ * 놓인 묶음을 통째로 왼쪽 위(0,0) 쪽으로 당겨 붙은 모양을 지키고, 그래도 안 들어가는 타일만 놓는 곳으로 보낸다.
+ * 모두 판 안이면 같은 배열을 돌려준다(다시 그리지 않게).
+ */
+export function fitTiles(tiles: Tile[], board: { w: number; h: number }): Tile[] {
+  const inside = (t: Tile) => {
+    if (!t.at) return true;
+    const s = tileSize(t);
+    return lenN(t.at.x) + lenN(s.w) <= board.w + EPS && lenN(t.at.y) + lenN(s.h) <= board.h + EPS;
+  };
+  if (tiles.every(inside)) return tiles;
+  const placed = tiles.flatMap((t) => (t.at ? [t.at] : []));
+  // 당기는 양: 가장 왼쪽(위) 타일의 자리. 그만큼 빼면 a·x+b 의 a 나 b 가 음수가 되는 타일이 있으면
+  // a·b 를 따로 가장 작은 만큼만(늘 0 이상으로 남는 양)
+  const shift = (k: 'x' | 'y'): Len => {
+    const ls = placed.map((at) => at[k]);
+    const min = ls.reduce((m, l) => (lenN(l) < lenN(m) ? l : m));
+    if (ls.every((l) => l.a >= min.a && l.b >= min.b)) return min;
+    return { a: Math.min(...ls.map((l) => l.a)), b: Math.min(...ls.map((l) => l.b)) };
+  };
+  const dx = placed.length ? shift('x') : { a: 0, b: 0 };
+  const dy = placed.length ? shift('y') : { a: 0, b: 0 };
+  return tiles.map((t) => {
+    if (!t.at) return t;
+    const n: Tile = {
+      ...t,
+      at: {
+        x: { a: t.at.x.a - dx.a, b: t.at.x.b - dx.b },
+        y: { a: t.at.y.a - dy.a, b: t.at.y.b - dy.b },
+      },
+    };
+    return inside(n) ? n : { ...t, at: null };
+  });
+}
+
+/** 누른 자리의 타일(위에 그린 것부터). 더미 아래 타일은 고르지 않는다 */
+export function tileAt(rects: TileRect[], x: number, y: number): TileRect | undefined {
+  return [...rects].reverse().find((r) => {
+    if (r.under) return false;
+    const h = r.hit ?? r;
+    return x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h;
+  });
+}
+
+/** 접은 화면 놓는 곳: 더미 칸(x², 누운 x, 세운 x, 1) 순서대로 한 줄. 타일이 하나도 없는 종류는 칸도 없다 */
+function stackDraw(
+  tiles: Tile[],
+  u: number,
+  trayTop: number,
+  sel: number | null | undefined,
+): { rects: TileRect[]; slots: Rect[]; bottom: number } {
+  const slots: { kind: TileKind; rot: boolean }[] = [
+    { kind: 'x2', rot: false },
+    { kind: 'x', rot: false },
+    { kind: 'x', rot: true },
+    { kind: 'one', rot: false },
+  ].filter((s) => tiles.some((t) => t.kind === s.kind)) as { kind: TileKind; rot: boolean }[];
+  const rects: TileRect[] = [];
+  const out: Rect[] = [];
+  let x = 0;
+  let bottom = trayTop;
+  for (const s of slots) {
+    const size = tileSize({ kind: s.kind, rot: s.rot, at: null });
+    const w = lenN(size.w) * u;
+    const h = lenN(size.h) * u;
+    const members = tiles
+      .map((t, n) => ({ t, n }))
+      .filter(({ t }) => !t.at && t.kind === s.kind && (s.kind !== 'x' || t.rot === s.rot))
+      .map(({ n }) => n);
+    // 고른 타일은 늘 맨 위 — 돌리면 다른 더미로 옮겨 가도 테두리가 보이게
+    const top = sel != null && members.includes(sel) ? sel : members[members.length - 1];
+    const hw = Math.max(w, HIT_MIN);
+    const hh = Math.max(h, HIT_MIN);
+    for (const n of [...members.filter((m) => m !== top), ...(top === undefined ? [] : [top])]) {
+      const isTop = n === top;
+      rects.push({
+        key: `t${n}`,
+        n,
+        x: r1(x),
+        y: r1(trayTop),
+        w: r1(w),
+        h: r1(h),
+        cls: `tile ${s.kind}`,
+        placed: false,
+        ...(isTop
+          ? {
+              count: members.length,
+              hit: {
+                key: `h${n}`,
+                x: r1(x + (w - hw) / 2),
+                y: r1(trayTop + (h - hh) / 2),
+                w: r1(hw),
+                h: r1(hh),
+                cls: 'hit',
+              },
+            }
+          : { under: true }),
+      });
+    }
+    out.push({
+      key: `s${s.kind}${s.rot ? 'r' : ''}`,
+      x: r1(x),
+      y: r1(trayTop),
+      w: r1(w),
+      h: r1(h),
+      cls: `slot ${s.kind}${s.rot ? ' rot' : ''}`,
+    });
+    x += w + slotGap(u);
+    bottom = Math.max(bottom, trayTop + h);
+  }
+  return { rects, slots: out, bottom };
+}
+
+/**
+ * tiles 의 그릴 것. 판 위 타일은 자리(a·x+b)대로, 판 밖 타일은 판 아래 놓는 곳에 줄지어(접은 화면은 더미로).
+ * u = 길이 1 의 px. 놓는 곳 높이까지 돌려줘 화면이 SVG 높이를 정한다.
  */
 export function tilesDraw(
   tiles: Tile[],
   u: number,
-): { rects: TileRect[]; trayTop: number; height: number } {
+  layout?: Omit<TilesLayout, 'u'> & { sel?: number | null },
+): {
+  rects: TileRect[];
+  trayTop: number;
+  height: number;
+  board: { w: number; h: number };
+  /** 접은 화면 더미 자리(비어도 그리는 점선 칸) */
+  slots?: Rect[];
+} {
+  const bw = layout?.board.w ?? BOARD;
+  const bh = layout?.board.h ?? BOARD;
+  const board = { w: r1(bw * u), h: r1(bh * u) };
+  if (layout?.stack) {
+    const trayTop = bh * u + TRAY_GAP;
+    const placed: TileRect[] = [];
+    tiles.forEach((t, n) => {
+      if (!t.at) return;
+      const s = tileSize(t);
+      placed.push({
+        key: `t${n}`,
+        n,
+        x: r1(lenN(t.at.x) * u),
+        y: r1(lenN(t.at.y) * u),
+        w: r1(lenN(s.w) * u),
+        h: r1(lenN(s.h) * u),
+        cls: `tile ${t.kind}`,
+        placed: true,
+      });
+    });
+    const tray = stackDraw(tiles, u, trayTop, layout.sel);
+    return {
+      rects: [...placed, ...tray.rects],
+      trayTop,
+      height: r1(tray.bottom + 4),
+      board,
+      slots: tray.slots,
+    };
+  }
   const rects: TileRect[] = [];
   const trayTop = BOARD * u + 14;
   let x = 0;
@@ -537,15 +784,24 @@ export function tilesDraw(
     x += w + gap;
     rowH = Math.max(rowH, h);
   });
-  return { rects, trayTop, height: r1(y + rowH + 4) };
+  return { rects, trayTop, height: r1(y + rowH + 4), board };
 }
 
-/** 타일을 판 위 px 자리(왼쪽 위)에 놓은 자리. 판 밖으로 나가면 null(놓는 곳으로 돌아간다) */
-export function placeAt(t: Tile, px: number, py: number, u: number): { x: Len; y: Len } | null {
+/**
+ * 타일을 판 위 px 자리(왼쪽 위)에 놓은 자리. 판 밖으로 나가면 null(놓는 곳으로 돌아간다).
+ * board = 판 크기(길이 단위) — 접은 화면은 장면마다 줄인 판(tilesLayout)
+ */
+export function placeAt(
+  t: Tile,
+  px: number,
+  py: number,
+  u: number,
+  board: { w: number; h: number } = { w: BOARD, h: BOARD },
+): { x: Len; y: Len } | null {
   const s = tileSize(t);
   const x = snapLen(px / u);
   const y = snapLen(py / u);
-  if (lenN(x) + lenN(s.w) > BOARD + EPS || lenN(y) + lenN(s.h) > BOARD + EPS) return null;
-  if (px + (lenN(s.w) * u) / 2 < 0 || py > BOARD * u) return null;
+  if (lenN(x) + lenN(s.w) > board.w + EPS || lenN(y) + lenN(s.h) > board.h + EPS) return null;
+  if (px + (lenN(s.w) * u) / 2 < 0 || py > board.h * u) return null;
   return { x, y };
 }
