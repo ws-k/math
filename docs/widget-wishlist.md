@@ -140,3 +140,4 @@
 - (묶음 카, 다듬기) 옛 '다가가기' 목표가 정답 점을 처음부터 보여 줌: math2-extrema drag(M), math1-exponent halve(A)·half(H), math1-log double(T) → 숨긴 목표/값 맞추기로 바꿀 후보. mvt 레슨 값 mc 검산식이 리스트 문법
 - (묶음 타) **좌표평면 끄는 점 손잡이가 y 범위 밖으로 나가면 그림 위로 떠오름**(잘리지 않음) — calc-series geo 에서 r=1.1·n≥9. 손잡이 자르기/테두리 붙이기 또는 끌기 범위 제한(⑤)
 - (묶음 타, 범위 밖) calc-series p107·calc-trig-addition p110 검산식이 공식을 그대로 담음(요청 98 나머지), calc-quotient-chain recip 옛 다가가기 목표
+- (화면 점검) **목표를 이룬 뒤 화면 측정 필요**: done·힌트 글(2~4줄)이 나오면 카드가 다시 444px 를 넘을 수 있음(어림: math1-log-func base 505, math2-tangent mvt·math1-exp-func slider 480, rules·trip 470). 목표 달성 상태 측정 + done 글 줄이기. math2-continuity hook 여유 3px. math2-indefinite power 점 P·Q 이름 겹침. 범례 뺀 5장면(shift·rules·power·limit hook·sides) — 범례를 그림 안에 겹쳐 그리는 부품 기능이 있으면 되살릴 것
