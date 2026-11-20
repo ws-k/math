@@ -90,14 +90,9 @@
                 "curve": "x**2+a+Abs(sqrt(x-1))-sqrt(x-1)",
                 "label": "$y=x^2+a\\ (x\\ge1)$",
                 "tone": "accent"
-              },
-              {
-                "readout": "value(a)",
-                "label": "$a$",
-                "digits": 0
               }
             ],
-            "intro": "$a$ 를 움직이면 오른쪽 조각만 위아래로 움직여요."
+            "intro": "$a$ 를 바꾸면 오른쪽 조각만 움직여요."
           }
         },
         "choices": [

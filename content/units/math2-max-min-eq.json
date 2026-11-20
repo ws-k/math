@@ -268,11 +268,6 @@
                 "curve": "k",
                 "label": "$y=k$",
                 "tone": "accent"
-              },
-              {
-                "readout": "value(k)",
-                "label": "$k$",
-                "digits": 0
               }
             ],
             "intro": "$k$ 를 $4$ 에서 한 칸씩 내려 보세요."

@@ -229,7 +229,7 @@
               {
                 "id": "A",
                 "curve": "x**2",
-                "label": "$y=\\int_0^x 2t\\,dt$ (0 부터 $x$ 까지 넓이)"
+                "label": "$y=\\int_0^x 2t\\,dt$"
               },
               {
                 "id": "B",
@@ -264,7 +264,7 @@
               },
               {
                 "readout": "deriv(A,B)",
-                "label": "넓이가 늘어나는 빠르기"
+                "label": "늘어나는 빠르기"
               }
             ],
             "goal": {

@@ -62,7 +62,7 @@
         "id": "hook",
         "chip": "오늘의 질문",
         "title": "$x$ 가 1 에 다가가면\n$f(x)$ 는 어디로 갈까요?",
-        "lead": "$f(x)=\\dfrac{x^2-1}{x-1}$ 은 $x=1$ 에서 분모가 0 이라 값이 없어요. 점 Q 를 끌어 $x=1$ 가까이 가져가 보고 답을 골라 보세요.",
+        "lead": "$f(x)=\\dfrac{x^2-1}{x-1}$ 은 $x=1$ 에서 분모가 0 이라 값이 없어요. 그래서 점 Q 는 딱 $x=1$ 에는 멈추지 못해요. Q 를 끌어 $x=1$ 가까이 가져가 보고 답을 골라 보세요.",
         "gate": true,
         "widget": {
           "type": "coord",
@@ -81,8 +81,7 @@
             "objects": [
               {
                 "id": "f",
-                "curve": "(x**2-1)/(x-1)",
-                "label": "$y=\\dfrac{x^2-1}{x-1}$"
+                "curve": "(x**2-1)/(x-1)"
               },
               {
                 "id": "Q",
@@ -103,7 +102,7 @@
                 "label": "Q 의 $y$"
               }
             ],
-            "intro": "Q 를 끌어 $x=1$ 에 가까이 가 보세요. 딱 1 에는 멈출 수 없어요."
+            "intro": "Q 를 $x=1$ 가까이 끌어 보세요."
           }
         },
         "choices": [
@@ -155,13 +154,11 @@
             "objects": [
               {
                 "id": "L",
-                "curve": "x+1+log(Abs(1-x))-log(1-x)",
-                "label": "$y=x+1\\ (x<1)$"
+                "curve": "x+1+log(Abs(1-x))-log(1-x)"
               },
               {
                 "id": "G",
                 "curve": "4-x+Abs(sqrt(x-1))-sqrt(x-1)",
-                "label": "$y=4-x\\ (x\\ge1)$",
                 "tone": "accent"
               },
               {
@@ -317,14 +314,9 @@
                 "id": "f",
                 "curve": "(x**2+a*x-3)/(x-1)",
                 "label": "$y=\\dfrac{x^2+ax-3}{x-1}$"
-              },
-              {
-                "readout": "value(a)",
-                "label": "$a$",
-                "digits": 0
               }
             ],
-            "intro": "$a$ 를 하나씩 바꿔 보세요. 그래프가 위아래로 찢어지지 않는 $a$ 가 있어요."
+            "intro": "그래프가 찢어지지 않는 $a$ 를 찾아봐요."
           }
         },
         "choices": [
