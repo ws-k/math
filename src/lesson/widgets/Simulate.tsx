@@ -18,12 +18,16 @@ import {
 
 const X0 = 34;
 
-export function Simulate({ params: p, onDone }: WidgetProps<SimParams>) {
+export function Simulate({ params: p, onDone, answered }: WidgetProps<SimParams>) {
   const [s, setS] = useState<SimState>(() => simInit(p));
   const resets = useRef(0);
   const rng = useRef(makeRng(p.seed));
   const done = useRef(false);
   const compact = useCompact();
+  // 질문 장면은 맞히기 전까지 이론값(표의 칸·그림의 점선·점선 범례 글)을 뺀다 — '앞 1개 이론 1/2' 칸과
+  // 50% 눈금에 딱 놓인 점선이 답을 그대로 보여 줬다(m2-probability hook). 탐색 장면(answered 없음)은 비율이
+  // 이론값에 다가가는 것을 보는 게 목적이라 늘 보인다
+  const theory = answered !== false;
   const { W, H, TOP, BASE } = simFrame(compact);
   const bars = simBars(p, s);
   const ymax = Math.min(1, Math.ceil(Math.max(...bars.map((b) => b.theory)) * 2 * 10) / 10);
@@ -61,13 +65,15 @@ export function Simulate({ params: p, onDone }: WidgetProps<SimParams>) {
           return (
             <g key={b.label}>
               <rect x={x} y={y(b.freq)} width={w} height={BASE - y(b.freq)} className="sim-bar" />
-              <line
-                x1={x - 3}
-                y1={y(b.theory)}
-                x2={x + w + 3}
-                y2={y(b.theory)}
-                className="sim-theory"
-              />
+              {theory && (
+                <line
+                  x1={x - 3}
+                  y1={y(b.theory)}
+                  x2={x + w + 3}
+                  y2={y(b.theory)}
+                  className="sim-theory"
+                />
+              )}
               <text x={x + w / 2} y={BASE + 18} className="sim-lab">
                 {b.label}
               </text>
@@ -78,7 +84,9 @@ export function Simulate({ params: p, onDone }: WidgetProps<SimParams>) {
       <div className="wgt-read" aria-live="polite">
         <span className="num">던진 횟수 {s.trials}번</span>
         <span className="sim-legend">
-          {compact ? '막대 비율 · 점선 이론' : '막대 = 나온 비율 · 점선 = 이론값'}
+          {compact
+            ? `막대 비율${theory ? ' · 점선 이론' : ''}`
+            : `막대 = 나온 비율${theory ? ' · 점선 = 이론값' : ''}`}
         </span>
       </div>
       {compact ? (
@@ -102,14 +110,16 @@ export function Simulate({ params: p, onDone }: WidgetProps<SimParams>) {
                   </td>
                 ))}
               </tr>
-              <tr>
-                <th scope="row">이론</th>
-                {idx.map((i) => (
-                  <td key={i} className="num">
-                    {bars[i]?.theoryText}
-                  </td>
-                ))}
-              </tr>
+              {theory && (
+                <tr>
+                  <th scope="row">이론</th>
+                  {idx.map((i) => (
+                    <td key={i} className="num">
+                      {bars[i]?.theoryText}
+                    </td>
+                  ))}
+                </tr>
+              )}
             </tbody>
           </table>
         ))
@@ -120,14 +130,14 @@ export function Simulate({ params: p, onDone }: WidgetProps<SimParams>) {
               <tr key={b.label}>
                 <th scope="row">{b.label}</th>
                 <td className="num">{b.text}</td>
-                <td className="num">이론 {b.theoryText}</td>
+                {theory && <td className="num">이론 {b.theoryText}</td>}
               </tr>
             ))}
           </tbody>
         </table>
       )}
       {/* 접은 화면은 넷을 한 줄에: 보이는 글은 짧게('1번'), 읽어 주는 이름은 길게('동전 1번 던지기' — 보이는 글을 품는다) */}
-      <div className={`wgt-ctl${compact ? ' sim-fold' : ''}`}>
+      <div className={`wgt-ctl${compact ? ' one-row' : ''}`}>
         {[1, 10, 100].map((t) => (
           <button
             type="button"

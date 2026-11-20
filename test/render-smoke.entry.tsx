@@ -10,8 +10,8 @@ import { LessonPlayer } from '../src/lesson/LessonPlayer.tsx';
 
 export const units = content.units as Unit[];
 
-/** 레슨의 장면을 앞에서부터 shown 개(기본: 모두) 펼친 화면 HTML. 끝낸 장면은 없다 */
-export function renderLesson(unit: Unit, shown?: number): string {
+/** 레슨의 장면을 앞에서부터 shown 개(기본: 모두) 펼친 화면 HTML. 끝낸 장면은 done(기본: 없음) */
+export function renderLesson(unit: Unit, shown?: number, done: string[] = []): string {
   if (!unit.lesson) throw new Error(`${unit.id}: 레슨 없음`);
   return renderToStaticMarkup(
     <LessonPlayer
@@ -19,7 +19,7 @@ export function renderLesson(unit: Unit, shown?: number): string {
       lesson={unit.lesson}
       tool={DEFAULT_SETTINGS.tool}
       background={DEFAULT_SETTINGS.background}
-      initial={{ shown: shown ?? unit.lesson.scenes.length, done: [] }}
+      initial={{ shown: shown ?? unit.lesson.scenes.length, done }}
     />,
   );
 }

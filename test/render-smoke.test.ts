@@ -14,7 +14,7 @@ import { goodLesson } from './lesson-fixture.ts';
 
 type Entry = {
   units: Unit[];
-  renderLesson(u: Unit, shown?: number): string;
+  renderLesson(u: Unit, shown?: number, done?: string[]): string;
   renderScreens(u: Unit): string[];
 };
 
@@ -224,6 +224,57 @@ test('접은 화면(382×580) 모양도 예외 없이 그려진다: 확률 실�
     const tiles = pick('m3-factoring');
     assert.match(tiles, /class="slot x rot"/);
     assert.match(pick('math2-diff-product-rule'), /class="readouts grow-ro"/);
+  } finally {
+    g.matchMedia = saved;
+  }
+});
+
+/** 레슨 HTML 에서 장면 하나(data-scene 부터 다음 장면 앞까지) */
+const sceneHtml = (html: string, id: string): string => {
+  const at = html.indexOf(`data-scene="${id}"`);
+  assert.ok(at >= 0, id);
+  const next = html.indexOf('data-scene="', at + 1);
+  return html.slice(at, next < 0 ? undefined : next);
+};
+
+test('확률 실험: 질문 장면은 답을 맞히기 전까지 이론값 칸을 숨긴다(표가 정답을 미리 보여 주지 않게), 탐색 장면은 그대로', async () => {
+  // m2-probability hook 은 "동전 두 개, 앞면이 1개일 확률은?" — 이론 칸의 '앞 1개 1/2' 가 곧 답이었다
+  const { units, renderLesson } = await entry;
+  const u = units.find((x) => x.id === 'm2-probability');
+  assert.ok(u?.lesson);
+  const before = renderLesson(u);
+  assert.ok(!sceneHtml(before, 'hook').includes('이론 '), '질문 장면(넓은 화면): 이론 칸 없음');
+  assert.ok(!sceneHtml(before, 'bag').includes('이론 '), '질문 장면 bag');
+  assert.ok(sceneHtml(before, 'dice').includes('이론 '), '탐색 장면은 이론값을 보여 준다');
+  // 그림의 이론 점선도 같다 — '앞 1개' 점선이 50% 눈금에 딱 놓여 답을 그대로 보여 줬다. 없는 점선을 가리키는 범례 글도 뺀다
+  assert.ok(!sceneHtml(before, 'hook').includes('sim-theory'), '질문 장면: 이론 점선 없음');
+  assert.ok(!sceneHtml(before, 'hook').includes('점선'), '질문 장면: 점선 범례 글 없음');
+  assert.ok(sceneHtml(before, 'dice').includes('sim-theory'), '탐색 장면: 이론 점선 있음');
+  assert.ok(sceneHtml(before, 'dice').includes('점선'), '탐색 장면: 점선 범례 글 있음');
+  const solved = sceneHtml(renderLesson(u, undefined, ['hook']), 'hook');
+  assert.ok(solved.includes('sim-theory') && solved.includes('점선'), '맞힌 뒤: 점선·범례 보임');
+  // 맞힌 뒤(이어 보기로 이미 끝낸 장면 포함)에는 이론값과 견주어 본다
+  assert.ok(
+    sceneHtml(renderLesson(u, undefined, ['hook']), 'hook').includes('이론 '),
+    '맞힌 뒤에는 보임',
+  );
+  // 접은 화면 가로 표도 같다(이론 줄)
+  const { COMPACT_QUERY } = await import('../src/lesson/widgets/compact.ts');
+  const g = globalThis as { matchMedia?: unknown };
+  const saved = g.matchMedia;
+  g.matchMedia = (q: string) => ({
+    matches: q === COMPACT_QUERY,
+    addEventListener() {},
+    removeEventListener() {},
+  });
+  try {
+    const fold = renderLesson(u);
+    assert.ok(!sceneHtml(fold, 'hook').includes('>이론<'), '접은 화면 질문 장면: 이론 줄 없음');
+    assert.ok(sceneHtml(fold, 'dice').includes('>이론<'), '접은 화면 탐색 장면: 이론 줄 있음');
+    assert.ok(
+      sceneHtml(renderLesson(u, undefined, ['hook']), 'hook').includes('>이론<'),
+      '접은 화면 맞힌 뒤',
+    );
   } finally {
     g.matchMedia = saved;
   }
