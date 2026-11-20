@@ -1356,6 +1356,12 @@
   stroke: var(--surface-2);
   stroke-dasharray: 4 4;
 }
+.lesson .tiles .slot {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
 .lesson .tiles .tile {
   stroke: var(--bg);
   stroke-width: 1.5;
@@ -1373,6 +1379,22 @@
 .lesson .tiles .tile.sel {
   stroke: var(--ink);
   stroke-width: 3;
+}
+/* 접은 화면 놓는 곳의 더미 개수(AreaModel.tsx). 손가락은 아래 타일이 받는다 */
+.lesson .tiles .stack-n {
+  pointer-events: none;
+}
+.lesson .tiles .stack-n circle {
+  fill: var(--ink);
+  stroke: var(--bg);
+  stroke-width: 1.5;
+}
+.lesson .tiles .stack-n text {
+  fill: var(--bg);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 800;
+  text-anchor: middle;
 }
 @media (max-height: 600px) {
   .lesson .readouts {
@@ -1442,5 +1464,14 @@
   }
   .lesson .cslider {
     gap: 8px;
+  }
+  /* 넓이 모형 grow 의 읽는 값 6칸: '띠 두 개 ÷ Δx' 가 두 줄로 꺾여 한 줄(22px)을 더 먹었다 — 글자·안쪽 여백만 조금 줄여 한 줄에 */
+  .lesson .readouts.grow-ro .ro {
+    padding-inline: 8px 6px;
+    column-gap: 4px;
+    font-size: 0.8rem;
+  }
+  .lesson .readouts.grow-ro .ro b {
+    font-size: 0.95rem;
   }
 }

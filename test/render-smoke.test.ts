@@ -199,3 +199,32 @@ test('도형판 손잡이: 화면 낭독기가 점 이름과 함께 자리(좌�
   assert.match(html, /aria-label="점 D"[^>]*aria-valuetext="x 2, y 4"/);
   assert.match(html, /aria-label="점 C"[^>]*aria-valuetext="x 6, y 4"/);
 });
+
+test('접은 화면(382×580) 모양도 예외 없이 그려진다: 확률 실험 가로 표·짧은 버튼, 타일 더미 자리', async () => {
+  // 브라우저의 화면 조건 판정(matchMedia)을 흉내 — 접은 화면 조건에만 '맞음'. 부품은 첫 그림부터 이 값을 읽는다
+  const { COMPACT_QUERY } = await import('../src/lesson/widgets/compact.ts');
+  const g = globalThis as { matchMedia?: unknown };
+  const saved = g.matchMedia;
+  g.matchMedia = (q: string) => ({
+    matches: q === COMPACT_QUERY,
+    addEventListener() {},
+    removeEventListener() {},
+  });
+  try {
+    const { units, renderLesson } = await entry;
+    const pick = (id: string) => {
+      const u = units.find((x) => x.id === id);
+      assert.ok(u?.lesson, id);
+      return renderLesson(u);
+    };
+    const dice = pick('m2-probability');
+    assert.match(dice, /class="sim-table fold"/);
+    assert.match(dice, /aria-label="주사위 100번 던지기"[^>]*>100번</);
+    assert.match(pick('m2-probability'), /aria-label="공 10번 뽑기"/);
+    const tiles = pick('m3-factoring');
+    assert.match(tiles, /class="slot x rot"/);
+    assert.match(pick('math2-diff-product-rule'), /class="readouts grow-ro"/);
+  } finally {
+    g.matchMedia = saved;
+  }
+});

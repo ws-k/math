@@ -411,6 +411,43 @@
 .lesson .sim-table th {
   text-align: left;
 }
+/* 접은 화면(382×580): 결과가 열인 가로 표(Simulate.tsx) — 세로 표는 결과 하나에 한 줄이라 11가지면 330px 였다.
+   열은 부품 폭을 고르게 나눠 '1/36'·'100%' 가 한 줄에 들고, 버튼 넷(1번·10번·100번·다시)은 한 줄에 */
+@media (max-width: 500px) and (max-height: 600px) {
+  .lesson .sim-table.fold {
+    width: 100%;
+    table-layout: fixed;
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+  .lesson .sim-table.fold th,
+  .lesson .sim-table.fold td {
+    padding: 1px 2px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .lesson .sim-table.fold th[scope="row"] {
+    width: 2.8em;
+    text-align: left;
+    color: var(--sub);
+    font-weight: 700;
+  }
+  .lesson .sim .wgt-read {
+    gap: 2px 12px;
+    min-height: 0;
+  }
+  .lesson .wgt-ctl.sim-fold {
+    flex-wrap: nowrap;
+  }
+  .lesson .wgt-ctl.sim-fold .lbtn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 6px;
+  }
+  .lesson .wgt-ctl.sim-fold .lbtn.quiet {
+    width: auto;
+  }
+}
 
 /* 분수 조각 */
 .lesson .fp {

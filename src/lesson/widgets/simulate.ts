@@ -92,8 +92,33 @@ export function simBars(p: SimParams, s: SimState) {
       theory: Number(c.prob[0]) / Number(c.prob[1]),
       theoryText: ratStr(c.prob),
       text: `${n}번 (${Math.round(freq * 100)}%)`,
+      pct: `${Math.round(freq * 100)}%`,
     };
   });
+}
+
+// ---- 좁고 낮은 화면(접은 화면 382×580) 배치 ----
+// 넓은 화면은 결과마다 한 줄(이름·횟수·이론)인 세로 표라, 주사위 두 개(합 11가지)면 표만 330px 였다.
+// 접은 화면은 결과를 열로 세운 가로 표(이름·비율·이론 세 줄)를 6열씩 끊어 쌓고, 그림도 낮춘다.
+
+/** 막대그림 틀(viewBox 단위). 접은 화면은 막대 칸(BASE−TOP)만 줄이고 폭·글자 크기는 그대로 */
+export function simFrame(compact: boolean) {
+  return compact ? { W: 320, H: 136, TOP: 10, BASE: 112 } : { W: 320, H: 190, TOP: 16, BASE: 150 };
+}
+
+/** 던지기 버튼의 읽는 이름. 보이는 글('1번')을 품고, 기구에 맞는 동사로(주머니는 공을 '뽑는다') */
+export function simActLabel(device: SimParams['device'], times: number): string {
+  if (device === 'bag') return `공 ${times}번 뽑기`;
+  return `${device === 'coin' ? '동전' : '주사위'} ${times}번 던지기`;
+}
+
+/** 가로 표의 묶음: 한 줄에 6열까지, 넘으면 줄 수를 늘려 고르게(11 → 6·5, 7 → 4·3) */
+export function simBlocks(n: number): number[][] {
+  const rows = Math.ceil(n / 6);
+  const per = Math.ceil(n / rows);
+  return Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: Math.min(per, n - r * per) }, (_, k) => r * per + k),
+  );
 }
 
 // ---- 형식 검사·검산 ----
