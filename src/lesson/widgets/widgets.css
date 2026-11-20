@@ -60,6 +60,26 @@
     max-height: 50svh;
   }
 }
+/* 좁고 낮은 화면(폭 ≤500·높이 ≤600 — 접은 화면 382×580 이 대상): 그림을 좌표평면과 같은 몫(화면 높이의 36%)으로.
+   50svh(290px) 상한은 도형판(235px)·단위원(231px) 그림에 걸리지 않아 그림 아래 읽는 값·버튼이 '계속하기' 밑으로
+   밀렸다. 하한 203px: 손잡이 있는 그림 중 가장 키 큰 분수 곱(viewBox 높이 256)이 이만큼 줄어도 SVG 단위인
+   누르는 지름 56 이 44px(iOS 최소) 이상(256 × 44/56 ≈ 201). 382×580 에서는 36svh = 209px 이라 하한은 더 낮은
+   화면에서만 걸린다. 수형도·벤 그림(.ct-*)은 뺀다 — 손잡이가 없고 글자가 그림 안(SVG)에 있어 줄이면 글자가
+   7.5px 까지 작아졌다(m2-exponent-poly tree). 손가락 좌표는 getScreenCTM 으로 바꾸므로 그림이 가운데로 좁아져도 맞는다 */
+@media (max-width: 500px) and (max-height: 600px) {
+  .lesson .wgt {
+    gap: 6px;
+  }
+  .lesson .wgt-svg:not(.ct-tree):not(.ct-venn) {
+    max-height: max(36svh, 203px);
+  }
+  .lesson .wgt-ctl {
+    gap: 6px;
+  }
+  .lesson .wgt-ctl .lbtn {
+    min-height: 44px;
+  }
+}
 
 /* 수직선 */
 .lesson .nl-axis,

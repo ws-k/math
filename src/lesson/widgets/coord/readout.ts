@@ -12,7 +12,7 @@ import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
 import { polyOf, rootCount } from './poly.ts';
 import { rectsOf, sumSym, sums } from './rects.ts';
-import { sliderQ, sliderValues } from './slider.ts';
+import { sliderQ, sliderText, sliderValues } from './slider.ts';
 import type {
   CoordParams,
   CoordState,
@@ -466,7 +466,11 @@ export const readoutKind: KindDef<ReadoutObj> = {
     let text: string;
     const exact = o.frac || isArea(o.expr);
     const v = exact ? readoutVal(p, s, o.expr) : null;
+    const e = o.expr;
+    const sl = e.f === 'value' ? p.sliders.find((x) => x.id === e.slider) : undefined;
     if (o.frac && v?.q && Number.isFinite(v.n)) text = ratStr(v.q).replace('-', '−');
+    // 슬라이더 값 그대로를 읽는 칸은 슬라이더 옆 숫자와 같은 꼴(π/4·1/12) — 같은 값이 0.79 와 π/4 로 엇갈려 보였다
+    else if (sl) text = sliderText(sl, s.vars[sl.id] ?? sl.value);
     else {
       text = fmtNum(v ? v.n : readout(p, s, o.expr), o.digits);
       // 조각 넓이 합은 정확한 분수를 반올림해 보인다 — 반올림이 값을 바꾸면 ≈ (285 가 정확한 값이라고 읽지 않게)

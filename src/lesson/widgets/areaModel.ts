@@ -420,6 +420,13 @@ const PAD = 12;
 const r1 = (v: number) => Math.round(v * 10) / 10;
 
 /** 숫자 글자(자리수 3, 뒤 0 지우기, 진짜 빼기 기호) */
+/**
+ * 범례의 '가로 ○ · 세로 ○'. 단원 글이 이름을 '가로 $x$' 처럼 이미 쓰면 부품이 또 붙여 '가로 가로 x' 가 됐다 —
+ * 이름이 그 말로 시작하면 그대로 둔다(m3-poly-mul 은 '가로 $x$', math2-diff-product-rule 은 '$f(x)=x^2$')
+ */
+export const sideLabel = (side: '가로' | '세로', label: string) =>
+  label.trimStart().startsWith(side) ? label : `${side} ${label}`;
+
 export function fmt(v: number, digits = 3): string {
   if (!Number.isFinite(v)) return '—';
   let t = v.toFixed(digits).replace(/\.?0+$/, '');

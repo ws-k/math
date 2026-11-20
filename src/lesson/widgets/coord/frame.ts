@@ -158,6 +158,16 @@ function piRatio(step: number): [number, number] | null {
   return null;
 }
 
+/** π 의 n/d 배 글자(0·π·−π/2·3π/4). 눈금 글자와 슬라이더 숫자(slider.ts sliderText)가 같은 모양이게 한곳에서 */
+export function piText(n: number, d: number): string {
+  const g = gcdN(Math.abs(n), d) || 1;
+  const nn = n / g;
+  const dd = d / g;
+  if (nn === 0) return '0';
+  const head = nn === 1 ? 'π' : nn === -1 ? '−π' : `${String(nn).replace('-', '−')}π`;
+  return dd === 1 ? head : `${head}/${dd}`;
+}
+
 const gcdN = (a: number, b: number): number => (b ? gcdN(b, a % b) : Math.abs(a));
 
 /** 칸 번호 k 의 눈금 글자(1/2·π/6·2π 등) */
@@ -173,12 +183,7 @@ export function tickText(a: Axis, k: number): string {
   }
   const pr = piRatio(a.st);
   if (!pr) return fmtNum(k * a.st, 2);
-  const n = k * pr[0];
-  const g = gcdN(Math.abs(n), pr[1]);
-  const nn = n / g;
-  const dd = pr[1] / g;
-  const head = nn === 1 ? 'π' : nn === -1 ? '−π' : `${String(nn).replace('-', '−')}π`;
-  return dd === 1 ? head : `${head}/${dd}`;
+  return piText(k * pr[0], pr[1]);
 }
 
 /** 격자선과 눈금 글자(글자는 서로 28px 이상 떨어지게 몇 칸 걸러). 크기에만 달려 끄는 동안 바뀌지 않는다 */
