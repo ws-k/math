@@ -346,6 +346,14 @@ for (const [name, raw] of [
   });
 }
 
+// 다른 읽는 값과 견주면 두 값 모두 정확히 계산되므로 오차가 필요 없다 — 두면 정답 아닌 이웃 자리까지 맞았다고 한다(P10)
+test('다른 읽는 값과 견주는 목표에 허용 오차를 두면 형식 오류', () => {
+  assert.throws(
+    () => parseCoord({ ...mvtRaw(), goal: { ...mvtRaw().goal, tol: '1/8' } }),
+    /견주는 목표/,
+  );
+});
+
 test('무리수 목표: 허용 오차 안의 자리가 하나면 통과', () => {
   const p = parseCoord({
     ...mvtRaw(),

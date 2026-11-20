@@ -26,7 +26,7 @@ import { arr, fail, int, obj, optStr, str } from '../parse.ts';
 import { type Rational, reduce } from '../sym.ts';
 import { type Drawing, type Mark, r2 } from './draw.ts';
 import { placeLabels } from './labels.ts';
-import { ratStr } from './q.ts';
+import { add as qAdd, div as qDiv, qi, neg as qNeg, sub as qSub, ratStr } from './q.ts';
 import type { WidgetCheck, WidgetDef } from './specs.ts';
 
 export type ShOn = { seg: [string, string] } | { circle: [string, number] };
@@ -289,6 +289,29 @@ function measureName(p: ShapeParams, m: ShMeasure): string {
   return `${n[0]} ÷ ${n[1]}`;
 }
 
+/**
+ * 측정값의 내용(적은 순서와 무관): PF 와 FP, ∠FPG 와 ∠GPF, 항 순서만 다른 합·차는 같은 열쇠. 비는 순서가 뜻이다.
+ * 번호가 달라도 내용이 같은 측정값끼리 묶거나 견주면 늘 같은 값이라 끌어서 볼 것이 없다.
+ */
+function measureKey(p: ShapeParams, m: ShMeasure): string {
+  if ('len' in m) return `len:${[...m.len].sort().join('')}`;
+  if ('angle' in m) {
+    const [a, b, c] = m.angle;
+    return `angle:${[a, c].sort().join(b)}`;
+  }
+  if ('area' in m) {
+    // 다각형은 어느 꼭짓점부터·어느 방향으로 적어도 같은 모양
+    const v = p.polygons[m.area] ?? [];
+    const rots = [v, [...v].reverse()].flatMap((w) =>
+      w.map((_, i) => [...w.slice(i), ...w.slice(0, i)].join('')),
+    );
+    return `area:${rots.sort()[0]}`;
+  }
+  const ks = operands(m).map((i) => measureKey(p, sub(p, i)));
+  if ('ratio' in m) return `ratio(${ks.join('/')})`;
+  return `${'sum' in m ? 'sum' : 'diff'}(${ks.sort().join(',')})`;
+}
+
 /** 측정 글들(화면에 보이는 그대로) */
 export function shMeasures(p: ShapeParams, s: ShState): string[] {
   return p.measures.map((m) => {
@@ -334,15 +357,11 @@ function measureVal(p: ShapeParams, s: ShState, m: ShMeasure): Val {
     const qs = ops.map((i) => measureVal(p, s, sub(p, i)).q);
     if (Number.isFinite(n) && qs.every((x) => x)) {
       const [a, b] = qs as [Rational, Rational];
-      if ('sum' in m)
-        q = (qs as Rational[]).reduce((t, x) => reduce(t[0] * x[1] + x[0] * t[1], t[1] * x[1]), [
-          0n,
-          1n,
-        ] as Rational);
+      if ('sum' in m) q = (qs as Rational[]).reduce(qAdd, qi(0));
       else if ('diff' in m) {
-        const d = reduce(a[0] * b[1] - b[0] * a[1], a[1] * b[1]);
-        q = [d[0] < 0n ? -d[0] : d[0], d[1]];
-      } else if (b[0] !== 0n) q = reduce(a[0] * b[1], a[1] * b[0]);
+        const d = qSub(a, b);
+        q = d[0] < 0n ? qNeg(d) : d;
+      } else if (b[0] !== 0n) q = qDiv(a, b);
     }
   } else if ('area' in m) {
     const ids = p.polygons[m.area] ?? [];
@@ -411,35 +430,103 @@ function goalMovers(p: ShapeParams, g: ShGoal): string[] {
   return p.points.filter((x) => x.drag && ids.has(x.id)).map((x) => x.id);
 }
 
+/** 끄는 점 하나가 닿는 모든 자리를 하나씩 놓는 방법(발이 따라오게 settle 까지)과 검산용 상태 기호 */
+function moverOptions(p: ShapeParams, id: string) {
+  const pt = p.points.find((x) => x.id === id) as ShPoint;
+  const opts: { patch: (s: ShState) => ShState; sym: Record<string, string> }[] = [];
+  const set = (pos: { x: number; y: number; deg?: number }, sym: Record<string, string>) =>
+    opts.push({ patch: (s) => settle(p, { ...s, pts: { ...s.pts, [id]: pos } }), sym });
+  if (pt.on && 'circle' in pt.on) {
+    const on = pt.on;
+    for (let d = 0; d < 360; d += CIRCLE_STEP)
+      set(circlePos(shInit(p), on, d), { [`pt_${id}_d`]: String(d) });
+  } else if (pt.on && 'seg' in pt.on) {
+    const s0 = shInit(p);
+    const a = P(s0, pt.on.seg[0]);
+    const b = P(s0, pt.on.seg[1]);
+    const N = gcd(b.x - a.x, b.y - a.y);
+    for (let k = 0; k <= N; k++) {
+      const x = a.x + (k * (b.x - a.x)) / N;
+      const y = a.y + (k * (b.y - a.y)) / N;
+      set({ x, y }, { [`pt_${id}_x`]: String(x), [`pt_${id}_y`]: String(y) });
+    }
+  } else
+    for (let x = 0; x <= p.grid.w; x++)
+      for (let y = 0; y <= p.grid.h; y++)
+        set({ x, y }, { [`pt_${id}_x`]: String(x), [`pt_${id}_y`]: String(y) });
+  return opts;
+}
+
 /** 끄는 점이 닿는 모든 자리(상태)와 검산용 상태 기호 */
 function goalStates(p: ShapeParams, g: ShGoal) {
   let acc: { s: ShState; sym: Record<string, string> }[] = [{ s: shInit(p), sym: {} }];
-  for (const id of goalMovers(p, g)) {
-    const pt = p.points.find((x) => x.id === id) as ShPoint;
-    const opts: { patch: (s: ShState) => ShState; sym: Record<string, string> }[] = [];
-    const set = (pos: { x: number; y: number; deg?: number }, sym: Record<string, string>) =>
-      opts.push({ patch: (s) => settle(p, { ...s, pts: { ...s.pts, [id]: pos } }), sym });
-    if (pt.on && 'circle' in pt.on) {
-      const on = pt.on;
-      for (let d = 0; d < 360; d += CIRCLE_STEP)
-        set(circlePos(shInit(p), on, d), { [`pt_${id}_d`]: String(d) });
-    } else if (pt.on && 'seg' in pt.on) {
-      const s0 = shInit(p);
-      const a = P(s0, pt.on.seg[0]);
-      const b = P(s0, pt.on.seg[1]);
-      const N = gcd(b.x - a.x, b.y - a.y);
-      for (let k = 0; k <= N; k++) {
-        const x = a.x + (k * (b.x - a.x)) / N;
-        const y = a.y + (k * (b.y - a.y)) / N;
-        set({ x, y }, { [`pt_${id}_x`]: String(x), [`pt_${id}_y`]: String(y) });
-      }
-    } else
-      for (let x = 0; x <= p.grid.w; x++)
-        for (let y = 0; y <= p.grid.h; y++)
-          set({ x, y }, { [`pt_${id}_x`]: String(x), [`pt_${id}_y`]: String(y) });
-    acc = growStates(acc, opts, '도형판 goal');
-  }
+  for (const id of goalMovers(p, g)) acc = growStates(acc, moverOptions(p, id), '도형판 goal');
   return acc;
+}
+
+/**
+ * 형식 검사: 수선의 발은 그린 직선(선분·다각형의 변) 위에만 놓여야 한다 — 내린 점이 닿는 모든 자리에서(목표가 없어도).
+ * 발은 무한 직선 위로 계산되므로 직선 끝점이 격자 가장자리에 있지 않으면 발이 그린 선분 밖·그림 밖(SVG 위쪽 바깥)에
+ * 놓여 '수선의 발'이 허공에 뜬 점으로 보이거나 아예 사라진다. 그린 선분 안이면 격자 안이기도 하다(끝점이 격자점).
+ */
+function checkFeet(p: ShapeParams) {
+  const edge = (a: string, b: string, u: string, v: string) =>
+    (a === u && b === v) || (a === v && b === u);
+  for (const pt of p.points) {
+    if (!pt.foot) continue;
+    const { from, line } = pt.foot;
+    const [a, b] = line;
+    const at = `도형판 ${pt.id}`;
+    const drawn =
+      p.segments.some(([u, v]) => edge(a, b, u, v)) ||
+      p.polygons.some((pl) => pl.some((u, i) => edge(a, b, u, pl[(i + 1) % pl.length] as string)));
+    if (!drawn)
+      fail(
+        at,
+        `수선의 발 ${pt.id}: 직선 ${a}${b} 를 그린 직선(segments 의 선분이나 다각형의 변)으로 두세요 — 발이 허공에 뜬 점으로 보임`,
+      );
+    const src = p.points.find((x) => x.id === from) as ShPoint;
+    const s0 = shInit(p);
+    const states = src.drag ? moverOptions(p, from).map((o) => o.patch(s0)) : [s0];
+    for (const s of states) {
+      const A = P(s, a);
+      const B = P(s, b);
+      const H = P(s, pt.id);
+      const t = ((H.x - A.x) * (B.x - A.x) + (H.y - A.y) * (B.y - A.y)) / dist(A, B) ** 2;
+      if (t < -1e-9 || t > 1 + 1e-9) {
+        const q = P(s, from);
+        fail(
+          at,
+          `수선의 발 ${pt.id}: ${from} 이 (${r2(q.x)}, ${r2(q.y)}) 에 있으면 발이 (${r2(H.x)}, ${r2(H.y)}) 로 그린 직선 ${a}${b} 밖 — 직선 끝점을 격자 가장자리에 두세요`,
+        );
+      }
+    }
+  }
+}
+
+/**
+ * 형식 검사: 측정값끼리 견주는 목표에서, 두 측정값이 화면에 같은 수로 보이는데(PA ≈ 9, PB ≈ 9) 목표가 아닌 자리가
+ * 있으면 오류. 학습자는 '같아 보이는데 왜 아니지'를 알 길이 없다. = 와 ≈ 의 차이만으로 가르지 않는다(PA = 3 과
+ * PB ≈ 3 은 학습자 눈에 같다). 고치는 길은 digits 를 늘리는 것 — 정확한 분수 표시는 비(比)만 고칠 수 있어 택하지 않았다.
+ */
+function checkSameText(p: ShapeParams, g: ShGoal, states: ShState[]) {
+  if (g.kind !== 'value' || !('of' in g.is)) return;
+  const a = p.measures[g.of] as ShMeasure;
+  const b = sub(p, g.is.of);
+  for (const s of states) {
+    const va = measureValue(p, s, a);
+    const vb = measureValue(p, s, b);
+    if (va === null || vb === null) continue;
+    const t = round(va, p.digits).s;
+    if (t !== round(vb, p.digits).s || shGoalHits(p, s).length) continue;
+    const where = goalMovers(p, g)
+      .map((id) => `${id}(${r2(P(s, id).x)}, ${r2(P(s, id).y)})`)
+      .join(' ');
+    fail(
+      '도형판 goal',
+      `${where} 에서 ${measureName(p, a)} 와 ${measureName(p, b)} 가 화면에 똑같이 ${t} 로 보이는데 목표가 아님 — digits 를 늘리세요(지금 ${p.digits})`,
+    );
+  }
 }
 
 const goalTable = (p: ShapeParams, g: ShGoal, states: ShState[]) =>
@@ -780,7 +867,11 @@ export const shapeDef: WidgetDef<ShapeParams> = {
     const rawMeasures = o.measures === undefined ? [] : arr(o.measures, '도형판 measures', 0, 6);
     rawMeasures.forEach((rm, i) => {
       const at = `도형판 측정${i + 1}`;
-      const m = obj(rm, at, [], ['len', 'angle', 'area', 'sum', 'diff', 'ratio']);
+      const keys = ['len', 'angle', 'area', 'sum', 'diff', 'ratio'];
+      const m = obj(rm, at, [], keys);
+      // 열쇠가 둘이면 앞의 것만 읽혀 나머지가 소리 없이 버려진다
+      if (keys.filter((k) => m[k] !== undefined).length !== 1)
+        fail(at, `${keys.join('·')} 중 하나만`);
       const combo = (['sum', 'diff', 'ratio'] as const).find((k) => m[k] !== undefined);
       if (m.len !== undefined) {
         const l = arr(m.len, `${at} len`, 2, 2).map((v) => need(v, `${at} len`));
@@ -799,6 +890,14 @@ export const shapeDef: WidgetDef<ShapeParams> = {
             fail(w, '길이·각 측정값만 묶음(묶은 값·넓이는 다시 묶지 않음)');
           return k;
         });
+        // PF + PF·|PF − FP|·PF ÷ PF 는 늘 2PF·0·1 — 끌어서 볼 것이 없다
+        const ks = ops.map((k) => measureKey(p, p.measures[k] as ShMeasure));
+        const dup = ks.findIndex((k, j) => ks.indexOf(k) !== j);
+        if (dup >= 0)
+          fail(
+            at,
+            `같은 측정값을 두 번 묶음 (${measureName(p, p.measures[ops[dup] as number] as ShMeasure)})`,
+          );
         const kinds = new Set(ops.map((k) => measureKind(p, p.measures[k] as ShMeasure)));
         if (kinds.size > 1) fail(at, '길이는 길이끼리, 각은 각끼리 묶음');
         if (combo === 'ratio' && !kinds.has('len')) fail(at, '비는 길이끼리만');
@@ -889,7 +988,9 @@ export const shapeDef: WidgetDef<ShapeParams> = {
       needHint(common, at);
       const g = { ...(shape as GoalShape<number, ShIs>), ...common };
       if (g.kind === 'value' && 'of' in g.is) {
-        if (g.is.of === g.of) fail(`${at} value.is`, '같은 측정값끼리는 늘 같음');
+        // 번호가 달라도 내용이 같으면(PF 와 FP, ∠FPG 와 ∠GPF) 어디서나 맞아 한 번 만지면 끝난다
+        if (measureKey(p, sub(p, g.of)) === measureKey(p, sub(p, g.is.of)))
+          fail(`${at} value.is`, '같은 측정값끼리는 늘 같음');
         if (measureKind(p, sub(p, g.of)) !== measureKind(p, sub(p, g.is.of)))
           fail(`${at} value.is`, '같은 종류의 측정값끼리만 견줌(길이는 길이, 각은 각)');
       }
@@ -898,22 +999,17 @@ export const shapeDef: WidgetDef<ShapeParams> = {
     } else if (o.done !== undefined) fail('도형판 done', '목표(goal)가 있을 때만');
     return p;
   },
-  // 닿을 수 있는 목표인가(닿는 자리를 모두 늘어놓음)는 형식 검사에서만 — 장면을 열 때는 건너뛴다
+  // 닿는 자리를 모두 늘어놓는 검사(발의 자리·목표에 닿을 수 있는가)는 형식 검사에서만 — 장면을 열 때는 건너뛴다
   deep(p) {
+    checkFeet(p);
     const g = p.goal;
     if (!g) return;
     const at = '도형판 goal';
     checkNotAtStart(shGoalHits(p, shInit(p)), shGoalNeed(p), at);
-    checkHitTable(
-      goalTable(
-        p,
-        g,
-        goalStates(p, g).map((x) => x.s),
-      ),
-      g.kind === 'value' ? g.places : 1,
-      g.tol,
-      at,
-      (k) => (g.kind === 'visit' ? `가 볼 곳 ${g.at[k]?.src}` : '목표'),
+    const states = goalStates(p, g).map((x) => x.s);
+    checkSameText(p, g, states);
+    checkHitTable(goalTable(p, g, states), g.kind === 'value' ? g.places : 1, g.tol, at, (k) =>
+      g.kind === 'visit' ? `가 볼 곳 ${g.at[k]?.src}` : '목표',
     );
   },
   checks(p) {

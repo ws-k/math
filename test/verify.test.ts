@@ -404,3 +404,156 @@ for (const [name, target] of [
     assert.match(r.stdout, /앱 판정 \[\[0\]\] ≠ sympy 판정 \[\[\]\]/);
   });
 }
+
+// ---- 검토 지적(75896c3) 보강 ----
+
+// 상태 기호를 차례로 넣으면 x/√(x²+y²) 에 x=0 이 먼저 들어가 0/|y| = 0 이 되고, 그다음 y=0 이 들어가도 0 으로 남아
+// P 가 A 와 겹친 자리(각을 정할 수 없음)의 ∠PAB 가 90° 로 나왔다. 한꺼번에 넣어야 0/0 이 드러난다
+test('목표 판정(goal): 상태 기호는 한꺼번에 대입(P 가 꼭짓점과 겹친 자리의 각은 정할 수 없음)', () => {
+  const angle =
+    'deg(acos((Point(pt_P_x, pt_P_y) - Point(0, 0)).dot(Point(10, 0) - Point(0, 0)) / (Point(pt_P_x, pt_P_y).distance(Point(0, 0))*Point(10, 0).distance(Point(0, 0)))))';
+  const r = runVerify([
+    {
+      ...goal,
+      of: [{ expr: angle }],
+      targets: [['90']],
+      tol: '0',
+      states: [
+        { pt_P_x: '0', pt_P_y: '0' },
+        { pt_P_x: '0', pt_P_y: '3' },
+      ],
+      hits: [[1]],
+      need: 1,
+    },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+// 각이 π 의 유리수배가 아니어도 합·차가 딱 떨어지는 경우(acos(3/5)+acos(4/5) = π/2): cos(차) = 1 을 대수적으로 보인다
+test('같은 값: π 의 유리수배가 아닌 각들의 합도 정확히 같다고 보고, 아주 조금 다른 값은 아니라고 봄', () => {
+  const ok = runVerify([
+    {
+      ...base,
+      answer: 'pi/2',
+      answerType: 'expr',
+      check: 'acos(Rational(3,5))+acos(Rational(4,5))',
+    },
+    {
+      ...base,
+      answer: 'pi/4',
+      answerType: 'expr',
+      check: 'atan(Rational(1,2))+atan(Rational(1,3))',
+    },
+    {
+      ...base,
+      answer: '90',
+      answerType: 'expr',
+      check: 'deg(acos(3*sqrt(10)/10)) + deg(acos(sqrt(10)/10))',
+    },
+  ]);
+  assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+  for (const check of [
+    'acos(Rational(3,5))+acos(Rational(4,5)) + Rational(1,10**40)',
+    'acos(Rational(3,5))+acos(Rational(4,5)+Rational(1,10**40))',
+  ]) {
+    const r = runVerify([{ ...base, answer: 'pi/2', answerType: 'expr', check }]);
+    assert.equal(r.status, 1, check + r.stdout);
+  }
+});
+
+/** verify.py 의 함수를 직접 불러 결과를 찍는다(검산 항목으로는 앞 단계 simplify 가 먼저 붙잡혀 닿을 수 없는 경우) */
+function runPy(code: string) {
+  return spawnSync(
+    '.venv/bin/python',
+    [
+      '-c',
+      `import sys; sys.path.insert(0, 'verify')\nimport verify as V\nfrom sympy import *\n${code}`,
+    ],
+    { encoding: 'utf8', timeout: 60_000 },
+  );
+}
+
+test('최소다항식 차수가 상한을 넘으면 증명하지 않고 바로 실패(몇 분씩 붙잡히지 않게) — 까닭 글', () => {
+  // 소수 여섯 개의 제곱근 합: 최소다항식이 128차라 sympy 가 90초 넘게 걸렸다(5개·64차는 3초)
+  const r = runPy(
+    `s = sum(sqrt(q) for q in [2,3,5,7,11,13])
+try:
+    print(V._exact_zero(sqrt(expand(s**2)) - s))
+except V.ProofTooHard as e:
+    print('TOO HARD', e)`,
+  );
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /TOO HARD .*차수/);
+  // 차수 어림이 지나쳐 쉬운 증명을 막지 않음: π/7 족 sin 셋은 한 원분체 안이라 각각 곱해 어림하면 안 된다
+  const ok = runVerify([
+    {
+      ...base,
+      answer: 'sqrt(7)/8',
+      answerType: 'expr',
+      check: 'sin(pi/7)*sin(2*pi/7)*sin(3*pi/7)',
+    },
+  ]);
+  assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+});
+
+test('목표 판정(goal): 증명이 너무 어려운 상태는 어느 상태인지 글로 실패', () => {
+  const r = runPy(
+    `s = '+'.join(f'sqrt({q})' for q in [2,3,5,7,11,13])
+it = {'of': [{'expr': 'pt_R_x*0 + ' + s}], 'targets': [[s]], 'tol': '0', 'states': [{'pt_R_x': '1'}], 'hits': [[0]], 'need': 1}
+_old = V.equal
+V.equal = lambda a, b: (_ for _ in ()).throw(V.ProofTooHard('최소다항식 차수 상한'))
+print(V.check_goal(it))`,
+  );
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /상태 0 .*pt_R_x.*차수/);
+});
+
+test('역삼각함수 하나를 증명하다 난 오류가 나머지 증명을 버리지 않음', () => {
+  // acos(1/2 + sin(1)²+cos(1)²−1) 은 그 각 하나만 따로 보면 최소다항식을 못 구하지만(sin(1) 은 대수적 수가 아님)
+  // 다른 각(겹근호 120°)을 π 의 분수배로 바꾼 뒤 simplify 가 정리할 수 있다
+  const ins45 = inscribed.replaceAll('pt_B_d', '45');
+  const r = runVerify([
+    {
+      ...base,
+      answer: 'pi',
+      answerType: 'expr',
+      check: `acos(Rational(1,2) + sin(1)**2 + cos(1)**2 - 1) + (${ins45})*pi/180`,
+    },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+// equal 을 강화한 효과(겹근호 각을 정확히 같다고 봄)가 목표 판정 밖의 길에서도 맞게 드는가
+test('같은 값 강화: 보기 중복·식 답·항등식(spot) 길', () => {
+  const ins45 = inscribed.replaceAll('pt_B_d', '45');
+  const ok = runVerify([
+    { ...base, answer: '120', answerType: 'expr', check: ins45 },
+    {
+      ...base,
+      answer: '2',
+      answerType: 'choice',
+      check: '120',
+      choiceChecks: ['60', ins45, '90', '150', '30'],
+    },
+    { ...spot, mode: 'identity', wrong: `${ins45}=60`, fixed: `${ins45}=120` },
+  ]);
+  assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+  for (const [name, it] of [
+    // 겹근호 각 보기가 정답 120 과 같은 값 — 같은 값 보기가 둘
+    [
+      '보기 중복',
+      {
+        ...base,
+        answer: '1',
+        answerType: 'choice',
+        check: '120',
+        choiceChecks: ['120', ins45, '90', '150', '30'],
+      },
+    ],
+    ['식 답이 다름', { ...base, answer: '60', answerType: 'expr', check: ins45 }],
+    ['틀린 식이 사실은 항등식', { ...spot, mode: 'identity', wrong: `${ins45}=120`, fixed: '1=1' }],
+  ] as const) {
+    const r = runVerify([it]);
+    assert.equal(r.status, 1, name + r.stdout);
+  }
+});
