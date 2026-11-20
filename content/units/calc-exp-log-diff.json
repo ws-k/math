@@ -75,8 +75,7 @@
             "objects": [
               {
                 "id": "f",
-                "curve": "a**x",
-                "label": "$y=a^x$"
+                "curve": "a**x"
               },
               {
                 "id": "P",
@@ -93,17 +92,12 @@
                 }
               },
               {
-                "readout": "value(a)",
-                "label": "밑 $a$",
-                "digits": 1
-              },
-              {
                 "readout": "deriv(f,P)",
                 "label": "P 에서 접선의 기울기",
                 "digits": 3
               }
             ],
-            "intro": "슬라이더를 움직여 기울기가 1 에 가장 가까운 밑을 찾아보세요."
+            "intro": "기울기가 1 에 가장 가까운 밑을 찾아보세요."
           }
         },
         "format": {

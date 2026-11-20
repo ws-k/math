@@ -262,8 +262,7 @@
             "objects": [
               {
                 "id": "V",
-                "curve": "n*x*(1-x)",
-                "label": "$y=np(1-p)$ (분산)"
+                "curve": "n*x*(1-x)"
               },
               {
                 "id": "P",
@@ -274,21 +273,6 @@
                   "snap": "1/10"
                 },
                 "name": "P"
-              },
-              {
-                "readout": "value(n)",
-                "label": "$n$",
-                "digits": 0
-              },
-              {
-                "readout": "x(P)",
-                "label": "성공 확률 $p$",
-                "digits": 1
-              },
-              {
-                "readout": "y(P)",
-                "label": "분산",
-                "digits": 2
               }
             ],
             "intro": "P 를 끌어 곡선의 가장 높은 곳을 찾아보세요."

@@ -214,13 +214,13 @@
               {
                 "id": "dir",
                 "curve": "-1+0*x",
-                "label": "기준 직선 $y=-1$",
+                "label": "기준 직선",
                 "tone": "soft"
               },
               {
                 "id": "cu",
                 "curve": "1+sqrt(r**2-x**2)",
-                "label": "$F$ 에서 거리 $r$ 인 원",
+                "label": "$F$ 에서 $r$ 인 원",
                 "tone": "accent"
               },
               {
@@ -231,7 +231,7 @@
               {
                 "id": "ln",
                 "curve": "r-1+0*x",
-                "label": "직선에서 거리 $r$ 인 가로 직선",
+                "label": "기준 직선에서 $r$ 인 직선",
                 "tone": "accent"
               },
               {
@@ -251,19 +251,9 @@
                   "snap": 2
                 },
                 "name": "P"
-              },
-              {
-                "readout": "y(P)",
-                "label": "$P$ 의 $y$ 좌표",
-                "digits": 0
-              },
-              {
-                "readout": "value(r)",
-                "label": "거리 $r$",
-                "digits": 0
               }
             ],
-            "intro": "$P$ 를 끌어 놓고, 원과 가로 직선이 $P$ 에서 만나도록 $r$ 을 맞춰 보세요. 세 자리에서 해 봐요.",
+            "intro": "원과 직선이 $P$ 를 지나게 해요.",
             "done": "어떤 $r$ 이든 원과 가로 직선은 옅은 곡선 위에서 만나요. $r$ 은 늘 ($P$ 의 $y$ 좌표)$+1$ 이에요.",
             "goal": {
               "value": {

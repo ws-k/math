@@ -108,7 +108,7 @@
               {
                 "id": "A",
                 "curve": "sin(x)**2/2",
-                "label": "$y=\\frac12\\sin^2x$ (치환으로 구한 원시함수)",
+                "label": "$y=\\frac12\\sin^2x$",
                 "tone": "accent"
               },
               {
@@ -136,7 +136,7 @@
               },
               {
                 "readout": "x(B)",
-                "label": "B 의 $x$ 좌표"
+                "label": "B 의 $x$"
               },
               {
                 "readout": "y(B)",
@@ -144,7 +144,7 @@
               },
               {
                 "readout": "deriv(A,B)",
-                "label": "B 에서의 기울기"
+                "label": "B 의 기울기"
               }
             ],
             "goal": {

@@ -123,13 +123,13 @@
               {
                 "id": "W",
                 "curve": "sin(x)+sin(b)",
-                "label": "후보 ① $y=\\sin x+\\sin b$",
+                "label": "① $y=\\sin x+\\sin b$",
                 "tone": "soft"
               },
               {
                 "id": "F",
                 "curve": "sin(x)*cos(b)+cos(x)*sin(b)",
-                "label": "후보 ② $y=\\sin x\\cos b+\\cos x\\sin b$",
+                "label": "② $y=\\sin x\\cos b+\\cos x\\sin b$",
                 "tone": "accent"
               },
               {
@@ -138,7 +138,7 @@
                 "digits": 2
               }
             ],
-            "intro": "$b$ 를 옮길 때마다 진한 곡선과 두 후보를 견줘 보세요.",
+            "intro": "$b$ 마다 두 후보를 견줘 보세요.",
             "done": "후보 ② 는 $b$ 가 무엇이든 $y=\\sin(x+b)$ 와 꼭 겹치고, 후보 ① 은 $b=0$ 일 때만 겹쳐요.",
             "goal": {
               "visit": {
