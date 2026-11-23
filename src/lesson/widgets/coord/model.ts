@@ -3,7 +3,7 @@
 import type { GridPt } from '../../grade.ts';
 import { fAt } from './curve.ts';
 import { frame, iRange, MIN_SNAP_PX, snapMult, toWorld } from './frame.ts';
-import { pointOf } from './point.ts';
+import { pointOf, xCells } from './point.ts';
 import type { Box, CoordParams, CoordState } from './types.ts';
 
 /** 직선 손잡이 처음 자리: 화면 가로 1/4·3/4, 세로 가운데 줄 */
@@ -50,8 +50,8 @@ export function dragPoint(
     // 목표가 보는 점은 묶지 않는다: 묶으면 좁은 화면에서 목표 칸(예: 정의 안 되는 x=1 옆 0.95)을 건너뛴다.
     // 손떨림 방지(묶기)보다 '끌어서 닿는다'가 먼저 — 새 목표는 31칸 상한(goal.ts)으로 칸 폭도 지킨다
     const k = p.goalPts?.includes(id) ? 1 : snapMult(pxPerStep, MIN_SNAP_PX);
-    const [lo, hi] = iRange(p.x.lo, p.x.hi, o.snapN);
-    const i = Math.min(hi as number, Math.max(lo as number, Math.round(wx / (o.snapN * k)) * k));
+    const { i0: lo, i1: hi } = xCells(p.x, o);
+    const i = Math.min(hi, Math.max(lo, Math.round(wx / (o.snapN * k)) * k));
     if (Number.isNaN(fAt(p, s, o.on, i * o.snapN))) return s;
     return { ...s, pts: { ...s.pts, [id]: { i, j: 0 } } };
   }
@@ -96,7 +96,7 @@ export function keyMove(
   const g = s.pts[handle] ?? { i: o.i, j: o.j };
   if (o.on) {
     const step = d[0] || d[1];
-    const [lo, hi] = iRange(p.x.lo, p.x.hi, o.snapN) as [number, number];
+    const { i0: lo, i1: hi } = xCells(p.x, o);
     const i = Math.min(hi, Math.max(lo, g.i + step));
     if (Number.isNaN(fAt(p, s, o.on, i * o.snapN))) return s;
     return { ...s, pts: { ...s.pts, [handle]: { i, j: 0 } } };

@@ -6,12 +6,26 @@ import type { Rational } from '../../sym.ts';
 import { mul, qi, ratStr } from '../q.ts';
 import { MAX_SNAPS, near, numExpr, toIndex } from './common.ts';
 import { curveOf, fAt } from './curve.ts';
-import { fmtNum, r1, toPx } from './frame.ts';
+import { fmtNum, iRange, r1, toPx } from './frame.ts';
 import { sliderQ } from './slider.ts';
-import type { CoordParams, CoordState, KindDef, PointObj } from './types.ts';
+import type { Axis, CoordParams, CoordState, KindDef, PointObj } from './types.ts';
 
 export const pointOf = (p: CoordParams, id: string) =>
   p.objects.find((o): o is PointObj => o.kind === 'point' && o.id === id) as PointObj;
+
+/**
+ * 점이 가로로 움직이는 칸: 간격(곡선 위 점은 끄는 간격, 칸 위 점은 칸 간격)과 x 축 안에서 닿는 칸 번호 [처음, 끝].
+ * 끌기(model)·목표 상태 늘어놓기(goal)·끝 점을 따라가는 칠하기(fill)가 같은 칸을 봐야 '끌어서 닿는 자리'와
+ * '검산이 늘어놓는 자리'가 어긋나지 않아 한곳에 둔다. 끌 수 없는 점도 칸은 같다(제자리만 쓰는 것은 부르는 쪽 몫).
+ */
+export function xCells(
+  x: Axis,
+  o: PointObj,
+): { i0: number; i1: number; stepN: number; step: Rational | null } {
+  const stepN = o.on ? o.snapN : x.st;
+  const [i0, i1] = iRange(x.lo, x.hi, stepN) as [number, number];
+  return { i0, i1, stepN, step: o.on ? exactOf(o.snap) : x.exact };
+}
 
 export function worldX(p: CoordParams, o: PointObj, i: number): number {
   return o.on ? i * o.snapN : i * p.x.st;

@@ -184,3 +184,72 @@ export function rootsBetween(p0: Poly, a: Rational, b: Rational): number | null 
   const v = (x: Rational) => changes(seq.map((q) => sign(at(q, x))));
   return v(a) - v(b);
 }
+
+/** [a, b] 에서의 정적분(정확한 분수) — 부정적분에 양 끝을 넣어서. 구분구적 넓이·칠한 영역의 합이 같이 쓴다 */
+export function polyIntegral(c: Poly, a: Rational, b: Rational): Rational {
+  const anti = (x: Rational) =>
+    c.reduce<Rational>((acc, ck, i) => {
+      let xp: Rational = [1n, 1n];
+      for (let j = 0; j <= i; j++) xp = qmul(xp, x);
+      return qadd(acc, qdiv(qmul(ck, xp), [BigInt(i + 1), 1n]));
+    }, Z);
+  return qadd(anti(b), qneg(anti(a)));
+}
+
+/**
+ * 유리수 근 후보를 늘어놓을 정수 계수(공약수로 나눈 뒤)의 상한. 약수를 √n 까지 나눠 찾고 후보 수가 두 끝 계수의
+ * 약수 수의 곱이라, 이보다 크면 형식 검사가 눈에 띄게 느려진다(레슨 곡선의 계수는 많아야 수백)
+ */
+const ROOT_COEF_MAX = 10n ** 6n;
+
+const babs = (n: bigint) => (n < 0n ? -n : n);
+const bgcd = (a: bigint, b: bigint): bigint => (b === 0n ? babs(a) : bgcd(b, a % b));
+
+function divisors(n: bigint): bigint[] {
+  const out: bigint[] = [];
+  for (let d = 1n; d * d <= n; d++)
+    if (n % d === 0n) {
+      out.push(d);
+      if (d * d !== n) out.push(n / d);
+    }
+  return out;
+}
+
+/**
+ * 서로 다른 유리수 근(작은 것부터). 0 인 다항식이거나 계수가 너무 커서 후보를 늘어놓을 수 없으면 null.
+ * 유리근 정리: 정수 계수로 바꾼 뒤 근 p/q 의 p 는 상수항, q 는 최고차 계수의 약수라 후보를 모두 대입해 본다.
+ * 부호 뗀 합(칠한 영역의 abs)을 분수로 정확히 끊으려고 쓴다 — 근을 소수로 찾으면 끊는 자리가 흔들려 합이 분수가 아니다.
+ * 무리수 근은 여기 나오지 않으므로, 부르는 쪽이 rootsBetween(스투름) 개수와 견줘 빠진 근이 없는지 본다.
+ */
+export function rationalRoots(p0: Poly): Rational[] | null {
+  let p = trim(p0);
+  if (!p.length) return null;
+  const out: Rational[] = [];
+  // x 로 묶이는 만큼 떼어 낸다(근 0) — 상수항이 0 이면 약수 후보를 늘어놓을 수 없다
+  if ((p[0] as Rational)[0] === 0n) {
+    out.push(Z);
+    while ((p[0] as Rational)[0] === 0n) p = p.slice(1);
+  }
+  if (p.length > 1) {
+    const lcm = p.reduce((l, c) => (l / bgcd(l, c[1])) * c[1], 1n);
+    const raw = p.map((c) => c[0] * (lcm / c[1]));
+    // 공약수로 먼저 나눈다 — 2x²−8 과 x²−4 는 근이 같은데 앞의 것만 후보가 늘고 상한에 먼저 걸린다
+    const g = raw.reduce((acc, c) => bgcd(acc, c), 0n);
+    const ints = raw.map((c) => c / g);
+    const c0 = babs(ints[0] as bigint);
+    const cn = babs(ints[ints.length - 1] as bigint);
+    if (c0 > ROOT_COEF_MAX || cn > ROOT_COEF_MAX) return null;
+    const seen = new Set<string>();
+    for (const a of divisors(c0))
+      for (const b of divisors(cn))
+        for (const s of [a, -a]) {
+          const g = bgcd(s, b);
+          const r: Rational = [s / g, b / g];
+          const key = `${r[0]}/${r[1]}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          if (sign(at(p, r)) === 0) out.push(r);
+        }
+  }
+  return out.sort((a, b) => sign(qadd(a, qneg(b))));
+}

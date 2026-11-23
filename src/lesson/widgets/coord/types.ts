@@ -79,6 +79,11 @@ export type ReadoutExpr =
   | { f: 'sums'; rects: string }
   /** 큰 어림·작은 어림·두 어림의 차이(정확한 분수) */
   | { f: 'big' | 'small' | 'gap'; rects: string }
+  /**
+   * 칠한 영역의 (위 − 아래) 합(정확한 분수). net = 부호 있는 합(속도 → 위치), abs = 부호 뗀 합(속도 → 움직인 거리,
+   * 위·아래가 바뀌는 곳에서 끊어 조각마다 부호를 떼고 더함). abs 는 목표에 못 씀(검산이 상태마다 끊을 곳을 다시 찾아야 함)
+   */
+  | { f: 'net' | 'abs'; fill: string }
   | { f: 'slope'; a: string; b: string }
   | { f: 'deriv'; curve: string; at: string }
   | { f: 'x' | 'y'; at: string }
@@ -102,14 +107,38 @@ export interface ReadoutObj {
 export type Edge = { curve: string } | { n: number };
 /** 칠하기 재질. 무늬(soil·water)는 넓은 영역에만 — 좁은 띠(길)·조각은 단색이어야 무늬가 잡음이 되지 않는다 */
 export type Look = 'plain' | 'soil' | 'water' | 'road';
-/** 칠하기 {fill:{top, bottom?, x:[a,b]}, look?, name?, nameAt?, hide?}: 위 경계와 아래 경계(기본 가로축) 사이 */
+/**
+ * 칠한 영역의 합을 분수로 정확히 내는 데 필요한 것 — 읽는 값(net·abs)이 가리키는 칠하기(id 가 있는 것)만 갖는다.
+ * 위 − 아래는 x 의 다항식이고, 구간 안에서 부호가 바뀌는 곳(근)은 모두 유리수여야 한다(abs 를 그 자리에서 끊으려고).
+ */
+export interface FillArea {
+  /** 위 − 아래(계수, 낮은 차수부터) */
+  diff: Rational[];
+  /** 검산용 sympy 글자 (위)-(아래) */
+  diffSrc: string;
+  a: Rational;
+  aSrc: string;
+  /** 오른쪽 끝(고정일 때). 점을 따라가면 null — 그 점의 x */
+  b: Rational | null;
+  bSrc: string | null;
+  /** 끝이 닿을 수 있는 가장 오른쪽까지의 유리수 근(구간 안, 작은 것부터) */
+  cuts: Rational[];
+}
+/** 칠하기 {id?, fill:{top, bottom?, x:[a, b 또는 점]}, look?, sign?, name?, nameAt?, hide?}: 위 경계와 아래 경계(기본 가로축) 사이 */
 export interface FillObj {
   kind: 'fill';
+  /** 읽는 값 net·abs 가 가리키는 이름. 있을 때만 area 를 셈한다 */
+  id?: string;
   top: Edge;
   bottom: Edge;
-  /** 가로 구간. 숫자를 보이지 않고 검산 항목도 없어 원문은 두지 않는다 */
+  /** 가로 구간(그리기용 수). 끝이 점을 따라가면 hi 는 그 점이 닿는 가장 오른쪽 */
   lo: number;
   hi: number;
+  /** 오른쪽 끝이 이 점의 x 를 따라간다(시각을 끌면 그때까지 칠함) */
+  toPt?: string;
+  /** 부호별 칠하기: 위 경계가 아래보다 위인 곳(pos)과 아래인 곳(neg)을 다른 색으로 — 색이 곧 부호라 재질은 plain 만 */
+  sign?: true;
+  area?: FillArea;
   look: Look;
   /** 그림 안 이름표(밭·강·길) */
   name?: string;
@@ -328,6 +357,8 @@ export interface ParseCtx {
   points: Map<string, PointObj>;
   /** 구분구적 조각(읽는 값 sums·big·small·gap 이 가리킨다) */
   rects: Map<string, RectsObj>;
+  /** 이름 붙은 칠하기(읽는 값 net·abs 가 가리킨다) */
+  fills: Map<string, FillObj>;
   /** 축척 같게(조각 폭 상한을 셀 때 그림 영역이 달라진다) */
   equal: boolean;
   /** 새 이름을 검사하고 등록한다(중복이면 형식 오류) */

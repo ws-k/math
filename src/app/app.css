@@ -34,6 +34,9 @@
   /* 구분구적 조각 면: 큰 어림(노랑) 위에 작은 어림(초록)을 겹친다. 겹친 초록 면과 노란 띠의 밝기 대비 1.5 이상 */
   --rect-big: color-mix(in srgb, var(--coin) 55%, transparent);
   --rect-small: color-mix(in srgb, var(--good) 32%, transparent);
+  /* 부호별 칠하기: + (가는 쪽) 파랑, − (오는 쪽) 빨강 */
+  --fill-pos: color-mix(in srgb, var(--primary) 30%, transparent);
+  --fill-neg: color-mix(in srgb, var(--bad) 26%, transparent);
   --shadow: 0 1px 2px rgba(22, 27, 38, 0.06), 0 8px 24px rgba(22, 27, 38, 0.06);
   --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
   --radius: 20px;
@@ -67,6 +70,8 @@
     /* 다크에선 노랑이 밝아 초록 32% 를 겹쳐도 거의 그대로 노랑(대비 1.2) — 노랑을 옅게, 초록을 진하게(대비 1.7) */
     --rect-big: color-mix(in srgb, var(--coin) 45%, transparent);
     --rect-small: color-mix(in srgb, var(--good) 55%, transparent);
+    --fill-pos: color-mix(in srgb, var(--primary) 40%, transparent);
+    --fill-neg: color-mix(in srgb, var(--bad) 38%, transparent);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     color-scheme: dark;
   }
