@@ -12,25 +12,34 @@ import {
   cLink,
   countDef,
   cTotal,
+  emW,
   L_W,
+  lDone,
   lFactors,
   lGeom,
   lGroups,
+  lineFit,
   lMove,
   lSpotAt,
   pDegree,
+  pDone,
+  pFacts,
   pGeom,
   pHit,
+  tapStep,
+  V_CARD,
   V_H,
   V_W,
+  vCap,
   vCheck,
   vCounts,
+  vDeck,
   vElems,
   viewOf,
+  vLayout,
   vPos,
   vPut,
   vRegionAt,
-  vSlots,
   vTruth,
 } from '../src/lesson/widgets/count.ts';
 import { runChecks, tamper } from './widget-verify.ts';
@@ -171,6 +180,9 @@ test('줄 세우기 판: 칩 44px 이상, 판 안에 들고, 놓은 자리 판�
     });
     assert.equal(lSpotAt(g, L_W / 2, g.waitY), 'wait');
     assert.equal(lSpotAt(g, L_W / 2, g.h + 80), null);
+    // 줄 밖 칸과 자리 줄 사이에 판정이 비는 틈이 없다(어디에 놓아도 둘 중 하나)
+    for (let y = g.waitY; y <= g.seatY; y++)
+      assert.notEqual(lSpotAt(g, g.seatX[0] as number, y), null, `${n},${k} y=${y}`);
   }
 });
 
@@ -248,47 +260,67 @@ test('벤: 분류할 원소는 전체집합(없으면 합집합)을 수 차례�
   assert.equal(vTruth(VU, '5'), 'out');
 });
 
-test('벤 판: 영역 판정은 놓은 자리의 기하로', () => {
-  const slots = vSlots();
-  for (const reg of ['a', 'ab', 'b', 'out'] as const) {
-    assert.ok(slots[reg].length >= 4, `${reg} 자리 ${slots[reg].length}`);
-    for (const [x, y] of slots[reg]) assert.equal(vRegionAt(x, y), reg);
-  }
+test('벤 판: 칸마다 자리 수(정답대로 넣을 수 있게 형식 검사가 이 수를 쓴다)', () => {
+  assert.deepEqual(vCap(), { a: 3, ab: 4, b: 3, out: 6 });
   assert.equal(vRegionAt(V_W / 2, V_H + 30), 'deck');
   assert.equal(vRegionAt(-30, 40), null);
 });
 
-test('벤 판: 같은 칸 카드는 서로 겹치지 않고, 판 안에 든다', () => {
-  const slots = vSlots();
-  const all = Object.values(slots).flat();
-  for (const [x, y] of all) assert.ok(x - 22 >= 0 && x + 22 <= V_W && y - 22 >= 0 && y + 22 <= V_H);
-  for (let i = 0; i < all.length; i++)
-    for (let j = i + 1; j < all.length; j++) {
-      const [x1, y1] = all[i] as [number, number];
-      const [x2, y2] = all[j] as [number, number];
-      assert.ok(Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) >= 46, `${i}-${j}`);
+/** 카드 네 모서리·네 변 가운데·가운데가 모두 그 칸 안인가 */
+const inside = (reg: string, [x, y]: [number, number]) => {
+  const h = V_CARD / 2;
+  return [-1, 0, 1].every((sx) =>
+    [-1, 0, 1].every((sy) => vRegionAt(x + sx * h, y + sy * h) === reg),
+  );
+};
+
+test('벤 판: 몇 장이든 카드는 통째로 그 칸 안에, 서로 겹치지 않고, 홀수면 가운데부터', () => {
+  const cap = vCap();
+  for (const reg of ['a', 'ab', 'b', 'out'] as const)
+    for (let m = 1; m <= cap[reg]; m++) {
+      const lay = vLayout(reg, m);
+      assert.equal(lay.length, m);
+      for (const pt of lay) assert.ok(inside(reg, pt), `${reg} ${m}장 ${pt}`);
+      for (let i = 0; i < m; i++)
+        for (let j = i + 1; j < m; j++) {
+          const [x1, y1] = lay[i] as [number, number];
+          const [x2, y2] = lay[j] as [number, number];
+          assert.ok(
+            Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)) >= V_CARD + 2,
+            `${reg} ${m}장 ${i}-${j}`,
+          );
+        }
     }
+  // 한 장이면 그 칸 가운데: 겹친 곳 한 장은 판 가운데(두 원 중심 사이), 석 장이면 가운데 줄에 판 가운데 한 장
+  assert.equal(vLayout('ab', 1)[0]?.[0], V_W / 2);
+  assert.equal(vLayout('ab', 3).filter(([x]) => x === V_W / 2).length, 1);
+  assert.equal(vLayout('out', 3)[1]?.[0], V_W / 2);
 });
 
-test('벤: 카드를 놓으면 그 칸 자리에 차례로 줄 맞춰 서고, 빠지면 앞으로 당겨진다', () => {
+test('벤: 카드를 놓으면 그 칸에 줄 맞춰 서고, 빠지면 다시 가운데로 모인다', () => {
   let s = cInit(V);
   assert.ok(s.where.every((w) => w === null));
   s = vPut(V, s, 0, 'ab').s;
+  assert.deepEqual(vPos(V, s, 0), vLayout('ab', 1)[0]);
   s = vPut(V, s, 1, 'ab').s;
-  const slot = vSlots().ab;
-  assert.deepEqual(vPos(V, s, 0), slot[0]);
-  assert.deepEqual(vPos(V, s, 1), slot[1]);
+  assert.deepEqual([vPos(V, s, 0), vPos(V, s, 1)], vLayout('ab', 2));
   s = vPut(V, s, 0, 'a').s;
-  assert.deepEqual(vPos(V, s, 1), slot[0]);
-  // 더미로 되돌리기
-  s = vPut(V, s, 0, null).s;
-  assert.equal(s.where[0], null);
+  assert.deepEqual(vPos(V, s, 1), vLayout('ab', 1)[0]);
   // 칸이 다 차면 더 넣지 못한다(자리가 없어 겹치게 되므로)
   let f = cInit(V);
-  const cap = vSlots().ab.length;
-  const elems = vElems(V);
-  for (let i = 0; i < Math.min(cap, elems.length); i++) f = vPut(V, f, i, 'ab').s;
-  if (elems.length > cap) assert.equal(vPut(V, f, cap, 'ab').res, 'full');
+  for (let i = 0; i < vCap().ab; i++) f = vPut(V, f, i, 'ab').s;
+  assert.equal(vPut(V, f, vCap().ab, 'ab').res, 'full');
+});
+
+test('벤: 더미로 되돌린 카드는 더미 맨 위로', () => {
+  let s = cInit(V);
+  assert.deepEqual(vDeck(V, s), [0, 1, 2, 3, 4, 5, 6]);
+  s = vPut(V, s, 0, 'ab').s;
+  s = vPut(V, s, 1, 'ab').s;
+  assert.deepEqual(vDeck(V, s), [2, 3, 4, 5, 6]);
+  s = vPut(V, s, 0, null).s;
+  assert.deepEqual(vDeck(V, s), [0, 2, 3, 4, 5, 6]);
+  assert.equal(s.where[0], null);
 });
 
 test('벤: 확인하기 — 틀린 카드만 표시하고, 옮기면 그 표시가 지워지고, 다 맞으면 끝', () => {
@@ -341,38 +373,129 @@ test('벤 parse: 전체집합 u 는 선택, a·b 를 모두 품어야 하고, �
   );
 });
 
-test('벤 검산: 전체집합이 있으면 여집합·밖 수도 sympy 로, 없으면 예전 두 항목 그대로', () => {
+test('벤 검산: 화면에 보이는 에만 개수·합·교집합, 전체집합이 있으면 여집합·밖 수도 sympy 로', () => {
+  for (const p of [V, VU]) {
+    const cs = countDef.checks(p);
+    const r = runChecks(cs);
+    assert.ok(r.ok, r.out);
+    assert.equal(runChecks(tamper(cs)).ok, false);
+  }
+  const names = countDef.checks(VU).map((c) => c.name);
+  for (const n of ['a에만', 'b에만', '합집합', '교집합', '여집합', '밖'])
+    assert.ok(names.includes(n), n);
+});
+
+test('선 잇기 검산: 화면에 보이는 하나마다 짝 수·두 번 센 수도 sympy 로', () => {
+  const cs = countDef.checks(P4);
   assert.deepEqual(
-    countDef.checks(V).map((c) => c.name),
-    ['합집합', '교집합'],
-  );
-  const cs = countDef.checks(VU);
-  assert.deepEqual(
-    cs.map((c) => c.name),
-    ['합집합', '교집합', '여집합', '밖'],
+    cs.map((c) => [c.name, 'answer' in c ? c.answer : '']),
+    [
+      ['모든 경우', '6'],
+      ['하나마다 짝', '3'],
+      ['두 번 센 수', '12'],
+    ],
   );
   const r = runChecks(cs);
   assert.ok(r.ok, r.out);
-  assert.equal(runChecks(tamper(cs)).ok, false);
+});
+
+// ---- 글(장면이 바꿀 수 있는 문구)·글자 폭 ----
+
+test('결론 글: 기본은 중립어, 장면이 자리 이름·부르는 말·{식} 으로 바꿀 수 있다', () => {
+  assert.equal(lDone(L42), '첫째 4 × 둘째 3 = 12가지');
+  const W = parse({
+    mode: 'list',
+    items: ['A', 'B', 'C', 'D'],
+    k: 2,
+    words: { seats: ['회장', '부회장'], wait: '후보' },
+  });
+  assert.equal(lDone(W), '회장 4 × 부회장 3 = 12가지');
+  const D = parse({
+    mode: 'list',
+    items: ['B', 'C', 'D'],
+    k: 3,
+    words: { done: 'A 를 빼고 {식}' },
+  });
+  assert.equal(lDone(D), 'A 를 빼고 3 × 2 × 1 = 6');
+  assert.deepEqual(pFacts(P4), { each: 3, ends: 12, total: 6 });
+  assert.equal(pDone(P4), '하나마다 3개 × 4 = 12, 짝 하나를 양쪽에서 두 번 셌으니 ÷ 2 = 6가지');
+  const F = parse({
+    mode: 'pick',
+    items: ['1', '2', '3', '4', '5'],
+    k: 2,
+    words: { item: '깃발' },
+  });
+  assert.match(pDone(F), /^깃발마다 4개 × 5 = 20/);
+  assert.equal(
+    pDone(parse({ mode: 'pick', items: ['1', '2', '3'], k: 2, words: { done: '{식}' } })),
+    '2 × 3 ÷ 2 = 3',
+  );
+});
+
+test('글 칸(words) 형식: 모드에 맞는 칸만, 자리 이름 수 = k, done 에는 {식}', () => {
+  assert.throws(
+    () => parse({ mode: 'list', items: ['A', 'B'], k: 2, words: { seats: ['가'] } }),
+    /seats/,
+  );
+  assert.throws(
+    () => parse({ mode: 'list', items: ['A', 'B'], k: 2, words: { done: '끝' } }),
+    /\{식\}/,
+  );
+  assert.throws(
+    () => parse({ mode: 'pick', items: ['A', 'B'], k: 2, words: { seats: ['가', '나'] } }),
+    /모르는 칸/,
+  );
+  assert.throws(() => parse({ mode: 'tree', items: ['A', 'B'], k: 2, words: {} }), /모르는 칸/);
+});
+
+test('글자 폭 어림과 줄바꿈 어림', () => {
+  assert.equal(emW('가'), 1);
+  assert.ok(emW('12') < 1.5);
+  assert.equal(lineFit('12의 약수에만', 67, 12.8, 2), true);
+  assert.equal(lineFit('12의 약수에만', 67, 12.8, 1), false);
+  assert.equal(lineFit('아주아주아주긴낱말', 67, 12.8, 2), false);
+});
+
+test('글자가 칩·점·카드·이름 칸·넣을 곳 단추·묶음 표에 안 들어가면 형식 오류', () => {
+  assert.throws(() => parse({ mode: 'list', items: ['가나다라', 'B'], k: 2 }), /글자/);
+  assert.throws(() => parse({ mode: 'pick', items: ['가나다라', 'B'], k: 2 }), /글자/);
+  assert.throws(
+    () => parse({ mode: 'venn', sets: { names: ['A', 'B'], a: ['12345'], b: ['2'] } }),
+    /글자/,
+  );
+  assert.throws(
+    () => parse({ mode: 'venn', sets: { names: ['아주아주아주긴이름', 'B'], a: ['1'], b: ['2'] } }),
+    /글자/,
+  );
+  // 다섯 중 둘 줄: 묶음 표 한 칸(약 56px)에 두 글자 이름 둘('빨1→빨2')은 안 든다
+  assert.throws(
+    () => parse({ mode: 'list', items: ['빨1', '빨2', '빨3', '파1', '파2'], k: 2 }),
+    /글자/,
+  );
+  // 누르기 화면(셋 이상 고르기)은 단추가 글자에 맞춰 늘어 제한 없음
+  parse({ mode: 'pick', items: ['빨강공', '파랑공', '노랑공'], k: 3 });
+});
+
+test('누르기는 첫 번부터 고르기로 동작하고(낭독기 두 번 두드리기), 안내는 두 번째에 눌러서 하기', () => {
+  const a = tapStep({ fails: 0, pick: null }, 2);
+  assert.deepEqual(a, { fails: 1, pick: 2, hint: 'drag' });
+  const b = tapStep({ fails: a.fails, pick: a.pick }, 0);
+  assert.deepEqual(b, { fails: 1, pick: null, pair: [2, 0], hint: null });
+  const c = tapStep({ fails: 1, pick: null }, 1);
+  assert.equal(c.hint, 'tap');
+  assert.deepEqual(tapStep({ fails: 3, pick: 1 }, 1), { fails: 3, pick: null, hint: null });
 });
 
 // ---- 지금 단원 JSON 그대로 ----
 
-test('지금 단원 JSON 의 count 장면이 모두 그대로 읽히고 검산 항목 이름이 그대로다', () => {
+test('지금 단원 JSON 의 count 장면이 모두 형식 검사를 통과한다', () => {
   const dir = join(import.meta.dirname, '../content/units');
-  let n = 0;
   for (const f of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
     const u = JSON.parse(readFileSync(join(dir, f), 'utf8'));
-    for (const sc of u.lesson?.scenes ?? []) {
-      if (sc.widget?.type !== 'count') continue;
-      n++;
-      const p = parse(sc.widget.params);
-      const names = countDef.checks(p).map((c) => c.name);
-      if (p.mode === 'venn') assert.deepEqual(names, ['합집합', '교집합'], `${f} ${sc.id}`);
-      else if (p.mode !== 'pascal') assert.deepEqual(names, ['모든 경우'], `${f} ${sc.id}`);
-    }
+    for (const sc of u.lesson?.scenes ?? [])
+      if (sc.widget?.type === 'count')
+        assert.doesNotThrow(() => parse(sc.widget.params), `${f} ${sc.id}`);
   }
-  assert.equal(n, 19);
 });
 
 function allKeys(p: CountParams): string[] {
