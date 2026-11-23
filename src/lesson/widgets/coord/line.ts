@@ -1,8 +1,7 @@
 // 직선 객체 두 종류 — 할선 {secant:[P,Q]} 과 접선 {tangent:{on, at}}. 둘은 같은 'line' 항목(key l<순번>)을 그리고
 // 할선은 두 점이 겹치면 접선으로 바뀌므로, 그리는 코드를 한 함수로 같이 두려고 한 파일에 묶었다.
-import { derivative } from '../../expr.ts';
 import { arr, fail, obj } from '../../parse.ts';
-import { dfAt } from './curve.ts';
+import { curveDerivable, dfAt } from './curve.ts';
 import { fullLine, hidden0 } from './frame.ts';
 import { coincide, pointOf, pointXY } from './point.ts';
 import type { DrawCtx, KindDef, SecantObj, TangentObj } from './types.ts';
@@ -56,11 +55,7 @@ export const tangentKind: KindDef<TangentObj> = {
     const cv = cx.curveRef(t.on, `${at} on`);
     const pt = cx.pointRef(t.at, `${at} at`);
     if (pt.on !== cv.id) fail(at, `접점 ${pt.id} 가 곡선 ${cv.id} 위의 점이 아님`);
-    try {
-      derivative(cv.node, 'x');
-    } catch (e) {
-      fail(at, (e as Error).message);
-    }
+    curveDerivable(cv, at);
     return { kind: 'tangent', on: cv.id, at: pt.id };
   },
   draw: drawLine,

@@ -13,7 +13,7 @@ import type { Rational } from '../../sym.ts';
 import { add, cmp, div, mul, num, qi, ratStr, sub } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { numExpr } from './common.ts';
-import { curveOf, fAt } from './curve.ts';
+import { curveOf, fAt, wholeCurve } from './curve.ts';
 import { clampY, narrowFrame, r1, toPx } from './frame.ts';
 import { polyIntegral, polyOf, rootsBetween } from './poly.ts';
 import { sliderValues } from './slider.ts';
@@ -83,7 +83,7 @@ export const rectsKind: KindDef<RectsObj> = {
     const c = obj(ro, at, ['id', 'rects']);
     const id = cx.named(c.id, `${at} id`);
     const r = obj(c.rects, `${at} rects`, ['of', 'x', 'n']);
-    const cv = cx.curveRef(r.of, `${at} of`);
+    const cv = wholeCurve(cx.curveRef(r.of, `${at} of`), `${at} of`, '구분구적');
     if ([...varsOf(cv.node)].some((v) => v !== 'x'))
       fail(`${at} of`, '구분구적 곡선에는 슬라이더를 쓰지 않음(슬라이더는 조각 수 n 만)');
     const poly = polyOf(cv.node, {});

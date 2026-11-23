@@ -10,7 +10,7 @@ import { arr, fail, obj, oneOf, optStr } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { add, cmp, mul, neg, qi, sub } from '../q.ts';
 import { ID, numExpr } from './common.ts';
-import { fAt } from './curve.ts';
+import { fAt, wholeCurve } from './curve.ts';
 import { clampY, r1, toPx } from './frame.ts';
 import { pointOf, pointQ, pointXY, xCells } from './point.ts';
 import { polyIntegral, polyOf, rationalRoots, rootsBetween } from './poly.ts';
@@ -49,7 +49,7 @@ interface EdgeIn {
 /** 경계: 앞에 나온 곡선 이름이면 곡선, 아니면 수(수평선 y=값) */
 function edge(v: unknown, at: string, cx: ParseCtx): EdgeIn {
   if (isName(v)) {
-    const c = cx.curveRef(v.trim(), at);
+    const c = wholeCurve(cx.curveRef(v.trim(), at), at, '칠하기 경계');
     const slider = [...varsOf(c.node)].some((n) => n !== 'x');
     return { e: { curve: c.id }, src: c.expr, poly: slider ? 'slider' : polyOf(c.node, {}) };
   }

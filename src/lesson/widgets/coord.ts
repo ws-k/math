@@ -1,7 +1,8 @@
 // 좌표평면 부품의 입구. 화면(Coord.tsx)·검산(checks)·채점(grade.ts)·테스트는 이 파일만 가져온다.
 // 실제 코드는 coord/ 폴더에 객체 종류별로 나뉘어 있다 — 그림 객체가 늘어날 때 종류 하나가 파일 하나가 되게.
 //   types(타입) · common(형식 검사 도우미) · frame(px 변환·눈금) ← 아래층
-//   curve · point · line(할선·접선) · readout · fill(칠하기) · rects(구분구적) ← 객체 종류마다 형식 검사·그리기·검산 몫
+//   curve(+ piece: 조각 함수·구간만 그리기) · point · line(할선·접선) · readout · fill(칠하기) · rects(구분구적)
+//     ← 객체 종류마다 형식 검사·그리기·검산 몫
 //   kinds(종류 표) · task(과제) · goal(목표) · model(상태·손 조작) · parse · draw · checks ← 나눠 주는 곳
 //   slider(슬라이더) · poly(다항식·실근 개수) ← 목표가 값을 분수로 정확히 견주려고 쓰는 도우미
 //

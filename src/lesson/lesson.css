@@ -1291,6 +1291,32 @@
   min-height: 44px;
   accent-color: var(--primary);
 }
+/* 조각 함수의 끝: 찬 점(닫힘 — 그 값을 가짐)은 곡선 색으로 채우고, 빈 점(열림)은 바탕색 속에 곡선 색 테두리.
+   빈 점 안을 카드 바탕색으로 채워야 그 밑을 지나는 곡선·격자가 비쳐 '값이 있는 점'처럼 보이지 않는다 */
+.lesson .coord .cend {
+  stroke-width: 2.4;
+}
+.lesson .coord .cend.open {
+  fill: var(--surface);
+}
+.lesson .coord .cend.main {
+  stroke: var(--primary);
+}
+.lesson .coord .cend.soft {
+  stroke: var(--faint);
+}
+.lesson .coord .cend.accent {
+  stroke: var(--good);
+}
+.lesson .coord .cend.closed.main {
+  fill: var(--primary);
+}
+.lesson .coord .cend.closed.soft {
+  fill: var(--faint);
+}
+.lesson .coord .cend.closed.accent {
+  fill: var(--good);
+}
 
 /* 넓이 모형 */
 .lesson .area .base {

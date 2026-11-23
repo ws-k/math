@@ -1,11 +1,11 @@
 // 점 객체 {id, point:{x, y | on, drag, snap}, name}: 형식 검사·점·이름·끄는 손잡이 그리기와 점 좌표 계산.
 // 점 좌표는 칸 번호(정수)로 쥔다 — 세계 좌표 = 칸 번호 × 칸 간격. 부동소수 찌꺼기 없이 "같은 점"을 판정하려고.
-import { evalExact, evalNum, exactOf } from '../../expr.ts';
+import { exactOf } from '../../expr.ts';
 import { fail, obj, oneOf, optStr } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { mul, qi, ratStr } from '../q.ts';
 import { MAX_SNAPS, near, numExpr, toIndex } from './common.ts';
-import { curveOf, fAt } from './curve.ts';
+import { curveExact, curveNum, curveOf, fAt } from './curve.ts';
 import { fmtNum, iRange, r1, toPx } from './frame.ts';
 import { sliderQ } from './slider.ts';
 import type { Axis, CoordParams, CoordState, KindDef, PointObj } from './types.ts';
@@ -64,7 +64,7 @@ export function pointQ(
       const q = sliderQ(sl, s.vars[sl.id] ?? sl.value);
       if (q) env[sl.id] = q;
     }
-    return [x, evalExact(curveOf(p, o.on).node, env)];
+    return [x, curveExact(p, o.on, env)];
   }
   return [times(g.i, p.x.exact), times(g.j, p.y.exact)];
 }
@@ -133,7 +133,7 @@ export const pointKind: KindDef<PointObj> = {
         fail(`${at} snap`, `끄는 간격이 너무 촘촘함(${MAX_SNAPS}칸 이하)`);
       const i = toIndex(xv.n, snap.n, `${at} x`);
       if (xv.n < x.lo || xv.n > x.hi) fail(`${at} x`, '화면 밖');
-      const yy = evalNum(cv.node, { ...cx.env0, x: xv.n });
+      const yy = curveNum(cv, { ...cx.env0, x: xv.n });
       if (Number.isNaN(yy)) fail(`${at} x`, '곡선이 정의되지 않는 자리');
       const po: PointObj = {
         kind: 'point',

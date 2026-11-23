@@ -6,7 +6,7 @@ import { fail, int, obj, str } from '../../parse.ts';
 import { type Rational, ratStr } from '../../sym.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { numExpr, target, toIndex } from './common.ts';
-import { curveOf, fAt } from './curve.ts';
+import { curveOf, fAt, wholeCurve } from './curve.ts';
 import { fullLine, hidden0, r1, tickText, toPx } from './frame.ts';
 import type {
   CoordParams,
@@ -35,6 +35,7 @@ export function parseTask(raw: unknown, p: CoordParams, curves: Map<string, Curv
   const curve = (v: unknown, w: string) => {
     const c = curves.get(str(v, w));
     if (!c) return fail(w, `없는 곡선 ${String(v)}`);
+    wholeCurve(c, w, '과제 곡선');
     // 채점 기준 곡선이 슬라이더로 바뀌면 검산한 답과 채점하는 답이 달라진다
     try {
       compile(c.expr, ['x']);

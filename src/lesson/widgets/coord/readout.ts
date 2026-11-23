@@ -2,12 +2,12 @@
 // 그림 위에는 아무것도 그리지 않고 readouts 목록에만 보탠다.
 // 목표가 읽는 값을 견주므로(조각 ②) 같은 값을 세 갈래로 낸다 — 화면 수(readout), 판정용 분수(readoutVal),
 // 검산용 sympy 글자(readoutSym). 세 갈래가 어긋나면 검산의 goal 항목(앱 판정 = sympy 판정)이 잡는다.
-import { compile, derivative, evalExact, evalNum, varsOf } from '../../expr.ts';
+import { compile, evalExact, evalNum, varsOf } from '../../expr.ts';
 import { GOAL_MAX_STATES, type Val } from '../../goal.ts';
 import { fail, int, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { div, num, qi, ratStr, sub } from '../q.ts';
-import { curveOf, dfAt } from './curve.ts';
+import { curveDerivExact, curveOf, curveVars, dfAt, wholeCurve } from './curve.ts';
 import { fillEnds, fillOf, fillSums, fillSumsAt } from './fill.ts';
 import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
@@ -104,7 +104,7 @@ const withUnit = (t: string, u: string | undefined) => (u && t !== '—' ? `${t}
  * 무거운 검사라 형식 검사(checkPolyCurves, coordDef.deep)에서만 한다.
  */
 function polyCurve(cx: ParseCtx, v: string, at: string): CurveObj {
-  const c = cx.curveRef(v, at);
+  const c = wholeCurve(cx.curveRef(v, at), at, '실근 개수(roots·meet)');
   const used = varsOf(c.node);
   const env: Record<string, Rational> = {};
   for (const sl of cx.sliders) {
@@ -300,14 +300,14 @@ export function readoutVal(p: CoordParams, s: CoordState, e: ReadoutExpr): Val {
       case 'slope': {
         const c = coincide(p, s, e.a, e.b);
         const [xa, ya] = pointQ(p, s, e.a);
-        if (c) return xa ? evalExact(derivative(curveOf(p, c).node, 'x'), { ...env, x: xa }) : null;
+        if (c) return xa ? curveDerivExact(p, c, { ...env, x: xa }) : null;
         const [xb, yb] = pointQ(p, s, e.b);
         if (!xa || !ya || !xb || !yb || xa[0] * xb[1] === xb[0] * xa[1]) return null;
         return div(sub(yb, ya), sub(xb, xa));
       }
       case 'deriv': {
         const xa = pointQ(p, s, e.at)[0];
-        return xa ? evalExact(derivative(curveOf(p, e.curve).node, 'x'), { ...env, x: xa }) : null;
+        return xa ? curveDerivExact(p, e.curve, { ...env, x: xa }) : null;
       }
       case 'value':
         return env[e.slider] ?? null;
@@ -429,7 +429,7 @@ export function readoutMovers(
   const sl = new Set<string>();
   const ids = new Set(p.sliders.map((x) => x.id));
   const curve = (id: string) => {
-    for (const v of varsOf(curveOf(p, id).node)) if (ids.has(v)) sl.add(v);
+    for (const v of curveVars(curveOf(p, id))) if (ids.has(v)) sl.add(v);
   };
   const point = (id: string) => {
     const o = pointOf(p, id);

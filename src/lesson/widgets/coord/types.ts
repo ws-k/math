@@ -36,11 +36,34 @@ export interface Target {
   check: string;
 }
 
+/**
+ * 조각 함수의 한 조각: x 가 [lo, hi] 안이면 y = 식. 끝은 닫힘(그 값을 가짐 — 찬 점 ●) 또는 열림(빈 점 ○).
+ * lo = hi 면 한 점(닫힘·닫힘만) — 구멍 자리에 따로 정한 함숫값.
+ */
+export interface Piece {
+  y: string;
+  node: Node;
+  lo: number;
+  hi: number;
+  /** 검산용 원문(sympy 글자) */
+  loSrc: string;
+  hiSrc: string;
+  loOpen: boolean;
+  hiOpen: boolean;
+}
+
 export interface CurveObj {
   kind: 'curve';
   id: string;
+  /** 검산·sympy 에 넘기는 식 글자. 조각 곡선이면 Piecewise(…) */
   expr: string;
+  /**
+   * 곡선 식(TS 계산용). 조각 곡선이면 첫 조각의 식일 뿐이라 직접 쓰면 안 된다 — 값은 curve.ts fAt·curveExact,
+   * 식을 통째로 다루는 곳(다항식·칠하기·구분구적·과제)은 형식 검사가 조각 곡선을 막는다(curve.ts wholeCurve)
+   */
   node: Node;
+  /** 조각 함수·구간만 그리기(한 기제: 구간만 그리기는 조각 하나). 없으면 x 전체에서 식 하나 */
+  pieces?: Piece[];
   /** 범례 글(Rich) */
   label?: string;
   tone: Tone;
