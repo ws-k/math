@@ -141,6 +141,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       const el = m.get(`h:${h.key}`);
       if (!el) continue;
       (el as HTMLElement).style.transform = handleAt(h.x, h.y);
+      el.toggleAttribute('data-off', !!h.off);
       el.setAttribute('aria-valuenow', String(h.value));
       el.setAttribute('aria-valuetext', h.valueText);
     }
@@ -546,7 +547,11 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
         {d.handles.map((h) => (
           <Handle
             key={h.key}
-            ref={reg(`h:${h.key}`)}
+            ref={(el) => {
+              reg(`h:${h.key}`)(el);
+              // 테두리에 붙인 손잡이 표시. 공용 Handle 에 칸을 늘리지 않고 DOM 속성으로 — 끄는 동안의 apply 와 같은 길
+              el?.toggleAttribute('data-off', !!h.off);
+            }}
             x={h.x}
             y={h.y}
             label={h.label}

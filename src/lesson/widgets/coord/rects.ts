@@ -13,7 +13,7 @@ import type { Rational } from '../../sym.ts';
 import { add, cmp, div, mul, num, qi, ratStr, sub } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { numExpr } from './common.ts';
-import { curveOf, fAt, wholeCurve } from './curve.ts';
+import { curveOf, fAt, plainOf, wholeCurve } from './curve.ts';
 import { clampY, narrowFrame, r1, toPx } from './frame.ts';
 import { polyIntegral, polyOf, rootsBetween } from './poly.ts';
 import { sliderValues } from './slider.ts';
@@ -43,7 +43,7 @@ export function sumsAt(
   n: number,
 ): { big: Rational; small: Rational } | null {
   if (!Number.isInteger(n) || n < 1) return null;
-  const node = curveOf(p, o.of).node;
+  const node = plainOf(p, o.of).node;
   const dx = div(sub(o.b, o.a), qi(n));
   let left = Z;
   let right = Z;
@@ -74,7 +74,7 @@ export function sumSym(p: CoordParams, o: RectsObj, which: 'big' | 'small' | 'ga
 
 /** [a,b] 에서의 정적분(정확한 분수) */
 function integral(p: CoordParams, o: RectsObj): Rational | null {
-  const c = polyOf(curveOf(p, o.of).node, {});
+  const c = polyOf(plainOf(p, o.of).node, {});
   return c ? polyIntegral(c, o.a, o.b) : null;
 }
 

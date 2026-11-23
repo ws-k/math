@@ -1221,6 +1221,11 @@
 .lesson .handle:active {
   cursor: grabbing;
 }
+/* 좌표평면: 점이 그림 밖이라 테두리에 붙인 손잡이(data-off). 흐린 색이라 '점이 여기 있다'로 읽히지 않고, 잡아서 끌어 올 수는 있다 */
+.lesson .coord-host .handle[data-off] .dot {
+  background: var(--faint);
+  box-shadow: 0 0 0 1.5px var(--faint);
+}
 .lesson .legend {
   display: flex;
   flex-wrap: wrap;

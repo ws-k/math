@@ -7,9 +7,15 @@ import { fail, obj, oneOf, str } from '../../parse.ts';
 import type { Node, Rational } from '../../sym.ts';
 import { samplePath } from './frame.ts';
 import { drawEnds, nodeAt, parsePieces, pieceChecks, piecesPath, piecesSym } from './piece.ts';
-import type { CoordParams, CoordState, CurveObj, Frame, KindDef } from './types.ts';
-
-const TONES = ['main', 'soft', 'accent'] as const;
+import {
+  type CoordParams,
+  type CoordState,
+  type CurveObj,
+  type Frame,
+  type KindDef,
+  type PlainCurve,
+  TONES,
+} from './types.ts';
 
 export const curveOf = (p: CoordParams, id: string) =>
   p.objects.find((o): o is CurveObj => o.kind === 'curve' && o.id === id) as CurveObj;
@@ -44,10 +50,14 @@ export function curveDerivExact(p: CoordParams, id: string, env: Record<string, 
   return n ? evalExact(derivative(n, 'x'), env) : null;
 }
 
+/** 곡선의 식들(조각이면 조각마다) */
+const nodesOf = (c: CurveObj): Node[] =>
+  c.pieces !== undefined ? c.pieces.map((pc) => pc.node) : [c.node];
+
 /** 곡선 식에 쓰인 변수(조각이면 모든 조각) — 어느 슬라이더가 이 곡선을 움직이나 */
 export function curveVars(c: CurveObj): Set<string> {
   const out = new Set<string>();
-  for (const n of c.pieces ? c.pieces.map((pc) => pc.node) : [c.node]) varsOf(n, out);
+  for (const n of nodesOf(c)) varsOf(n, out);
   return out;
 }
 
@@ -56,14 +66,25 @@ export function curveVars(c: CurveObj): Set<string> {
  * 식 하나를 x 전체에서 다루고(다항식 계수·적분·sympy 식), 조각의 경계·정의역을 모른다. 조용히 첫 조각만 쓰면
  * 그림과 다른 값을 채점하므로 형식 오류로 막는다.
  */
-export function wholeCurve(c: CurveObj, at: string, what: string): CurveObj {
-  if (c.pieces) fail(at, `조각·구간 곡선 ${c.id} 은 ${what}에 아직 못 씀(식 하나인 곡선만)`);
+export function wholeCurve(c: CurveObj, at: string, what: string): PlainCurve {
+  if (c.pieces !== undefined)
+    return fail(at, `조각·구간 곡선 ${c.id} 은 ${what}에 아직 못 씀(식 하나인 곡선만)`);
+  return c;
+}
+
+/**
+ * 식 하나인 곡선(형식 검사가 wholeCurve 로 이미 거른 자리에서 그 곡선을 다시 찾을 때). 조각 곡선이 오면 형식 검사를
+ * 빠져나온 것이라 프로그램 오류로 던진다 — 조용히 첫 조각만 쓰면 그림과 다른 값을 채점한다
+ */
+export function plainOf(p: CoordParams, id: string): PlainCurve {
+  const c = curveOf(p, id);
+  if (c.pieces !== undefined) throw new Error(`조각 곡선 ${id} 을 식 하나로 다룸(형식 검사 누락)`);
   return c;
 }
 
 /** 형식 검사: 접선이 쓸 수 있게 기호 미분이 되는가(조각이면 조각마다) */
 export function curveDerivable(c: CurveObj, at: string): void {
-  for (const n of c.pieces ? c.pieces.map((pc) => pc.node) : [c.node])
+  for (const n of nodesOf(c))
     try {
       derivative(n, 'x');
     } catch (e) {
@@ -73,9 +94,10 @@ export function curveDerivable(c: CurveObj, at: string): void {
 
 /** 곡선 경로(px). 정의 안 되는 곳·크게 튀는 곳(점근선)에서 끊는다 */
 function curvePath(p: CoordParams, s: CoordState, c: CurveObj, f: Frame): string {
-  if (c.pieces) return piecesPath(p, s.vars, c, f);
+  if (c.pieces !== undefined) return piecesPath(p, s.vars, c, f);
+  const node = c.node;
   const n = Math.max(60, Math.round((f.r - f.l) / 2));
-  return samplePath(p, f, p.x.lo, p.x.hi, n, (x) => evalNum(c.node, { ...s.vars, x }));
+  return samplePath(p, f, p.x.lo, p.x.hi, n, (x) => evalNum(node, { ...s.vars, x }));
 }
 
 export const curveKind: KindDef<CurveObj> = {
@@ -92,16 +114,17 @@ export const curveKind: KindDef<CurveObj> = {
     };
     const pieces = parsePieces(c, at, cx, compileY);
     const expr = pieces ? piecesSym(pieces) : str(c.curve, `${at} curve`).replace(/\s+/g, '');
-    const co: CurveObj = {
-      kind: 'curve',
+    const base = {
+      kind: 'curve' as const,
       id,
       expr,
-      node: pieces ? (pieces[0] as { node: Node }).node : compileY(expr, `${at} curve`),
-      ...(pieces ? { pieces } : {}),
       ...(c.label !== undefined ? { label: str(c.label, `${at} label`) } : {}),
       tone: c.tone === undefined ? 'main' : oneOf(c.tone, `${at} tone`, TONES),
       ...(c.hide === true ? { hide: true as const } : {}),
     };
+    const co: CurveObj = pieces
+      ? { ...base, pieces }
+      : { ...base, node: compileY(expr, `${at} curve`) };
     cx.curves.set(id, co);
     return co;
   },
@@ -111,10 +134,10 @@ export const curveKind: KindDef<CurveObj> = {
     const hide = !!o.hide && !s.solved;
     const d = hide ? '' : curvePath(p, s, o, f);
     items.push({ t: 'path', key: `c${k}`, d, cls: `curve ${o.tone}` });
-    if (o.pieces) drawEnds(o, k, cx, hide);
+    if (o.pieces !== undefined) drawEnds(o, k, cx, hide);
   },
   checks(o, cx) {
-    if (o.pieces) {
+    if (o.pieces !== undefined) {
       pieceChecks(o, cx);
       return;
     }

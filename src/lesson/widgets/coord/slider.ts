@@ -2,6 +2,7 @@
 // 분수로 다시 만들어 써야 해서(소수 0.1+0.2 오차로 '중근'을 놓치지 않게) 한곳에 모았다.
 import { exactOf } from '../../expr.ts';
 import { formatValue } from '../../format.ts';
+import { growStates } from '../../goal.ts';
 import { arr, fail, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { add, mul, num, qi, ratStr } from '../q.ts';
@@ -204,4 +205,38 @@ export function sliderSym(sl: Slider, k: number): string {
   const st = exactOf(sl.stepSrc);
   if (m && st) return ratStr(add(m, mul(qi(k), st)));
   return `(${sl.minSrc})+${k}*(${sl.stepSrc})`;
+}
+
+/** 슬라이더 값 조합 하나: 수(앱 계산)·sympy 글자(검산 점)·사람이 읽는 글(형식 오류 글) */
+export interface SliderCombo {
+  num: Record<string, number>;
+  sym: Record<string, string>;
+  text: string;
+}
+
+/**
+ * 쓰인 슬라이더(ids)가 닿는 값의 모든 조합. 상태 늘리기는 목표 검산과 같은 growStates 로 — 상한(2000)과
+ * 넘을 때의 형식 오류가 한곳에서 정해진다. 조각 끝 표시·선분 끝을 '처음 값만이 아니라 모든 칸에서' 볼 때 쓴다
+ */
+export function sliderCombos(sliders: Slider[], ids: string[], at: string): SliderCombo[] {
+  let acc: { s: SliderCombo; sym: Record<string, string> }[] = [
+    { s: { num: {}, sym: {}, text: '' }, sym: {} },
+  ];
+  for (const id of ids) {
+    const sl = sliders.find((x) => x.id === id);
+    if (!sl) continue;
+    acc = growStates(
+      acc,
+      sliderValues(sl).map(({ k, v }) => ({
+        patch: (c: SliderCombo) => ({
+          num: { ...c.num, [id]: v },
+          sym: { ...c.sym, [id]: sliderSym(sl, k) },
+          text: `${c.text}${c.text ? ', ' : ''}${id}=${v}`,
+        }),
+        sym: {},
+      })),
+      at,
+    );
+  }
+  return acc.map((a) => a.s);
 }

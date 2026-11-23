@@ -103,9 +103,12 @@ export function keyMove(
   if (o.on) {
     const step = d[0] || d[1];
     const { i0: lo, i1: hi } = xCells(p.x, o);
-    const i = Math.min(hi, Math.max(lo, g.i + step));
-    if (Number.isNaN(fAt(p, s, o.on, i * o.snapN))) return s;
-    return { ...s, pts: { ...s.pts, [handle]: { i, j: 0 } } };
+    // 곡선이 정의 안 된 칸(조각 함수의 구멍·정의역 밖)은 같은 방향 다음 칸으로 건너뛴다 — 멈추면 방향키·◀▶ 로는
+    // 구멍 건너편에 영영 못 간다(슬라이더 제외 값 건너뛰기 sliderSnap 과 같은 규칙). 끝까지 없으면 제자리
+    for (let i = g.i + step; i >= lo && i <= hi; i += step)
+      if (!Number.isNaN(fAt(p, s, o.on, i * o.snapN)))
+        return { ...s, pts: { ...s.pts, [handle]: { i, j: 0 } } };
+    return s;
   }
   return {
     ...s,

@@ -7,7 +7,7 @@ import { GOAL_MAX_STATES, type Val } from '../../goal.ts';
 import { fail, int, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { div, num, qi, ratStr, sub } from '../q.ts';
-import { curveDerivExact, curveOf, curveVars, dfAt, wholeCurve } from './curve.ts';
+import { curveDerivExact, curveOf, curveVars, dfAt, plainOf, wholeCurve } from './curve.ts';
 import { fillEnds, fillOf, fillSums, fillSumsAt } from './fill.ts';
 import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
@@ -140,7 +140,7 @@ function countedCurves(p: CoordParams): string[] {
 export function checkPolyCurves(p: CoordParams): void {
   const at = '좌표 roots·meet';
   for (const id of countedCurves(p)) {
-    const c = curveOf(p, id);
+    const c = plainOf(p, id);
     const used = varsOf(c.node);
     let envs: Record<string, Rational>[] = [{}];
     for (const sl of p.sliders) {
@@ -234,8 +234,8 @@ function envQ(p: CoordParams, s: CoordState): Record<string, Rational> {
 /** f−g(또는 f) 의 서로 다른 실근 개수. 다항식이 아니거나 0 인 다항식(무수히 많음)이면 NaN */
 function rootsOf(p: CoordParams, s: CoordState, a: string, b?: string): number {
   const env = envQ(p, s);
-  const pa = polyOf(curveOf(p, a).node, env);
-  const pb = b === undefined ? [] : polyOf(curveOf(p, b).node, env);
+  const pa = polyOf(plainOf(p, a).node, env);
+  const pb = b === undefined ? [] : polyOf(plainOf(p, b).node, env);
   if (!pa || !pb) return Number.NaN;
   const diff = Array.from({ length: Math.max(pa.length, pb.length) }, (_, i) =>
     sub(pa[i] ?? qi(0), pb[i] ?? qi(0)),

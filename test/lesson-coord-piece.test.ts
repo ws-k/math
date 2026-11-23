@@ -276,7 +276,12 @@ test('검산: 빈 점 자리(열린 끝의 식 값)·미분·목표가 sympy 와
     sidesRaw({
       objects: [
         f,
-        { id: 'Q', point: { on: 'f', x: '1/5', drag: 'x', snap: '1/10' }, name: 'Q' },
+        // 접선·deriv 가 쓰이면 정의역 끝(0·2)과 끊긴 경계(1)에 닿지 않게 범위를 둔다(smooth.ts)
+        {
+          id: 'Q',
+          point: { on: 'f', x: '1/5', drag: 'x', snap: '1/10', range: ['1/10', '9/10'] },
+          name: 'Q',
+        },
         ro,
         { tangent: { on: 'f', at: 'Q' } },
         { readout: 'deriv(f,Q)', label: '기울기' },

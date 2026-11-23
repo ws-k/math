@@ -127,8 +127,15 @@ test('끄는 점을 끝으로 쓰면 점을 따라 움직인다', () => {
   const f = frame(BOX, p);
   const s: CoordState = { ...initial(p), pts: { ...initial(p).pts, P: { i: 3, j: 2 } } };
   const [X, Y] = toPx(p, f, 3, 2);
+  const [X0, Y0] = toPx(p, f, 0, 0);
   const tip = (heads(p, s)[0]?.d ?? '').match(/^M(-?[\d.]+) (-?[\d.]+)/);
-  assert.ok(tip && Math.abs(Number(tip[1]) - X) < 0.1 && Math.abs(Number(tip[2]) - Y) < 0.1);
+  assert.ok(tip);
+  // 화살촉 끝은 손잡이 가장자리(점에서 11.5px)까지 물려, O→P 선 위에 있다
+  const [tx, ty] = [Number(tip[1]), Number(tip[2])];
+  assert.ok(Math.abs(Math.hypot(tx - X, ty - Y) - 11.5) < 0.2);
+  assert.ok(
+    Math.abs((tx - X0) * (Y - Y0) - (ty - Y0) * (X - X0)) / Math.hypot(X - X0, Y - Y0) < 0.2,
+  );
 });
 
 test('형식 오류: 화면 밖 끝(슬라이더 값마다)·모르는 점·x 를 쓴 식·같은 선분 두 번·좁은 화면에서 너무 짧은 화살표', () => {
@@ -141,7 +148,7 @@ test('형식 오류: 화면 밖 끝(슬라이더 값마다)·모르는 점·x �
   );
   assert.throws(() => parseCoord(objs({ arrow: ['O', 'Z'] })), /앞에 없는 점 Z/);
   assert.throws(() => parseCoord(objs({ arrow: ['O', ['x', 1]] })), /쓸 수 없는 변수 x/);
-  assert.throws(() => parseCoord(objs({ arrow: ['O', 'A'] })), /같은 선분이 두 번/);
+  assert.throws(() => parseCoord(objs({ arrow: ['O', 'A'] })), /같은 화살표가 두 번/);
   assert.throws(() => parseCoord(objs({ arrow: ['O', [1, 2, 3]] })), /2~2개/);
   // 가장 좁은 화면에서 (0,0)→(1/2·k 의 가장 작은 0 아닌 값) 길이가 화살촉보다 짧다
   assert.throws(

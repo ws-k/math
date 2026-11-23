@@ -4,7 +4,8 @@
 //   curve(+ piece: 조각 함수·구간만 그리기) · point · line(할선·접선) · segment(선분·화살표) · readout ·
 //   fill(칠하기) · rects(구분구적)
 //     ← 객체 종류마다 형식 검사·그리기·검산 몫
-//   kinds(종류 표) · task(과제) · goal(목표) · model(상태·손 조작) · parse · draw · checks ← 나눠 주는 곳
+//   kinds(종류 표) · task(과제) · goal(목표) · model(상태·손 조작) · parse · draw · checks · smooth(조각 경계 미분 검사)
+//     ← 나눠 주는 곳
 //   slider(슬라이더) · poly(다항식·실근 개수) ← 목표가 값을 분수로 정확히 견주려고 쓰는 도우미
 //
 // 매개변수는 "이름 붙은 객체 + 참조" 목록이다:
@@ -20,6 +21,7 @@ import { checkReachable, goalTexts } from './coord/goal.ts';
 import { kindOf } from './coord/kinds.ts';
 import { parseCoord } from './coord/parse.ts';
 import { checkPolyCurves } from './coord/readout.ts';
+import { checkSmooth } from './coord/smooth.ts';
 import type { CoordParams } from './coord/types.ts';
 import type { WidgetDef } from './specs.ts';
 
@@ -104,6 +106,7 @@ export const coordDef: WidgetDef<CoordParams> = {
   deep(p) {
     checkPolyCurves(p);
     checkReachable(p);
+    checkSmooth(p);
   },
   checks: coordChecks,
   texts(p) {

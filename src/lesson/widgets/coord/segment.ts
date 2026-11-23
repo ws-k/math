@@ -6,28 +6,29 @@
 // 끄는 동안 React 를 다시 그리지 않는다: 항목은 늘 같은 key(화살대 g<순번>, 화살촉 g<순번>h)로 두고, 길이가 0 이면
 // 숨김(hidden)·빈 경로로만 바꾼다 — 끄는 중 직접 적용(Coord.tsx apply)이 그 값을 그대로 넣는다.
 import { compile, evalNum, exactStr, varsOf } from '../../expr.ts';
-import { GOAL_MAX_STATES } from '../../goal.ts';
 import { arr, fail, obj, oneOf, str } from '../../parse.ts';
 import type { Node } from '../../sym.ts';
 import { near } from './common.ts';
+import { curveNum, curveVars } from './curve.ts';
 import { hidden0, narrowFrame, r1, toPx } from './frame.ts';
-import { pointXY } from './point.ts';
-import { sliderSym, sliderValues } from './slider.ts';
-import type {
-  ArrowObj,
-  CheckCtx,
-  CoordParams,
-  CoordState,
-  DrawCtx,
-  KindDef,
-  ParseCtx,
-  SegEnd,
-  SegmentObj,
+import { pointOf, pointXY } from './point.ts';
+import { sliderCombos } from './slider.ts';
+import {
+  type ArrowObj,
+  type CheckCtx,
+  type CoordParams,
+  type CoordState,
+  type DrawCtx,
+  type KindDef,
+  type ParseCtx,
+  type PointObj,
+  type SegEnd,
+  type SegmentObj,
+  TONES,
 } from './types.ts';
 
 type SegObj = SegmentObj | ArrowObj;
 
-const TONES = ['main', 'soft', 'accent'] as const;
 /** 화살촉 길이·반폭(px). 화살대 굵기 2.6px 보다 확실히 넓어야 방향이 보인다 */
 const HEAD_L = 9;
 const HEAD_W = 4.5;
@@ -36,6 +37,14 @@ const HEAD_W = 4.5;
  * (벡터의 크기)가 안 보인다 — 끝이 끄는 점이면 길이가 손에 달려 있어 검사하지 않는다(짧아지면 화살촉을 줄임).
  */
 export const MIN_ARROW_PX = 16;
+/**
+ * 머리 끝이 점이면 화살촉 끝을 점 가장자리까지 물린다(px). 끄는 점은 손잡이의 보이는 원 반지름 11.5
+ * (lesson.css .handle .dot 20px + 바깥 그림자 1.5px) — 물리지 않으면 화살촉 9px 가 손잡이 밑에 다 가려진다.
+ * 끌 수 없는 점은 점 반지름 5 + 테두리 2px 의 절반 = 6
+ */
+const PULL_HANDLE = 11.5;
+const PULL_DOT = 6;
+const pullOf = (o: PointObj | undefined) => (!o ? 0 : o.drag === 'none' ? PULL_DOT : PULL_HANDLE);
 
 const endText = (e: SegEnd) => ('pt' in e ? e.pt : `(${e.x},${e.y})`);
 
@@ -67,46 +76,54 @@ const slidersIn = (n: Node, cx: Pick<ParseCtx, 'sliders'>) => {
   const vs = varsOf(n);
   return cx.sliders.map((sl) => sl.id).filter((id) => vs.has(id));
 };
-const endSliders = (e: SegEnd, cx: Pick<ParseCtx, 'sliders'>): string[] =>
-  'pt' in e ? [] : [...new Set([...slidersIn(e.nx, cx), ...slidersIn(e.ny, cx)])];
-
-interface Combo {
-  num: Record<string, number>;
-  sym: Record<string, string>;
-  text: string;
-}
-
-/** 쓰인 슬라이더가 닿는 값의 모든 조합(검산·형식 검사가 늘어놓는 상태) */
-function combos(ids: string[], cx: Pick<ParseCtx, 'sliders'>, at: string): Combo[] {
-  let acc: Combo[] = [{ num: {}, sym: {}, text: '' }];
-  for (const id of ids) {
-    const sl = cx.sliders.find((s) => s.id === id);
-    if (!sl) continue;
-    const vs = sliderValues(sl);
-    if (acc.length * vs.length > GOAL_MAX_STATES)
-      fail(at, `슬라이더 칸 조합이 ${GOAL_MAX_STATES}개를 넘어 끝 자리를 다 확인할 수 없음`);
-    acc = acc.flatMap((c) =>
-      vs.map(({ k, v }) => ({
-        num: { ...c.num, [id]: v },
-        sym: { ...c.sym, [id]: sliderSym(sl, k) },
-        text: `${c.text}${c.text ? ', ' : ''}${id}=${v}`,
-      })),
-    );
-  }
-  return acc;
+/** 끝 자리를 움직이는 슬라이더: 좌표 식의 슬라이더, 끌 수 없는 곡선 위 점이면 그 곡선의 슬라이더 */
+function endSliders(e: SegEnd, cx: Pick<ParseCtx, 'sliders' | 'points' | 'curves'>): string[] {
+  if (!('pt' in e)) return [...new Set([...slidersIn(e.nx, cx), ...slidersIn(e.ny, cx)])];
+  const o = cx.points.get(e.pt);
+  const c = o?.on ? cx.curves.get(o.on) : undefined;
+  if (o?.drag !== 'none' || !c) return [];
+  const used = curveVars(c);
+  return cx.sliders.map((sl) => sl.id).filter((id) => used.has(id));
 }
 
 /**
- * 형식 검사 중 끝 좌표(수). 끌 수 없는 칸 위 점과 좌표 식만 셀 수 있다 — 끄는 점·곡선 위 점은 자리가 손·슬라이더에
- * 달려 null(화면 밖·길이 검사를 건너뜀. 끄는 점은 칸 안에서만 움직이고 곡선 위 점은 clipPath 가 자른다)
+ * 형식 검사 중 끝 좌표(수). 좌표 식·끌 수 없는 칸 위 점·끌 수 없는 곡선 위 점(그 곡선 값)은 셀 수 있다.
+ * 끄는 점은 자리가 손에 달려 null(화면 밖·길이 검사를 건너뜀 — 칸 안에서만 움직인다)
  */
-function endAt(e: SegEnd, cx: ParseCtx, env: Record<string, number>): [number, number] | null {
+function endAt(
+  e: SegEnd,
+  cx: Pick<ParseCtx, 'points' | 'curves' | 'x' | 'y'>,
+  env: Record<string, number>,
+): [number, number] | null {
   if ('pt' in e) {
     const o = cx.points.get(e.pt);
-    if (!o || o.on || o.drag !== 'none') return null;
-    return [o.i * cx.x.st, o.j * cx.y.st];
+    if (o?.drag !== 'none') return null;
+    if (!o.on) return [o.i * cx.x.st, o.j * cx.y.st];
+    const c = cx.curves.get(o.on);
+    const x = o.i * o.snapN;
+    return c ? [x, curveNum(c, { ...env, x })] : null;
   }
   return [evalNum(e.nx, env), evalNum(e.ny, env)];
+}
+
+/**
+ * 중복 비교 열쇠: 끝을 좌표로 풀어(끝이 쓰는 슬라이더의 모든 칸에서) 견준다 — 같은 자리를 [0,0] 과 'O' 로,
+ * '4/2' 와 2 로 다르게 적어도 같은 선분이다. 끄는 점 끝은 그 점 이름. 선분은 방향이 없어 두 끝을 정렬하고,
+ * 화살표는 꼬리·머리 순서가 뜻이라 그대로(반대 방향 화살표는 다른 벡터)
+ */
+export function segKey(o: SegmentObj | ArrowObj, cx: ParseCtx): string {
+  const sig = (e: SegEnd) => {
+    const ids = endSliders(e, cx);
+    const vals = sliderCombos(cx.sliders, ids, '좌표 선분').map((cb) => {
+      const q = endAt(e, cx, { ...cx.env0, ...cb.num });
+      return q ? q.map((v) => Number(v.toPrecision(12))).join(',') : null;
+    });
+    return vals.includes(null)
+      ? `pt:${'pt' in e ? e.pt : ''}`
+      : `${ids.join('')}[${vals.join(';')}]`;
+  };
+  const ends = [sig(o.a), sig(o.b)];
+  return `${o.kind} ${(o.kind === 'segment' ? ends.sort() : ends).join(' ')}`;
 }
 
 function parseSeg<K extends SegObj['kind']>(kind: K, ro: unknown, at: string, cx: ParseCtx) {
@@ -137,10 +154,12 @@ function checkEnds(o: SegObj, at: string, cx: ParseCtx): void {
   const pxY = (f.b - f.t) / (cx.y.hi - cx.y.lo);
   let moved = false;
   let known = true;
-  for (const cb of combos(ids, cx, at)) {
+  for (const cb of sliderCombos(cx.sliders, ids, at)) {
     const env = { ...cx.env0, ...cb.num };
     const pa = endAt(o.a, cx, env);
     const pb = endAt(o.b, cx, env);
+    // 꼬리 끝은 점 밑에 묻혀도 괜찮다 — 화살촉만 물리므로 길이에서 머리 쪽 물림을 뺀다
+    const pull = o.kind === 'arrow' && 'pt' in o.b ? pullOf(cx.points.get(o.b.pt)) : 0;
     for (const q of [pa, pb]) {
       if (!q) continue;
       const [x, y] = q;
@@ -160,11 +179,11 @@ function checkEnds(o: SegObj, at: string, cx: ParseCtx): void {
     }
     if (near(pa[0], pb[0]) && near(pa[1], pb[1])) continue;
     moved = true;
-    const len = Math.hypot((pb[0] - pa[0]) * pxX, (pb[1] - pa[1]) * pxY);
+    const len = Math.hypot((pb[0] - pa[0]) * pxX, (pb[1] - pa[1]) * pxY) - pull;
     if (o.kind === 'arrow' && len < MIN_ARROW_PX)
       fail(
         at,
-        `가장 좁은 화면에서 화살표가 ${len.toFixed(1)}px${cb.text ? `(${cb.text})` : ''} — ${MIN_ARROW_PX}px 이상(화살촉만 남아 크기가 안 보임)`,
+        `가장 좁은 화면에서 화살표가 ${len.toFixed(1)}px${pull ? `(머리 점 물림 ${pull}px 뺌)` : ''}${cb.text ? `(${cb.text})` : ''} — ${MIN_ARROW_PX}px 이상(화살촉만 남아 크기가 안 보임)`,
       );
   }
   if (known && !moved) fail(at, `두 끝이 같음 (${o.ref}) — 그릴 것이 없음`);
@@ -182,21 +201,26 @@ function drawSeg(o: SegObj, k: number, { p, s, f, items }: DrawCtx) {
   const [X1, Y1] = ok ? toPx(p, f, x1, y1) : [0, 0];
   const [X2, Y2] = ok ? toPx(p, f, x2, y2) : [0, 0];
   const L = Math.hypot(X2 - X1, Y2 - Y1);
-  const show = ok && L >= 0.5;
   const arrow = o.kind === 'arrow';
+  // 머리 끝이 점이면 화살촉 끝을 점 가장자리까지 물린다(손잡이·점에 가려지지 않게)
+  const pull = arrow && 'pt' in o.b ? pullOf(pointOf(p, o.b.pt)) : 0;
+  const Lv = L - pull;
+  const show = ok && (arrow ? Lv >= 1 : L >= 0.5);
   let ln = show ? { x1: r1(X1), y1: r1(Y1), x2: r1(X2), y2: r1(Y2) } : hidden0;
   let head = '';
   if (show && arrow) {
-    // 끄는 점 끝이라 짧아지면 화살촉도 줄인다(화살촉이 꼬리 뒤로 삐져나가지 않게)
-    const hl = Math.min(HEAD_L, L * 0.6);
-    const hw = (HEAD_W * hl) / HEAD_L;
     const ux = (X2 - X1) / L;
     const uy = (Y2 - Y1) / L;
-    const bx = X2 - ux * hl;
-    const by = Y2 - uy * hl;
-    head = `M${r1(X2)} ${r1(Y2)}L${r1(bx - uy * hw)} ${r1(by + ux * hw)}L${r1(bx + uy * hw)} ${r1(by - ux * hw)}Z`;
+    const tx = X2 - ux * pull;
+    const ty = Y2 - uy * pull;
+    // 끄는 점 끝이라 짧아지면 화살촉도 줄인다(화살촉이 꼬리 뒤로 삐져나가지 않게)
+    const hl = Math.min(HEAD_L, Lv * 0.6);
+    const hw = (HEAD_W * hl) / HEAD_L;
+    const bx = tx - ux * hl;
+    const by = ty - uy * hl;
+    head = `M${r1(tx)} ${r1(ty)}L${r1(bx - uy * hw)} ${r1(by + ux * hw)}L${r1(bx + uy * hw)} ${r1(by - ux * hw)}Z`;
     // 화살대는 화살촉 밑(1px 겹침)에서 끝낸다 — 굵은 선 끝이 뾰족한 머리를 뭉개지 않게
-    ln = { ...ln, x2: r1(X2 - ux * (hl - 1)), y2: r1(Y2 - uy * (hl - 1)) };
+    ln = { ...ln, x2: r1(tx - ux * (hl - 1)), y2: r1(ty - uy * (hl - 1)) };
   }
   items.push({ t: 'line', key: `g${k}`, ...ln, cls: `seg ${o.tone}`, hidden: !show });
   if (arrow) items.push({ t: 'path', key: `g${k}h`, d: head, cls: `ahead ${o.tone}` });
@@ -223,7 +247,7 @@ function segChecks(o: SegObj, { p, out }: CheckCtx) {
     ] as const) {
       const ids = slidersIn(node, p);
       if (ids.length === 0) continue;
-      const cs = combos(ids, p, `${name} ${o.ref}`);
+      const cs = sliderCombos(p.sliders, ids, `${name} ${o.ref}`);
       out.push({
         name: `${name} ${o.ref} ${side} ${ax}`,
         kind: 'parity',

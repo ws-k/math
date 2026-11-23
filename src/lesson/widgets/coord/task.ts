@@ -35,14 +35,14 @@ export function parseTask(raw: unknown, p: CoordParams, curves: Map<string, Curv
   const curve = (v: unknown, w: string) => {
     const c = curves.get(str(v, w));
     if (!c) return fail(w, `없는 곡선 ${String(v)}`);
-    wholeCurve(c, w, '과제 곡선');
+    const pc = wholeCurve(c, w, '과제 곡선');
     // 채점 기준 곡선이 슬라이더로 바뀌면 검산한 답과 채점하는 답이 달라진다
     try {
       compile(c.expr, ['x']);
     } catch {
       fail(w, '과제 곡선에는 슬라이더 변수를 쓰지 않음');
     }
-    return c;
+    return pc;
   };
   if (k === 'point') {
     const t = obj(o.point, `${at} point`, ['x', 'y']);

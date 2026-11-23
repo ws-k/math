@@ -6,6 +6,7 @@ import { axis, ID, MAX_CELLS, numExpr, toIndex } from './common.ts';
 import { MIN_PLOT, narrowFrame } from './frame.ts';
 import { goalPoints, parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
+import { segKey } from './segment.ts';
 import { parseSliders } from './slider.ts';
 import { parseTask } from './task.ts';
 import type {
@@ -103,12 +104,13 @@ export function parseCoord(raw: unknown): CoordParams {
     if (seenRo.has(key)) fail('좌표 objects', `같은 읽는 값이 두 번 (${ob.src})`);
     seenRo.add(key);
   }
-  // 같은 선분·화살표가 두 번이면 한 선 위에 겹쳐 그려지고 검산 항목 이름도 겹친다
+  // 같은 선분·화살표가 두 번이면 한 선 위에 겹쳐 그려지고 검산 항목 이름도 겹친다. 좌표로 풀어 견준다(segment.ts segKey)
   const seenSeg = new Set<string>();
   for (const ob of objects) {
     if (ob.kind !== 'segment' && ob.kind !== 'arrow') continue;
-    const key = `${ob.kind} ${ob.ref}`;
-    if (seenSeg.has(key)) fail('좌표 objects', `같은 선분이 두 번 (${ob.ref})`);
+    const key = segKey(ob, ctx);
+    if (seenSeg.has(key))
+      fail('좌표 objects', `같은 ${ob.kind === 'arrow' ? '화살표가' : '선분이'} 두 번 (${ob.ref})`);
     seenSeg.add(key);
   }
 

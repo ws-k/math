@@ -105,7 +105,13 @@ export function pointState(
 }
 
 /** 끄는 x 범위 range:[a,b](축 위 칸, 양 끝 포함)를 칸 번호로 읽어 점에 붙인다 */
-function withRange(po: PointObj, raw: unknown, at: string, x: Axis): void {
+function withRange(
+  po: PointObj,
+  raw: unknown,
+  at: string,
+  x: Axis,
+  defined: (x: number) => boolean = () => true,
+): void {
   if (raw === undefined) return;
   if (po.drag === 'none') fail(at, '끄는 점만 범위를 둠');
   const [ra, rb] = arr(raw, at, 2, 2);
@@ -116,6 +122,9 @@ function withRange(po: PointObj, raw: unknown, at: string, x: Axis): void {
   const ib = toIndex(b.n, po.snapN, at);
   if (ib - ia < 1) fail(at, '두 칸 이상이어야 함(작은 쪽 먼저)');
   if (po.i < ia || po.i > ib) fail(at, '처음 자리가 범위 밖');
+  // 범위 끝은 '여기까지 끌린다'는 약속 — 곡선이 거기서 정의 안 되면 끌기가 그 칸을 거부해 끝에 닿지 않는다
+  for (const v of [a.n, b.n])
+    if (!defined(v)) fail(at, `범위 끝 x=${v} 에서 곡선이 정의 안 됨(범위를 정의되는 칸까지로)`);
   po.cells = [ia, ib];
 }
 
@@ -165,7 +174,9 @@ export const pointKind: KindDef<PointObj> = {
       };
       if (po.hide && drag !== 'none')
         fail(`${at} hide`, '끄는 점은 숨기지 못함(숨기는 것은 목표 점)');
-      withRange(po, pp.range, `${at} range`, x);
+      withRange(po, pp.range, `${at} range`, x, (v) =>
+        Number.isFinite(curveNum(cv, { ...cx.env0, x: v })),
+      );
       cx.points.set(id, po);
       return po;
     } else {
@@ -221,6 +232,7 @@ export const pointKind: KindDef<PointObj> = {
         key: o.id,
         x: r1(X),
         y: r1(hy),
+        off: ok && hy !== Y,
         label: `점 ${o.name ?? o.id}`,
         value: x,
         min: lo,

@@ -8,7 +8,9 @@ import type { Node, Rational } from '../../sym.ts';
 import type { WidgetCheck } from '../specs.ts';
 
 export type Mode = 'explore' | 'plot' | 'line' | 'connect' | 'sketch';
-export type Tone = 'main' | 'soft' | 'accent';
+/** 곡선·선분·화살표의 색(범례 lg.main·soft·accent 와 짝). 형식 검사가 이 목록 하나로 본다 */
+export const TONES = ['main', 'soft', 'accent'] as const;
+export type Tone = (typeof TONES)[number];
 
 export interface Axis {
   /** 원문(sympy 식 글자) — 검산에 그대로 넘긴다 */
@@ -52,24 +54,25 @@ export interface Piece {
   hiOpen: boolean;
 }
 
-export interface CurveObj {
+interface CurveBase {
   kind: 'curve';
   id: string;
   /** 검산·sympy 에 넘기는 식 글자. 조각 곡선이면 Piecewise(…) */
   expr: string;
-  /**
-   * 곡선 식(TS 계산용). 조각 곡선이면 첫 조각의 식일 뿐이라 직접 쓰면 안 된다 — 값은 curve.ts fAt·curveExact,
-   * 식을 통째로 다루는 곳(다항식·칠하기·구분구적·과제)은 형식 검사가 조각 곡선을 막는다(curve.ts wholeCurve)
-   */
-  node: Node;
-  /** 조각 함수·구간만 그리기(한 기제: 구간만 그리기는 조각 하나). 없으면 x 전체에서 식 하나 */
-  pieces?: Piece[];
   /** 범례 글(Rich) */
   label?: string;
   tone: Tone;
   /** 정답 곡선: 목표·과제를 이루기 전에는 그리지 않는다(맞힌 뒤 공개) */
   hide?: true;
 }
+/** 식 하나인 곡선(x 전체). 식을 통째로 다루는 곳(다항식·칠하기·구분구적·과제)은 이 꼴만 받는다(curve.ts wholeCurve) */
+export type PlainCurve = CurveBase & { node: Node; pieces?: undefined };
+/**
+ * 조각 함수·구간만 그리기(한 기제: 구간만 그리기는 조각 하나). 식이 하나가 아니라 node 가 없다 — 값은 늘
+ * curve.ts fAt·curveExact 로(조각을 고른 뒤) 구하게 컴파일러가 막는다
+ */
+export type PieceCurve = CurveBase & { pieces: Piece[]; node?: undefined };
+export type CurveObj = PlainCurve | PieceCurve;
 export interface PointObj {
   kind: 'point';
   id: string;
@@ -363,6 +366,8 @@ export interface HandleItem {
   value: number;
   min: number;
   max: number;
+  /** 점이 그림 밖이라 손잡이를 테두리에 붙였다(흐리게 그림 — 그 자리가 점의 실제 자리가 아님을 보이려고) */
+  off?: boolean;
 }
 
 /** 읽는 값 한 줄. parts 가 있으면 조각마다 색을 달리 그린다(작은 어림 ~ 큰 어림) — text 는 그 조각을 이은 것 */
