@@ -90,5 +90,5 @@ export const generators: Generator[] = [
 node scripts/gen-content.ts <id>    # 기초 b01~b15 를 생성기로 다시 찍어 넣기
 npm run verify:unit <id>            # 이 단원만 형식·수식·정답 검산
 npm run verify                      # 전체
-npm run verify:diff <기준 커밋>      # 기준 커밋과 견줘 달라진 검산 항목 목록 + 장면 id 사라짐 검사
+npm run verify:diff <기준 커밋>      # 기준 커밋과 견줘 달라진 검산 항목 목록 + 장면 id 사라짐·기존 문제 사라짐/내용 바뀜 검사
 ```
