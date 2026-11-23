@@ -373,24 +373,309 @@
 .lesson .ct-pcell.btn.on {
   background: var(--primary-soft);
 }
-.lesson .ct-reg {
-  fill: transparent;
-  transition: fill 0.2s;
-}
-.lesson .ct-reg.on {
-  fill: var(--primary);
-  fill-opacity: 0.3;
-}
 .lesson .ct-ring {
   fill: none;
   stroke: var(--ink);
   stroke-width: 2;
 }
-.lesson .wgt-svg .ct-vname {
+/* 직접 조작 셋(줄 세우기·선 잇기·벤 분류)이 같이 쓰는 것.
+   판 폭은 접은 화면 카드 안쪽 폭(298px)에 맞춰 그렸다 — 넓은 화면에서 끝없이 벌어지지 않게 묶는다 */
+.lesson .ct-line,
+.lesson .ct-pairs,
+.lesson .ct-vboard {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.lesson .ct-line,
+.lesson .ct-vboard {
+  position: relative;
+  touch-action: none;
+}
+/* 칩·카드: 놓으면 FLIP(flyFrom)으로 미끄러져 가고, 끄는 동안(data-lift)은 손가락만 따라온다 */
+.lesson .ct-chip,
+.lesson .ct-card {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid var(--primary);
+  background: var(--bg);
+  color: var(--primary);
+  font: inherit;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  touch-action: none;
+  cursor: grab;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
+  box-shadow: 0 1px 2px rgba(22, 27, 38, 0.08);
+  -webkit-tap-highlight-color: transparent;
+}
+.lesson .ct-chip {
+  border-radius: 16px;
+  font-size: 1.4rem;
+  z-index: 2;
+}
+.lesson .ct-chip[data-lift],
+.lesson .ct-card[data-lift] {
+  z-index: 6;
+  cursor: grabbing;
+  box-shadow: 0 10px 24px rgba(22, 27, 38, 0.24);
+}
+.lesson .ct-chip.sel,
+.lesson .ct-card.sel {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.lesson .ct-chip:focus-visible,
+.lesson .ct-card:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+.lesson .ct-zlabel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--sub);
+  text-align: center;
+  pointer-events: none;
+}
+/* 줄 밖 띠·자리 틀은 '눌러서 하기'에서 갈 곳으로 누르는 단추(손가락 끌기는 칩이 받는다) */
+.lesson .ct-wait {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface-2);
+  padding: 0;
+}
+.lesson .ct-seat {
+  position: absolute;
+  border: 2px dashed var(--faint);
+  border-radius: 18px;
+  background: transparent;
+  padding: 0;
+}
+.lesson .ct-ord {
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--sub);
+}
+.lesson .ct-case {
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.lesson .ct-case[data-flash] {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+/* 다 찾은 줄: 첫째 자리 물건별로 한 칸씩 — 묶음 수 × 묶음 크기가 곱의 모양으로 보이게 */
+.lesson .ct-groups {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 4px;
+}
+.lesson .ct-g {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.lesson .ct-gh {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sub);
+}
+.lesson .ct-groups .ct-case,
+.lesson .ct-found.tight .ct-case {
+  padding: 0 6px;
+  line-height: 1.5;
+}
+/* 찾은 목록을 촘촘히: 선 잇기 질문 장면(prob-probability bag)은 보기 단추까지 한 카드라 다 이은 뒤 63px 넘쳤다 */
+.lesson .ct-found.tight {
+  gap: 0 8px;
+}
+/* 선 잇기 */
+.lesson .ct-pairs {
+  display: block;
+  height: auto;
+  overflow: visible;
+  touch-action: none;
+}
+.lesson .ct-edge {
+  stroke: var(--ink);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  transition:
+    stroke 0.2s,
+    stroke-width 0.2s;
+}
+/* 새로 그은 선은 한 번 그려지듯 나타난다(선 길이만큼 밀어 둔 점선을 0 으로) */
+.lesson .ct-edge.new {
+  animation: ct-draw 0.35s ease-out;
+}
+@keyframes ct-draw {
+  from {
+    stroke-dashoffset: var(--len);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.lesson .ct-edge[data-flash] {
+  stroke: var(--bad);
+  stroke-width: 6;
+}
+.lesson .ct-rubber {
+  stroke: var(--primary);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.lesson .ct-node {
+  cursor: grab;
+  outline: none;
+}
+.lesson .ct-node > circle {
+  fill: var(--bg);
+  stroke: var(--primary);
+  stroke-width: 2.5;
+}
+.lesson .ct-pairs .ct-node > text {
+  fill: var(--primary);
+  font: 900 20px var(--sans);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+/* 손가락 밑 점(지금 어느 점 위인지 — 맞다는 신호가 아니다)·고른 점 */
+.lesson .ct-node[data-hot] > circle {
+  fill: var(--primary-soft);
+  stroke-width: 4;
+}
+.lesson .ct-node.sel > circle {
+  fill: var(--primary);
+  stroke-width: 4;
+}
+.lesson .ct-pairs .ct-node.sel > text {
+  fill: var(--primary-ink);
+}
+.lesson .ct-node:focus-visible > circle {
+  stroke-width: 5;
+}
+.lesson .ct-node .ct-deg > circle {
+  fill: var(--good);
+  stroke: none;
+}
+.lesson .ct-pairs .ct-node .ct-deg > text {
+  fill: var(--bg);
+  font-size: 12px;
   font-weight: 800;
 }
-.lesson .wgt-svg .ct-vel {
-  font-size: 14px;
+/* 벤 분류: 판 = 그림(전체집합 사각형) + 아래 더미 줄. 카드는 판 폭 비율로 서서 그림과 함께 늘고 준다 */
+.lesson .ct-vboard svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.lesson .ct-urect {
+  fill: var(--bg);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.lesson .ct-comp {
+  fill: var(--primary);
+  fill-opacity: 0.16;
+}
+.lesson .ct-vboard .ct-vname {
+  fill: var(--ink);
+  font: 800 13px var(--sans);
+}
+.lesson .ct-card {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  z-index: 2;
+}
+.lesson .ct-card[data-wrong] {
+  border: 3px solid var(--bad);
+  color: var(--bad);
+}
+/* 더미 아래 장: 맨 위 장에 가려 테두리만 보이는 두께 */
+.lesson .ct-card.under {
+  pointer-events: none;
+  color: var(--sub);
+  border-color: var(--faint);
+}
+.lesson .ct-vdeck {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lesson .ct-vdeck .ct-left {
+  flex: 1;
+  margin-left: 56px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--sub);
+}
+.lesson .ct-vdeck .lbtn {
+  flex: none;
+}
+/* 넣을 곳 단추 넷: 더미 줄 자리에 한 줄로(두 줄로 쌓으면 접은 화면에서 카드가 넘친다). 이름이 길면 단추 안에서 두 줄 */
+.lesson .ct-choose {
+  position: relative;
+  z-index: 7;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.lesson .ct-choose .lbtn {
+  min-height: 48px;
+  min-width: 0;
+  padding: 2px;
+  font-size: 0.8rem;
+  line-height: 1.15;
+}
+.lesson .ct-vread {
+  row-gap: 0;
+}
+/* 화면 낭독기만 읽는 안내(지금 줄·놓은 자리) */
+.lesson .ct-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lesson .ct-edge.new {
+    animation: none;
+  }
 }
 
 /* 확률 실험 */
