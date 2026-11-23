@@ -15,7 +15,7 @@ import type { WidgetCheck } from '../specs.ts';
 import { numExpr } from './common.ts';
 import { curveOf, fAt } from './curve.ts';
 import { clampY, narrowFrame, r1, toPx } from './frame.ts';
-import { polyOf, rootsBetween } from './poly.ts';
+import { polyIntegral, polyOf, rootsBetween } from './poly.ts';
 import { sliderValues } from './slider.ts';
 import type { CoordParams, CoordState, KindDef, RectsObj } from './types.ts';
 
@@ -72,17 +72,10 @@ export function sumSym(p: CoordParams, o: RectsObj, which: 'big' | 'small' | 'ga
   return `(${big})-(${small})`;
 }
 
-/** [a,b] 에서의 정적분(정확한 분수) — 다항식의 부정적분으로 */
+/** [a,b] 에서의 정적분(정확한 분수) */
 function integral(p: CoordParams, o: RectsObj): Rational | null {
   const c = polyOf(curveOf(p, o.of).node, {});
-  if (!c) return null;
-  const anti = (x: Rational) =>
-    c.reduce<Rational>((acc, ck, i) => {
-      let xp: Rational = [1n, 1n];
-      for (let j = 0; j <= i; j++) xp = mul(xp, x);
-      return add(acc, div(mul(ck, xp), qi(i + 1)));
-    }, Z);
-  return sub(anti(o.b), anti(o.a));
+  return c ? polyIntegral(c, o.a, o.b) : null;
 }
 
 export const rectsKind: KindDef<RectsObj> = {

@@ -8,7 +8,8 @@
 // 매개변수는 "이름 붙은 객체 + 참조" 목록이다:
 //   {id:'f', curve:'x**2'} · {id:'P', point:{on:'f', x:1}} · {secant:['P','Q']} ·
 //   {tangent:{on:'f', at:'P'}} · {readout:'slope(P,Q)', label:'…'} ·
-//   {fill:{top:'f', x:[0,30]}, look:'soil', name:'밭'} · {id:'R', rects:{of:'f', x:[0,30], n:'n'}}
+//   {fill:{top:'f', x:[0,30]}, look:'soil', name:'밭'} · {id:'R', rects:{of:'f', x:[0,30], n:'n'}} ·
+//   {id:'F', fill:{top:'v', x:[0,'B']}, sign:true} + {readout:'net(F)'}·{readout:'abs(F)'}
 import { compareAnswer } from '../../lib/answer.ts';
 import { parseSym } from '../sym.ts';
 import { coordChecks } from './coord/checks.ts';
@@ -53,8 +54,8 @@ export {
 } from './coord/model.ts';
 export { parseCoord } from './coord/parse.ts';
 export { pointXY } from './coord/point.ts';
-export { polyOf, rootCount, rootsBetween } from './coord/poly.ts';
-export { readout, readoutVal, unitOf } from './coord/readout.ts';
+export { polyOf, rationalRoots, rootCount, rootsBetween } from './coord/poly.ts';
+export { absCheckSym, readout, readoutVal, unitOf } from './coord/readout.ts';
 export { MIN_RECT_PX, sumsAt } from './coord/rects.ts';
 export { sliderSnap, sliderText } from './coord/slider.ts';
 export { grade, lineTarget, userSlope } from './coord/task.ts';

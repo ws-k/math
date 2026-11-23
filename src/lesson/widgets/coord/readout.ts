@@ -8,6 +8,7 @@ import { fail, int, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { div, num, qi, ratStr, sub } from '../q.ts';
 import { curveOf, dfAt } from './curve.ts';
+import { fillEnds, fillOf, fillSums, fillSumsAt } from './fill.ts';
 import { fmtNum } from './frame.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
 import { polyOf, rootCount } from './poly.ts';
@@ -17,6 +18,8 @@ import type {
   CoordParams,
   CoordState,
   CurveObj,
+  FillArea,
+  FillObj,
   KindDef,
   ParseCtx,
   ReadoutExpr,
@@ -31,14 +34,20 @@ const VALUE_RE = /^value\((\w+)\)$/;
 const ROOTS_RE = /^roots\((\w+)\)$/;
 const MEET_RE = /^meet\((\w+),(\w+)\)$/;
 const RECTS_RE = /^(sums|big|small|gap)\((\w+)\)$/;
+const FILL_RE = /^(net|abs)\((\w+)\)$/;
 
 const FORMS =
-  'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·sums(R)·big(R)·small(R)·gap(R)·슬라이더 식(b**2-4*a*c)';
+  'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·sums(R)·big(R)·small(R)·gap(R)·net(F)·abs(F)·슬라이더 식(b**2-4*a*c)';
 
 // ---- 단위 ----
 
 const isArea = (e: ReadoutExpr) =>
-  e.f === 'sums' || e.f === 'big' || e.f === 'small' || e.f === 'gap';
+  e.f === 'sums' ||
+  e.f === 'big' ||
+  e.f === 'small' ||
+  e.f === 'gap' ||
+  e.f === 'net' ||
+  e.f === 'abs';
 
 /**
  * 읽는 값의 단위 — 축에서 저절로 정한다(읽는 값마다 적지 않아 어긋날 수 없다).
@@ -70,6 +79,8 @@ export function unitOf(
     case 'big':
     case 'small':
     case 'gap':
+    case 'net':
+    case 'abs':
       if (y.areaUnit) return y.areaUnit;
       if (x.unit && y.unit && x.unit === y.unit) return `${x.unit}²`;
       if (x.unit || y.unit)
@@ -186,6 +197,15 @@ export function parseReadoutExpr(s: string, at: string, cx: ParseCtx): ReadoutEx
     if (!cx.rects.has(id)) fail(at, `앞에 없는 구분구적 조각 ${id}`);
     return { f: m[1] as 'sums' | 'big' | 'small' | 'gap', rects: id };
   }
+  m = t.match(FILL_RE);
+  if (m) {
+    const id = m[2] as string;
+    const fo = cx.fills.get(id);
+    if (!fo) return fail(at, `앞에 없는 칠하기 ${id}(칠하기에 id 를 붙이세요)`);
+    // 맞힌 뒤 칠하기의 넓이를 읽으면 맞히기 전에 답(영역의 크기)이 보인다 — 숨긴 곡선·점과 같은 규칙
+    if (fo.hide) fail(at, `숨긴 칠하기 ${id} 의 합은 읽지 못함(맞히기 전에 드러남)`);
+    return { f: m[1] as 'net' | 'abs', fill: id };
+  }
   // 나머지는 슬라이더로 계산하는 식(판별식 등). x 를 쓰면 곡선이지 읽는 값이 아니다
   try {
     return {
@@ -260,6 +280,11 @@ export function readout(p: CoordParams, s: CoordState, e: ReadoutExpr): number {
       const q = e.f === 'gap' ? sub(v.big, v.small) : v[e.f];
       return num(q);
     }
+    case 'net':
+    case 'abs': {
+      const v = fillSums(p, s, fillOf(p, e.fill));
+      return v ? num(v[e.f]) : Number.NaN;
+    }
   }
 }
 
@@ -302,6 +327,9 @@ export function readoutVal(p: CoordParams, s: CoordState, e: ReadoutExpr): Val {
         if (!v) return null;
         return e.f === 'gap' ? sub(v.big, v.small) : v[e.f];
       }
+      case 'net':
+      case 'abs':
+        return fillSums(p, s, fillOf(p, e.fill))?.[e.f] ?? null;
     }
   };
   const q = exact();
@@ -351,8 +379,46 @@ export function readoutSym(p: CoordParams, e: ReadoutExpr): { expr: string; root
       const o = rectsOf(p, e.rects);
       return { expr: sumSym(p, o, e.f, 'count' in o.n ? String(o.n.count) : o.n.slider) };
     }
+    case 'net': {
+      const fo = fillOf(p, e.fill);
+      return { expr: netSym(fo, fo.toPt ? xSym(p, fo.toPt) : (fo.area?.bSrc as string)) };
+    }
+    case 'abs':
+      // 목표 형식 검사(goal.ts)가 막는다 — 끝이 상태 기호면 끊는 곳(근)이 상태마다 달라 한 식으로 적지 않는다
+      throw new Error('abs 는 목표로 못 씀');
   }
 }
+
+/**
+ * 위−아래 식을 sympy 에서 분수 계수로. 곡선에 소수(0.1)가 있으면 파이썬이 실수로 계산해 적분이 0.30000000000000004 처럼
+ * 나와 분수 답과 어긋난다 — 앱은 소수 계수를 분수로 정확히 계산하므로(expr.ts evalExact) 검산도 분수로 맞춘다
+ */
+const exactDiff = (diffSrc: string) => `nsimplify(${diffSrc}, rational=True)`;
+
+/** 부호 있는 합의 sympy 글자(끝 b 는 수 또는 상태 기호) */
+const netSym = (o: FillObj, b: string) => {
+  const ar = o.area as FillArea;
+  return `integrate(${exactDiff(ar.diffSrc)},(x,${ar.aSrc},${b}))`;
+};
+
+/**
+ * 부호 뗀 합의 sympy 검산식(위−아래 식, 시작, 끝): 위−아래의 실근을 sympy 가 따로 찾아 그 자리에서 끊고, 조각마다
+ * 적분의 부호를 뗀다. 앱의 끊는 자리(유리근 정리)를 옮겨 적지 않는다 — 앱이 근을 빠뜨리면 이 식이 다른 값을 내야
+ * 잡히므로(원칙 P7). 근은 real_roots 로 찾는다: solve 는 세 실근 삼차식(x³−3x+1)의 근을 복소수 꼴로 내서 is_real 이
+ * 정해지지 않아 근을 모두 버렸다.
+ */
+export const absCheckSym = (diffSrc: string, a: string, b: string) =>
+  [
+    `f = ${exactDiff(diffSrc)}`,
+    `lo, hi = S('${a}'), S('${b}')`,
+    'cuts = sorted({lo, hi} | {c for c in real_roots(Poly(f, x)) if lo < c < hi})',
+    'ans = sum(Abs(integrate(f, (x, c0, c1))) for c0, c1 in zip(cuts, cuts[1:]))',
+  ].join('\n');
+
+const absSym = (o: FillObj, b: string) => {
+  const ar = o.area as FillArea;
+  return absCheckSym(ar.diffSrc, ar.aSrc, b);
+};
 
 /** 이 읽는 값을 바꾸는 것들 — 끄는 점 id 와 슬라이더 id(목표 판정 검산에서 늘어놓을 상태) */
 export function readoutMovers(
@@ -402,6 +468,12 @@ export function readoutMovers(
     case 'gap': {
       const o = rectsOf(p, e.rects);
       if ('slider' in o.n) sl.add(o.n.slider);
+      break;
+    }
+    case 'net':
+    case 'abs': {
+      const o = fillOf(p, e.fill);
+      if (o.toPt) point(o.toPt);
       break;
     }
   }
@@ -477,6 +549,22 @@ export const readoutKind: KindDef<ReadoutObj> = {
       if (isArea(o.expr) && v?.q && inexact(v.q, o.digits)) text = `≈ ${text}`;
     }
     readouts.push({ key: `r${k}`, label: o.label, text: withUnit(text, u) });
+  },
+  checks(o, { p, out }) {
+    const e = o.expr;
+    if (e.f !== 'net' && e.f !== 'abs') return;
+    // 닿는 모든 끝 자리에서 앱의 분수 = sympy integrate(원칙 P7 — 목표가 아니어도 보이는 값은 모두 검산)
+    const fo = fillOf(p, e.fill);
+    for (const b of fillEnds(p, fo)) {
+      const v = fillSumsAt(fo, b);
+      const bs = ratStr(b);
+      out.push({
+        name: `칠하기 ${fo.id} ${e.f === 'net' ? '부호 있는 합' : '부호 뗀 합'}${fo.toPt ? ` x=${bs}` : ''}`,
+        answer: ratStr(v[e.f]),
+        answerType: 'fraction',
+        check: e.f === 'net' ? netSym(fo, bs) : absSym(fo, bs),
+      });
+    }
   },
   derivOf(p, o) {
     if (o.expr.f === 'deriv') return o.expr.curve;

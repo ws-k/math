@@ -8,7 +8,15 @@ import { goalPoints, parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
 import { parseSliders } from './slider.ts';
 import { parseTask } from './task.ts';
-import type { CoordObj, CoordParams, CurveObj, ParseCtx, PointObj, RectsObj } from './types.ts';
+import type {
+  CoordObj,
+  CoordParams,
+  CurveObj,
+  FillObj,
+  ParseCtx,
+  PointObj,
+  RectsObj,
+} from './types.ts';
 
 export function parseCoord(raw: unknown): CoordParams {
   const o = obj(
@@ -54,6 +62,7 @@ export function parseCoord(raw: unknown): CoordParams {
   const curves = new Map<string, CurveObj>();
   const points = new Map<string, PointObj>();
   const rects = new Map<string, RectsObj>();
+  const fills = new Map<string, FillObj>();
   const named = (id: unknown, at: string) => {
     const s = str(id, at);
     if (!ID.test(s)) fail(at, `이름은 영문으로 시작하는 6자 이하 (${s})`);
@@ -74,7 +83,7 @@ export function parseCoord(raw: unknown): CoordParams {
     if (p.hide && !hidden) fail(at, `숨긴 점 ${p.id} 은 목표만 가리킬 수 있음`);
     return p;
   };
-  const base = { x, y, equal, sliders, vars, env0, curves, points, rects, named };
+  const base = { x, y, equal, sliders, vars, env0, curves, points, rects, fills, named };
   const ctx: ParseCtx = { ...base, curveRef: curveRef(false), pointRef: pointRef(false) };
   const goalCtx: ParseCtx = { ...base, curveRef: curveRef(true), pointRef: pointRef(true) };
   // 열쇠 이름으로 종류를 알아본다(표에 적힌 순서대로 — 앞 종류가 먼저)
@@ -85,6 +94,15 @@ export function parseCoord(raw: unknown): CoordParams {
     const kind = kinds.find((kk) => kk in r) ?? fail(at, `${kinds.join('·')} 중 하나여야 함`);
     objects.push(KINDS[kind].parse(ro, at, ctx));
   });
+
+  // 같은 읽는 값이 두 줄이면 화면에 같은 숫자가 겹치고, 그 읽는 값의 검산 항목 이름도 겹쳐 기준선 비교가 하나를 잃는다
+  const seenRo = new Set<string>();
+  for (const ob of objects) {
+    if (ob.kind !== 'readout') continue;
+    const key = ob.src.replace(/\s+/g, '');
+    if (seenRo.has(key)) fail('좌표 objects', `같은 읽는 값이 두 번 (${ob.src})`);
+    seenRo.add(key);
+  }
 
   const p: CoordParams = {
     mode,

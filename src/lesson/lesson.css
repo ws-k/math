@@ -1137,6 +1137,13 @@
 .lesson .coord .fillr.road {
   fill: var(--road);
 }
+/* 부호별 칠하기: 위 경계가 아래보다 위인 곳(+, 가는 쪽)은 파랑, 아래인 곳(−, 오는 쪽)은 빨강 — 색이 곧 부호 */
+.lesson .coord .fillr.pos {
+  fill: var(--fill-pos);
+}
+.lesson .coord .fillr.neg {
+  fill: var(--fill-neg);
+}
 .lesson .coord .pat-soil {
   fill: var(--soil);
 }

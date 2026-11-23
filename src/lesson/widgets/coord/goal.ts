@@ -22,7 +22,7 @@ import type { WidgetCheck } from '../specs.ts';
 import { near, numExpr, target, toIndex } from './common.ts';
 import { iRange, MIN_SNAP_PX, narrowFrame } from './frame.ts';
 import { initial } from './model.ts';
-import { pointOf, pointState, pointXY, worldX, xSym, ySym } from './point.ts';
+import { pointOf, pointState, pointXY, worldX, xCells, xSym, ySym } from './point.ts';
 import { parseReadoutExpr, readoutMovers, readoutSym, readoutVal } from './readout.ts';
 import { MIN_SLIDER_STEP_PX, sliderStepPx, sliderSym, sliderValues } from './slider.ts';
 import type {
@@ -45,6 +45,9 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
     const e = parseReadoutExpr(str(v, w), w, gx);
     if (e.f === 'sums')
       fail(w, '작은 어림 ~ 큰 어림은 값이 둘이라 목표로 못 씀(big·small·gap 중 하나로)');
+    // 끝이 끄는 점이면 부호가 바뀌는 곳(끊는 자리)이 상태마다 달라 검산이 한 식으로 되풀이할 수 없다
+    if (e.f === 'abs')
+      fail(w, '부호 뗀 합(abs)은 목표로 못 씀 — 집 기준 위치처럼 부호 있는 합(net)으로');
     return e;
   };
   const { shape, common, o } = parseGoalShape<ReadoutExpr, GoalIs>(
@@ -244,7 +247,7 @@ function enumerate(p: CoordParams, g: NewGoal): Enumerated {
   }
   for (const id of m.points) {
     const o = pointOf(p, id);
-    const [i0, i1] = iRange(p.x.lo, p.x.hi, o.on ? o.snapN : p.x.st) as [number, number];
+    const { i0, i1 } = xCells(p.x, o);
     const [j0, j1] = o.on ? [0, 0] : (iRange(p.y.lo, p.y.hi, p.y.st) as [number, number]);
     const opts: { patch: (s: CoordState) => CoordState; sym: Record<string, string> }[] = [];
     for (let i = i0; i <= i1; i++)

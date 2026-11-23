@@ -34,6 +34,10 @@
       "dist": {
         "value": "12",
         "check": "T = Symbol('T', positive=True)\nans = integrate(sqrt(factor(expand(diff(T**3/3 - T, T)**2 + diff(T**2, T)**2))), (T, 0, 3))"
+      },
+      "gap1": {
+        "value": "27",
+        "check": "(x**2).subs(x, 3)*3"
       }
     },
     "scenes": [
@@ -78,14 +82,14 @@
           "깊이 $x$ 에서 두께 $\\Delta x$ 만큼 얇게 썬 조각의 부피는 약 $x^2\\Delta x$ 예요.",
           "조각을 모두 더한 극한은 $\\int_0^3x^2\\,dx={{vol}}$ 예요."
         ],
-        "conclude": "==단면의 넓이를 적분하면 부피==예요. 다음 장면에서 조각 수를 직접 늘려 봐요."
+        "conclude": "==단면의 넓이를 적분하면 부피==예요. 다음 장면에서 층 수를 직접 늘려 봐요."
       },
       {
         "kind": "explore",
         "id": "slices",
         "chip": "손으로 해 보기",
-        "title": "조각 수를 늘리며\n부피에 다가가 보세요",
-        "lead": "사각뿔을 높이 방향으로 $n$ 조각으로 썰고, 조각마다 아랫면 크기 그대로 납작한 상자를 만들어 쌓았어요. 주황 선의 높이가 상자 부피의 합이에요. 슬라이더로 $n$ 을 늘려 보세요.",
+        "title": "돌판을 얇게 쌓아\n부피에 다가가 보세요",
+        "lead": "돌판을 $n$ 층 쌓아 밑면 한 변 3 m, 높이 3 m 인 사각뿔을 만들어요. 가로는 꼭대기에서 내려온 깊이, 세로는 그 깊이의 단면 넓이라 막대 하나의 넓이가 돌판 하나의 부피예요. 노란 돌판은 뿔 밖으로 삐져나오고, 초록 돌판은 뿔 안에 들어가요.",
         "widget": {
           "type": "coord",
           "params": {
@@ -93,12 +97,17 @@
             "x": {
               "min": 0,
               "max": 3,
-              "step": "1/2"
+              "step": 1,
+              "name": "깊이",
+              "unit": "m"
             },
             "y": {
               "min": 0,
-              "max": 27,
-              "step": 3
+              "max": 9,
+              "step": 3,
+              "name": "넓이",
+              "unit": "m²",
+              "areaUnit": "m³"
             },
             "sliders": [
               {
@@ -107,52 +116,49 @@
                 "max": 30,
                 "step": 1,
                 "value": 1,
-                "label": "조각 수 $n$"
+                "label": "$n$"
               }
             ],
             "objects": [
               {
                 "id": "S",
                 "curve": "x**2",
-                "label": "단면의 넓이 $S(x)=x^2$",
+                "label": "단면 넓이 $S(x)=x^2$",
                 "tone": "soft"
               },
               {
-                "id": "V",
-                "curve": "9*(n+1)*(2*n+1)/(2*n**2)",
-                "label": "높이 = 상자 $n$ 개의 부피 합",
-                "tone": "accent"
+                "id": "R",
+                "rects": {
+                  "of": "S",
+                  "x": [
+                    0,
+                    3
+                  ],
+                  "n": "n"
+                }
               },
               {
-                "id": "L",
-                "curve": "9",
-                "label": "$y=9$",
-                "tone": "soft"
-              },
-              {
-                "id": "P",
-                "point": {
-                  "on": "V",
-                  "x": 3
-                },
-                "name": "P"
-              },
-              {
-                "readout": "value(n)",
-                "label": "조각 수",
-                "digits": 0
-              },
-              {
-                "readout": "y(P)",
-                "label": "상자 부피의 합",
-                "digits": 3
+                "readout": "sums(R)",
+                "label": "부피 어림"
               }
             ],
-            "intro": "$n$ 을 $1$ 부터 끝까지 늘려 보세요.",
-            "done": "$n$ 이 커질수록 상자 부피의 합이 회색 선 $y={{vol}}$ 쪽으로 내려와 붙어요."
+            "intro": "두 어림의 차이(노란 띠)가 9, 3, 1 m³ 가 되는 $n$ 을 찾아보세요.",
+            "done": "차이는 늘 ${{gap1}}\\div n$ m³ 라, $n$ 을 늘리면 두 어림이 {{vol}} m³ 로 모여요.",
+            "goal": {
+              "visit": {
+                "of": "gap(R)",
+                "at": [
+                  9,
+                  3,
+                  1
+                ]
+              },
+              "hint": "1층일 때 차이는 {{gap1}} m³ 예요. 층 수를 늘리면 차이가 몇 분의 1 이 되는지 보세요."
+            }
           }
         },
-        "after": "$k$ 번째 상자는 한 변이 $\\frac{3k}{n}$, 두께가 $\\frac3n$ 이라 부피의 합은 $\\sum_{k=1}^{n}\\left(\\frac{3k}{n}\\right)^2\\frac3n$ 이에요. 이 ==급수의 극한이 곧 정적분== $\\int_0^3x^2\\,dx$ 예요. 단면의 넓이 $S(x)$ 를 알면 부피는 $\\int S(x)\\,dx$ 예요."
+        "after": "$k$ 번째 노란 돌판은 한 변이 $\\frac{3k}{n}$, 두께가 $\\frac3n$ 이라 부피의 합은 $\\sum_{k=1}^{n}\\left(\\frac{3k}{n}\\right)^2\\frac3n$ 이에요. 이 ==급수의 극한이 곧 정적분== $\\int_0^3x^2\\,dx$ 예요. 단면의 넓이 $S(x)$ 를 알면 부피는 $\\int S(x)\\,dx$ 예요.",
+        "afterGoal": true
       },
       {
         "kind": "terms",
