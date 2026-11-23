@@ -6,6 +6,7 @@ import { secantKind, tangentKind } from './line.ts';
 import { pointKind } from './point.ts';
 import { readoutKind } from './readout.ts';
 import { rectsKind } from './rects.ts';
+import { arrowKind, segmentKind } from './segment.ts';
 import type { CoordObj, KindDef } from './types.ts';
 
 /**
@@ -20,6 +21,8 @@ export const KINDS: { [K in CoordObj['kind']]: KindDef<Extract<CoordObj, { kind:
   readout: readoutKind,
   fill: fillKind,
   rects: rectsKind,
+  segment: segmentKind,
+  arrow: arrowKind,
 };
 
 /** 객체의 종류 정의. 종류별 정의를 공통 모양으로 다루려고 한 번 넓혀 준다(KindDef 는 메서드 꼴이라 안전) */

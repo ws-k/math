@@ -1,7 +1,7 @@
 // 점 객체 {id, point:{x, y | on, drag, snap}, name}: 형식 검사·점·이름·끄는 손잡이 그리기와 점 좌표 계산.
 // 점 좌표는 칸 번호(정수)로 쥔다 — 세계 좌표 = 칸 번호 × 칸 간격. 부동소수 찌꺼기 없이 "같은 점"을 판정하려고.
 import { exactOf } from '../../expr.ts';
-import { fail, obj, oneOf, optStr } from '../../parse.ts';
+import { arr, fail, obj, oneOf, optStr } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { mul, qi, ratStr } from '../q.ts';
 import { MAX_SNAPS, near, numExpr, toIndex } from './common.ts';
@@ -23,7 +23,8 @@ export function xCells(
   o: PointObj,
 ): { i0: number; i1: number; stepN: number; step: Rational | null } {
   const stepN = o.on ? o.snapN : x.st;
-  const [i0, i1] = iRange(x.lo, x.hi, stepN) as [number, number];
+  const [a, b] = iRange(x.lo, x.hi, stepN) as [number, number];
+  const [i0, i1] = o.cells ? [Math.max(a, o.cells[0]), Math.min(b, o.cells[1])] : [a, b];
   return { i0, i1, stepN, step: o.on ? exactOf(o.snap) : x.exact };
 }
 
@@ -103,6 +104,21 @@ export function pointState(
   return { [`pt_${id}_x`]: symAt(i, p.x.step), [`pt_${id}_y`]: symAt(j, p.y.step) };
 }
 
+/** 끄는 x 범위 range:[a,b](축 위 칸, 양 끝 포함)를 칸 번호로 읽어 점에 붙인다 */
+function withRange(po: PointObj, raw: unknown, at: string, x: Axis): void {
+  if (raw === undefined) return;
+  if (po.drag === 'none') fail(at, '끄는 점만 범위를 둠');
+  const [ra, rb] = arr(raw, at, 2, 2);
+  const a = numExpr(ra, `${at}1`);
+  const b = numExpr(rb, `${at}2`);
+  if (a.n < x.lo - 1e-9 || b.n > x.hi + 1e-9) fail(at, `축 밖 (x 는 ${x.min}~${x.max})`);
+  const ia = toIndex(a.n, po.snapN, at);
+  const ib = toIndex(b.n, po.snapN, at);
+  if (ib - ia < 1) fail(at, '두 칸 이상이어야 함(작은 쪽 먼저)');
+  if (po.i < ia || po.i > ib) fail(at, '처음 자리가 범위 밖');
+  po.cells = [ia, ib];
+}
+
 /** 두 점이 같은 곡선 위 같은 자리인가 — 할선이 접선이 되는 순간 */
 export function coincide(p: CoordParams, s: CoordState, a: string, b: string): string | null {
   const pa = pointOf(p, a);
@@ -118,7 +134,7 @@ export const pointKind: KindDef<PointObj> = {
     const id = cx.named(c.id, `${at} id`);
     if (c.hide !== undefined && c.hide !== true) fail(`${at} hide`, 'true 만');
     const hide = c.hide === true ? { hide: true as const } : {};
-    const pp = obj(c.point, `${at} point`, ['x'], ['on', 'y', 'drag', 'snap']);
+    const pp = obj(c.point, `${at} point`, ['x'], ['on', 'y', 'drag', 'snap', 'range']);
     const name = optStr(c.name, `${at} name`);
     if (name !== undefined && !/^[A-Za-z][']?$/.test(name)) fail(`${at} name`, '한 글자(P, Q, A′)');
     const xv = numExpr(pp.x, `${at} x`);
@@ -149,6 +165,7 @@ export const pointKind: KindDef<PointObj> = {
       };
       if (po.hide && drag !== 'none')
         fail(`${at} hide`, '끄는 점은 숨기지 못함(숨기는 것은 목표 점)');
+      withRange(po, pp.range, `${at} range`, x);
       cx.points.set(id, po);
       return po;
     } else {
@@ -169,6 +186,7 @@ export const pointKind: KindDef<PointObj> = {
       };
       if (po.hide && drag !== 'none')
         fail(`${at} hide`, '끄는 점은 숨기지 못함(숨기는 것은 목표 점)');
+      withRange(po, pp.range, `${at} range`, x);
       cx.points.set(id, po);
       return po;
     }
@@ -187,6 +205,9 @@ export const pointKind: KindDef<PointObj> = {
       hidden: !ok || o.drag !== 'none',
     });
     if (ok) spots.push({ x: X, y: Y });
+    // 손잡이(HTML)는 그림을 잘라 내는 영역(clipPath) 밖이라, 점이 y 범위 밖으로 가면 그림 위로 떠올랐다(요청 141).
+    // 테두리에 붙여 둔다 — 점은 잘려 안 보여도 손잡이를 잡아 다시 끌어 올 수 있다. 값 글은 실제 좌표 그대로
+    const hy = ok ? Math.min(f.b, Math.max(f.t, Y)) : Y;
     if (o.name) {
       // 자리는 draw 가 모든 이름표를 모은 뒤 고른다(labels.ts) — 여기서는 숨김 여부와 글자만
       const it = { t: 'label' as const, key: `n${k}`, x: 0, y: 0, text: o.name, hidden: !ok };
@@ -194,11 +215,12 @@ export const pointKind: KindDef<PointObj> = {
       if (ok) pins.push({ it, x: X, y: Y });
     }
     if (o.drag !== 'none') {
-      const [lo, hi] = o.on ? [p.x.lo, p.x.hi] : [p.x.lo, p.x.hi];
+      const { i0, i1 } = xCells(p.x, o);
+      const [lo, hi] = o.cells ? [worldX(p, o, i0), worldX(p, o, i1)] : [p.x.lo, p.x.hi];
       handles.push({
         key: o.id,
         x: r1(X),
-        y: r1(Y),
+        y: r1(hy),
         label: `점 ${o.name ?? o.id}`,
         value: x,
         min: lo,

@@ -1317,6 +1317,32 @@
 .lesson .coord .cend.closed.accent {
   fill: var(--good);
 }
+/* 선분·화살표(벡터): 곡선과 같은 색 짝(범례 lg.main·soft·accent 와 맞게). 화살촉은 테두리 없이 채움 */
+.lesson .coord .seg {
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+.lesson .coord .seg.main {
+  stroke: var(--primary);
+}
+.lesson .coord .seg.soft {
+  stroke: var(--faint);
+}
+.lesson .coord .seg.accent {
+  stroke: var(--good);
+}
+.lesson .coord .ahead {
+  stroke: none;
+}
+.lesson .coord .ahead.main {
+  fill: var(--primary);
+}
+.lesson .coord .ahead.soft {
+  fill: var(--faint);
+}
+.lesson .coord .ahead.accent {
+  fill: var(--good);
+}
 
 /* 넓이 모형 */
 .lesson .area .base {

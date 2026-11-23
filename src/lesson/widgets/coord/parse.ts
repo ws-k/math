@@ -103,6 +103,14 @@ export function parseCoord(raw: unknown): CoordParams {
     if (seenRo.has(key)) fail('좌표 objects', `같은 읽는 값이 두 번 (${ob.src})`);
     seenRo.add(key);
   }
+  // 같은 선분·화살표가 두 번이면 한 선 위에 겹쳐 그려지고 검산 항목 이름도 겹친다
+  const seenSeg = new Set<string>();
+  for (const ob of objects) {
+    if (ob.kind !== 'segment' && ob.kind !== 'arrow') continue;
+    const key = `${ob.kind} ${ob.ref}`;
+    if (seenSeg.has(key)) fail('좌표 objects', `같은 선분이 두 번 (${ob.ref})`);
+    seenSeg.add(key);
+  }
 
   const p: CoordParams = {
     mode,

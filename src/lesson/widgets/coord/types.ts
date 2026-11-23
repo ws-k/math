@@ -82,6 +82,11 @@ export interface PointObj {
   /** 처음 자리(칸 번호) */
   i: number;
   j: number;
+  /**
+   * 끄는 x 범위(칸 번호, 양 끝 포함). 끌기·방향키·목표 검산이 모두 이 칸 안만 본다(point.ts xCells) —
+   * '크기 0 인 삼각형'처럼 뜻이 없는 자리를 목표가 세지 않게(요청 127), 평균값 정리의 R 을 [P,Q] 안에(요청 139)
+   */
+  cells?: [number, number];
   /** 그림 위 이름(P, Q). 짧은 글자 */
   name?: string;
   /** 목표 점: 목표·과제를 이루기 전에는 그리지 않는다(맞힌 뒤 공개). 끄는 점은 숨기지 못한다 */
@@ -188,6 +193,24 @@ export interface RectsObj {
   /** 구간에서 오르는 곡선인가(오르면 큰 어림 = 오른쪽 끝 높이) */
   rising: boolean;
 }
+/** 선분·화살표의 끝: 앞에 나온 점, 또는 좌표 식 [x, y](슬라이더 이름만 — 슬라이더를 따라 움직임, k·a 의 끝 (2k, k)) */
+export type SegEnd = { pt: string } | { x: string; y: string; nx: Node; ny: Node };
+/** 선분 {segment:[끝, 끝]} · 화살표 {arrow:[꼬리, 머리]}(벡터). 곡선 꼼수 식 없이 세로 벡터도 그린다 */
+interface SegBase {
+  a: SegEnd;
+  b: SegEnd;
+  tone: Tone;
+  /** 범례 글(Rich) */
+  label?: string;
+  /** 검산 항목 이름·중복 검사용 글자(O→(2*k,k)) */
+  ref: string;
+}
+export interface SegmentObj extends SegBase {
+  kind: 'segment';
+}
+export interface ArrowObj extends SegBase {
+  kind: 'arrow';
+}
 export type CoordObj =
   | CurveObj
   | PointObj
@@ -195,7 +218,9 @@ export type CoordObj =
   | TangentObj
   | ReadoutObj
   | FillObj
-  | RectsObj;
+  | RectsObj
+  | SegmentObj
+  | ArrowObj;
 
 export interface Slider {
   id: string;

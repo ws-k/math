@@ -436,8 +436,19 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     );
   };
   const dragPts = p.objects.filter((o): o is PointObj => o.kind === 'point' && o.drag === 'x');
-  // 숨긴 정답 곡선의 범례는 맞힌 뒤에
-  const legend = p.objects.filter((o) => o.kind === 'curve' && o.label && !(o.hide && !st.solved));
+  // 숨긴 정답 곡선의 범례는 맞힌 뒤에. 선분·화살표(벡터 a·b)도 이름이 있으면 범례에 — 색이 곧 어느 벡터인지라
+  const legend = p.objects.flatMap((o) =>
+    (o.kind === 'curve' && o.label && !(o.hide && !st.solved)) ||
+    ((o.kind === 'segment' || o.kind === 'arrow') && o.label)
+      ? [
+          {
+            key: o.kind === 'curve' ? o.id : `${o.kind} ${o.ref}`,
+            tone: o.tone,
+            label: o.label as string,
+          },
+        ]
+      : [],
+  );
 
   const touch = p.mode === 'sketch' && sketching ? 'none' : 'manipulation';
   return (
@@ -550,15 +561,12 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       </div>
       {legend.length > 0 && (
         <div className="legend">
-          {legend.map(
-            (o) =>
-              o.kind === 'curve' && (
-                <span key={o.id} className={`lg ${o.tone}`}>
-                  <i aria-hidden="true" />
-                  <LRich inline src={o.label as string} />
-                </span>
-              ),
-          )}
+          {legend.map((o) => (
+            <span key={o.key} className={`lg ${o.tone}`}>
+              <i aria-hidden="true" />
+              <LRich inline src={o.label} />
+            </span>
+          ))}
         </div>
       )}
       {d.readouts.length > 0 && (
