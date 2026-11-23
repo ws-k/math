@@ -244,7 +244,8 @@
                 "id": "g",
                 "curve": "12/x",
                 "label": "$y=\\frac{12}{x}$",
-                "tone": "soft"
+                "tone": "soft",
+                "hide": true
               }
             ],
             "task": {

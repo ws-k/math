@@ -92,7 +92,8 @@
                 "max": 3,
                 "step": "1/2",
                 "value": 1,
-                "label": "$a$ (모양)"
+                "label": "$a$ (모양)",
+                "exclude": [0]
               },
               {
                 "id": "p",
