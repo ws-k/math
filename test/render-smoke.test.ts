@@ -219,8 +219,10 @@ test('접은 화면(382×580) 모양도 예외 없이 그려진다: 확률 실�
     };
     const dice = pick('m2-probability');
     assert.match(dice, /class="sim-table fold"/);
-    assert.match(dice, /aria-label="주사위 100번 던지기"[^>]*>100번</);
-    assert.match(pick('m2-probability'), /aria-label="공 10번 뽑기"/);
+    // 직접 던지기(1-나): 접은 화면은 '계속' 짧은 글, 던지기 단추는 '꾹 누르면 계속' 안내, 주머니는 '꺼내기'
+    assert.match(dice, /class="lbtn soft sim-auto"[^>]*>계속</);
+    assert.match(dice, /class="lbtn blue sim-go"[^>]*>던지기<small>꾹 누르면 계속<\/small>/);
+    assert.match(dice, /class="lbtn blue sim-go"[^>]*>꺼내기<small>/);
     const tiles = pick('m3-factoring');
     assert.match(tiles, /class="slot x rot"/);
     assert.match(pick('math2-diff-product-rule'), /class="readouts grow-ro"/);
