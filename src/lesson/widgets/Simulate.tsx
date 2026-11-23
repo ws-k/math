@@ -7,7 +7,6 @@
 // 접은 화면(382×580)은 그림을 낮추고, 표를 결과가 열인 가로 표로 바꿔 한 화면에 넣는다(simulate.ts simFrame·simBlocks).
 import {
   type KeyboardEvent,
-  type PointerEvent,
   useEffect,
   useId,
   useLayoutEffect,
@@ -15,12 +14,14 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useDrag } from '../useDrag.ts';
 import { useCompact } from './compact.ts';
 import { applyDrawing } from './draw.ts';
 import type { WidgetProps } from './index.tsx';
 import { Marks } from './Marks.tsx';
+import { ratStr } from './q.ts';
 import {
-  makeHold,
+  makeSimControl,
   SIM_MAX,
   SIM_TABLE_MAX,
   type SimHistory,
@@ -29,8 +30,10 @@ import {
   simAppend,
   simAt,
   simAxis,
+  simBars,
   simBlocks,
   simCategories,
+  simCountsAt,
   simDraw,
   simFrame,
   simHistory,
@@ -71,12 +74,9 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
   const lastSvg = useRef<SVGSVGElement>(null);
   const goBtn = useRef<HTMLButtonElement>(null);
   const sr = useRef<HTMLDivElement>(null);
-  const done = useRef(false);
-  const gone = useRef(false);
-  const src = useRef<'press' | 'auto' | null>(null);
   const sliderId = useId();
 
-  // 처리기(누르고 있기·되감기)는 한 번만 만들고 최신 값은 ref 로 읽는다 — 렌더마다 새로 만들면 누르는 도중의
+  // 처리기(조절기·되감기)는 한 번만 만들고 최신 값은 ref 로 읽는다 — 렌더마다 새로 만들면 누르는 도중의
   // 박자 조절기가 버려진다
   const latest = useRef({ p, live, theory, compact, onDone });
   latest.current = { p, live, theory, compact, onDone };
@@ -103,47 +103,71 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
       g.classList.add('flip');
     }
   };
-  /** 손을 뗀 뒤 한 번: 상태로 정하고, 낭독기에 요약을 한 번 읽히고, 목표(던진 횟수)를 본다 */
-  const settle = () => {
-    src.current = null;
-    if (gone.current) return; // 떠나는 중에 멈춘 것은 상태·목표로 적지 않는다
-    goBtn.current?.classList.remove('holding');
-    const { p: cp, live: lv, onDone: od } = latest.current;
-    if (sr.current) sr.current.textContent = simSay(cp, lv.h, lv.t);
-    setAuto(false);
-    commit();
-    if (!done.current && lv.h.cats.length >= cp.goal) {
-      done.current = true;
-      od();
-    }
-  };
-  const hold = useRef<ReturnType<typeof makeHold> | null>(null);
-  if (!hold.current)
-    hold.current = makeHold(
+  const ctlRef = useRef<ReturnType<typeof makeSimControl> | null>(null);
+  if (!ctlRef.current)
+    ctlRef.current = makeSimControl({
       clock,
-      (k, first) => {
+      toss(k, first) {
         const { p: cp, live: lv } = latest.current;
         const added = simAppend(cp, lv.h, k);
-        lv.t = lv.h.cats.length; // 던지면 늘 기록 맨 끝에 잇고, 되감던 자리는 맨 끝으로 돌아간다
-        if (added > 0) paint(first);
-        return added === k && lv.h.cats.length < SIM_MAX;
+        // 던지면 기록 맨 끝에 잇고 되감던 자리도 맨 끝으로. 가득 차서 못 던졌으면 되감던 자리를 그대로 둔다
+        if (added === 0) return 0;
+        lv.t = lv.h.cats.length;
+        if (first && !ctlRef.current?.auto) goBtn.current?.classList.add('holding');
+        paint(first);
+        return added;
       },
-      settle,
-    );
-  const h = hold.current;
+      total: () => latest.current.live.h.cats.length,
+      goal: () => latest.current.p.goal,
+      full: () => latest.current.live.h.cats.length >= SIM_MAX,
+      // 손을 뗀 뒤 한 번: 상태로 정하고, 낭독기에 요약을 한 번 읽힌다(목표 판정은 조절기가)
+      settle() {
+        goBtn.current?.classList.remove('holding');
+        const { p: cp, live: lv } = latest.current;
+        if (sr.current) sr.current.textContent = simSay(cp, lv.h, lv.t);
+        commit();
+      },
+      done: () => latest.current.onDone(),
+      setAuto,
+    });
+  const ctl = ctlRef.current;
+  // 손가락·펜·마우스는 공용 끌기 장치로: 첫 손가락만, 포인터 잡기, 터치 스크롤 막기, 누르는 동안 '계속하기' 잠금
+  useDrag(goBtn, ctl.drag);
 
   // 그린 뒤마다 직접 고칠 것(슬라이더의 현재 값)을 지금 기록에 맞춘다 — 슬라이더는 값을 React 가 쥐지 않는다
   useLayoutEffect(() => paint(false));
-  // 장면을 떠나면 누르던 것을 멈춘다(타이머가 남아 없는 화면을 고치지 않게). 개발 모드의 두 번 붙이기에도 되살아나게
-  // 붙을 때 표시를 다시 끈다
+  // 장면을 떠나면 멈춘다(타이머가 남아 없는 화면을 고치지 않게 — 기록이 목표 이상이면 목표는 적는다).
+  // 창이 가려지거나(다른 앱·탭) 초점을 잃거나 장면이 화면 밖으로 밀려나도 멈춘다 — 안 보이는 곳에서 '계속'이
+  // 기록 상한까지 던지지 않게. 개발 모드의 두 번 붙이기에도 되살아나게 붙을 때 revive
   useEffect(() => {
-    gone.current = false;
+    const c = ctlRef.current;
+    if (!c) return;
+    c.revive();
+    const stop = () => c.stop();
+    const hidden = () => {
+      if (document.visibilityState === 'hidden') c.stop();
+    };
+    document.addEventListener('visibilitychange', hidden);
+    window.addEventListener('blur', stop);
+    window.addEventListener('pagehide', stop);
+    const el = root.current;
+    const io =
+      el && typeof IntersectionObserver === 'function'
+        ? new IntersectionObserver((es) => {
+            if (es.some((e) => !e.isIntersecting)) c.stop();
+          })
+        : null;
+    if (el) io?.observe(el);
     return () => {
-      gone.current = true;
-      hold.current?.stop();
+      document.removeEventListener('visibilitychange', hidden);
+      window.removeEventListener('blur', stop);
+      window.removeEventListener('pagehide', stop);
+      io?.disconnect();
+      c.leave();
     };
   }, []);
-  // 되감기: 끄는 동안(input)은 그림만, 놓을 때(change) 한 번 상태로
+  // 되감기: 끄는 동안(input)은 그림만, 놓을 때(change) 한 번 상태로. 잡는 순간(pointerdown·keydown) 던지던 것은 멈춘다.
+  // TODO(공용화): 분수 조각의 자르기 슬라이더(Fraction.tsx)와 같은 배선이다 — 세 번째로 쓰는 곳이 생기면 공용으로 꺼낸다
   useEffect(() => {
     const el = slider.current;
     if (!el) return;
@@ -157,43 +181,21 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
       if (sr.current) sr.current.textContent = simSay(cp, lv.h, lv.t);
       commit();
     };
+    const grab = () => ctlRef.current?.stop();
     el.addEventListener('input', input);
     el.addEventListener('change', change);
+    el.addEventListener('pointerdown', grab);
+    el.addEventListener('keydown', grab);
     return () => {
       el.removeEventListener('input', input);
       el.removeEventListener('change', change);
+      el.removeEventListener('pointerdown', grab);
+      el.removeEventListener('keydown', grab);
     };
   });
 
-  const press = () => {
-    if (h.on) return;
-    src.current = 'press';
-    goBtn.current?.classList.add('holding');
-    h.start();
-  };
-  const release = () => {
-    if (src.current === 'press') h.stop();
-  };
-  const onDown = (e: PointerEvent<HTMLButtonElement>) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    // 기본 동작(글자 고르기·확대경·초점 옮기기)을 막고, 손가락이 단추 밖으로 미끄러져도 뗄 때까지 이 단추가 받는다
-    e.preventDefault();
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // 합성 이벤트 등 잡을 포인터가 없으면 그냥 둔다(뗄 때 pointerup 이 이 단추에 온다)
-    }
-    press();
-  };
-  const toggleAuto = () => {
-    if (src.current === 'auto') return h.stop();
-    if (h.on) return;
-    src.current = 'auto';
-    setAuto(true);
-    h.start();
-  };
-
   const d = simDraw(p, live.h, live.t, { theory, compact });
+  const bars = simBars(p, { counts: simCountsAt(p, live.h, live.t), trials: live.t });
   const cats = simCategories(p);
   const total = live.h.cats.length;
   const { W, H } = simFrame(compact);
@@ -201,6 +203,7 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
   const axis = simAxis(p);
   const verbLabel = simActLabel(p);
   const table = cats.length <= SIM_TABLE_MAX;
+  const full = total >= SIM_MAX;
   return (
     <div className="wgt sim" ref={root}>
       {p0.sizes && p0.sizes.length > 1 && (
@@ -212,7 +215,8 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
               key={m}
               className={`lbtn ${m === size ? 'blue' : 'soft'}`}
               aria-pressed={m === size}
-              onClick={() => !h.on && setSize(m)}
+              disabled={auto}
+              onClick={() => !ctl.on && setSize(m)}
             >
               표본 {m}개
             </button>
@@ -240,7 +244,12 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
           type="button"
           className="lbtn soft sim-auto"
           aria-pressed={auto}
-          onClick={toggleAuto}
+          disabled={full}
+          onClick={() => ctl.toggleAuto()}
+          onKeyDown={(e) => {
+            // Enter 를 누르고 있으면 click 이 거듭 와서 켜고 끄기가 깜박인다 — 반복은 무시
+            if (e.repeat && isPress(e)) e.preventDefault();
+          }}
         >
           {compact ? '계속' : '계속 던지기'}
         </button>
@@ -248,28 +257,21 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
           ref={goBtn}
           type="button"
           className="lbtn blue sim-go"
-          onPointerDown={onDown}
-          onPointerUp={release}
-          onPointerCancel={release}
-          onLostPointerCapture={release}
+          disabled={full}
           onContextMenu={(e) => e.preventDefault()}
           onKeyDown={(e) => {
             if (!isPress(e)) return;
             e.preventDefault();
-            if (!e.repeat) press();
+            if (!e.repeat) ctl.press();
           }}
           onKeyUp={(e) => {
             if (!isPress(e)) return;
             e.preventDefault();
-            release();
+            ctl.release();
           }}
-          onBlur={release}
-          onClick={(e) => {
-            // 키·포인터 없이 오는 누름(화면 낭독기의 '활성화')은 한 번 던지기. 손가락·마우스·키는 위에서 이미 던졌다
-            if (e.detail !== 0 || h.on) return;
-            press();
-            release();
-          }}
+          onBlur={() => ctl.release()}
+          // 포인터·키 없이 오는 누름(화면 낭독기의 '활성화')만 한 번 던지기 — 조절기가 가른다
+          onClick={() => ctl.click()}
         >
           {verbLabel}
           <small>꾹 누르면 계속</small>
@@ -316,7 +318,7 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
                     <th scope="row">이론</th>
                     {idx.map((i) => (
                       <td key={i} className="num">
-                        {ratText(cats[i]?.prob)}
+                        {bars[i]?.theoryShort}
                       </td>
                     ))}
                   </tr>
@@ -333,7 +335,7 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
                   <td className="num" data-t={`cnt:${i}`}>
                     {d.texts[`cnt:${i}`]}
                   </td>
-                  {theory && <td className="num">이론 {ratText(c.prob)}</td>}
+                  {theory && <td className="num">이론 {ratStr(c.prob)}</td>}
                 </tr>
               ))}
             </tbody>
@@ -352,15 +354,13 @@ export function Simulate({ params: p0, onDone, answered }: WidgetProps<SimParams
           disabled={total === 0}
           aria-valuetext={`${live.t}번째까지`}
         />
-        <output htmlFor={sliderId} className="num" data-t="rew">
+        {/* <output> 은 저절로 읽히는 칸이라 되감는 동안 숫자를 하나하나 읽었다 — 보통 글자로(요약은 sim-sr 이 한 번) */}
+        <span className="num sim-rew-v" data-t="rew">
           {d.texts.rew}
-        </output>
+        </span>
       </div>
       {/* 손을 뗄 때만 채운다(settle) — 누르는 동안 바뀌는 글자를 낭독기가 하나하나 읽지 않게 */}
       <div className="sim-sr" ref={sr} aria-live="polite" />
     </div>
   );
 }
-
-const ratText = (q: readonly [bigint, bigint] | undefined) =>
-  !q ? '' : q[1] === 1n ? String(q[0]) : `${q[0]}/${q[1]}`;

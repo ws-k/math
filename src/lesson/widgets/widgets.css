@@ -484,6 +484,27 @@
   stroke: var(--primary);
   stroke-width: 2;
 }
+/* 공 이름에 색 낱말이 있으면 그 색(simulate.ts ballTone). 글자는 첫 글자라 어두운 공은 밝은 글자로 */
+.lesson .sim-ball.red {
+  fill: var(--bad-soft);
+  stroke: var(--bad);
+}
+.lesson .sim-ball.yellow {
+  fill: var(--coin);
+  stroke: var(--coin-edge);
+}
+.lesson .sim-ball.green {
+  fill: var(--good-soft);
+  stroke: var(--good);
+}
+.lesson .sim-ball.black {
+  fill: var(--ink);
+  stroke: var(--ink);
+}
+.lesson .sim-ball.white {
+  fill: var(--bg);
+  stroke: var(--faint);
+}
 .lesson .sim-hit {
   fill: var(--good);
   stroke: var(--good);
@@ -507,6 +528,9 @@
 }
 .lesson .sim-lt.back {
   fill: var(--sub);
+}
+.lesson .sim-ball.black + .sim-lt {
+  fill: var(--bg);
 }
 .lesson .sim-cap {
   font-size: 0.78rem;
@@ -573,7 +597,7 @@
 .lesson .sim-rew input[type="range"]:disabled {
   opacity: 0.4;
 }
-.lesson .sim-rew output {
+.lesson .sim-rew .sim-rew-v {
   flex: none;
   min-width: 4.6em;
   text-align: right;
@@ -611,7 +635,7 @@
   }
 }
 /* 접은 화면(382×580): 결과가 열인 가로 표(Simulate.tsx) — 세로 표는 결과 하나에 한 줄이라 11가지면 330px 였다.
-   열은 부품 폭을 고르게 나눠 '1/36'·'100%' 가 한 줄에 들고, 버튼 넷(1번·10번·100번·다시)은 한 줄에 */
+   열은 부품 폭을 고르게 나눠 '1/36'·'100%' 가 한 줄에 든다(다섯 글자 넘는 분수는 퍼센트 — simTheoryShort) */
 @media (max-width: 500px) and (max-height: 600px) {
   .lesson .sim-table.fold {
     width: 100%;
@@ -626,7 +650,8 @@
     white-space: nowrap;
   }
   .lesson .sim-table.fold th[scope="row"] {
-    width: 2.8em;
+    /* 첫 칸은 무엇을 셌는지(공 이름·trial 이름, 형식 검사로 세 글자까지) — 세 글자가 옆 칸을 덮지 않는 폭 */
+    width: 3.3em;
     text-align: left;
     color: var(--sub);
     font-weight: 700;

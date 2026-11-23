@@ -8,6 +8,7 @@
 // 누르는 동안은 React 를 거치지 않고 그릴 목록(simDraw)을 직접 적용한다(P8) — 그래서 그림이 이 파일의 순수 함수에서 나온다.
 import { makeRng, type Rng } from '../../generators/rng.ts';
 import { arr, fail, int, obj, oneOf, rationalStr, str } from '../parse.ts';
+import type { DragHandlers } from '../useDrag.ts';
 import { type Drawing, type Mark, r2 } from './draw.ts';
 import { div, type Q, q, qi, ratStr } from './q.ts';
 import type { WidgetCheck, WidgetDef } from './specs.ts';
@@ -93,15 +94,17 @@ function weighted(p: SimParams): { raw: number[]; w: bigint }[] {
   return seqs(
     p.draws,
     counts.map((_, i) => i),
-  ).map((raw) => {
+  ).flatMap((raw) => {
     const used = counts.map(() => 0);
     let w = 1n;
     for (const c of raw) {
       const left = (counts[c] as number) - (p.replace ? 0 : (used[c] as number));
-      w *= BigInt(Math.max(0, left));
+      // 다시 넣지 않아 남은 공이 없는 색 순서는 일어날 수 없다 — 무게 0 을 세지 않고 건너뛴다
+      if (left <= 0) return [];
+      w *= BigInt(left);
       used[c] = (used[c] as number) + 1;
     }
-    return { raw, w };
+    return [{ raw, w }];
   });
 }
 
@@ -172,6 +175,7 @@ function drawOnce(p: SimParams, rng: Rng, pool: number[]): number[] {
   );
 }
 
+/** 빈 횟수 묶음(테스트·검사용 — 화면은 기록 simHistory 를 쓴다) */
 export const simInit = (p: SimParams): SimState => ({
   counts: simCategories(p).map(() => 0),
   trials: 0,
@@ -200,7 +204,10 @@ export interface SimHistory {
   rng: Rng;
 }
 
-/** 새 기록. 표본평균은 크기마다 다른 줄기(크기를 바꿔도 앞 크기의 기록은 그대로 남는다) */
+/**
+ * 새 기록. 표본평균은 크기마다 다른 줄기(크기를 바꿔도 앞 크기의 기록은 그대로 남는다). 크기마다 시드를 7919(소수)씩
+ * 띄우는 것은 작성자가 흔히 쓰는 작은 시드(1·5·7…)와 이웃 크기의 시드가 겹치지 않게 하려는 것 — 옛 '다시' 단추가 쓰던 간격
+ */
 export const simHistory = (p: SimParams): SimHistory => ({
   raws: [],
   cats: [],
@@ -293,7 +300,123 @@ export function makeHold(
   };
 }
 
+// ---- 조절기: 누르기·'계속'·멈추기·떠나기 ----
+
+export interface SimControlDeps {
+  clock: HoldClock;
+  /** k 번 더 던져 그림만 고친다(React 렌더 없음). 실제로 던진 수 */
+  toss(k: number, first: boolean): number;
+  /** 지금 기록 길이 */
+  total(): number;
+  goal(): number;
+  /** 기록이 가득 찼는가 */
+  full(): boolean;
+  /** 상태로 정하기(렌더 한 번 + 낭독 요약). 누름이 끝날 때만 */
+  settle(): void;
+  /** 목표(던진 횟수)를 이뤘다 — 장면 완료로 적는다. 한 번만 부른다 */
+  done(): void;
+  /** '계속' 단추의 켜짐 표시 */
+  setAuto(on: boolean): void;
+}
+
+/** 포인터·키로 누른 뒤 이 시간 안에 오는 click 은 그 누름이 낸 것으로 본다(겹쳐 던지지 않게) */
+const CLICK_ECHO = 800;
+
+/**
+ * 확률 실험 조절기. 화면은 DOM 사건을 이어 주기만 한다 — 그래야 판정을 가짜 시계로 시험할 수 있다.
+ * - 누르기(press/release, 포인터는 drag 로 공용 useDrag 에): 누르는 동안 계속, 손을 떼면 settle·목표 판정(P3).
+ * - '계속'(toggleAuto): 손을 대지 않아도 계속. 목표 횟수에 닿는 박자에서 한 번 멈추고 settle — 켜 둔 채 장면을 떠나도
+ *   화면 밖에서 기록 상한까지 던지지 않고, 목표는 그 자리에서 적힌다.
+ * - stop: 창이 가려짐·되감기를 잡음·장면이 화면 밖 — 무엇으로 시작했든 멈추고 settle.
+ * - leave: 장면이 사라짐. 상태는 정하지 않되(없는 화면) 기록이 목표 이상이면 목표는 적는다. revive 는 개발 모드의
+ *   두 번 붙이기에서 되살리기.
+ * - click: 포인터·키 없이 오는 누름(화면 낭독기의 '활성화')만 한 번 던지기. 포인터·키로 누른 직후의 click 은 무시
+ *   (click 의 detail 값은 브라우저·보조 기술마다 달라 믿지 않는다).
+ */
+export function makeSimControl(d: SimControlDeps) {
+  let src: 'press' | 'auto' | null = null;
+  let gone = false;
+  let achieved = false;
+  let lastPress = Number.NEGATIVE_INFINITY;
+  const judge = () => {
+    if (!achieved && d.total() >= d.goal()) {
+      achieved = true;
+      d.done();
+    }
+  };
+  const hold = makeHold(
+    d.clock,
+    (k, first) => {
+      const before = d.total();
+      const added = d.toss(k, first);
+      if (added < k || d.full()) return false;
+      return !(src === 'auto' && before < d.goal() && d.total() >= d.goal());
+    },
+    () => {
+      const was = src;
+      src = null;
+      if (gone) return;
+      if (was === 'auto') d.setAuto(false);
+      d.settle();
+      judge();
+    },
+  );
+  const press = () => {
+    if (hold.on || gone || d.full()) return;
+    src = 'press';
+    hold.start();
+  };
+  const release = () => {
+    if (src !== 'press') return;
+    lastPress = d.clock.now();
+    hold.stop();
+  };
+  const drag: DragHandlers = { onStart: press, onMove() {}, onEnd: release };
+  return {
+    press,
+    release,
+    drag,
+    toggleAuto() {
+      if (src === 'auto') return hold.stop();
+      if (hold.on || gone || d.full()) return;
+      src = 'auto';
+      d.setAuto(true);
+      hold.start();
+    },
+    stop: () => hold.stop(),
+    click() {
+      if (hold.on || d.clock.now() - lastPress < CLICK_ECHO) return;
+      press();
+      release();
+    },
+    leave() {
+      gone = true;
+      hold.stop();
+      judge();
+    },
+    revive() {
+      gone = false;
+    },
+    get on() {
+      return hold.on;
+    },
+    get auto() {
+      return src === 'auto';
+    },
+    get full() {
+      return d.full();
+    },
+  };
+}
+
 // ---- 그림 ----
+
+/** 접은 표의 이론 칸: 다섯 글자 넘는 분수(73/648)는 열 폭을 넘어 퍼센트(소수 첫째 자리)로. 정확한 분수는 넓은 표·검산에 */
+export function simTheoryShort(prob: Q): string {
+  const s = ratStr(prob);
+  if (s.length <= 5) return s;
+  return `${(Math.round((Number(prob[0]) / Number(prob[1])) * 1000) / 10).toFixed(1)}%`;
+}
 
 /** 막대 글자: 범주별 나온 비율·이론값·글자 */
 export function simBars(p: SimParams, s: SimState) {
@@ -306,6 +429,7 @@ export function simBars(p: SimParams, s: SimState) {
       freq,
       theory: Number(c.prob[0]) / Number(c.prob[1]),
       theoryText: ratStr(c.prob),
+      theoryShort: simTheoryShort(c.prob),
       text: `${n}번 (${Math.round(freq * 100)}%)`,
       pct: `${Math.round(freq * 100)}%`,
     };
@@ -370,6 +494,20 @@ export function simLastFrame(p: SimParams) {
   return { g, s, gap, cols, W: cols * s + (cols - 1) * gap, H: rows * s + (rows - 1) * gap };
 }
 
+/** 공 이름에 색 낱말이 있으면 그 색(CSS 클래스), 없으면 기본(파란 테) */
+const TONES: [RegExp, string][] = [
+  [/빨|붉/, 'red'],
+  [/파|푸/, 'blue'],
+  [/노/, 'yellow'],
+  [/초|녹/, 'green'],
+  [/검|까/, 'black'],
+  [/흰|하양|하얀/, 'white'],
+];
+const ballTone = (label: string) => {
+  const t = TONES.find(([re]) => re.test(label));
+  return t ? ` ${t[1]}` : '';
+};
+
 /** 마지막 결과(되감은 자리의 결과) 그림: 동전 앞/뒤, 주사위 눈, 꺼낸 공의 색 이름 첫 글자, 시행은 성공 ●·실패 ○ */
 function lastMarks(p: SimParams, raw: number[] | undefined): Mark[] {
   const { g, s, gap, cols } = simLastFrame(p);
@@ -396,10 +534,12 @@ function lastMarks(p: SimParams, raw: number[] | undefined): Mark[] {
       });
     } else {
       const kind = p.device === 'coin' ? 'sim-coin' : p.device === 'trial' ? 'sim-hit' : 'sim-ball';
+      const tone =
+        p.device === 'bag' && v !== undefined ? ballTone((p.bag ?? [])[v]?.label ?? '') : '';
       out.push({
         k: `lc:${j}`,
         tag: 'circle',
-        a: { cx, cy, r: s / 2 - 1.5, class: `${kind}${back}${idle}` },
+        a: { cx, cy, r: s / 2 - 1.5, class: `${kind}${tone}${back}${idle}` },
       });
     }
     if (p.device === 'trial') continue;
@@ -507,9 +647,11 @@ export function simDraw(
   const texts: Record<string, string> = {
     read: `${verb(p)} 횟수 ${s.trials}번`,
     cap:
-      t > 0
-        ? `${t === total ? '방금' : `${t}번째`} · ${resultText(p, h.cats[t - 1] as number)}`
-        : idle,
+      total >= SIM_MAX && t === total
+        ? FULL
+        : t > 0
+          ? `${t === total ? '방금' : `${t}번째`} · ${resultText(p, h.cats[t - 1] as number)}`
+          : idle,
     rew: t === total ? `${total}번` : `${t}/${total}번`,
   };
   bars.forEach((b, i) => {
@@ -519,16 +661,78 @@ export function simDraw(
   return { marks, texts, last: lastMarks(p, raw) };
 }
 
-/** 손을 뗀 뒤 화면 낭독기가 한 번 읽을 글(던질 때마다 읽으면 시끄럽다) */
+const FULL = `기록이 가득 찼어요(${SIM_MAX}번)`;
+
+/**
+ * 손을 뗀 뒤 화면 낭독기가 한 번 읽을 글(던질 때마다 읽으면 시끄럽다). 결과가 7가지 이상이면(주사위 합 11가지,
+ * 표본평균 21가지) 하나하나 읽으면 너무 길어 가장 많이 나온 것만
+ */
 export function simSay(p: SimParams, h: SimHistory, t: number): string {
   if (t === 0) return '';
   const counts = simCountsAt(p, h, t);
   const cats = simCategories(p);
-  const last = resultText(p, h.cats[t - 1] as number);
-  return `${last}. ${verb(p)} 횟수 ${t}번. ${cats.map((c, i) => `${c.label}: ${counts[i]}번`).join(', ')}`;
+  const head = `${h.cats.length >= SIM_MAX ? `${FULL}. ` : ''}${resultText(p, h.cats[t - 1] as number)}. ${verb(p)} 횟수 ${t}번.`;
+  if (cats.length > 6) {
+    const top = counts.indexOf(Math.max(...counts));
+    return `${head} 가장 많이 나온 것 ${cats[top]?.label}: ${counts[top]}번`;
+  }
+  return `${head} ${cats.map((c, i) => `${c.label}: ${counts[i]}번`).join(', ')}`;
+}
+
+// ---- 시드 치우침 검사 ----
+
+/**
+ * 시드 하나의 줄기가 학습자를 엉뚱한 답으로 이끌지 않는가. 같은 시드면 학습자 모두 같은 줄기를 보므로, 운 나쁜 줄기
+ * (시안의 동전 둘 시드 7: 63번에 '앞 2개' 44%)는 글쓴이가 미리 바꿔야 한다. 목표 횟수(goal)의 절반부터 끝까지 10번마다
+ * 결과별 편차가 3σ 를 넘는지, 그리고 목표 횟수에서 이론상 1등인 막대(하나뿐일 때)가 실제로도 1등인지(같은 횟수 허용) 본다.
+ * 표본평균은 크기마다 본다. 고른 시드도 열에 하나 꼴로 걸릴 수 있어 형식 오류가 아니라 경고로 쓴다.
+ */
+export function seedBias(p: SimParams): { ok: boolean; problems: string[] } {
+  const problems: string[] = [];
+  for (const q of p.sizes ? p.sizes.map((m) => simAt(p, m)) : [p]) {
+    const at = p.sizes ? `표본 ${q.n}개 ` : '';
+    const n = q.goal;
+    const h = simHistory(q);
+    simAppend(q, h, n);
+    const probs = simCategories(q).map((c) => Number(c.prob[0]) / Number(c.prob[1]));
+    const labels = simCategories(q).map((c) => c.label);
+    const marks: number[] = [];
+    for (let t = Math.max(20, Math.ceil(n / 2)); t < n; t += 10) marks.push(t);
+    marks.push(n);
+    let worst = { z: 0, t: 0, i: 0 };
+    for (const t of marks) {
+      const counts = simCountsAt(q, h, t);
+      probs.forEach((pr, i) => {
+        if (pr <= 0 || pr >= 1) return;
+        const z = ((counts[i] ?? 0) - t * pr) / Math.sqrt(t * pr * (1 - pr));
+        if (Math.abs(z) > Math.abs(worst.z)) worst = { z, t, i };
+      });
+    }
+    if (Math.abs(worst.z) >= 3)
+      problems.push(
+        `${at}${worst.t}번째에 '${labels[worst.i]}' 가 이론값에서 ${worst.z.toFixed(1)}σ 벗어남`,
+      );
+    const best = Math.max(...probs);
+    const tops = probs.flatMap((pr, i) => (pr === best ? [i] : []));
+    const end = simCountsAt(q, h, n);
+    const top = tops[0] as number;
+    if (tops.length === 1 && (end[top] ?? 0) < Math.max(...end))
+      problems.push(`${at}${n}번 던졌을 때 이론상 가장 잦은 '${labels[top]}' 가 1등이 아님`);
+  }
+  return { ok: problems.length === 0, problems };
 }
 
 // ---- 형식 검사·검산 ----
+
+/**
+ * 세 글자까지의 이름. 접은 화면 가로 표의 첫 칸(무엇을 셌는지)과 막대 밑 이름이 이 글자를 그대로 쓰는데, 열 폭이
+ * 좁아(298px 를 6~7칸) 네 글자부터 옆 칸을 덮는다
+ */
+function short(v: unknown, at: string): string {
+  const s = str(v, at);
+  if ([...s].length > 3) fail(at, `세 글자까지 (${s})`);
+  return s;
+}
 
 function bool(v: unknown, at: string): boolean {
   if (typeof v !== 'boolean') return fail(at, `true/false 가 아님 (${String(v)})`);
@@ -581,17 +785,20 @@ export const simulateDef: WidgetDef<SimParams> = {
       const pr = q(rationalStr(o.p, '확률 실험 p'));
       if (pr[0] <= 0n || pr[0] >= pr[1]) fail('확률 실험 p', '0 과 1 사이 분수여야 함');
       p.p = pr;
-      if (o.label !== undefined) p.label = str(o.label, '확률 실험 label');
+      if (o.label !== undefined) p.label = short(o.label, '확률 실험 label');
     }
     if (device === 'bag') {
       if (o.bag === undefined) fail('확률 실험', '주머니에는 bag 이 필요');
       p.bag = arr(o.bag, '확률 실험 bag', 2, 5).map((rb, i) => {
         const b = obj(rb, `확률 실험 bag${i + 1}`, ['label', 'count']);
         return {
-          label: str(b.label, `확률 실험 bag${i + 1} label`),
+          label: short(b.label, `확률 실험 bag${i + 1} label`),
           count: int(b.count, `확률 실험 bag${i + 1} count`, 1, 20),
         };
       });
+      // 마지막 결과 그림은 공에 이름 첫 글자만 쓴다 — 첫 글자가 같으면(파랑·파란색) 어느 공인지 모른다
+      const firsts = p.bag.map((b) => [...b.label][0]);
+      if (new Set(firsts).size !== firsts.length) fail('확률 실험 bag', '공 이름 첫 글자가 겹침');
       if (o.draws !== undefined) p.draws = int(o.draws, '확률 실험 draws', 1, 4);
       if (o.replace !== undefined) p.replace = bool(o.replace, '확률 실험 replace');
       const total = sum(p.bag.map((b) => b.count));
@@ -631,8 +838,8 @@ export const simulateDef: WidgetDef<SimParams> = {
         } else if (q.device === 'trial') {
           const [a, b] = q.p as Q;
           const pr = `Rational(${a}, ${b})`;
-          const r = i;
-          check = `sum(${pr}**(${vsum})*(1-${pr})**(${q.n}-(${vsum})) ${loops('range(2)')} if ${vsum} == ${r})`;
+          // 이항분포 닫힌 식. 앱은 성공·실패 2^n 가지를 늘어놓아 무게를 세므로 둘은 서로 다른 길로 같은 값에 닿는다
+          check = `binomial(${q.n}, ${i})*${pr}**${i}*(1-${pr})**${q.n - i}`;
         } else if (!multi(q)) {
           const counts = (q.bag ?? []).map((b) => b.count);
           check = `Rational(${counts[i]}, ${counts.join('+')})`;

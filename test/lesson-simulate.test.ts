@@ -246,6 +246,14 @@ test('새 기구의 검산 항목이 sympy 를 통과하고(따로 늘어놓아 
   for (const p of ps) assert.equal(runChecks(tamper(simulateDef.checks(p))).ok, false);
 });
 
+test('성공 횟수 검산식은 이항분포 닫힌 식 binomial(n,r)·p^r·(1−p)^(n−r) — 앱은 2^n 가지를 늘어놓아 세므로 서로 다른 길', () => {
+  const c = simulateDef.checks(parse({ device: 'trial', p: '1/3', n: 3, seed: 1 }));
+  assert.equal(
+    (c[2] as { check?: string })?.check,
+    'binomial(3, 2)*Rational(1, 3)**2*(1-Rational(1, 3))**1',
+  );
+});
+
 test('지금 있는 기구의 검산 항목은 그대로(이름·답·검산식 — verify:diff 차이 0)', () => {
   const c = simulateDef.checks(parse({ device: 'coin', n: 2, seed: 7, goal: 100 }));
   assert.deepEqual(c[1], {
