@@ -55,7 +55,13 @@ export function dragPoint(
     if (Number.isNaN(fAt(p, s, o.on, i * o.snapN))) return s;
     return { ...s, pts: { ...s.pts, [id]: { i, j: 0 } } };
   }
-  return { ...s, pts: { ...s.pts, [id]: gridAt(p, wx, wy) } };
+  return { ...s, pts: { ...s.pts, [id]: inRange(p, id, gridAt(p, wx, wy)) } };
+}
+
+/** 칸 위 점의 끄는 x 범위(point.ts xCells) 안으로. 범위가 없으면 그대로 */
+function inRange(p: CoordParams, id: string, g: GridPt): GridPt {
+  const { i0, i1 } = xCells(p.x, pointOf(p, id));
+  return { i: Math.min(i1, Math.max(i0, g.i)), j: g.j };
 }
 
 /** 세계 좌표에서 가장 가까운 칸 점(범위 안) */
@@ -97,13 +103,19 @@ export function keyMove(
   if (o.on) {
     const step = d[0] || d[1];
     const { i0: lo, i1: hi } = xCells(p.x, o);
-    const i = Math.min(hi, Math.max(lo, g.i + step));
-    if (Number.isNaN(fAt(p, s, o.on, i * o.snapN))) return s;
-    return { ...s, pts: { ...s.pts, [handle]: { i, j: 0 } } };
+    // 곡선이 정의 안 된 칸(조각 함수의 구멍·정의역 밖)은 같은 방향 다음 칸으로 건너뛴다 — 멈추면 방향키·◀▶ 로는
+    // 구멍 건너편에 영영 못 간다(슬라이더 제외 값 건너뛰기 sliderSnap 과 같은 규칙). 끝까지 없으면 제자리
+    for (let i = g.i + step; i >= lo && i <= hi; i += step)
+      if (!Number.isNaN(fAt(p, s, o.on, i * o.snapN)))
+        return { ...s, pts: { ...s.pts, [handle]: { i, j: 0 } } };
+    return s;
   }
   return {
     ...s,
-    pts: { ...s.pts, [handle]: gridAt(p, (g.i + d[0]) * p.x.st, (g.j + d[1]) * p.y.st) },
+    pts: {
+      ...s.pts,
+      [handle]: inRange(p, handle, gridAt(p, (g.i + d[0]) * p.x.st, (g.j + d[1]) * p.y.st)),
+    },
   };
 }
 

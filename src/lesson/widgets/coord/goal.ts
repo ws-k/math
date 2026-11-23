@@ -146,11 +146,20 @@ function approachGoal(
   const pb = gx.pointRef(b, at);
   if (pa.drag === 'none') fail(at, `${pa.id} 는 끌 수 없는 점`);
   const within = g.within === undefined ? 0 : numExpr(g.within, `${at}.within`).n;
-  // 끄는 간격으로 닿을 수 있는 목표인가(겹쳐야 하면 b 의 x 가 a 의 끄는 칸 위에 있어야)
+  // 끌어서 닿을 수 있는 목표인가: a 가 닿는 칸(끄는 간격·끄는 범위 — xCells) 중 b 와 x 거리가 within 안인 칸이 있어야.
+  // 간격만 보면 range 로 막힌 자리(P=O 를 뺀 미끄럼틀)를 목표로 두어도 통과했다
   const xb = worldX(p, pb, pb.i);
-  const k = xb / pa.snapN;
-  if (within === 0 && !near(Math.round(k) * pa.snapN, xb))
-    fail(at, `${pa.id} 를 끌어서는 ${pb.id} 에 닿을 수 없음(끄는 간격)`);
+  const { i0, i1 } = xCells(p.x, pa);
+  let reach = false;
+  for (let i = i0; i <= i1 && !reach; i++) {
+    const d = Math.abs(worldX(p, pa, i) - xb);
+    reach = d <= within + 1e-12 || near(d, within);
+  }
+  if (!reach)
+    fail(
+      at,
+      `${pa.id} 를 끌어서는 ${pb.id} 에 닿을 수 없음(끄는 간격·범위 안에 x 거리 ${within} 이하인 칸 없음)`,
+    );
   return { approach: [pa.id, pb.id], within, ...(hint ? { hint } : {}) };
 }
 

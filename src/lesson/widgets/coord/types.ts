@@ -8,7 +8,9 @@ import type { Node, Rational } from '../../sym.ts';
 import type { WidgetCheck } from '../specs.ts';
 
 export type Mode = 'explore' | 'plot' | 'line' | 'connect' | 'sketch';
-export type Tone = 'main' | 'soft' | 'accent';
+/** 곡선·선분·화살표의 색(범례 lg.main·soft·accent 와 짝). 형식 검사가 이 목록 하나로 본다 */
+export const TONES = ['main', 'soft', 'accent'] as const;
+export type Tone = (typeof TONES)[number];
 
 export interface Axis {
   /** 원문(sympy 식 글자) — 검산에 그대로 넘긴다 */
@@ -36,17 +38,41 @@ export interface Target {
   check: string;
 }
 
-export interface CurveObj {
+/**
+ * 조각 함수의 한 조각: x 가 [lo, hi] 안이면 y = 식. 끝은 닫힘(그 값을 가짐 — 찬 점 ●) 또는 열림(빈 점 ○).
+ * lo = hi 면 한 점(닫힘·닫힘만) — 구멍 자리에 따로 정한 함숫값.
+ */
+export interface Piece {
+  y: string;
+  node: Node;
+  lo: number;
+  hi: number;
+  /** 검산용 원문(sympy 글자) */
+  loSrc: string;
+  hiSrc: string;
+  loOpen: boolean;
+  hiOpen: boolean;
+}
+
+interface CurveBase {
   kind: 'curve';
   id: string;
+  /** 검산·sympy 에 넘기는 식 글자. 조각 곡선이면 Piecewise(…) */
   expr: string;
-  node: Node;
   /** 범례 글(Rich) */
   label?: string;
   tone: Tone;
   /** 정답 곡선: 목표·과제를 이루기 전에는 그리지 않는다(맞힌 뒤 공개) */
   hide?: true;
 }
+/** 식 하나인 곡선(x 전체). 식을 통째로 다루는 곳(다항식·칠하기·구분구적·과제)은 이 꼴만 받는다(curve.ts wholeCurve) */
+export type PlainCurve = CurveBase & { node: Node; pieces?: undefined };
+/**
+ * 조각 함수·구간만 그리기(한 기제: 구간만 그리기는 조각 하나). 식이 하나가 아니라 node 가 없다 — 값은 늘
+ * curve.ts fAt·curveExact 로(조각을 고른 뒤) 구하게 컴파일러가 막는다
+ */
+export type PieceCurve = CurveBase & { pieces: Piece[]; node?: undefined };
+export type CurveObj = PlainCurve | PieceCurve;
 export interface PointObj {
   kind: 'point';
   id: string;
@@ -59,6 +85,11 @@ export interface PointObj {
   /** 처음 자리(칸 번호) */
   i: number;
   j: number;
+  /**
+   * 끄는 x 범위(칸 번호, 양 끝 포함). 끌기·방향키·목표 검산이 모두 이 칸 안만 본다(point.ts xCells) —
+   * '크기 0 인 삼각형'처럼 뜻이 없는 자리를 목표가 세지 않게(요청 127), 평균값 정리의 R 을 [P,Q] 안에(요청 139)
+   */
+  cells?: [number, number];
   /** 그림 위 이름(P, Q). 짧은 글자 */
   name?: string;
   /** 목표 점: 목표·과제를 이루기 전에는 그리지 않는다(맞힌 뒤 공개). 끄는 점은 숨기지 못한다 */
@@ -165,6 +196,24 @@ export interface RectsObj {
   /** 구간에서 오르는 곡선인가(오르면 큰 어림 = 오른쪽 끝 높이) */
   rising: boolean;
 }
+/** 선분·화살표의 끝: 앞에 나온 점, 또는 좌표 식 [x, y](슬라이더 이름만 — 슬라이더를 따라 움직임, k·a 의 끝 (2k, k)) */
+export type SegEnd = { pt: string } | { x: string; y: string; nx: Node; ny: Node };
+/** 선분 {segment:[끝, 끝]} · 화살표 {arrow:[꼬리, 머리]}(벡터). 곡선 꼼수 식 없이 세로 벡터도 그린다 */
+interface SegBase {
+  a: SegEnd;
+  b: SegEnd;
+  tone: Tone;
+  /** 범례 글(Rich) */
+  label?: string;
+  /** 검산 항목 이름·중복 검사용 글자(O→(2*k,k)) */
+  ref: string;
+}
+export interface SegmentObj extends SegBase {
+  kind: 'segment';
+}
+export interface ArrowObj extends SegBase {
+  kind: 'arrow';
+}
 export type CoordObj =
   | CurveObj
   | PointObj
@@ -172,7 +221,9 @@ export type CoordObj =
   | TangentObj
   | ReadoutObj
   | FillObj
-  | RectsObj;
+  | RectsObj
+  | SegmentObj
+  | ArrowObj;
 
 export interface Slider {
   id: string;
@@ -315,6 +366,8 @@ export interface HandleItem {
   value: number;
   min: number;
   max: number;
+  /** 점이 그림 밖이라 손잡이를 테두리에 붙였다(흐리게 그림 — 그 자리가 점의 실제 자리가 아님을 보이려고) */
+  off?: boolean;
 }
 
 /** 읽는 값 한 줄. parts 가 있으면 조각마다 색을 달리 그린다(작은 어림 ~ 큰 어림) — text 는 그 조각을 이은 것 */

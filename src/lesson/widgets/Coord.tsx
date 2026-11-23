@@ -141,6 +141,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       const el = m.get(`h:${h.key}`);
       if (!el) continue;
       (el as HTMLElement).style.transform = handleAt(h.x, h.y);
+      el.toggleAttribute('data-off', !!h.off);
       el.setAttribute('aria-valuenow', String(h.value));
       el.setAttribute('aria-valuetext', h.valueText);
     }
@@ -436,8 +437,19 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     );
   };
   const dragPts = p.objects.filter((o): o is PointObj => o.kind === 'point' && o.drag === 'x');
-  // 숨긴 정답 곡선의 범례는 맞힌 뒤에
-  const legend = p.objects.filter((o) => o.kind === 'curve' && o.label && !(o.hide && !st.solved));
+  // 숨긴 정답 곡선의 범례는 맞힌 뒤에. 선분·화살표(벡터 a·b)도 이름이 있으면 범례에 — 색이 곧 어느 벡터인지라
+  const legend = p.objects.flatMap((o) =>
+    (o.kind === 'curve' && o.label && !(o.hide && !st.solved)) ||
+    ((o.kind === 'segment' || o.kind === 'arrow') && o.label)
+      ? [
+          {
+            key: o.kind === 'curve' ? o.id : `${o.kind} ${o.ref}`,
+            tone: o.tone,
+            label: o.label as string,
+          },
+        ]
+      : [],
+  );
 
   const touch = p.mode === 'sketch' && sketching ? 'none' : 'manipulation';
   return (
@@ -535,7 +547,11 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
         {d.handles.map((h) => (
           <Handle
             key={h.key}
-            ref={reg(`h:${h.key}`)}
+            ref={(el) => {
+              reg(`h:${h.key}`)(el);
+              // 테두리에 붙인 손잡이 표시. 공용 Handle 에 칸을 늘리지 않고 DOM 속성으로 — 끄는 동안의 apply 와 같은 길
+              el?.toggleAttribute('data-off', !!h.off);
+            }}
             x={h.x}
             y={h.y}
             label={h.label}
@@ -550,15 +566,12 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       </div>
       {legend.length > 0 && (
         <div className="legend">
-          {legend.map(
-            (o) =>
-              o.kind === 'curve' && (
-                <span key={o.id} className={`lg ${o.tone}`}>
-                  <i aria-hidden="true" />
-                  <LRich inline src={o.label as string} />
-                </span>
-              ),
-          )}
+          {legend.map((o) => (
+            <span key={o.key} className={`lg ${o.tone}`}>
+              <i aria-hidden="true" />
+              <LRich inline src={o.label} />
+            </span>
+          ))}
         </div>
       )}
       {d.readouts.length > 0 && (
