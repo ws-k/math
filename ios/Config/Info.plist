@@ -2,7 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- 런치 화면 배경색은 설정값(INFOPLIST_KEY_*)으로 못 넣어 이 파일에 둔다. 나머지 키는 Base.xcconfig 가 만든다.
+	<!-- 장면 설정을 손으로 적는 이유: 자동 생성은 여러 창을 허용한다. 아이패드에서 창이 둘이면 웹뷰 둘이
+	     같은 IndexedDB 기록·사본 파일을 따로 써서 서로 덮는다. 창은 하나만.
+	     키 자체는 빠지면 안 된다 — 없으면 iOS 27 에서 Xcode 27 SDK 앱이 켜자마자 꺼진다(UIScene 필수).
+	     장면 구성은 비워 두면 SwiftUI(WindowGroup)가 채운다 -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict/>
+	</dict>
+	<!-- 런치 화면 배경색은 설정값(INFOPLIST_KEY_*)으로 못 넣어 이 파일에 둔다. 나머지 키는 대부분 Base.xcconfig 가 만든다.
 	     웹뷰 배경과 같은 색 에셋이라 켤 때 흰 번쩍임이 없다 -->
 	<key>UILaunchScreen</key>
 	<dict>
