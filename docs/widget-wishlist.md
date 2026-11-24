@@ -148,3 +148,4 @@
 - (도형판 검토 반영) 수 목표에서도 "글은 같은데 미달성" 가능(digits 0 타원 PF+PG≈10 이 14곳) — 수 목표에도 같은 검사 확장, verify.py check_parity 차례 대입 버그 가능성, equal() 앞 simplify 가 근호 많은 식에서 2분 넘게 걸림
 - (모의실험·타일) **확률 질문 장면 표의 '이론' 칸이 정답을 그대로 보여 줌**(m2-probability hook "앞 1개 이론 1/2" 등, 넓은 화면도) — 질문 전에는 이론 칸 숨기기. 타일은 키보드로 고를 수만 있고 판에 놓을 수 없음(접근성). 판 위 1×1 타일 29~32px(44 미만, 붙어야 해서 한계)
 - (목표 뒤 넘침) 남은 2px 3곳(geo-space-figures perp done, e-circle-area poly hint·done) — `.lesson .toast { min-height: 3.1em }` 때문에 한 줄 글도 두 줄 높이. 숫자 값 뒤 조사({{i02}}로 → "-4/3로")가 읽기와 어긋나는 곳 점검 필요(전 단원)
+- (1-마 count 후속) 벤에 `u` 가 있으면 다 맞힌 뒤 결론 첫 줄이 382 폭에서 두 줄로 꺾이고 여집합 줄까지 붙어 prob-conditional/venn 질문 장면 24px 넘침 / 여집합 줄을 끄는 선택 칸(조건부확률 장면엔 주제 밖) / count 에 `hasGoal` 없어 `afterGoal` 못 씀(h1-set-logic/venn 결론이 분류 전부터 보임) / '넣을 곳' 단추가 고른 카드를 반쯤 가림
