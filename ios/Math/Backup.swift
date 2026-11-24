@@ -16,7 +16,6 @@ nonisolated final class BackupFiles: @unchecked Sendable {
     enum Op: Sendable {
         case put(key: String, json: String)
         case del(prefixes: [String], keys: [String])
-        case clear
         case keys
         case read(after: String?, maxBytes: Int)
         case status
@@ -31,7 +30,6 @@ nonisolated final class BackupFiles: @unchecked Sendable {
             case "del":
                 guard let p = m["prefixes"] as? [String], let k = m["keys"] as? [String] else { return nil }
                 self = .del(prefixes: p, keys: k)
-            case "clear": self = .clear
             case "keys": self = .keys
             case "read":
                 guard let n = m["maxBytes"] as? Int, n > 0 else { return nil }
@@ -45,7 +43,7 @@ nonisolated final class BackupFiles: @unchecked Sendable {
     enum Reply: Sendable {
         case ok
         case keys([String])
-        case page(entries: [[String]], next: String?)
+        case page(entries: [[String]], next: String?, skipped: [String])
         case status(count: Int, lastSuccess: String?)
 
         /// 웹으로 돌려줄 값(WebKit 이 JS 값으로 바꾼다). nil 은 JS 의 null 이 되도록 NSNull
@@ -53,7 +51,8 @@ nonisolated final class BackupFiles: @unchecked Sendable {
             switch self {
             case .ok: return true
             case .keys(let k): return k
-            case .page(let e, let n): return ["entries": e, "next": n ?? NSNull()] as [String: Any]
+            case .page(let e, let n, let s):
+                return ["entries": e, "next": n ?? NSNull(), "skipped": s] as [String: Any]
             case .status(let c, let l): return ["count": c, "lastSuccess": l ?? NSNull()] as [String: Any]
             }
         }
@@ -98,8 +97,6 @@ nonisolated final class BackupFiles: @unchecked Sendable {
             let doomed = Set(keys).union(
                 try stored().filter { k in prefixes.contains { k.utf8.starts(with: $0.utf8) } })
             for k in doomed { try remove(try file(k)) }
-        case .clear:
-            try remove(dir)
         case .keys:
             return .keys(try stored())
         case .read(let after, let maxBytes):
@@ -111,23 +108,29 @@ nonisolated final class BackupFiles: @unchecked Sendable {
         return .ok
     }
 
-    /// 키 순서대로 after 다음부터 maxBytes 언저리까지. 큰 필기를 한 답에 다 실으면 메모리가 두 배로 들어 나눈다
+    /// 키 순서대로 after 다음부터 maxBytes 언저리까지. 큰 필기를 한 답에 다 실으면 메모리가 두 배로 들어 나눈다.
+    /// UTF-8 이 아닌 파일은 건너뛰고 skipped 로 알린다 — 망가진 파일 하나 때문에 나머지 기록까지 못 되살리면 안 된다
     private func page(after: String?, maxBytes: Int) throws -> Reply {
         let keys = try stored().sorted(by: Self.before)
         let rest = after.map { a in keys.filter { Self.before(a, $0) } } ?? keys
         var entries: [[String]] = []
+        var skipped: [String] = []
         var bytes = 0
+        // 다음 쪽은 마지막으로 본 키 뒤부터 — 건너뛴 키에서 끝나도 다시 읽지 않게
+        var last: String?
         for k in rest {
             let data = try Data(contentsOf: try file(k))
             if !entries.isEmpty && bytes + data.count > maxBytes { break }
+            last = k
             guard let json = String(data: data, encoding: .utf8) else {
-                throw Failure(message: "사본 파일이 UTF-8 이 아니에요: \(k)")
+                skipped.append(k)
+                continue
             }
             entries.append([k, json])
             bytes += data.count
         }
-        let next = entries.count < rest.count ? entries.last?[0] : nil
-        return .page(entries: entries, next: next)
+        let next = last != nil && last != rest.last ? last : nil
+        return .page(entries: entries, next: next, skipped: skipped)
     }
 
     /// 쪽 나누기 순서. 문자열 비교(유니코드 정규화)가 아니라 바이트로 — 쪽마다 같은 순서여야 빠지거나 겹치지 않는다

@@ -272,6 +272,16 @@ summary:focus-visible {
   flex-direction: column;
   gap: 16px;
 }
+/* 앱 시작 때 기록을 되살리는 동안·실패했을 때의 화면(BootScreen) */
+.page.boot {
+  min-height: 100dvh;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.boot-hint {
+  font-size: 0.8rem;
+}
 .page-title {
   font-size: 1.75rem;
   font-weight: 900;
