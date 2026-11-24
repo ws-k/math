@@ -37,7 +37,8 @@ final class BundleSchemeHandler: NSObject, WKURLSchemeHandler {
     // 파일이 앱 안에 있어(가장 큰 main.js 도 몇 MB, 읽는 데 수 ms) start 안에서 동기로 다 답한다.
     // 그러면 stop 이 와도 이미 끝난 작업이라 따로 취소할 것이 없다.
     func webView(_ webView: WKWebView, start task: any WKURLSchemeTask) {
-        guard let url = task.request.url else { return }
+        // 답 없이 돌아가면 WebKit 쪽 요청이 끝나지 않고 매달린다 — 실패로라도 끝낸다
+        guard let url = task.request.url else { return task.didFailWithError(URLError(.badURL)) }
         guard let file = file(for: url), let data = try? Data(contentsOf: file) else {
             respond(task, url: url, status: 404, type: "text/plain; charset=utf-8", body: Data())
             return
