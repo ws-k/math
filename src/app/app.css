@@ -120,7 +120,8 @@ h3 {
 }
 button:focus-visible,
 a:focus-visible,
-input:focus-visible {
+input:focus-visible,
+summary:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 2px;
 }
@@ -380,21 +381,53 @@ input:focus-visible {
   color: var(--bad);
 }
 
-/* ---------- 지도 ---------- */
-.course {
+/* ---------- 단원 목록 (학년별 접기) ---------- */
+.course summary {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 10px;
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  cursor: pointer;
+  list-style: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
-.course h2 {
+.course summary::-webkit-details-marker {
+  display: none;
+}
+.course summary::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  margin-left: 4px;
+  border-right: 2.5px solid var(--sub);
+  border-bottom: 2.5px solid var(--sub);
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 0.2s;
+}
+.course[open] summary::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+.course-name {
+  margin: 0;
   font-size: 1.1rem;
   font-weight: 800;
+}
+.course-count {
+  margin-left: auto;
   color: var(--sub);
+  font-size: 0.92rem;
 }
 .unit-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 10px;
+}
+.course[open] .unit-grid {
+  padding-top: 10px;
 }
 .unit-card {
   display: flex;
@@ -1038,6 +1071,9 @@ input:focus-visible {
     animation: none;
   }
   .btn {
+    transition: none;
+  }
+  .course summary::after {
     transition: none;
   }
 }

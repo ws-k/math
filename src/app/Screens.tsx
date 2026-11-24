@@ -1,4 +1,4 @@
-// 문제·레슨 밖의 화면들: 홈, 지도, 단원 홈, 오답 노트, 설정, 누가 공부하나요.
+// 문제·레슨 밖의 화면들: 홈, 단원 목록, 단원 홈, 오답 노트, 설정, 누가 공부하나요.
 import { type ReactNode, useState } from 'react';
 import type { Unit } from '../content/types.ts';
 import { lessonProgress } from '../lesson/state.ts';
@@ -11,7 +11,15 @@ import { FIRST, type Profile } from './profile.ts';
 import { Rich } from './Rich.tsx';
 import { type Route, routeHash } from './route.ts';
 import type { Settings } from './settings.ts';
-import { type Cards, GRADE_LABEL, todayPlan, unitProgress, wrongNote } from './today.ts';
+import { currentProfile } from './store.ts';
+import {
+  type Cards,
+  courseStarted,
+  GRADE_LABEL,
+  todayPlan,
+  unitProgress,
+  wrongNote,
+} from './today.ts';
 
 export type LastRoute = Extract<Route, { name: 'unit' | 'lesson' }>;
 /** 단원 id → 저장된 레슨 진행(lesson:<단원> 값) */
@@ -25,7 +33,7 @@ const keyHash = (key: string) => {
 
 const NAV: { name: Route['name']; href: string; label: string }[] = [
   { name: 'home', href: '#/', label: '홈' },
-  { name: 'map', href: '#/map', label: '지도' },
+  { name: 'map', href: '#/map', label: '단원' },
   { name: 'wrong', href: '#/wrong', label: '오답 노트' },
   { name: 'settings', href: '#/settings', label: '설정' },
 ];
@@ -122,9 +130,9 @@ export function Home(p: {
             </a>
           ) : (
             <>
-              <p className="muted">오늘 복습할 문제가 없어요. 지도에서 단원을 골라 보세요.</p>
+              <p className="muted">오늘 복습할 문제가 없어요. '단원' 탭에서 단원을 골라 보세요.</p>
               <a className="btn soft big block" href="#/map">
-                지도 보기
+                단원 보기
               </a>
             </>
           )}
@@ -144,46 +152,82 @@ export function Home(p: {
   );
 }
 
+/**
+ * 펼친 학년. 단원 홈에 갔다 돌아와도 그대로 두려고 화면 밖에 둔다(앱을 새로 열면 처음 상태).
+ * 프로필을 바꾸면 다른 사람의 펼침을 물려받지 않게 프로필과 함께 기억한다.
+ */
+let openCourses: { profile: string; set: Set<string> } | null = null;
+
 export function MapScreen({ cards, lessons }: { cards: Cards; lessons: Lessons }) {
+  const started = (u: Unit) => !!u.lesson && lessonProgress(u.lesson, lessons[u.id]).started;
+  const groups = curriculum.courses.map((c) => {
+    const list = curriculum.units.filter((u) => u.course === c.id);
+    const ready = list.flatMap((cu) => unitById.get(cu.id) ?? []);
+    return { c, list, st: courseStarted(ready, cards, started) };
+  });
+  // 직접 열고 닫기 전에는 공부를 시작한 학년만 펼친다(기록은 늦게 읽히므로 그릴 때마다 다시 계산)
+  // 아무것도 시작 안 했으면 첫 학년을 펼쳐 둔다
+  const [picked, setPicked] = useState(() =>
+    openCourses?.profile === currentProfile() ? openCourses.set : null,
+  );
+  const startedIds = groups.filter((g) => g.st.started > 0).map((g) => g.c.id);
+  const open =
+    picked ?? new Set(startedIds.length > 0 ? startedIds : groups.slice(0, 1).map((g) => g.c.id));
+  const toggle = (id: string, on: boolean) => {
+    if (open.has(id) === on) return;
+    const next = new Set(open);
+    if (on) next.add(id);
+    else next.delete(id);
+    openCourses = { profile: currentProfile(), set: next };
+    setPicked(next);
+  };
   return (
     <>
-      <h1 className="page-title">지도</h1>
-      {curriculum.courses.map((c) => (
-        <section key={c.id} className="course">
-          <h2>{c.name}</h2>
+      <h1 className="page-title">단원</h1>
+      {groups.map(({ c, list, st }) => (
+        <details
+          key={c.id}
+          className="course"
+          open={open.has(c.id)}
+          onToggle={(e) => toggle(c.id, e.currentTarget.open)}
+        >
+          <summary>
+            <h2 className="course-name">{c.name}</h2>
+            <span className="course-count">
+              {st.started > 0 ? `${st.started}/${list.length}단원 시작` : `${list.length}단원`}
+            </span>
+          </summary>
           <div className="unit-grid">
-            {curriculum.units
-              .filter((u) => u.course === c.id)
-              .map((cu) => {
-                const unit = unitById.get(cu.id);
-                if (!unit)
-                  return (
-                    <div key={cu.id} className="unit-card locked" aria-disabled>
-                      <span className="unit-name">{cu.title}</span>
-                      <span className="tags">
-                        <span className="badge">준비 중</span>
-                      </span>
-                    </div>
-                  );
-                const pr = unitProgress(unit, cards);
-                const tag = lessonTag(unit, lessons);
+            {list.map((cu) => {
+              const unit = unitById.get(cu.id);
+              if (!unit)
                 return (
-                  <a key={cu.id} className="unit-card" href={unitHref(cu.id)}>
+                  <div key={cu.id} className="unit-card locked" aria-disabled>
                     <span className="unit-name">{cu.title}</span>
-                    <span className="bar" aria-hidden>
-                      <span style={{ width: `${(pr.done / Math.max(1, pr.total)) * 100}%` }} />
-                    </span>
                     <span className="tags">
-                      {tag && <span className={`badge ${tag.cls}`}>{tag.text}</span>}
-                      <span className="badge num">
-                        문제 {pr.done}/{pr.total}
-                      </span>
+                      <span className="badge">준비 중</span>
                     </span>
-                  </a>
+                  </div>
                 );
-              })}
+              const pr = unitProgress(unit, cards);
+              const tag = lessonTag(unit, lessons);
+              return (
+                <a key={cu.id} className="unit-card" href={unitHref(cu.id)}>
+                  <span className="unit-name">{cu.title}</span>
+                  <span className="bar" aria-hidden>
+                    <span style={{ width: `${(pr.done / Math.max(1, pr.total)) * 100}%` }} />
+                  </span>
+                  <span className="tags">
+                    {tag && <span className={`badge ${tag.cls}`}>{tag.text}</span>}
+                    <span className="badge num">
+                      문제 {pr.done}/{pr.total}
+                    </span>
+                  </span>
+                </a>
+              );
+            })}
           </div>
-        </section>
+        </details>
       ))}
     </>
   );
@@ -199,7 +243,7 @@ export function UnitHome({ unit, cards, lessons }: { unit: Unit; cards: Cards; l
   return (
     <>
       <div className="crumbs">
-        <a href="#/map">지도</a>
+        <a href="#/map">단원</a>
         <span aria-hidden>›</span>
         <span>{curriculum.courses.find((c) => c.id === unit.course)?.name ?? unit.course}</span>
       </div>

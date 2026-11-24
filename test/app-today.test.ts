@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { dueText, todayPlan, unitProgress, wrongNote } from '../src/app/today.ts';
+import { courseStarted, dueText, todayPlan, unitProgress, wrongNote } from '../src/app/today.ts';
 import { type CardState, DAY } from '../src/lib/srs.ts';
 import { prob, unit } from './app-fixture.ts';
 
@@ -76,4 +76,15 @@ test('복습일 문구: 시각이 아니라 날짜(0시) 차이로 센다', () =
   assert.equal(dueText(card(today0), late), '오늘 다시 봐요');
   assert.equal(dueText(card(today0 - 2 * DAY), now), '오늘 다시 봐요');
   assert.equal(dueText(card(null), now), '이 문제는 졸업했어요');
+});
+
+test('학년 묶음: 문제를 하나라도 풀었거나 레슨을 시작한 단원 수', () => {
+  const c = unit('c', [prob('1')]);
+  const cards = { 'a/2': card(today0) };
+  const r = courseStarted([a, b, c], cards, (u) => u.id === 'c');
+  assert.deepEqual(r, { started: 2 });
+  assert.deepEqual(
+    courseStarted([b], {}, () => false),
+    { started: 0 },
+  );
 });

@@ -202,7 +202,7 @@ function Screen(p: {
   // (그때는 펜을 봐도 화면에서만 끈다)
   const [deviceRead, setDeviceRead] = useState(false);
 
-  // 레슨 진행은 레슨 화면이 직접 저장하므로, 홈·지도로 돌아올 때마다 다시 읽는다
+  // 레슨 진행은 레슨 화면이 직접 저장하므로, 홈·단원 목록으로 돌아올 때마다 다시 읽는다
   const lessonView = route.name !== 'lesson';
   useEffect(() => {
     if (!lessonView) return;
@@ -291,7 +291,7 @@ function Screen(p: {
     setCards({ ...cards, [key]: c });
   };
 
-  // 없는 단원 주소면 지도로. 렌더 중에 주소를 바꾸면 그리는 도중 다른 화면 렌더가 끼어드므로 효과에서.
+  // 없는 단원 주소면 단원 목록으로. 렌더 중에 주소를 바꾸면 그리는 도중 다른 화면 렌더가 끼어드므로 효과에서.
   const missing =
     (route.name === 'unit' && !unitById.has(route.unitId)) ||
     (route.name === 'lesson' && !unitById.get(route.unitId)?.lesson);

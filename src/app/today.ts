@@ -1,4 +1,4 @@
-// 홈의 "오늘 할 일", 지도의 진행률, 오답 노트 목록 — 카드 모음에서 계산만 한다.
+// 홈의 "오늘 할 일", 단원 목록의 진행률, 오답 노트 목록 — 카드 모음에서 계산만 한다.
 import type { Unit } from '../content/types.ts';
 import { type CardState, DAY, type Grade, isDue, isInWrongNote, startOfDay } from '../lib/srs.ts';
 import { cardKey, parseCardKey, resolveProblem } from './pages.ts';
@@ -50,6 +50,18 @@ export function todayPlan(o: {
 export function unitProgress(unit: Unit, cards: Cards): { done: number; total: number } {
   const done = unit.problems.filter((p) => cards[cardKey(unit.id, p.id)]?.last === 'right').length;
   return { done, total: unit.problems.length };
+}
+
+/** 학년 묶음 머리글: 문제를 하나라도 풀었거나 레슨을 시작한 단원 수 */
+export function courseStarted(
+  list: Unit[],
+  cards: Cards,
+  lessonStarted: (u: Unit) => boolean,
+): { started: number } {
+  const started = list.filter(
+    (u) => lessonStarted(u) || u.problems.some((p) => cards[cardKey(u.id, p.id)]),
+  ).length;
+  return { started };
 }
 
 const lastT = (c: CardState) => c.history.at(-1)?.t ?? 0;
