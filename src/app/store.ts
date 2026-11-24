@@ -2,6 +2,7 @@
 // localStorage 는 5MB 언저리에서 막히고 동기라 필기 저장에 맞지 않아 IndexedDB 를 쓴다.
 
 import { createScopedStore, FIRST, type RawStore, scopedKey } from './profile.ts';
+import { resetRanges, scopedResetMatch } from './reset.ts';
 import { createSaver } from './saver.ts';
 
 const DB = 'math-rebuild';
@@ -32,7 +33,7 @@ async function run<T>(mode: IDBTransactionMode, f: (s: IDBObjectStore) => IDBReq
  * 쓰기는 요청 성공(onsuccess)이 아니라 트랜잭션 완료(oncomplete)에서 끝난 것으로 본다.
  * 요청이 성공해도 디스크에 쓰다가 용량 부족 등으로 트랜잭션이 중단(abort)될 수 있어서다.
  */
-async function write(f: (s: IDBObjectStore) => IDBRequest): Promise<void> {
+async function write(f: (s: IDBObjectStore) => unknown): Promise<void> {
   const db = await open();
   return new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite');
@@ -113,4 +114,19 @@ export async function deleteProfileData(id: string): Promise<void> {
   saver.discard(prefix);
   // 범위 지우기 한 번(한 트랜잭션): 키마다 따로 지우다 중간에 실패하면 반쯤 지운 기록이 남는다
   await write((s) => s.delete(range(prefix)));
+}
+
+/**
+ * 지금 프로필의 학습 기록을 지운다. unitId 가 있으면 그 단원만, null 이면 전체(설정은 남긴다).
+ * 쥐고 있던 값을 먼저 버리고, 그 키를 쓰는 중이면 끝나길 기다린 뒤 지운다 — 늦게 끝난 쓰기가 되살리지 않게.
+ * 범위 지우기를 한 트랜잭션에서 해 반만 지운 상태도, 읽고 지우는 사이에 끼는 키도 없게 한다.
+ */
+export async function resetLearning(unitId: string | null): Promise<void> {
+  const who = profile;
+  await saver.drop(scopedResetMatch(who, unitId));
+  const { prefixes, keys } = resetRanges(unitId);
+  await write((s) => {
+    for (const p of prefixes) s.delete(range(scopedKey(who, p)));
+    for (const k of keys) s.delete(scopedKey(who, k));
+  });
 }

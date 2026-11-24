@@ -10,6 +10,12 @@ export interface Saver {
   failing(): boolean;
   /** 실제 저장 키가 prefix 로 시작하는 쥔 값을 버린다(지운 프로필의 값이 다시 시도로 되살아나지 않게) */
   discard(prefix: string): void;
+  /**
+   * 고른 키의 쥔 값을 이번 한 번 버린다(기록 초기화). 뒤에 새로 저장하는 값은 받는다.
+   * 그 키를 지금 쓰는 중이면 그 쓰기가 끝날 때(성공·실패 무관) 풀린다 — 실패해도 다시 쥐지 않는다.
+   * 다른 키는 기다리지 않는다(다른 키가 계속 실패해도 초기화가 멈추지 않게).
+   */
+  drop(match: (key: string) => boolean): Promise<void>;
   subscribe(f: () => void): () => void;
 }
 
@@ -40,6 +46,15 @@ export function createSaver(
   /** 버린 접두어. 이미 쓰는 중이던 값이 실패해 다시 시도로 돌아와도 여기서 버린다 */
   const discarded = new Set<string>();
   const dropped = (key: string) => [...discarded].some((p) => key.startsWith(p));
+  /** drop 으로 버린, 쓰는 중이던 키 → 그 쓰기가 끝나길 기다리는 쪽 */
+  const dropping = new Map<string, (() => void)[]>();
+  const finishDrop = (key: string) => {
+    const rs = dropping.get(key);
+    if (!rs) return false;
+    dropping.delete(key);
+    for (const r of rs) r();
+    return true;
+  };
   let wasFailing = false;
   const notify = () => {
     const now = failed.size > 0;
@@ -64,12 +79,19 @@ export function createSaver(
       () => {
         busy.delete(key);
         failed.delete(key);
+        finishDrop(key);
         notify();
         pump(key);
         settle();
       },
       () => {
         busy.delete(key);
+        // 버린 키의 실패한 값은 다시 쥐지 않는다(버린 뒤 새로 온 값이 있으면 그것은 이어 쓴다)
+        if (finishDrop(key) && !pending.has(key)) {
+          notify();
+          settle();
+          return;
+        }
         // 그 사이 새 값이 왔으면 그것을, 아니면 실패한 값을 다시 쓴다
         if (!pending.has(key)) pending.set(key, value);
         failed.add(key);
@@ -101,6 +123,19 @@ export function createSaver(
       for (const k of [...failed]) if (k.startsWith(prefix)) failed.delete(k);
       notify();
       settle();
+    },
+    drop(match) {
+      for (const k of [...pending.keys()]) if (match(k)) pending.delete(k);
+      for (const k of [...failed]) if (match(k)) failed.delete(k);
+      const waits = [...busy].filter(match).map(
+        (k) =>
+          new Promise<void>((r) => {
+            dropping.set(k, [...(dropping.get(k) ?? []), r]);
+          }),
+      );
+      notify();
+      settle();
+      return Promise.all(waits).then(() => undefined);
     },
     subscribe(f) {
       listeners.add(f);

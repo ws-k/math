@@ -459,6 +459,9 @@ summary:focus-visible {
 }
 
 /* ---------- 단원 홈 ---------- */
+.row.center {
+  justify-content: center;
+}
 .crumbs {
   display: flex;
   align-items: center;
@@ -1043,6 +1046,10 @@ summary:focus-visible {
 }
 .confirm-msg {
   font-weight: 700;
+}
+.confirm-error {
+  color: var(--bad);
+  font-size: 0.92rem;
 }
 .confirm-row {
   justify-content: flex-end;

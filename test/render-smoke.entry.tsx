@@ -27,9 +27,10 @@ export function renderLesson(unit: Unit, shown?: number, done: string[] = []): s
 /** 앱 화면들(단원 홈·문제 화면·홈·지도·오답 노트·설정)을 단원마다 그려 본다 */
 export function renderScreens(unit: Unit): string[] {
   const noop = () => {};
+  const noopAsync = async () => {};
   const first = unit.problems[0];
   const out = [
-    renderToStaticMarkup(<UnitHome unit={unit} cards={{}} lessons={{}} />),
+    renderToStaticMarkup(<UnitHome unit={unit} cards={{}} lessons={{}} onReset={noopAsync} />),
     renderToStaticMarkup(<Home cards={{}} settings={DEFAULT_SETTINGS} last={null} lessons={{}} />),
     renderToStaticMarkup(<MapScreen cards={{}} lessons={{}} />),
     renderToStaticMarkup(<WrongNote cards={{}} />),
@@ -46,6 +47,7 @@ export function renderScreens(unit: Unit): string[] {
         onRename={noop}
         onRemove={noop}
         onSwitch={noop}
+        onResetAll={noopAsync}
       />,
     ),
   ];

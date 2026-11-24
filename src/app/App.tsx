@@ -39,7 +39,14 @@ import {
   WrongNote,
 } from './Screens.tsx';
 import { DEFAULT_SETTINGS, normalizeSettings, type Settings } from './settings.ts';
-import { deleteProfileData, requestPersist, saver, setCurrentProfile, store } from './store.ts';
+import {
+  deleteProfileData,
+  requestPersist,
+  resetLearning,
+  saver,
+  setCurrentProfile,
+  store,
+} from './store.ts';
 import type { Cards } from './today.ts';
 
 const CARD = 'card:';
@@ -299,6 +306,21 @@ function Screen(p: {
     if (missing) location.hash = routeHash({ name: 'map' });
   }, [missing]);
 
+  // 학습 기록 초기화: 저장소에서 지운 뒤 화면 상태도 맞춘다. 실패는 확인 창이 알린다
+  const resetUnit = (unitId: string) =>
+    resetLearning(unitId).then(() => {
+      setCards((cs) =>
+        Object.fromEntries(Object.entries(cs).filter(([k]) => !k.startsWith(`${unitId}/`))),
+      );
+      setLessons((ls) => Object.fromEntries(Object.entries(ls).filter(([k]) => k !== unitId)));
+    });
+  const resetAll = () =>
+    resetLearning(null).then(() => {
+      setCards({});
+      setLessons({});
+      setLast(null);
+    });
+
   if (!ready) return <main className="app" />;
 
   const shell = (name: Route['name'], children: React.ReactNode) => (
@@ -332,6 +354,7 @@ function Screen(p: {
           onRename={p.onRename}
           onRemove={p.onRemove}
           onSwitch={p.onSwitch}
+          onResetAll={resetAll}
         />,
       );
     case 'lesson': {
@@ -355,7 +378,15 @@ function Screen(p: {
       const unit = unitById.get(route.unitId);
       if (!unit) return null;
       if (route.pid === null)
-        return shell('map', <UnitHome unit={unit} cards={cards} lessons={lessons} />);
+        return shell(
+          'map',
+          <UnitHome
+            unit={unit}
+            cards={cards}
+            lessons={lessons}
+            onReset={() => resetUnit(unit.id)}
+          />,
+        );
       return (
         <FingerInkContext value={device.fingerInk}>
           <ProblemScreen

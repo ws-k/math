@@ -121,3 +121,62 @@ test('discard: 지운 프로필의 쥐고 있는 값(다시 시도 대기 포함
   assert.deepEqual(wrote, [['ink:b', 2]]);
   assert.equal(s.failing(), false);
 });
+
+test('drop: 고른 키의 쥔 값만 한 번 버리고, 그 뒤 새로 저장하는 건 받는다', async () => {
+  let fail = true;
+  const wrote: [string, unknown][] = [];
+  const t = fakeTimer();
+  const s = createSaver(
+    async (k, v) => {
+      if (fail) throw new Error('quota');
+      wrote.push([k, v]);
+    },
+    { retryMs: 10, later: t.set },
+  );
+  s.save('card:a/1', 1);
+  s.save('settings', 2);
+  await tick();
+  s.drop((k) => k.startsWith('card:'));
+  fail = false;
+  t.run();
+  await tick();
+  assert.deepEqual(wrote, [['settings', 2]]);
+  s.save('card:a/1', 3);
+  await tick();
+  assert.deepEqual(wrote.at(-1), ['card:a/1', 3]);
+  assert.equal(s.failing(), false);
+});
+
+test('drop: 쓰는 중인 키는 그 쓰기가 끝나면 풀리고, 실패해도 다시 쥐지 않는다. 다른 키 실패는 기다리지 않는다', async () => {
+  const t = fakeTimer();
+  const w: { finish?: (ok: boolean) => void } = {};
+  const calls: string[] = [];
+  const s = createSaver(
+    (k) =>
+      calls.push(k) && k === 'settings'
+        ? Promise.reject(new Error('quota'))
+        : new Promise<void>((res, rej) => {
+            w.finish = (ok) => (ok ? res() : rej(new Error('quota')));
+          }),
+    { retryMs: 10, later: t.set },
+  );
+  s.save('settings', 1); // 계속 실패하는 다른 키
+  s.save('card:a/1', 2); // 쓰는 중
+  await tick();
+  let done = false;
+  void s
+    .drop((k) => k.startsWith('card:'))
+    .then(() => {
+      done = true;
+    });
+  await tick();
+  assert.equal(done, false);
+  w.finish?.(false);
+  await tick();
+  assert.equal(done, true);
+  t.run();
+  await tick();
+  assert.equal(calls.filter((k) => k === 'card:a/1').length, 1);
+  void s.drop((k) => k === 'settings');
+  assert.equal(s.failing(), false);
+});

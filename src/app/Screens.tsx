@@ -77,6 +77,18 @@ export function Shell(p: {
   );
 }
 
+/** 기록 초기화 확인 창의 단계: 닫힘·묻는 중·지우는 중·실패 */
+type ResetStep = null | 'ask' | 'busy' | 'failed';
+const RESET_FAILED = '지우지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+/** 지우는 동안 창을 막아 두고, 끝나면 닫고, 실패하면 알린다 */
+function runReset(reset: () => Promise<void>, set: (s: ResetStep) => void) {
+  set('busy');
+  reset().then(
+    () => set(null),
+    () => set('failed'),
+  );
+}
+
 /** 레슨 상태 꼬리표 글 */
 function lessonTag(unit: Unit, lessons: Lessons): { text: string; cls: string } | null {
   if (!unit.lesson) return null;
@@ -234,7 +246,19 @@ export function MapScreen({ cards, lessons }: { cards: Cards; lessons: Lessons }
 }
 
 /** 단원 홈 #/unit/<단원>: 레슨(또는 옛 개념·예제), 공식, 수준별 문제 목록 */
-export function UnitHome({ unit, cards, lessons }: { unit: Unit; cards: Cards; lessons: Lessons }) {
+export function UnitHome({
+  unit,
+  cards,
+  lessons,
+  onReset,
+}: {
+  unit: Unit;
+  cards: Cards;
+  lessons: Lessons;
+  /** 이 단원의 문제 기록·레슨 진행·필기를 지운다 */
+  onReset(): Promise<void>;
+}) {
+  const [resetting, setResetting] = useState<ResetStep>(null);
   const pr = unitProgress(unit, cards);
   const lp = unit.lesson ? lessonProgress(unit.lesson, lessons[unit.id]) : null;
   const scenes = unit.lesson?.scenes.length ?? 0;
@@ -342,6 +366,21 @@ export function UnitHome({ unit, cards, lessons }: { unit: Unit; cards: Cards; l
           </div>
         ))}
       </section>
+      <div className="row center">
+        <button type="button" className="btn quiet" onClick={() => setResetting('ask')}>
+          이 단원 기록 초기화
+        </button>
+      </div>
+      {resetting && (
+        <Confirm
+          message={`'${unit.title}' 단원의 푼 문제·레슨 진행·필기를 모두 지울까요? 되돌릴 수 없어요.`}
+          okLabel={resetting === 'failed' ? '다시 시도' : '초기화'}
+          busy={resetting === 'busy'}
+          error={resetting === 'failed' ? RESET_FAILED : undefined}
+          onCancel={() => setResetting(null)}
+          onOk={() => runReset(onReset, setResetting)}
+        />
+      )}
     </>
   );
 }
@@ -395,6 +434,8 @@ export function SettingsScreen(p: {
   onRename(id: string, name: string): void;
   onRemove(id: string): void;
   onSwitch(id: string): void;
+  /** 지금 프로필의 학습 기록 전체를 지운다(설정은 남긴다) */
+  onResetAll(): Promise<void>;
 }) {
   const { settings: s } = p;
   const goal = (d: number) =>
@@ -402,6 +443,8 @@ export function SettingsScreen(p: {
   const [adding, setAdding] = useState('');
   const [editing, setEditing] = useState<{ id: string; name: string } | null>(null);
   const [removing, setRemoving] = useState<Profile | null>(null);
+  const [resettingAll, setResettingAll] = useState<ResetStep>(null);
+  const who = p.profiles.find((x) => x.id === p.current)?.name ?? '';
   return (
     <>
       <h1 className="page-title">설정</h1>
@@ -527,8 +570,29 @@ export function SettingsScreen(p: {
         </p>
       </section>
       <section className="card">
+        <h2>학습 기록 초기화</h2>
+        <p className="muted">
+          모든 단원의 푼 문제·레슨 진행·필기를 지우고 처음부터 시작해요. 설정과 프로필은 남아요.
+        </p>
+        <div className="row">
+          <button type="button" className="btn danger" onClick={() => setResettingAll('ask')}>
+            전체 초기화
+          </button>
+        </div>
+      </section>
+      <section className="card">
         <PenDiag />
       </section>
+      {resettingAll && (
+        <Confirm
+          message={`${who ? `'${who}'의 ` : ''}모든 학습 기록을 지울까요? 되돌릴 수 없어요.`}
+          okLabel={resettingAll === 'failed' ? '다시 시도' : '전체 초기화'}
+          busy={resettingAll === 'busy'}
+          error={resettingAll === 'failed' ? RESET_FAILED : undefined}
+          onCancel={() => setResettingAll(null)}
+          onOk={() => runReset(p.onResetAll, setResettingAll)}
+        />
+      )}
       {removing && (
         <Confirm
           message={`'${removing.name}' 프로필과 그 사람의 진행·필기를 모두 지울까요? 되돌릴 수 없어요.`}

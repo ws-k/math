@@ -41,6 +41,8 @@ export function checkContent(root = '.', samples = 200, onlyUnit?: string): Chec
     units.push(u);
     const W = u.id;
     if (`${u.id}.json` !== f) errors.push(`${f}: 파일 이름과 id 가 다름`);
+    // 저장 키(card:<단원>/…, ink:<단원>:…)와 기록 초기화가 '/'·':' 로 단원을 가르므로 id 에 쓰면 안 된다
+    if (!/^[a-z0-9-]+$/.test(u.id)) errors.push(`${W}: 단원 id 는 소문자·숫자·- 만`);
     const cu = curById.get(u.id);
     if (!cu) errors.push(`${W}: 커리큘럼에 없는 단원`);
     else if (cu.prereq.join() !== u.prereq.join()) errors.push(`${W}: prereq 가 커리큘럼과 다름`);
