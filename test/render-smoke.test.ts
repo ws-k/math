@@ -281,3 +281,45 @@ test('확률 실험: 질문 장면은 답을 맞히기 전까지 이론값 칸�
     g.matchMedia = saved;
   }
 });
+
+test('접은 화면: 결과가 많은 성공 횟수(10번 = 11칸)·여러 번 꺼내기도 가로 표로, 첫 칸은 센 것의 이름', async () => {
+  // 1-나 새 기구는 아직 쓰는 단원이 없어 m2-probability 를 빌려 장면 둘의 매개변수만 바꿔 그린다
+  const { COMPACT_QUERY } = await import('../src/lesson/widgets/compact.ts');
+  const g = globalThis as { matchMedia?: unknown };
+  const saved = g.matchMedia;
+  g.matchMedia = (q: string) => ({
+    matches: q === COMPACT_QUERY,
+    addEventListener() {},
+    removeEventListener() {},
+  });
+  try {
+    const { units, renderLesson } = await entry;
+    const u = units.find((x) => x.id === 'm2-probability');
+    assert.ok(u?.lesson);
+    const lesson = structuredClone(u.lesson);
+    const set = (id: string, params: unknown) => {
+      const s = lesson.scenes.find((x) => x.id === id) as { widget?: { params: unknown } };
+      assert.ok(s?.widget, id);
+      s.widget.params = params;
+    };
+    set('dice', { device: 'trial', p: '1/3', n: 10, label: '명중', seed: 4 });
+    set('hook', {
+      device: 'bag',
+      bag: [
+        { label: '빨강', count: 2 },
+        { label: '파랑', count: 3 },
+      ],
+      draws: 3,
+      replace: false,
+      count: '빨강',
+      seed: 3,
+    });
+    const html = renderLesson({ ...u, lesson });
+    const dice = sceneHtml(html, 'dice');
+    assert.equal(dice.match(/class="sim-table fold"/g)?.length, 2);
+    assert.match(dice, /<th scope="row">명중<\/th>/);
+    assert.match(sceneHtml(html, 'hook'), /<th scope="row">빨강<\/th>/);
+  } finally {
+    g.matchMedia = saved;
+  }
+});
