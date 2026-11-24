@@ -7,10 +7,23 @@
  */
 export const HANDLER = 'mathApp';
 
-type MaybeWebkit = { webkit?: { messageHandlers?: Record<string, unknown> } } | undefined;
+export type MaybeWebkit = { webkit?: { messageHandlers?: Record<string, unknown> } } | undefined;
+
+export interface NativeHandler {
+  postMessage(m: unknown): unknown;
+}
+
+/**
+ * 앱의 메시지 처리기. 앱인지 판단(isNativeApp)과 기록 사본 다리(backup.ts)가 이 하나를 기준으로 쓴다 —
+ * 기준이 둘이면 "앱이라 막는 화면을 띄웠는데 다리는 없다" 같은 어긋남이 생긴다.
+ */
+export function nativeHandler(w: MaybeWebkit = globalThis as MaybeWebkit): NativeHandler | null {
+  const h = w?.webkit?.messageHandlers?.[HANDLER] as Partial<NativeHandler> | undefined;
+  return typeof h?.postMessage === 'function' ? (h as NativeHandler) : null;
+}
 
 export function isNativeApp(w: MaybeWebkit = globalThis as MaybeWebkit): boolean {
-  return w?.webkit?.messageHandlers?.[HANDLER] !== undefined;
+  return nativeHandler(w) !== null;
 }
 
 /**

@@ -1,7 +1,7 @@
 // IndexedDB 얇은 래퍼. 키 하나에 값 하나(진행 카드·설정·쪽마다 필기)만 넣는 단순한 저장소.
 // localStorage 는 5MB 언저리에서 막히고 동기라 필기 저장에 맞지 않아 IndexedDB 를 쓴다.
 
-import { type BaseStore, createBackup, nativeBridge, type StartResult } from './backup.ts';
+import { type BaseStore, createBackup, nativeBridge, type Start } from './backup.ts';
 import { createScopedStore, FIRST, type RawStore, scopedKey } from './profile.ts';
 import { resetRanges, scopedResetMatch } from './reset.ts';
 import { createSaver } from './saver.ts';
@@ -112,9 +112,12 @@ const backup = (() => {
 })();
 const raw: RawStore = backup?.raw ?? idb;
 
-/** 앱 시작 때 사본과 맞춘다(지워졌으면 되살림). 화면을 그리기 전에 끝내야 첫 화면이 빈 기록을 읽지 않는다 */
-export function startBackup(): Promise<StartResult | 'off'> {
-  return backup ? backup.start() : Promise.resolve('off');
+/**
+ * 앱 시작 때 사본과 맞춘다(지워졌으면 되살림). ready 가 풀리기 전에 그리면 첫 화면이 빈 기록을 읽는다(boot.ts).
+ * 다시 시도마다 다시 부른다. 웹이면 null
+ */
+export function startBackup(): Start | null {
+  return backup?.start() ?? null;
 }
 
 let profile = FIRST;

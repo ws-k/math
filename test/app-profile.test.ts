@@ -5,28 +5,11 @@ import {
   createScopedStore,
   FIRST,
   normalizeProfiles,
-  type RawStore,
   scopedKey,
 } from '../src/app/profile.ts';
 import { createSaver } from '../src/app/saver.ts';
+import { memStore } from './app-fixture.ts';
 
-/** 메모리 저장소(IndexedDB 대신). 키 순서는 IndexedDB 처럼 문자열 순 */
-function memStore(): RawStore & { data: Map<string, unknown> } {
-  const data = new Map<string, unknown>();
-  const sorted = (prefix: string) => [...data.keys()].filter((k) => k.startsWith(prefix)).sort();
-  return {
-    data,
-    get: async (k) => data.get(k) as never,
-    set: async (k, v) => void data.set(k, v),
-    del: async (k) => void data.delete(k),
-    async delPrefix(prefixes, keys = []) {
-      for (const k of [...data.keys()]) if (prefixes.some((p) => k.startsWith(p))) data.delete(k);
-      for (const k of keys) data.delete(k);
-    },
-    keys: async (p = '') => sorted(p),
-    entries: async (p) => sorted(p).map((k) => [k, data.get(k)] as [string, never]),
-  };
-}
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
 test('첫 프로필은 접두어 없이(기존 데이터 그대로), 새 프로필은 @id/ 접두어', () => {
