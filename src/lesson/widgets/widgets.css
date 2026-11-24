@@ -379,7 +379,9 @@
   stroke-width: 2;
 }
 /* 직접 조작 셋(줄 세우기·선 잇기·벤 분류)이 같이 쓰는 것.
-   판 폭은 접은 화면 카드 안쪽 폭(298px)에 맞춰 그렸다 — 넓은 화면에서 끝없이 벌어지지 않게 묶는다 */
+   판 폭은 접은 화면 카드 안쪽 폭(298px)에 맞춰 그렸다 — 넓은 화면에서 끝없이 벌어지지 않게 묶는다.
+   판에는 touch-action 을 두지 않는다 — 판 위를 쓸어도 페이지가 스크롤되게(손잡이에만 none, lesson.css .mover 와 같은 관례).
+   SVG 안 점(선 잇기)은 브라우저가 touch-action 을 무시해 useDrag 가 끌기를 잡은 터치만 막는다 */
 .lesson .ct-line,
 .lesson .ct-pairs,
 .lesson .ct-vboard {
@@ -393,7 +395,6 @@
 .lesson .ct-line,
 .lesson .ct-vboard {
   position: relative;
-  touch-action: none;
 }
 /* 칩·카드: 놓으면 FLIP(flyFrom)으로 미끄러져 가고, 끄는 동안(data-lift)은 손가락만 따라온다 */
 .lesson .ct-chip,
@@ -418,7 +419,6 @@
 }
 .lesson .ct-chip {
   border-radius: 16px;
-  font-size: 1.4rem;
   z-index: 2;
 }
 .lesson .ct-chip[data-lift],
@@ -503,7 +503,13 @@
 .lesson .ct-groups .ct-case,
 .lesson .ct-found.tight .ct-case {
   padding: 0 6px;
-  line-height: 1.5;
+  line-height: 1.3;
+  font-size: 0.9rem;
+}
+/* 다 찾은 뒤 결론 식(읽는 값 줄 — 안내 칸과 달리 다른 안내에 덮이지 않는다) */
+.lesson .ct-done {
+  color: var(--good);
+  text-align: center;
 }
 /* 찾은 목록을 촘촘히: 선 잇기 질문 장면(prob-probability bag)은 보기 단추까지 한 카드라 다 이은 뒤 63px 넘쳤다 */
 .lesson .ct-found.tight {
@@ -514,7 +520,6 @@
   display: block;
   height: auto;
   overflow: visible;
-  touch-action: none;
 }
 .lesson .ct-edge {
   stroke: var(--ink);
@@ -551,32 +556,40 @@
   cursor: grab;
   outline: none;
 }
-.lesson .ct-node > circle {
+.lesson .ct-dot {
   fill: var(--bg);
   stroke: var(--primary);
   stroke-width: 2.5;
 }
-.lesson .ct-pairs .ct-node > text {
+.lesson .ct-pairs .ct-name {
   fill: var(--primary);
-  font: 900 20px var(--sans);
+  font-family: var(--sans);
+  font-weight: 900;
   text-anchor: middle;
   dominant-baseline: central;
   pointer-events: none;
 }
 /* 손가락 밑 점(지금 어느 점 위인지 — 맞다는 신호가 아니다)·고른 점 */
-.lesson .ct-node[data-hot] > circle {
+.lesson .ct-node[data-hot] > .ct-dot {
   fill: var(--primary-soft);
   stroke-width: 4;
 }
-.lesson .ct-node.sel > circle {
+.lesson .ct-node.sel > .ct-dot {
   fill: var(--primary);
   stroke-width: 4;
 }
-.lesson .ct-pairs .ct-node.sel > text {
+.lesson .ct-pairs .ct-node.sel > .ct-name {
   fill: var(--primary-ink);
 }
-.lesson .ct-node:focus-visible > circle {
-  stroke-width: 5;
+/* 키보드 초점: 고른 점(칠함)과 구분되게 바깥 점선 고리 */
+.lesson .ct-fring {
+  fill: none;
+  stroke: none;
+}
+.lesson .ct-node:focus-visible > .ct-fring {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-dasharray: 5 4;
 }
 .lesson .ct-node .ct-deg > circle {
   fill: var(--good);
@@ -610,15 +623,16 @@
   font: 800 13px var(--sans);
 }
 .lesson .ct-card {
-  width: 44px;
-  height: 44px;
   border-radius: 12px;
-  font-size: 1.05rem;
   z-index: 2;
 }
 .lesson .ct-card[data-wrong] {
   border: 3px solid var(--bad);
   color: var(--bad);
+}
+/* 틀린 카드를 골랐을 때: 칠한 바탕(primary) 위 글자는 바탕 글자색으로 */
+.lesson .ct-card.sel[data-wrong] {
+  color: var(--primary-ink);
 }
 /* 더미 아래 장: 맨 위 장에 가려 테두리만 보이는 두께 */
 .lesson .ct-card.under {
@@ -636,7 +650,6 @@
 }
 .lesson .ct-vdeck .ct-left {
   flex: 1;
-  margin-left: 56px;
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--sub);
@@ -654,7 +667,7 @@
   gap: 4px;
 }
 .lesson .ct-choose .lbtn {
-  min-height: 48px;
+  min-height: 44px;
   min-width: 0;
   padding: 2px;
   font-size: 0.8rem;

@@ -262,11 +262,11 @@ export function tapStep(
   t: { fails: number; pick: number | null },
   i: number,
 ): { fails: number; pick: number | null; pair?: [number, number]; hint: 'drag' | 'tap' | null } {
-  if (t.pick === null) {
-    const fails = t.fails + 1;
-    return { fails, pick: i, hint: fails === 1 ? 'drag' : fails === FAILS_FOR_TAP ? 'tap' : null };
-  }
-  if (t.pick === i) return { fails: t.fails, pick: null, hint: null };
+  const hint = (fails: number) =>
+    fails === 1 ? ('drag' as const) : fails === FAILS_FOR_TAP ? ('tap' as const) : null;
+  // 고르기와 풀기(같은 것을 다시 누르기)는 둘 다 '끌지 않고 누른' 한 번으로 센다 — 같은 칩을 두 번 누르는 것이 흔한 신호
+  if (t.pick === null) return { fails: t.fails + 1, pick: i, hint: hint(t.fails + 1) };
+  if (t.pick === i) return { fails: t.fails + 1, pick: null, hint: hint(t.fails + 1) };
   return { fails: t.fails, pick: null, pair: [t.pick, i], hint: null };
 }
 
@@ -436,8 +436,9 @@ export interface PGeom {
  */
 export function pGeom(n: number): PGeom {
   const w = L_W;
-  // 200: 판 아래 찾은 목록(15쌍까지)·결론 두 줄·'처음부터 다시'·보기 단추가 접은 화면 한 장에 들게(214 에서 줄임)
-  const h = 200;
+  // 194: 판 아래 찾은 목록(15쌍까지)·결론 두 줄·'처음부터 다시'·보기 단추가 접은 화면 한 장에 들게(214 → 194).
+  // 200 이면 prob-probability bag(질문 장면) 완료 상태가 4px 넘쳤다. 가장자리 여유를 반지름 + 5 로 줄여 육각형 이웃 간격 75 를 지킨다
+  const h = 194;
   const start = ({ 2: 180, 3: -90, 4: -135, 5: -90, 6: -120 } as Record<number, number>)[n] ?? -90;
   const unit = Array.from({ length: n }, (_, i) => {
     const t = ((start + (i * 360) / n) * Math.PI) / 180;
@@ -447,7 +448,7 @@ export function pGeom(n: number): PGeom {
   const ys = unit.map((u) => u[1]);
   const bw = Math.max(...xs) - Math.min(...xs);
   const bh = Math.max(...ys) - Math.min(...ys);
-  const m = P_R + 8;
+  const m = P_R + 5;
   const rho = Math.min(90, bw ? (w - 2 * m) / bw : 90, bh ? (h - 2 * m) / bh : 90);
   const cx = w / 2 - ((Math.max(...xs) + Math.min(...xs)) / 2) * rho;
   const cy = h / 2 - ((Math.max(...ys) + Math.min(...ys)) / 2) * rho;
@@ -516,8 +517,9 @@ export const V_W = L_W;
 export const V_H = 270;
 export const V_A = { cx: 104, cy: 120, r: 100 };
 export const V_B = { cx: 194, cy: 120, r: 100 };
-/** 판 아래 더미 줄의 높이(카드 더미·남은 수·확인하기) */
-export const V_DECK = 56;
+/** 판 아래 더미 줄의 높이(카드 더미·남은 수·확인하기 — 누르는 칸 44 + 위아래 3). 56 이면 질문 장면에서 넣을 곳 단추를 연 채
+ *  두 줄 안내가 뜨면 접은 화면 카드가 3px 넘쳤다(prob-conditional venn) */
+export const V_DECK = 50;
 /** 카드 한 변(누르는 칸 최소). 화면도 이 값으로 그린다 */
 export const V_CARD = 44;
 /** 카드 줄 간격(카드 + 틈 4) */

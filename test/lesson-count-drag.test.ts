@@ -483,7 +483,9 @@ test('누르기는 첫 번부터 고르기로 동작하고(낭독기 두 번 두
   assert.deepEqual(b, { fails: 1, pick: null, pair: [2, 0], hint: null });
   const c = tapStep({ fails: 1, pick: null }, 1);
   assert.equal(c.hint, 'tap');
-  assert.deepEqual(tapStep({ fails: 3, pick: 1 }, 1), { fails: 3, pick: null, hint: null });
+  // 같은 것을 두 번 누르기(고르기 → 풀기)도 끌기를 못 하는 신호로 센다 — 두 번째에 '눌러도 돼요'
+  assert.deepEqual(tapStep({ fails: 1, pick: 1 }, 1), { fails: 2, pick: null, hint: 'tap' });
+  assert.deepEqual(tapStep({ fails: 3, pick: 1 }, 1), { fails: 4, pick: null, hint: null });
 });
 
 // ---- 지금 단원 JSON 그대로 ----

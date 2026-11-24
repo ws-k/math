@@ -1,10 +1,13 @@
 // 경우의 수 화면. 움직임이 곧 수학인 셋은 손으로 옮긴다(2026-11-23 결정 D1, 원칙 P1):
-//   순서 있는 나열 = 칩을 줄에 세우고 자리 바꾸기(Line) · 두 개 고르기 = 두 점을 선으로 잇기(Pairs) ·
+//   순서 있는 나열 = 칩을 자리에 세우고 자리 바꾸기(Line) · 두 개 고르기 = 두 개를 선으로 잇기(Pairs) ·
 //   벤 다이어그램 = 원소 카드를 영역에 넣어 분류(VennSort).
 // 셋 이상 고르기·중복 나열은 누르기(Lister), 수형도·파스칼은 '보여 주기'라 누르기 그대로다.
 // 끄는 동안은 useDrag 가 프레임마다 부르는 onMove 에서 그 요소의 transform·속성만 직접 고친다(React 렌더 0회, P8).
 // 손을 떼면 놓은 자리를 count.ts(lSpotAt·pHit·vRegionAt)로 한 번 판정하고 상태를 바꾼다(P3) — 끄는 도중에는 맞다/틀리다
-// 신호가 없다. 그냥 누르기를 두 번 하면(끌기를 못 하는 신호) '눌러서 하기'가 켜진다(P4). 키보드는 처음부터 늘 된다.
+// 신호가 없다. 누르기는 첫 번부터 고르기로 동작하고(화면 낭독기의 두 번 두드리기가 누르기로 오기 때문 — tapStep),
+// 안내 글만 두 번째에 '눌러도 돼요'를 띄운다(P4). 키보드는 처음부터 늘 된다.
+// 결론 글(곱·나눗셈 식)은 안내 칸(토스트)이 아니라 읽는 값 줄에 둔다 — 다 찾은 뒤 다른 안내가 와도 지워지지 않게.
+// 문구는 중립어('자리'·'경우'·'짝')이고 장면이 words 칸으로 바꾼다(count.ts CWords).
 // 같은 끌어 놓기가 저울(Balance.tsx)에도 있다 — 공용으로 꺼내는 것은 1-사 묶음 몫이라 여기서는 이 부품 안에 둔다.
 import {
   type ButtonHTMLAttributes,
@@ -12,6 +15,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
+  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -20,9 +24,13 @@ import {
 import { flyFrom } from '../fly.ts';
 import { useDrag } from '../useDrag.ts';
 import {
+  CARD_FONT,
+  CHIP_FONT,
   type CountParams,
   type CState,
+  cardInner,
   cDone,
+  chipInner,
   cInit,
   cLabel,
   cLink,
@@ -30,17 +38,27 @@ import {
   cTap,
   cTotal,
   cTree,
+  FAILS_FOR_TAP,
+  fitPx,
   L_W,
-  lFactors,
+  LABEL_MIN,
+  lDone,
   lGeom,
   lGroups,
   lMove,
+  lSeats,
+  lShort,
   lSpotAt,
+  NODE_FONT,
+  nodeInner,
   pDegree,
+  pDone,
   pGeom,
   pHit,
+  tapStep,
   V_A,
   V_B,
+  V_CARD,
   V_DECK,
   V_H,
   V_W,
@@ -50,6 +68,7 @@ import {
   vDeck,
   vElems,
   viewOf,
+  vNames,
   vPos,
   vPut,
   vRegionAt,
@@ -60,26 +79,25 @@ type Msg = { text: string; cls: '' | 'ok' | 'bad' };
 
 /** 이만큼 못 움직였으면 끌기가 아니라 누르기로 본다(저울과 같은 값) */
 const TAP_PX = 8;
-/** 그냥 누르기·놓친 끌기가 이만큼이면 '눌러서 하기'를 켠다(P4 — 저울·'넘어가기'와 같은 기준) */
-const FAILS_FOR_TAP = 2;
 /** 놓은 뒤 새 자리로 미끄러져 가는 시간 */
 const FLY_MS = 220;
-/** 이미 찾은 줄·선을 깜빡이는 시간 */
+/** 이미 찾은 경우·짝을 깜빡이는 시간 */
 const FLASH_MS = 900;
-/** 자리 이름. 나열은 4! = 24 가 손으로 찾는 상한이라 넷째까지면 된다 */
-const ORD = ['첫째', '둘째', '셋째', '넷째', '다섯째', '여섯째'];
+/** '눌러도 돼요' 안내의 앞말(두 번째 누르기·놓친 끌기에서) */
+const TAP_ON = '끌기가 어려우면 눌러도 돼요.';
 
-/** 처음 안내(토스트 한 줄). 단원 글(lead)이 자세히 말하고, 여기서는 무엇을 끄는지만 */
+/** 처음 안내(토스트 한 줄). 장면이 words.intro 로 바꾼다 */
 const INTRO: Partial<Record<ReturnType<typeof viewOf>, string>> = {
-  line: '위에서 끌어 아래 줄에 세워 보세요.',
-  pair: '한 점에서 다른 점까지 끌어 선을 그어 보세요.',
+  line: '위에서 끌어 아래 자리에 놓아 보세요.',
+  pair: '하나에서 다른 하나까지 끌어 이어 보세요.',
   venn: '아래 카드를 끌어 알맞은 곳에 넣어 보세요.',
 };
+const introOf = (p: CountParams) => p.words?.intro ?? INTRO[viewOf(p)] ?? '';
 
 export function Count({ params: p, onDone, onMiss }: WidgetProps<CountParams>) {
   const view = viewOf(p);
   const [s, setS] = useState<CState>(() => cInit(p));
-  const [msg, setMsg] = useState<Msg>({ text: INTRO[view] ?? '', cls: '' });
+  const [msg, setMsg] = useState<Msg>({ text: introOf(p), cls: '' });
   const done = useRef(false);
   const settle = (n: CState) => {
     setS(n);
@@ -108,7 +126,7 @@ export function Count({ params: p, onDone, onMiss }: WidgetProps<CountParams>) {
     ) : (
       <Lister p={p} s={s} settle={settle} say={setMsg} onMiss={onMiss} />
     );
-  // 직접 조작 셋은 안내 칸을 자기 자리(목록과 '처음부터 다시' 사이)에 둔다
+  // 직접 조작 셋은 안내 칸을 자기 자리(목록 아래, '처음부터 다시' 위)에 둔다
   return (
     <div className="wgt ct">
       {body}
@@ -128,7 +146,7 @@ function rectsOf(host: ParentNode | null | undefined, sel: string, attr: string)
   return m;
 }
 
-/** 옮긴 뒤 한 번: 옛 자리에서 날려 보내고, 키보드로 옮겼으면 초점을 다시 잡는다 */
+/** 옮긴 뒤 한 번: 옛 자리에서 날려 보낸다 */
 function useSettleFx(host: RefObject<HTMLElement | null>, sel: string, attr: string) {
   const fly = useRef<Map<string, DOMRect> | null>(null);
   useLayoutEffect(() => {
@@ -149,18 +167,18 @@ function useSettleFx(host: RefObject<HTMLElement | null>, sel: string, attr: str
   };
 }
 
-/** 이 요소를 잠깐 깜빡인다(이미 찾은 줄·선). 상태가 아니라 속성만 — 다시 그리지 않는다 */
+/** 이 요소를 잠깐 깜빡인다(이미 찾은 경우·짝). 상태가 아니라 속성만 — 다시 그리지 않는다 */
 function flash(host: ParentNode | null | undefined, key: string) {
   for (const el of host?.querySelectorAll<Element>(`[data-k="${key}"]`) ?? []) {
     el.removeAttribute('data-flash');
-    // 같은 줄을 연달아 다시 만들어도 처음부터 깜빡이게 한 번 그려 낸다
+    // 같은 경우를 연달아 다시 만들어도 처음부터 깜빡이게 한 번 그려 낸다
     void (el as HTMLElement).getBoundingClientRect();
     el.setAttribute('data-flash', '');
     setTimeout(() => el.removeAttribute('data-flash'), FLASH_MS);
   }
 }
 
-/** 놓은 요소의 가운데를 판 좌표로. 판은 폭에 맞춰 늘고 주니 폭 비율(scale)로 되돌린다 */
+/** 놓은 요소의 가운데를 판 좌표로. 판은 폭에 맞춰 늘고 주니 폭 비율로 되돌린다(scaleY: 세로도 같은 비율인 판) */
 function boardPoint(board: HTMLElement, r: DOMRect, w: number, scaleY: boolean) {
   const b = board.getBoundingClientRect();
   const k = w / b.width;
@@ -225,20 +243,29 @@ function DragBtn({ busy, locked, onDrop, onActivate, ...rest }: DragBtnProps) {
   );
 }
 
-/** 그냥 누르기·놓친 끌기를 세고, 두 번이면 '눌러서 하기'를 켠다. 켜는 순간 안내를 토스트에 */
-function useTapFallback(say: (m: Msg) => void, how: string, again: string) {
-  const [fails, setFails] = useState(0);
-  const tapMode = fails >= FAILS_FOR_TAP;
+/**
+ * 누르기 고르기와 '눌러도 돼요' 안내(tapStep). tap = 손가락 누르기(안내를 세고 띄움), key = 키보드·낭독기(세지 않음),
+ * miss = 놓친 끌기(세고, 두 번째에 '눌러도 돼요'). quiet 이면(다 찾은 뒤) 안내 없이 고르기만.
+ */
+function useTaps(say: (m: Msg) => void, how: string) {
+  const [t, setT] = useState<{ fails: number; pick: number | null }>({ fails: 0, pick: null });
+  const step = (i: number, count: boolean, quiet: boolean, drag: string) => {
+    const r = tapStep(count ? t : { ...t, fails: FAILS_FOR_TAP + 1 }, i);
+    setT({ fails: count ? r.fails : t.fails, pick: r.pick });
+    if (!quiet && r.hint) say({ text: r.hint === 'drag' ? drag : `${TAP_ON} ${how}`, cls: '' });
+    return r;
+  };
   return {
-    tapMode,
-    /** 끌기를 못 한 한 번. 켜졌으면 true */
-    miss(text = again) {
-      const n = fails + 1;
-      setFails(n);
-      // 안내는 토스트 하나로(따로 한 줄을 더 쓰면 접은 화면에서 카드가 넘친다 — 시안 측정)
-      say({ text: n >= FAILS_FOR_TAP ? `끌기가 어려우면 눌러도 돼요. ${how}` : text, cls: '' });
-      return n >= FAILS_FOR_TAP;
+    pick: t.pick,
+    setPick: (pick: number | null) => setT((x) => ({ ...x, pick })),
+    tap: (i: number, quiet: boolean, drag: string) => step(i, true, quiet, drag),
+    key: (i: number) => step(i, false, true, ''),
+    miss(text: string) {
+      const fails = t.fails + 1;
+      setT({ ...t, fails });
+      say({ text: fails === FAILS_FOR_TAP ? `${TAP_ON} ${how}` : text, cls: '' });
     },
+    reset: () => setT({ fails: t.fails, pick: null }),
   };
 }
 
@@ -248,21 +275,17 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
   const items = p.items ?? [];
   const k = p.k ?? 0;
   const g = lGeom(items.length, k);
-  const total = cTotal(p);
+  const seats = lSeats(p);
   const finished = cDone(p, s);
   const board = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
   const fx = useSettleFx(board, '[data-chip]', 'data-chip');
-  const [pick, setPick] = useState<number | null>(null);
   const [live, setLive] = useState('');
-  const tap = useTapFallback(
-    say,
-    '하나를 누르고, 갈 자리를 누르세요.',
-    '누른 채 아래 줄의 자리까지 끌어 보세요.',
-  );
+  const taps = useTaps(say, '하나를 누르고, 갈 자리를 누르세요.');
+  const pick = taps.pick;
   const spotName = (st: CState, i: number) => {
     const at = st.seat.indexOf(i);
-    return at >= 0 ? `${ORD[at]} 자리` : '줄 밖';
+    return at >= 0 ? `${seats[at]} 자리` : (p.words?.wait ?? '남은 것');
   };
   const lineText = (st: CState) =>
     st.seat.map((x) => (x === null ? '빈자리' : items[x])).join(', ');
@@ -273,41 +296,36 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
     if (r.res === 'none') return false;
     fx.mark(dropped ? [String(i), dropped] : undefined);
     settle(r.s);
-    setLive(`지금 줄: ${lineText(r.s)}`);
-    const label = r.key ? cLabel(p, r.key) : '';
-    if (r.res === 'new') {
-      if (cDone(p, r.s)) {
-        const f = lFactors(p);
-        say({ text: `${f.map((x, j) => `${ORD[j]} ${x}`).join(' × ')} = ${total}`, cls: 'ok' });
-      } else say({ text: `${label} — 새 줄이에요.`, cls: 'ok' });
-    } else if (r.res === 'dup') {
-      say({ text: `${label} — 이미 찾은 줄이에요.`, cls: 'bad' });
+    setLive(`지금 자리: ${lineText(r.s)}`);
+    // 다 찾은 뒤에는 안내를 더 띄우지 않는다 — 결론은 읽는 값 줄에 남아 있다
+    if (finished) return true;
+    const label = r.key ? lShort(p, r.key) : '';
+    if (r.res === 'new')
+      say(cDone(p, r.s) ? { text: '', cls: '' } : { text: `${label} — 새 경우예요.`, cls: 'ok' });
+    else if (r.res === 'dup') {
+      // 꽉 찬 줄에서 자리를 바꾸다 지나가는 중복은 자연스러운 과정이라 틀린 시도(onMiss)로 세지 않는다
+      say({ text: `${label} — 이미 찾은 경우예요.`, cls: 'bad' });
       flash(board.current?.parentElement, r.key as string);
-      onMiss();
-    } else if (!finished)
-      // 다 찾은 뒤에는 결론(곱셈) 글을 그대로 둔다
+    } else
       say({
-        text: r.s.seat.some((x) => x !== null) ? '빈자리를 채우면 한 줄이 적혀요.' : '',
+        text: r.s.seat.some((x) => x !== null) ? '빈자리를 채우면 한 경우가 적혀요.' : '',
         cls: '',
       });
     return true;
   };
-
-  const choose = (i: number) => {
-    if (pick === null) {
-      setPick(i);
-      setLive(`${items[i]} 골랐어요. 갈 자리를 고르세요.`);
-    } else if (pick === i) setPick(null);
-    else {
-      const at = s.seat.indexOf(i);
-      commit(pick, at >= 0 ? at : 'wait');
-      setPick(null);
-    }
+  const spotOf = (i: number) => {
+    const at = s.seat.indexOf(i);
+    return at >= 0 ? at : ('wait' as const);
+  };
+  /** 누르기·키보드로 고르기. 다른 칩을 누르면 고른 칩이 그 칩 자리로 */
+  const choose = (r: { pick: number | null; pair?: [number, number] }, i: number) => {
+    if (r.pair) commit(r.pair[0], spotOf(r.pair[1]));
+    else if (r.pick === i) setLive(`${items[i]} 골랐어요. 갈 자리를 고르세요.`);
   };
   const toSpot = (to: number | 'wait') => {
     if (pick === null) return;
     commit(pick, to);
-    setPick(null);
+    taps.setPick(null);
   };
 
   const onDrop = (i: number) => (el: HTMLElement, dx: number, dy: number) => {
@@ -316,8 +334,7 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
     const back = () => flyFrom(el, rect, { duration: FLY_MS });
     if (Math.hypot(dx, dy) < TAP_PX) {
       back();
-      if (tap.tapMode) choose(i);
-      else tap.miss();
+      choose(taps.tap(i, finished, '누른 채 아래 자리까지 끌어 보세요.'), i);
       return;
     }
     const host = board.current;
@@ -326,8 +343,8 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
     const to = lSpotAt(g, x, y);
     if (to !== null && commit(i, to, rect)) return;
     back();
-    if (to === null) {
-      tap.miss('줄의 자리 위나 위쪽 칸에 놓아 보세요.');
+    if (to === null && !finished) {
+      taps.miss('아래 자리 위나 위쪽 칸에 놓아 보세요.');
       onMiss();
     }
   };
@@ -340,32 +357,40 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
     else if (e.key === 'ArrowDown' && at < 0) {
       const f = s.seat.indexOf(null);
       if (f >= 0) to = f;
-      else setLive('빈자리가 없어요. 줄에 선 것을 위 방향키로 빼거나 Enter 로 골라 바꾸세요.');
+      else setLive('빈자리가 없어요. 자리의 것을 위 방향키로 빼거나 Enter 로 골라 바꾸세요.');
     } else if (e.key === 'ArrowUp' && at >= 0) to = 'wait';
-    else if (e.key === 'Escape') setPick(null);
+    else if (e.key === 'Escape') taps.setPick(null);
     if (to === null) return;
     e.preventDefault();
     commit(i, to);
   };
 
-  const pct = (x: number) => `calc(${(x / L_W) * 100}% - ${g.chip / 2}px)`;
+  const reset = () => {
+    fx.mark();
+    taps.reset();
+    settle(cInit(p));
+    setLive('처음부터 다시');
+    say({ text: introOf(p), cls: '' });
+  };
+
+  const pct = (x: number, w: number) => `calc(${(x / L_W) * 100}% - ${w / 2}px)`;
   const groups = finished && k >= 2 ? lGroups(p, s.found) : null;
   return (
     <>
       <div className="ct-line" ref={board} style={{ height: g.h }}>
         <span className="ct-zlabel" style={{ top: 0 }}>
-          줄 밖
+          {p.words?.wait ?? '남은 것'}
         </span>
         <button
           type="button"
           tabIndex={-1}
           className="ct-wait"
-          aria-label="줄 밖"
+          aria-label={p.words?.wait ?? '남은 것'}
           style={{ top: g.waitTop, height: g.waitBottom - g.waitTop }}
           onClick={() => toSpot('wait')}
         />
         <span className="ct-zlabel" style={{ top: g.waitBottom + 6 }}>
-          줄 — 왼쪽이 첫째
+          자리 — 왼쪽이 {seats[0]}
         </span>
         {g.seatX.map((x, j) => (
           <button
@@ -374,17 +399,12 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
             // biome-ignore lint/suspicious/noArrayIndexKey: 자리 번호
             key={j}
             className="ct-seat"
-            aria-label={`${ORD[j]} 자리`}
-            style={{
-              left: `calc(${(x / L_W) * 100}% - ${g.box / 2}px)`,
-              top: g.seatY - g.box / 2,
-              width: g.box,
-              height: g.box,
-            }}
+            aria-label={`${seats[j]} 자리`}
+            style={{ left: pct(x, g.box), top: g.seatY - g.box / 2, width: g.box, height: g.box }}
             onClick={() => toSpot(j)}
           >
             <span className="ct-ord" style={{ top: g.box + 2 }}>
-              {ORD[j]}
+              {seats[j]}
             </span>
           </button>
         ))}
@@ -397,12 +417,18 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
               key={i}
               data-chip={i}
               className={`ct-chip${pick === i ? ' sel' : ''}`}
-              style={{ left: pct(x), top: y - g.chip / 2, width: g.chip, height: g.chip }}
+              style={{
+                left: pct(x, g.chip),
+                top: y - g.chip / 2,
+                width: g.chip,
+                height: g.chip,
+                fontSize: fitPx(name, chipInner(g.chip), CHIP_FONT) ?? LABEL_MIN,
+              }}
               aria-label={`${name}, ${spotName(s, i)}`}
               aria-pressed={pick === i}
               busy={busy}
               onDrop={onDrop(i)}
-              onActivate={() => choose(i)}
+              onActivate={() => choose(taps.key(i), i)}
               onKeyDown={onKey(i)}
             >
               {name}
@@ -411,20 +437,22 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
         })}
       </div>
       <div className="wgt-read">
-        <span className="num">
-          {finished ? `모두 ${total}가지예요` : `찾은 경우 ${s.found.length}가지`}
-        </span>
+        {finished ? (
+          <span className="num ct-done">{lDone(p)}</span>
+        ) : (
+          <span className="num">찾은 경우 {s.found.length}가지</span>
+        )}
       </div>
       {groups ? (
         <div className="ct-groups" style={{ '--cols': groups.length } as CSSProperties}>
           {groups.map((gr) => (
             <div key={gr.head} className="ct-g">
               <span className="ct-gh">
-                {ORD[0]} {items[gr.head]}
+                {seats[0]} {items[gr.head]}
               </span>
               {gr.keys.map((f) => (
                 <span key={f} className="ct-case">
-                  {cLabel(p, f)}
+                  {lShort(p, f)}
                 </span>
               ))}
             </div>
@@ -434,12 +462,15 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
         <div className="ct-found tight">
           {s.found.map((f) => (
             <span key={f} className="ct-case" data-k={f}>
-              {cLabel(p, f)}
+              {lShort(p, f)}
             </span>
           ))}
         </div>
       )}
       {toast}
+      <button type="button" className="lbtn quiet" onClick={reset}>
+        처음부터 다시
+      </button>
       <div className="ct-sr" aria-live="polite">
         {live}
       </div>
@@ -453,20 +484,15 @@ function Pairs({ p, s, settle, say, onMiss, toast }: Drag) {
   const items = p.items ?? [];
   const n = items.length;
   const g = pGeom(n);
-  const total = cTotal(p);
   const finished = cDone(p, s);
   const svg = useRef<SVGSVGElement>(null);
   const rubber = useRef<SVGLineElement>(null);
   const busy = useRef(false);
   /** 방금 그은 선(한 번 그려지듯 나타나게) */
   const fresh = useRef<string | null>(null);
-  const [pick, setPick] = useState<number | null>(null);
   const [live, setLive] = useState('');
-  const tap = useTapFallback(
-    say,
-    '두 점을 차례로 누르면 이어져요.',
-    '누른 채 다른 점까지 끌어 보세요.',
-  );
+  const taps = useTaps(say, '두 개를 차례로 누르면 이어져요.');
+  const pick = taps.pick;
   const deg = pDegree(p, s.found);
   // 목록 글자는 붙여 쓴다('빨1·빨2') — 짝이 10~15개라 한 줄에 하나라도 더 들어가게
   const pairLabel = (key: string) =>
@@ -478,47 +504,45 @@ function Pairs({ p, s, settle, say, onMiss, toast }: Drag) {
   const link = (a: number, b: number) => {
     const r = cLink(p, s, a, b);
     if (r.res === 'self') return;
-    const label = cLabel(p, r.key as string);
+    const label = pairLabel(r.key as string);
     if (r.res === 'dup') {
+      flash(svg.current?.parentElement, r.key as string);
+      // 다 이은 뒤에는 안내·틀린 시도로 세지 않는다(결론 줄이 그대로 남게)
+      if (finished) return;
       say({
-        text: `${items[a]}→${items[b]}, ${items[b]}→${items[a]} 모두 같은 선이에요. 이미 이었어요.`,
+        text: `${items[a]}→${items[b]}, ${items[b]}→${items[a]} 모두 같은 짝이에요. 이미 이었어요.`,
         cls: 'bad',
       });
-      flash(svg.current?.parentElement, r.key as string);
       onMiss();
       return;
     }
     fresh.current = r.key as string;
     settle(r.s);
     setLive(`${label} 이었어요. 찾은 짝 ${r.s.found.length}가지.`);
-    if (cDone(p, r.s))
-      say({
-        text: `점마다 선 ${n - 1}개 × ${n}개 = ${n * (n - 1)}, 선 하나를 양 끝에서 두 번 셌으니 ÷ 2 = ${total}`,
-        cls: 'ok',
-      });
-    else say({ text: `${label} — 새 짝이에요.`, cls: 'ok' });
+    say(cDone(p, r.s) ? { text: '', cls: '' } : { text: `${label} — 새 짝이에요.`, cls: 'ok' });
   };
-  const choose = (i: number) => {
-    if (pick === null) {
-      setPick(i);
-      setLive(`${items[i]} 잡았어요. 이을 점을 고르세요.`);
-    } else if (pick === i) setPick(null);
-    else {
-      setPick(null);
-      link(pick, i);
-    }
+  const choose = (r: { pick: number | null; pair?: [number, number] }, i: number) => {
+    if (r.pair) link(r.pair[0], r.pair[1]);
+    else if (r.pick === i) setLive(`${items[i]} 잡았어요. 이을 것을 고르세요.`);
   };
   const onKey = (i: number) => (e: KeyboardEvent<SVGGElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      choose(i);
-    } else if (e.key === 'Escape') setPick(null);
+      choose(taps.key(i), i);
+    } else if (e.key === 'Escape') taps.setPick(null);
     else if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key)) {
       // 점 사이 초점 옮기기(이웃 점) — Tab 을 여러 번 누르지 않아도 되게
       e.preventDefault();
       const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
       svg.current?.querySelector<SVGGElement>(`[data-node="${(i + d + n) % n}"]`)?.focus();
     }
+  };
+  const reset = () => {
+    fresh.current = null;
+    taps.reset();
+    settle(cInit(p));
+    setLive('처음부터 다시');
+    say({ text: introOf(p), cls: '' });
   };
   return (
     <>
@@ -528,7 +552,7 @@ function Pairs({ p, s, settle, say, onMiss, toast }: Drag) {
         viewBox={`0 0 ${g.w} ${g.h}`}
         className="ct-pairs"
         role="group"
-        aria-label={`점 ${n}개. 두 점을 선으로 이으면 한 쌍`}
+        aria-label={`${n}개. 두 개를 선으로 이으면 한 짝`}
       >
         {s.found.map((key) => {
           const [a, b] = key.split(',').map(Number) as [number, number];
@@ -563,21 +587,19 @@ function Pairs({ p, s, settle, say, onMiss, toast }: Drag) {
             deg={finished ? deg[i] : undefined}
             label={`${name}${
               deg[i]
-                ? `, 이은 점 ${s.found
+                ? `, 이은 것 ${s.found
                     .filter((k) => k.split(',').includes(String(i)))
                     .map((k) => items[Number(k.split(',').find((x) => x !== String(i)))])
                     .join(', ')}`
                 : ''
             }`}
             onKey={onKey(i)}
-            onActivate={() => choose(i)}
+            onActivate={() => choose(taps.key(i), i)}
             onRelease={(h, moved) => {
-              if (!moved) {
-                if (tap.tapMode) choose(i);
-                else tap.miss();
-              } else if (h >= 0) link(i, h);
-              else {
-                tap.miss('다른 점 위에서 손을 떼면 이어져요.');
+              if (!moved) choose(taps.tap(i, finished, '누른 채 다른 하나까지 끌어 보세요.'), i);
+              else if (h >= 0) link(i, h);
+              else if (!finished) {
+                taps.miss('다른 하나 위에서 손을 떼면 이어져요.');
                 onMiss();
               }
             }}
@@ -585,9 +607,11 @@ function Pairs({ p, s, settle, say, onMiss, toast }: Drag) {
         ))}
       </svg>
       <div className="wgt-read">
-        <span className="num">
-          {finished ? `모두 ${total}가지예요` : `찾은 짝 ${s.found.length}가지`}
-        </span>
+        {finished ? (
+          <span className="num ct-done">{pDone(p)}</span>
+        ) : (
+          <span className="num">찾은 짝 {s.found.length}가지</span>
+        )}
       </div>
       <div className="ct-found tight">
         {s.found.map((f) => (
@@ -597,6 +621,9 @@ function Pairs({ p, s, settle, say, onMiss, toast }: Drag) {
         ))}
       </div>
       {toast}
+      <button type="button" className="lbtn quiet" onClick={reset}>
+        처음부터 다시
+      </button>
       <div className="ct-sr" aria-live="polite">
         {live}
       </div>
@@ -639,12 +666,11 @@ function PairNode({ i, name, g, svg, rubber, busy, picked, deg, label, ...h }: P
     if (j >= 0) svg.current?.querySelector(`[data-node="${j}"]`)?.setAttribute('data-hot', '');
     cur.hot = j;
   };
-  const stop = () => {
+  /** 고무줄 선·손가락 밑 표시를 감춘다(시작점 근처로 돌아왔을 때도) */
+  const hide = () => {
     rubber.current?.setAttribute('visibility', 'hidden');
     setHot(-1);
     ref.current?.removeAttribute('data-hot');
-    d.current = null;
-    busy.current = false;
   };
   useDrag(ref, {
     pick: () => !busy.current,
@@ -655,7 +681,8 @@ function PairNode({ i, name, g, svg, rubber, busy, picked, deg, label, ...h }: P
     onMove(dx, dy) {
       const cur = d.current;
       const r = rubber.current;
-      if (!cur || !r || Math.hypot(dx, dy) < TAP_PX) return;
+      if (!cur || !r) return;
+      if (Math.hypot(dx, dy) < TAP_PX) return hide();
       const [px, py] = toSvg(cur.x + dx, cur.y + dy);
       r.setAttribute('x1', String(x));
       r.setAttribute('y1', String(y));
@@ -669,7 +696,9 @@ function PairNode({ i, name, g, svg, rubber, busy, picked, deg, label, ...h }: P
       const cur = d.current;
       const moved = Math.hypot(dx, dy) >= TAP_PX;
       const [px, py] = cur ? toSvg(cur.x + dx, cur.y + dy) : [x, y];
-      stop();
+      hide();
+      d.current = null;
+      busy.current = false;
       if (cancelled) return;
       h.onRelease(moved ? pHit(g, px, py, i) : -1, moved);
     },
@@ -689,8 +718,15 @@ function PairNode({ i, name, g, svg, rubber, busy, picked, deg, label, ...h }: P
         if (e.detail === 0) h.onActivate();
       }}
     >
-      <circle cx={x} cy={y} r={g.r} />
-      <text x={x} y={y}>
+      {/* 키보드 초점 고리: 고른 점(칠함)과 헷갈리지 않게 바깥에 점선 고리로 */}
+      <circle className="ct-fring" cx={x} cy={y} r={g.r + 6} />
+      <circle className="ct-dot" cx={x} cy={y} r={g.r} />
+      <text
+        className="ct-name"
+        x={x}
+        y={y}
+        style={{ fontSize: fitPx(name, nodeInner(g.r), NODE_FONT) ?? LABEL_MIN }}
+      >
         {name}
       </text>
       {deg !== undefined && (
@@ -713,23 +749,17 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
   const deck = vDeck(p, s);
   const mask = `ct-notA${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const board = useRef<HTMLDivElement>(null);
+  const read = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
   const fx = useSettleFx(board, '[data-card]', 'data-card');
-  /** '넣을 곳' 단추를 연 카드(키보드·눌러서 하기) */
-  const [pick, setPick] = useState<number | null>(null);
   const [live, setLive] = useState('');
+  /** 키보드로 넣은 뒤 다시 잡을 카드, 다 맞힌 뒤 결론 줄로 초점 */
   const focusCard = useRef<number | null>(null);
-  const tap = useTapFallback(
-    say,
-    '카드를 누르고 아래에서 넣을 곳을 고르세요.',
-    '카드를 누른 채 넣을 곳까지 끌어 보세요.',
-  );
-  const NAME: Record<VReg, string> = {
-    a: `${sets.names[0]}에만`,
-    ab: '둘 다',
-    b: `${sets.names[1]}에만`,
-    out: '둘 다 아님',
-  };
+  const focusRead = useRef(false);
+  const taps = useTaps(say, '카드를 누르고 아래에서 넣을 곳을 고르세요.');
+  const pick = taps.pick;
+  const NAME = vNames(p);
+  const half = V_CARD / 2;
   // 다 맞힌 뒤에는 더미 줄이 필요 없어 판을 그림 높이로 줄인다(그 자리에 결론 글)
   const H = s.solved ? V_H : V_H + V_DECK;
 
@@ -738,7 +768,17 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
     board.current?.querySelector<HTMLElement>(`[data-card="${focusCard.current}"]`)?.focus();
     focusCard.current = null;
   });
+  useEffect(() => {
+    if (s.solved && focusRead.current) {
+      focusRead.current = false;
+      read.current?.focus();
+    }
+  }, [s.solved]);
 
+  const wrongSay = (n: number) => ({
+    text: `${n}개가 제자리가 아니에요. 빨간 테두리 카드를 옮겨 보세요.`,
+    cls: 'bad' as const,
+  });
   const put = (e: number, to: VReg | null, dropped?: DOMRect): boolean => {
     const r = vPut(p, s, e, to);
     if (r.res === 'full') {
@@ -749,7 +789,9 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
     fx.mark(dropped ? [String(e), dropped] : undefined);
     settle(r.s);
     setLive(`${el[e]}, ${to ? NAME[to] : '더미'}에 놓음.`);
-    if (!r.s.wrong.length)
+    // 틀린 카드를 옮기면 남은 틀린 수로 안내를 고친다(다시 '확인하기'로만 판정)
+    if (r.s.wrong.length) say(wrongSay(r.s.wrong.length));
+    else
       say({
         text: vDeck(p, r.s).length ? '' : "다 넣었으면 '확인하기'를 눌러 보세요.",
         cls: '',
@@ -760,25 +802,29 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
     const r = vCheck(p, s);
     settle(r.s);
     if (r.s.wrong.length) {
-      say({
-        text: `${r.s.wrong.length}개가 제자리가 아니에요. 빨간 테두리 카드를 옮겨 보세요.`,
-        cls: 'bad',
-      });
+      say(wrongSay(r.s.wrong.length));
       onMiss();
-    } else say({ text: '모두 제자리예요!', cls: 'ok' });
+    } else {
+      focusRead.current = true;
+      say({ text: '모두 제자리예요!', cls: 'ok' });
+    }
   };
-  const open = (e: number) => {
-    if (s.solved) return;
-    setPick(e);
-    // 더미 맨 위 카드는 넣을 곳 단추에 가려지므로 무엇을 넣는지 안내 칸에 적는다
-    say({ text: `${el[e]} — 어디에 넣을까요?`, cls: '' });
+  const open = (r: { pick: number | null }, e: number) => {
+    if (r.pick === e) say({ text: `${el[e]} — 어디에 넣을까요?`, cls: '' });
   };
   const choose = (to: VReg) => {
     if (pick === null) return;
     const e = pick;
-    setPick(null);
+    taps.setPick(null);
     focusCard.current = e;
     put(e, to);
+  };
+  /** 누르기: 고른 카드를 다시 누르면 닫기, 다른 카드를 누르면 그 카드로 바꿔 열기 */
+  const select = (r: { pick: number | null; pair?: [number, number] }, e: number) => {
+    if (r.pair) {
+      taps.setPick(e);
+      say({ text: `${el[e]} — 어디에 넣을까요?`, cls: '' });
+    } else open(r, e);
   };
 
   const onDrop = (e: number) => (node: HTMLElement, dx: number, dy: number) => {
@@ -787,8 +833,10 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
     const back = () => flyFrom(node, rect, { duration: FLY_MS });
     if (Math.hypot(dx, dy) < TAP_PX) {
       back();
-      if (tap.tapMode) open(e);
-      else tap.miss();
+      const r = taps.tap(e, false, '카드를 누른 채 넣을 곳까지 끌어 보세요.');
+      // 처음 두 번은 안내 글이 '어디에 넣을까요'를 덮지 않게 안내만 보인다(넣을 곳 단추는 열린다)
+      if (r.hint === null) select(r, e);
+      else if (r.pair) taps.setPick(e);
       return;
     }
     const host = board.current;
@@ -798,7 +846,7 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
     if (to !== null && put(e, to === 'deck' ? null : to, rect)) return;
     back();
     if (to === null) {
-      tap.miss('그림 안에 놓아 보세요.');
+      taps.miss('그림 안에 놓아 보세요.');
       onMiss();
     }
   };
@@ -855,7 +903,7 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
           >
             {pick === null ? (
               <>
-                <span className="ct-left num">
+                <span className="ct-left num" style={{ marginLeft: V_CARD + 12 }}>
                   {deck.length ? `남은 카드 ${deck.length}장` : '다 넣었어요'}
                 </span>
                 <button
@@ -868,8 +916,9 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
                 </button>
               </>
             ) : (
+              // key: 다른 카드로 바꿔 열면 단추 무리를 새로 그려 첫 단추에 다시 초점(autoFocus)이 가게
               // biome-ignore lint/a11y/useSemanticElements: 단추 넷을 한 무리로 읽히게(fieldset 은 모양이 깨진다)
-              <div className="ct-choose" role="group" aria-label={`${el[pick]} 넣을 곳`}>
+              <div key={pick} className="ct-choose" role="group" aria-label={`${el[pick]} 넣을 곳`}>
                 {(['a', 'ab', 'b', 'out'] as const).map((r) => (
                   <button
                     type="button"
@@ -879,7 +928,7 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
                     onKeyDown={(e) => {
                       if (e.key === 'Escape') {
                         focusCard.current = pick;
-                        setPick(null);
+                        taps.setPick(null);
                       }
                     }}
                     // biome-ignore lint/a11y/noAutofocus: 넣을 곳을 열면 첫 단추로 바로 옮겨야 키보드로 이어 고를 수 있다
@@ -903,8 +952,11 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
               className={`ct-card${under ? ' under' : ''}${pick === e ? ' sel' : ''}`}
               data-wrong={s.wrong.includes(e) ? '' : undefined}
               style={{
-                left: `calc(${(cx / V_W) * 100}% - 22px)`,
-                top: `calc(${(cy / H) * 100}% - 22px)`,
+                left: `calc(${(cx / V_W) * 100}% - ${half}px)`,
+                top: `calc(${(cy / H) * 100}% - ${half}px)`,
+                width: V_CARD,
+                height: V_CARD,
+                fontSize: fitPx(x, cardInner(), CARD_FONT) ?? LABEL_MIN,
                 zIndex: w === null ? 3 - Math.min(Math.max(deck.indexOf(e), 0), 2) : undefined,
               }}
               tabIndex={under ? -1 : 0}
@@ -913,9 +965,11 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
               busy={busy}
               locked={under || s.solved}
               onDrop={onDrop(e)}
-              onActivate={() => open(e)}
+              onActivate={() => {
+                if (!s.solved) select(taps.key(e), e);
+              }}
               onKeyDown={(ev) => {
-                if (ev.key === 'Escape') setPick(null);
+                if (ev.key === 'Escape') taps.setPick(null);
               }}
             >
               {x}
@@ -924,10 +978,10 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
         })}
       </div>
       {s.solved && (
-        <div className="wgt-read ct-vread" aria-live="polite">
+        <div className="wgt-read ct-vread" aria-live="polite" ref={read} tabIndex={-1}>
           <span className="num">
             {NAME.a} {c.a} · 둘 다 {c.ab} · {NAME.b} {c.b}
-            {sets.u ? ` · 둘 다 아님 ${c.out}` : ''}
+            {sets.u ? ` · ${NAME.out} ${c.out}` : ''}
           </span>
           <span className="num">
             둘 중 하나라도: {c.nA} + {c.nB} − {c.ab} = {c.union}개
