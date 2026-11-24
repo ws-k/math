@@ -82,6 +82,8 @@
               };
             }));
             await attempt('databases', async () => (await indexedDB.databases()).map((d) => d.name));
+            // 기록 사본(Backup.swift): 파일 수와 마지막 성공 시각. 앱 기록을 건드리지 않는 읽기 전용 질의다
+            await attempt('backup', () => window.webkit.messageHandlers.mathApp.postMessage({ op: 'status' }));
             await attempt('safeArea', () => {
               const d = document.createElement('div');
               d.style.cssText = 'position:fixed;visibility:hidden;padding:env(safe-area-inset-top) ' +

@@ -9,9 +9,11 @@ struct WebView: UIViewRepresentable {
         let config = WKWebViewConfiguration()
         config.setURLSchemeHandler(context.coordinator.files, forURLScheme: BundleSchemeHandler.scheme)
         // 웹 쪽이 "앱 안에서 열렸는지"를 이 이름의 존재로 안다(dist 는 웹·앱 한 벌).
+        // 같은 이름으로 기록 사본(Backup.swift) 메시지도 받는다. 되살리기는 사본을 읽어 웹에 돌려줘야 해서
+        // 답을 줄 수 있는 처리기로 넣는다(웹에서 postMessage 가 약속을 돌려준다).
         // 웹뷰가 처리기를 강하게 쥐어 순환 참조가 생기므로 약한 대리자를 거친다
-        config.userContentController.add(
-            WeakMessageHandler(context.coordinator), name: Coordinator.messageName)
+        config.userContentController.addScriptMessageHandler(
+            WeakMessageHandler(context.coordinator), contentWorld: .page, name: Coordinator.messageName)
 
         let web = WKWebView(frame: .zero, configuration: config)
         web.navigationDelegate = context.coordinator
@@ -42,7 +44,9 @@ struct WebView: UIViewRepresentable {
 
     func updateUIView(_ web: WKWebView, context: Context) {}
 
-    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate,
+        WKScriptMessageHandlerWithReply
+    {
         static let messageName = "mathApp"
         let files = BundleSchemeHandler()
 
@@ -81,21 +85,36 @@ struct WebView: UIViewRepresentable {
             #endif
         }
 
-        // 지금은 앱 감지용 표식이라 받을 메시지가 없다
+        /// 기록 사본 메시지(src/app/backup.ts). 모양이 틀리면 오류로 답해 웹 쪽 약속이 거절된다
         func userContentController(
-            _ userContentController: WKUserContentController, didReceive message: WKScriptMessage
-        ) {}
+            _ userContentController: WKUserContentController, didReceive message: WKScriptMessage,
+            replyHandler: @escaping @MainActor @Sendable (Any?, String?) -> Void
+        ) {
+            guard let op = BackupFiles.Op(message.body) else {
+                replyHandler(nil, "알 수 없는 메시지")
+                return
+            }
+            BackupFiles.shared.perform(op) { result in
+                switch result {
+                case .success(let reply): replyHandler(reply.object, nil)
+                case .failure(let error): replyHandler(nil, error.localizedDescription)
+                }
+            }
+        }
     }
 }
 
 /// WKUserContentController 는 처리기를 강하게 쥔다. 코디네이터를 직접 넣으면 웹뷰와 서로 쥐어 해제되지 않는다
-final class WeakMessageHandler: NSObject, WKScriptMessageHandler {
-    private weak var target: (any WKScriptMessageHandler)?
-    init(_ target: any WKScriptMessageHandler) { self.target = target }
+final class WeakMessageHandler: NSObject, WKScriptMessageHandlerWithReply {
+    private weak var target: (any WKScriptMessageHandlerWithReply)?
+    init(_ target: any WKScriptMessageHandlerWithReply) { self.target = target }
 
     func userContentController(
-        _ userContentController: WKUserContentController, didReceive message: WKScriptMessage
+        _ userContentController: WKUserContentController, didReceive message: WKScriptMessage,
+        replyHandler: @escaping @MainActor @Sendable (Any?, String?) -> Void
     ) {
-        target?.userContentController(userContentController, didReceive: message)
+        // 답을 안 하고 버리면 웹 쪽 약속이 영영 안 풀린다 — 대상이 사라졌으면 오류로라도 답한다
+        guard let target else { return replyHandler(nil, "웹뷰가 닫혔어요") }
+        target.userContentController(userContentController, didReceive: message, replyHandler: replyHandler)
     }
 }

@@ -30,6 +30,7 @@ const goodCheck = {
   nativeDetected: true,
   indexedDB: true,
   fonts: { KaTeX_Main: true, KaTeX_Math: true },
+  backup: { count: 3, lastSuccess: '2026-11-24T01:02:03Z' },
 };
 
 test('judgeSelfcheck: 글꼴·IndexedDB·출처·앱 감지가 맞으면 통과(persist 는 참고값)', () => {
@@ -62,4 +63,15 @@ test('judgeSelfcheck: 점검 자체가 실패했거나 비었으면 실패', () 
   assert.equal(judgeSelfcheck({ error: 'JS 예외' }).ok, false);
   assert.equal(judgeSelfcheck({}).ok, false);
   assert.equal(judgeSelfcheck({ ...goodCheck, fonts: {} }).ok, false);
+});
+
+test('judgeSelfcheck: 기록 사본 상태(파일 수·마지막 성공 시각)를 보고하고, 사본 길목이 안 되면 실패', () => {
+  const r = judgeSelfcheck(goodCheck);
+  assert.ok(r.notes.some((n) => n.startsWith('backup:') && n.includes('2026-11-24T01:02:03Z')));
+  // 아직 한 번도 안 썼으면(새로 깐 직후) 시각이 없을 수 있다 — 실패는 아니다
+  assert.equal(judgeSelfcheck({ ...goodCheck, backup: { count: 0, lastSuccess: null } }).ok, true);
+  const bad = judgeSelfcheck({ ...goodCheck, backup: { error: '권한 없음' } });
+  assert.equal(bad.ok, false);
+  assert.deepEqual(bad.problems, ['기록 사본 상태를 못 읽어요: {"error":"권한 없음"}']);
+  assert.equal(judgeSelfcheck({ ...goodCheck, backup: undefined }).ok, false);
 });

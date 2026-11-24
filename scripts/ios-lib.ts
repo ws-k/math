@@ -43,10 +43,19 @@ export function judgeSelfcheck(r: Record<string, unknown>): SelfcheckVerdict {
   if (names.length === 0) problems.push('글꼴 점검 결과가 없어요');
   const broken = names.filter((f) => fonts[f] !== true);
   if (broken.length) problems.push(`글꼴이 안 불러와져요: ${broken.join(', ')}`);
+  // 기록 사본(ios/Math/Backup.swift) 길목이 답하는지. 마지막 성공 시각은 새로 깐 직후엔 없을 수 있어 보고만 한다
+  const b = r.backup as { count?: unknown } | undefined;
+  if (typeof b?.count !== 'number')
+    problems.push(`기록 사본 상태를 못 읽어요: ${JSON.stringify(r.backup ?? null)}`);
 
-  const notes = ['isSecureContext', 'persist', 'persistedAfter', 'language', 'safeArea'].map(
-    (k) => `${k}: ${JSON.stringify(r[k])}`,
-  );
+  const notes = [
+    'isSecureContext',
+    'persist',
+    'persistedAfter',
+    'language',
+    'safeArea',
+    'backup',
+  ].map((k) => `${k}: ${JSON.stringify(r[k])}`);
   return { ok: problems.length === 0, problems, notes };
 }
 
