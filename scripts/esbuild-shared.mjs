@@ -48,7 +48,23 @@ export function formatBuildId(hash, porcelain) {
   return porcelain.trim() ? `${h}+` : h;
 }
 
-/** 지금 커밋으로 만든 빌드 표시. 추적 안 하는 파일(outputs/ 등)은 앱에 안 들어가 변경으로 치지 않는다 */
+/**
+ * 빌드 결과(웹 dist·iOS 앱)에 들어가는 경로. 이 안의 변경만 + 로 친다.
+ * 추적 안 하는 새 파일도 센다 — 새 단원 JSON 처럼 커밋 전에도 contentPlugin 이 폴더를 읽어 바로 묶기 때문이다.
+ * 반대로 outputs/ 같은 로컬 산출물은 앱에 안 들어가니 여기 넣지 않는다.
+ */
+export const BUILD_INPUTS = [
+  'src',
+  'content',
+  'public',
+  'index.html',
+  'ios',
+  'scripts',
+  'package.json',
+  'package-lock.json',
+];
+
+/** 지금 커밋으로 만든 빌드 표시 */
 export function buildId() {
   const git = (args) => {
     try {
@@ -59,7 +75,7 @@ export function buildId() {
   };
   return formatBuildId(
     git(['rev-parse', '--short', 'HEAD']),
-    git(['status', '--porcelain', '--untracked-files=no']),
+    git(['status', '--porcelain', '--', ...BUILD_INPUTS]),
   );
 }
 
