@@ -100,6 +100,13 @@ body {
 a {
   color: inherit;
 }
+/* 누르는 것(링크·버튼)은 길게 눌러도 글자가 선택되거나 iOS 메뉴가 뜨지 않게. 글은 그대로 선택할 수 있다 */
+a,
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
 p {
   margin: 0;
 }
