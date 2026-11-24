@@ -18,12 +18,12 @@
         "check": "18+15-7"
       },
       "un": {
-        "value": "7",
-        "check": "len(FiniteSet(*divisors(12)) | FiniteSet(*divisors(8)))"
+        "value": "5",
+        "check": "len(FiniteSet(*divisors(6)) | FiniteSet(*divisors(4)))"
       },
       "bo": {
-        "value": "3",
-        "check": "len(FiniteSet(*divisors(12)) & FiniteSet(*divisors(8)))"
+        "value": "2",
+        "check": "len(FiniteSet(*divisors(6)) & FiniteSet(*divisors(4)))"
       },
       "neg": {
         "value": "-3",
@@ -77,7 +77,7 @@
         "id": "venn",
         "chip": "손으로 해 보기",
         "title": "벤 다이어그램으로\n겹친 부분을 보세요",
-        "lead": "12 의 약수의 모임 $A$ 와 8 의 약수의 모임 $B$ 예요. 영역 버튼을 하나씩 눌러 어떤 수가 어디에 있는지 보고, 마지막에 '둘 다'를 눌러 보세요.",
+        "lead": "6 의 약수의 모임 $A$ 와 4 의 약수의 모임 $B$ 예요. 네모 $U$ 는 6 이하의 자연수 전체예요. 수 카드를 하나씩 끌어 알맞은 칸에 넣어 보세요. 양쪽에 다 있는 수는 겹친 곳으로 가요.",
         "gate": true,
         "widget": {
           "type": "count",
@@ -85,27 +85,32 @@
             "mode": "venn",
             "sets": {
               "names": [
-                "12의 약수",
-                "8의 약수"
+                "6의 약수",
+                "4의 약수"
               ],
               "a": [
                 "1",
                 "2",
                 "3",
-                "4",
-                "6",
-                "12"
+                "6"
               ],
               "b": [
                 "1",
                 "2",
+                "4"
+              ],
+              "u": [
+                "1",
+                "2",
+                "3",
                 "4",
-                "8"
+                "5",
+                "6"
               ]
             }
           }
         },
-        "after": "$A$ 는 6 개, $B$ 는 4 개, 겹친 것은 {{bo}} 개예요. 합친 모임은 $6+4-3=${{un}} 개, 오늘의 질문과 같은 규칙이에요."
+        "after": "$A$ 는 4 개, $B$ 는 3 개, 겹친 것은 {{bo}} 개예요. 합친 모임은 $4+3-2=${{un}} 개, 오늘의 질문과 같은 규칙이에요. 칠한 곳은 $U$ 에서 $A$ 를 뺀 나머지예요."
       },
       {
         "kind": "terms",

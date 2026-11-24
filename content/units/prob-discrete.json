@@ -79,7 +79,7 @@
           "params": {
             "device": "die",
             "n": 1,
-            "seed": 27,
+            "seed": 24,
             "goal": 60
           }
         },
