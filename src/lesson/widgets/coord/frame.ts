@@ -137,6 +137,37 @@ export const iRange = (lo: number, hi: number, st: number) => [
 
 export const r1 = (v: number) => Math.round(v * 10) / 10;
 
+/**
+ * 함수 y=ev(x) 의 [a,b] 경로(px, n 등분). 정의 안 되는 곳·크게 튀는 곳(점근선)에서 끊는다.
+ * 곡선 하나(x 전체)와 조각 함수의 조각마다(piece.ts)가 같은 끊기 규칙을 쓰게 한곳에 둔다.
+ */
+export function samplePath(
+  p: CoordParams,
+  f: Frame,
+  a: number,
+  b: number,
+  n: number,
+  ev: (x: number) => number,
+): string {
+  const span = f.b - f.t;
+  let d = '';
+  let prev: number | null = null;
+  for (let k = 0; k <= n; k++) {
+    const x = a + ((b - a) * k) / n;
+    const y = ev(x);
+    if (Number.isNaN(y)) {
+      prev = null;
+      continue;
+    }
+    const [X, Y0] = toPx(p, f, x, y);
+    const Y = clampY(f, Y0);
+    const jump = prev !== null && Math.abs(Y - prev) > span * 1.5;
+    d += `${prev === null || jump ? 'M' : 'L'}${r1(X)} ${r1(Y)}`;
+    prev = Y;
+  }
+  return d;
+}
+
 /** (x0,y0) 를 지나고 기울기 m 인 직선을 그림 영역 가로 끝까지 */
 export function fullLine(p: CoordParams, f: Frame, x0: number, y0: number, m: number) {
   const [X1, Y1] = toPx(p, f, p.x.lo, y0 + m * (p.x.lo - x0));

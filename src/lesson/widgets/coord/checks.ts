@@ -8,7 +8,7 @@ import { taskChecks, taskDerivOf } from './task.ts';
 import type { CheckCtx, CoordParams } from './types.ts';
 
 /** 미분이 쓰이는 곡선(접선·할선 극한·deriv 읽기·접선 과제) */
-function derivUsed(p: CoordParams): Set<string> {
+export function derivUsed(p: CoordParams): Set<string> {
   const out = new Set<string>();
   for (const o of p.objects) {
     const c = kindOf(o).derivOf?.(p, o);

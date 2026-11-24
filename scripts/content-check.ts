@@ -10,6 +10,7 @@ import {
 import type { Curriculum, Problem, Unit } from '../src/content/types.ts';
 import { allGenerators, generate } from '../src/generators/index.ts';
 import { validateLesson } from '../src/lesson/schema.ts';
+import { seedBias, simulateDef } from '../src/lesson/widgets/simulate.ts';
 
 export type { CheckItem };
 
@@ -60,6 +61,19 @@ export function checkContent(root = '.', samples = 200, onlyUnit?: string): Chec
       errors.push(...r.errors);
       warnings.push(...r.warnings);
       items.push(...r.items);
+      // 확률 실험의 시드가 학습자를 엉뚱한 답으로 이끄는 줄기인지(simulate.ts seedBias). 같은 시드면 모두 같은 줄기를
+      // 보므로 글쓴이가 바꿔야 한다 — 고른 시드도 가끔 걸려 오류가 아니라 경고로
+      for (const sc of u.lesson.scenes) {
+        const w = (sc as { widget?: { type: string; params: unknown } }).widget;
+        if (w?.type !== 'simulate') continue;
+        try {
+          const b = seedBias(simulateDef.parse(w.params));
+          if (!b.ok)
+            warnings.push(`${W} 레슨 ${sc.id}: 확률 실험 시드 — ${b.problems.join(' / ')}`);
+        } catch {
+          // 형식 오류는 validateLesson 이 이미 알렸다
+        }
+      }
     }
     u.examples?.forEach((e, i) => {
       checkAnswerShape(`${W} 예제${i + 1}`, e, errors);
