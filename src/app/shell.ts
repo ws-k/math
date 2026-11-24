@@ -5,7 +5,7 @@
  * iOS 앱이 웹뷰에 넣어 주는 메시지 처리기 이름(ios/Math/WebView.swift 의 Coordinator.messageName).
  * Safari·홈 화면 앱에는 window.webkit.messageHandlers 자체가 없고, 다른 앱의 웹뷰라면 이 이름이 없다.
  */
-const HANDLER = 'mathApp';
+export const HANDLER = 'mathApp';
 
 type MaybeWebkit = { webkit?: { messageHandlers?: Record<string, unknown> } } | undefined;
 

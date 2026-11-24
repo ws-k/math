@@ -19,6 +19,10 @@ function memStore(): RawStore & { data: Map<string, unknown> } {
     get: async (k) => data.get(k) as never,
     set: async (k, v) => void data.set(k, v),
     del: async (k) => void data.delete(k),
+    async delPrefix(prefixes, keys = []) {
+      for (const k of [...data.keys()]) if (prefixes.some((p) => k.startsWith(p))) data.delete(k);
+      for (const k of keys) data.delete(k);
+    },
     keys: async (p = '') => sorted(p),
     entries: async (p) => sorted(p).map((k) => [k, data.get(k)] as [string, never]),
   };

@@ -1,6 +1,7 @@
 // IndexedDB 얇은 래퍼. 키 하나에 값 하나(진행 카드·설정·쪽마다 필기)만 넣는 단순한 저장소.
 // localStorage 는 5MB 언저리에서 막히고 동기라 필기 저장에 맞지 않아 IndexedDB 를 쓴다.
 
+import { type BaseStore, createBackup, nativeBridge, type StartResult } from './backup.ts';
 import { createScopedStore, FIRST, type RawStore, scopedKey } from './profile.ts';
 import { resetRanges, scopedResetMatch } from './reset.ts';
 import { createSaver } from './saver.ts';
@@ -47,7 +48,7 @@ async function write(f: (s: IDBObjectStore) => unknown): Promise<void> {
 /** prefix 로 시작하는 키 범위 (문자열 키 순서상 prefix 뒤에 오는 가장 큰 글자까지) */
 const range = (prefix: string) => IDBKeyRange.bound(prefix, `${prefix}￿`);
 
-const raw: RawStore = {
+const idb: BaseStore = {
   get<T>(key: string): Promise<T | undefined> {
     return run('readonly', (s) => s.get(key) as IDBRequest<T | undefined>);
   },
@@ -56,6 +57,27 @@ const raw: RawStore = {
   },
   del(key: string): Promise<void> {
     return write((s) => s.delete(key));
+  },
+  delPrefix(prefixes: string[], keys: string[] = []): Promise<void> {
+    return write((s) => {
+      for (const p of prefixes) s.delete(range(p));
+      for (const k of keys) s.delete(k);
+    });
+  },
+  /**
+   * 사본에서 되살리기: 없는 키만 채운다. 있는지 보기와 넣기를 한 트랜잭션에서 해, 그 사이 끼어든 쓰기가
+   * 옛 사본 값에 덮이지 않게 한다. skip 은 트랜잭션을 연 순간에 묻는다(그 뒤에 시작한 쓰기는 이 트랜잭션 뒤에 돈다).
+   */
+  fill(entries: [string, unknown][], skip: (key: string) => boolean): Promise<void> {
+    return write((s) => {
+      for (const [k, v] of entries) {
+        if (skip(k)) continue;
+        const req = s.getKey(k);
+        req.onsuccess = () => {
+          if (req.result === undefined) s.put(v, k);
+        };
+      }
+    });
   },
   async keys(prefix = ''): Promise<string[]> {
     const ks = await run('readonly', (s) => s.getAllKeys(prefix ? range(prefix) : undefined));
@@ -77,6 +99,23 @@ const raw: RawStore = {
     });
   },
 };
+
+/**
+ * 앱(iOS)에서만 IndexedDB 쓰기·지우기를 앱 파일 사본에도 적는다(backup.ts). 웹에는 다리가 없어 IndexedDB 그대로.
+ * saver 보다 먼저(raw 층에서) 감싸야 saver 를 거치지 않는 범위 지우기까지 사본에 빠짐없이 간다.
+ */
+const backup = (() => {
+  const bridge = nativeBridge();
+  return bridge
+    ? createBackup(idb, bridge, { onError: (e) => console.warn('기록 사본 실패', e) })
+    : null;
+})();
+const raw: RawStore = backup?.raw ?? idb;
+
+/** 앱 시작 때 사본과 맞춘다(지워졌으면 되살림). 화면을 그리기 전에 끝내야 첫 화면이 빈 기록을 읽지 않는다 */
+export function startBackup(): Promise<StartResult | 'off'> {
+  return backup ? backup.start() : Promise.resolve('off');
+}
 
 let profile = FIRST;
 /** 지금 학습자 프로필. 바꿀 때는 profile.ts 의 switchProfile 순서를 따른다 */
@@ -113,7 +152,7 @@ export async function deleteProfileData(id: string): Promise<void> {
   // 쥐고 있던 이 사람의 값이 다시 시도로 지운 뒤에 되살아나지 않게 먼저 버린다
   saver.discard(prefix);
   // 범위 지우기 한 번(한 트랜잭션): 키마다 따로 지우다 중간에 실패하면 반쯤 지운 기록이 남는다
-  await write((s) => s.delete(range(prefix)));
+  await raw.delPrefix([prefix]);
 }
 
 /**
@@ -125,8 +164,8 @@ export async function resetLearning(unitId: string | null): Promise<void> {
   const who = profile;
   await saver.drop(scopedResetMatch(who, unitId));
   const { prefixes, keys } = resetRanges(unitId);
-  await write((s) => {
-    for (const p of prefixes) s.delete(range(scopedKey(who, p)));
-    for (const k of keys) s.delete(scopedKey(who, k));
-  });
+  await raw.delPrefix(
+    prefixes.map((p) => scopedKey(who, p)),
+    keys.map((k) => scopedKey(who, k)),
+  );
 }

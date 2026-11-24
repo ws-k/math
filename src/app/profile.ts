@@ -4,12 +4,16 @@
 // 이미 쌓인 기록을 옮기는 작업(마이그레이션)이 없어 옮기다 잃을 위험도 없다.
 // 화면 코드(InkPage 등)는 프로필을 모른다. 저장소와 saver 가 키를 바꿔 끼운다.
 
+import { BACKUP_MARKER } from './backup.ts';
 import { DEVICE_KEY } from './device.ts';
 
 export const FIRST = 'first';
 
-/** 기기 공통 키: 프로필 목록·지금 프로필·기기 설정(펜 유무 등). 누가 쓰든 같은 값을 봐야 한다 */
-const DEVICE_KEYS = new Set(['profiles', 'profile', DEVICE_KEY]);
+/**
+ * 기기 공통 키: 프로필 목록·지금 프로필·기기 설정(펜 유무 등). 누가 쓰든 같은 값을 봐야 한다.
+ * 앱 기록 사본의 표식도 여기 둔다 — 저장소 전체에 대한 표시라 사람별이 아니고, 첫 프로필의 키 목록에 섞이면 안 된다.
+ */
+const DEVICE_KEYS = new Set(['profiles', 'profile', DEVICE_KEY, BACKUP_MARKER]);
 
 export function scopedKey(profile: string, key: string): string {
   if (profile === FIRST || DEVICE_KEYS.has(key)) return key;
@@ -20,6 +24,11 @@ export interface RawStore {
   get<T>(key: string): Promise<T | undefined>;
   set(key: string, value: unknown): Promise<void>;
   del(key: string): Promise<void>;
+  /**
+   * 접두어 범위들과 낱개 키들을 한 트랜잭션에서 지운다(프로필 삭제·기록 초기화).
+   * 키마다 따로 지우다 중간에 실패하면 반쯤 지운 기록이 남고, 앱 사본도 이 한 길목으로 같은 범위를 지운다.
+   */
+  delPrefix(prefixes: string[], keys?: string[]): Promise<void>;
   keys(prefix?: string): Promise<string[]>;
   entries<T>(prefix: string): Promise<[string, T][]>;
 }
@@ -27,8 +36,12 @@ export interface RawStore {
 /**
  * 지금 프로필의 키만 보이는 저장소. 돌려주는 키에서는 접두어를 뗀다.
  * 첫 프로필의 접두어는 빈 문자열이라 "모든 키" 조회에 다른 프로필(@…) 키가 섞이므로 걸러 낸다.
+ * 범위 지우기는 내주지 않는다 — 첫 프로필의 접두어가 빈 문자열이라 다른 사람 기록까지 지울 수 있어서다.
  */
-export function createScopedStore(raw: RawStore, current: () => string): RawStore {
+export function createScopedStore(
+  raw: RawStore,
+  current: () => string,
+): Omit<RawStore, 'delPrefix'> {
   /** 이 프로필 것인가. 첫 프로필은 접두어가 없어 다른 프로필(@…) 키와 기기 공통 키를 걸러 낸다 */
   const mine = (pre: string, k: string) =>
     pre !== '' || (!k.startsWith('@') && !DEVICE_KEYS.has(k));
