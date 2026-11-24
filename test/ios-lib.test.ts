@@ -1,7 +1,7 @@
-// iOS 껍데기 스크립트(scripts/ios.mjs)의 판정 규칙: dist 점검, 자가 점검 결과 판정
+// iOS 껍데기 스크립트(scripts/ios.mjs)의 판정 규칙: dist 점검, 자가 점검 결과 판정, 시뮬레이터 확인
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { distProblems, judgeSelfcheck } from '../scripts/ios-lib.ts';
+import { distProblems, judgeSelfcheck, simulatorProblem } from '../scripts/ios-lib.ts';
 
 const goodDist = [
   'index.html',
@@ -74,4 +74,38 @@ test('judgeSelfcheck: 기록 사본 상태(파일 수·마지막 성공 시각)�
   assert.equal(bad.ok, false);
   assert.deepEqual(bad.problems, ['기록 사본 상태를 못 읽어요: {"error":"권한 없음"}']);
   assert.equal(judgeSelfcheck({ ...goodCheck, backup: undefined }).ok, false);
+});
+
+// xcrun simctl list devices -j 의 모양(런타임별 기기 목록)
+const simList = {
+  devices: {
+    'com.apple.CoreSimulator.SimRuntime.iOS-27-1': [
+      { udid: 'AAA', name: 'Math - iPhone Duo', state: 'Booted' },
+      { udid: 'BBB', name: 'PS - iPhone 17', state: 'Booted' },
+    ],
+    'com.apple.CoreSimulator.SimRuntime.iOS-26-0': [
+      { udid: 'CCC', name: 'Math iPad', state: 'Shutdown' },
+    ],
+  },
+};
+
+test('simulatorProblem: 이름이 Math 로 시작하는 기기면 통과(런타임이 달라도)', () => {
+  assert.equal(simulatorProblem(simList, 'AAA'), null);
+  assert.equal(simulatorProblem(simList, 'CCC'), null);
+});
+
+test('simulatorProblem: 다른 프로젝트 기기거나 없는 UDID 면 막는다', () => {
+  assert.equal(
+    simulatorProblem(simList, 'BBB'),
+    'MATH_IOS_SIM_UDID(BBB)는 "PS - iPhone 17" 이에요 — 이름이 Math 로 시작하는 시뮬레이터만 써요',
+  );
+  assert.equal(
+    simulatorProblem(simList, 'ZZZ'),
+    '시뮬레이터 ZZZ 가 없어요 — xcrun simctl list devices 로 UDID 를 확인하세요',
+  );
+  // simctl 출력이 깨졌으면 확인할 수 없으니 막는다
+  assert.equal(
+    simulatorProblem({}, 'AAA'),
+    '시뮬레이터 AAA 가 없어요 — xcrun simctl list devices 로 UDID 를 확인하세요',
+  );
 });

@@ -69,3 +69,21 @@ export function buildProblems(mainJs: string, head: string): string[] {
     return [`커밋 안 된 변경이 섞인 빌드예요(${head}+) — 커밋한 뒤 다시 만드세요`];
   return [`dist 가 지금 커밋(${head})으로 만든 게 아니에요 — npm run build 로 다시 만드세요`];
 }
+
+/**
+ * `xcrun simctl list devices -j` 결과 → 이 UDID 를 써도 되는지(null 이면 된다).
+ * 같은 맥에 다른 프로젝트 시뮬레이터(PS … 등)도 켜져 있어, UDID 를 잘못 넣으면 남의 기기에 앱을 깔고
+ * 기록을 지운다. 그래서 이 저장소 기기 이름(Math …)으로 시작하는지 먼저 본다.
+ */
+export function simulatorProblem(list: unknown, udid: string): string | null {
+  const devices = (list as { devices?: Record<string, { udid?: string; name?: string }[]> })
+    ?.devices;
+  const found = Object.values(devices ?? {})
+    .flat()
+    .find((d) => d?.udid === udid);
+  if (!found)
+    return `시뮬레이터 ${udid} 가 없어요 — xcrun simctl list devices 로 UDID 를 확인하세요`;
+  if (!found.name?.startsWith('Math'))
+    return `MATH_IOS_SIM_UDID(${udid})는 "${found.name}" 이에요 — 이름이 Math 로 시작하는 시뮬레이터만 써요`;
+  return null;
+}
