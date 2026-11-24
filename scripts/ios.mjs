@@ -7,7 +7,7 @@
 // 검산(약 2분)이 매 빌드마다 붙는다. 그래서 웹 빌드는 npm 스크립트가 먼저 끝내 둔다.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 import { buildProblems, distProblems, judgeSelfcheck, simulatorProblem } from './ios-lib.ts';
 
 const root = join(import.meta.dirname, '..');
@@ -106,12 +106,19 @@ function launch(extra = []) {
 
 async function selfcheck() {
   checkSimulator();
+  const head = headCommit();
   const data = run('xcrun', ['simctl', 'get_app_container', UDID, bundleId(), 'data'], {
     quiet: true,
   }).trim();
+  // 빈 출력이면 아래 경로가 이 저장소 기준 상대 경로(Documents/…)가 돼 엉뚱한 파일을 지운다. 지우기 전에 멈춘다
+  if (!data || !isAbsolute(data))
+    fail(
+      `앱 데이터 폴더를 못 찾았어요(${JSON.stringify(data)}) — 앱이 깔려 있나요? npm run ios:sim 먼저`,
+    );
   const file = join(data, 'Documents/selfcheck.json');
   rmSync(file, { force: true });
-  launch(['-selfcheck']);
+  // 지금 커밋을 넘겨 앱이 실제로 내주는 main.js 에 그 빌드 표시가 찍혔는지 재게 한다(SelfCheck.swift)
+  launch(['-selfcheck', '-selfcheckHead', head]);
   // 앱이 웹을 다 불러온 뒤 점검을 돌려 파일을 쓴다. 보통 1~2초, 넉넉히 30초까지 기다린다
   const until = Date.now() + 30_000;
   while (!existsSync(file)) {
@@ -121,7 +128,7 @@ async function selfcheck() {
   }
   const result = JSON.parse(readFileSync(file, 'utf8'));
   console.log(JSON.stringify(result, null, 2));
-  const v = judgeSelfcheck(result);
+  const v = judgeSelfcheck(result, head);
   console.log(`\n  ${v.notes.join('\n  ')}`);
   if (!v.ok) fail(`자가 점검 실패:\n    ${v.problems.join('\n    ')}`);
   console.log('\n  ✓ 자가 점검 통과\n');

@@ -25,12 +25,17 @@ export interface SelfcheckVerdict {
 }
 
 /**
- * 앱 자가 점검 결과(Documents/selfcheck.json) 판정.
+ * 앱 자가 점검 결과(Documents/selfcheck.json) 판정. head 는 지금 커밋(짧은 해시).
  * persist·isSecureContext 는 자체 스킴에서 어떻게 나올지 몰라 실측하려는 값이라 실패로 치지 않고 notes 로만 남긴다.
  */
-export function judgeSelfcheck(r: Record<string, unknown>): SelfcheckVerdict {
+export function judgeSelfcheck(r: Record<string, unknown>, head: string): SelfcheckVerdict {
   const problems: string[] = [];
   if ('error' in r) problems.push(`점검 실행 실패: ${String(r.error)}`);
+  // 옛 앱이 깔린 채로 점검하면 통과해도 지금 코드에 대한 결과가 아니다. + 는 개발 중 빌드라 허용한다
+  if (r.build !== head && r.build !== `${head}+`)
+    problems.push(
+      `앱에 실린 빌드가 지금 커밋(${head})이 아니에요: ${JSON.stringify(r.build ?? null)} — npm run ios:sim 으로 다시 까세요`,
+    );
   if (r.origin !== APP_ORIGIN)
     problems.push(`출처가 ${APP_ORIGIN} 가 아니에요: ${String(r.origin)}`);
   if (r.nativeDetected !== true)
@@ -47,8 +52,14 @@ export function judgeSelfcheck(r: Record<string, unknown>): SelfcheckVerdict {
   const b = r.backup as { count?: unknown } | undefined;
   if (typeof b?.count !== 'number')
     problems.push(`기록 사본 상태를 못 읽어요: ${JSON.stringify(r.backup ?? null)}`);
+  // 스킴 처리기의 dist 밖 막기(BundleSchemeHandler.file(for:)). %2f 는 주소 정리에서 안 풀려 처리기까지 '..' 가 간다
+  if (r.traversal !== 404)
+    problems.push(
+      `dist 밖 파일 요청(/..%2fInfo.plist)이 404 가 아니에요: ${JSON.stringify(r.traversal ?? null)}`,
+    );
 
   const notes = [
+    'build',
     'isSecureContext',
     'persist',
     'persistedAfter',
