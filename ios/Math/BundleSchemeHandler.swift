@@ -1,4 +1,5 @@
 import Foundation
+import UniformTypeIdentifiers
 import WebKit
 
 /// `mathrebuild://localhost/<경로>` 요청을 앱 안 `dist/` 파일로 답한다.
@@ -19,7 +20,10 @@ final class BundleSchemeHandler: NSObject, WKURLSchemeHandler {
         .resolvingSymlinksInPath()
 
     /// 확장자 → 파일 종류. 모듈 스크립트는 종류가 자바스크립트가 아니면 WebKit 이 실행을 거부하므로
-    /// `.js` 는 반드시 `text/javascript` 다. 모르는 확장자는 내려받기 취급되지 않게 바이트열로 준다.
+    /// `.js` 는 반드시 `text/javascript` 다. 표에 없는 확장자는 시스템이 아는 종류(UTType)로 주고,
+    /// 그것도 모르면 바이트열(application/octet-stream)로 준다. 바이트열은 하위 자원(fetch·img)으로는 읽히지만
+    /// 문서로 열면 WebKit 이 화면에 그리지 않고 내려받기로 다룰 수 있다 — 자주 쓰는 종류는 표에 적어 둔다.
+    /// 영상·소리를 싣게 되면 Range 요청(부분 응답, 206) 지원이 필요하다 — 지금은 파일을 통째로만 준다.
     private static let mimeTypes: [String: String] = [
         "html": "text/html; charset=utf-8",
         "js": "text/javascript; charset=utf-8",
@@ -37,12 +41,16 @@ final class BundleSchemeHandler: NSObject, WKURLSchemeHandler {
     // 파일이 앱 안에 있어(가장 큰 main.js 도 몇 MB, 읽는 데 수 ms) start 안에서 동기로 다 답한다.
     // 그러면 stop 이 와도 이미 끝난 작업이라 따로 취소할 것이 없다.
     func webView(_ webView: WKWebView, start task: any WKURLSchemeTask) {
-        guard let url = task.request.url else { return }
+        // 답 없이 돌아가면 WebKit 쪽 요청이 끝나지 않고 매달린다 — 실패로라도 끝낸다
+        guard let url = task.request.url else { return task.didFailWithError(URLError(.badURL)) }
         guard let file = file(for: url), let data = try? Data(contentsOf: file) else {
             respond(task, url: url, status: 404, type: "text/plain; charset=utf-8", body: Data())
             return
         }
-        let type = Self.mimeTypes[file.pathExtension.lowercased()] ?? "application/octet-stream"
+        let ext = file.pathExtension.lowercased()
+        let type =
+            Self.mimeTypes[ext] ?? UTType(filenameExtension: ext)?.preferredMIMEType
+            ?? "application/octet-stream"
         respond(task, url: url, status: 200, type: type, body: data)
     }
 

@@ -7,16 +7,17 @@
 // 검산(약 2분)이 매 빌드마다 붙는다. 그래서 웹 빌드는 npm 스크립트가 먼저 끝내 둔다.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import { buildProblems, distProblems, judgeSelfcheck } from './ios-lib.ts';
+import { isAbsolute, join, relative } from 'node:path';
+import { buildProblems, distProblems, judgeSelfcheck, simulatorProblem } from './ios-lib.ts';
 
 const root = join(import.meta.dirname, '..');
 const dist = join(root, 'dist');
 const project = join(root, 'ios/Math.xcodeproj');
 const derived = join(root, '.cache/ios');
 // 이 저장소의 시뮬레이터는 "Math - iPhone Duo" 하나로 정해 두었다. 'booted' 는 여러 대가 켜져 있으면
-// 엉뚱한 기기를 고르므로 쓰지 않고 항상 UDID 로 가리킨다
-const UDID = process.env.IOS_SIM_UDID ?? 'D4D16B43-BE3A-4C00-9108-F8D251DEE16D';
+// 엉뚱한 기기를 고르므로 쓰지 않고 항상 UDID 로 가리킨다. 환경 변수 이름에 MATH_ 를 붙인 이유:
+// 다른 프로젝트 스크립트가 쓰는 흔한 이름(IOS_SIM_UDID)이 셸에 남아 있으면 남의 기기를 가리키게 된다
+const UDID = process.env.MATH_IOS_SIM_UDID ?? 'D4D16B43-BE3A-4C00-9108-F8D251DEE16D';
 
 /** 번들 ID 는 Base.xcconfig 한 곳에만 적고 여기서 읽는다(두 곳에 적으면 어긋난다) */
 function bundleId() {
@@ -55,7 +56,21 @@ function headCommit() {
   return run('git', ['-C', root, 'rev-parse', '--short', 'HEAD'], { quiet: true }).trim();
 }
 
+/** 시뮬레이터를 건드리기 전에 이 저장소 기기(이름이 Math …)인지 확인한다. 아니면 아무것도 안 하고 멈춘다 */
+function checkSimulator() {
+  const out = run('xcrun', ['simctl', 'list', 'devices', '-j'], { quiet: true });
+  let list;
+  try {
+    list = JSON.parse(out);
+  } catch {
+    list = null;
+  }
+  const problem = simulatorProblem(list, UDID);
+  if (problem) fail(problem);
+}
+
 function sim(extra = []) {
+  checkSimulator();
   checkDist();
   run('xcodebuild', [
     '-project',
@@ -90,12 +105,20 @@ function launch(extra = []) {
 }
 
 async function selfcheck() {
+  checkSimulator();
+  const head = headCommit();
   const data = run('xcrun', ['simctl', 'get_app_container', UDID, bundleId(), 'data'], {
     quiet: true,
   }).trim();
+  // 빈 출력이면 아래 경로가 이 저장소 기준 상대 경로(Documents/…)가 돼 엉뚱한 파일을 지운다. 지우기 전에 멈춘다
+  if (!data || !isAbsolute(data))
+    fail(
+      `앱 데이터 폴더를 못 찾았어요(${JSON.stringify(data)}) — 앱이 깔려 있나요? npm run ios:sim 먼저`,
+    );
   const file = join(data, 'Documents/selfcheck.json');
   rmSync(file, { force: true });
-  launch(['-selfcheck']);
+  // 지금 커밋을 넘겨 앱이 실제로 내주는 main.js 에 그 빌드 표시가 찍혔는지 재게 한다(SelfCheck.swift)
+  launch(['-selfcheck', '-selfcheckHead', head]);
   // 앱이 웹을 다 불러온 뒤 점검을 돌려 파일을 쓴다. 보통 1~2초, 넉넉히 30초까지 기다린다
   const until = Date.now() + 30_000;
   while (!existsSync(file)) {
@@ -105,7 +128,7 @@ async function selfcheck() {
   }
   const result = JSON.parse(readFileSync(file, 'utf8'));
   console.log(JSON.stringify(result, null, 2));
-  const v = judgeSelfcheck(result);
+  const v = judgeSelfcheck(result, head);
   console.log(`\n  ${v.notes.join('\n  ')}`);
   if (!v.ok) fail(`자가 점검 실패:\n    ${v.problems.join('\n    ')}`);
   console.log('\n  ✓ 자가 점검 통과\n');

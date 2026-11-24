@@ -3,7 +3,8 @@
     import WebKit
 
     /// 자가 점검(개발 빌드 전용): `simctl launch <기기> <번들ID> -selfcheck` 로 켜면
-    /// 웹뷰 안에서 글꼴·보안 출처·영구 저장·IndexedDB·안전 영역·언어를 재서 `Documents/selfcheck.json` 에 쓴다.
+    /// 웹뷰 안에서 빌드·글꼴·보안 출처·영구 저장·IndexedDB·안전 영역·언어·dist 밖 막기를 재서
+    /// `Documents/selfcheck.json` 에 쓴다.
     /// scripts/ios.mjs selfcheck 가 그 파일을 읽어 통과·실패를 낸다. 새 iOS 베타가 나올 때도 이것부터 돌린다.
     /// 점검 코드를 웹(dist)에 넣지 않은 이유: 출시 웹앱에 개발용 코드가 실리지 않게.
     enum SelfCheck {
@@ -13,7 +14,9 @@
         static func runIfRequested(in web: WKWebView) {
             guard !done, ProcessInfo.processInfo.arguments.contains("-selfcheck") else { return }
             done = true
-            web.callAsyncJavaScript(script, arguments: [:], in: nil, in: .page) { result in
+            // `-selfcheckHead <커밋>` 실행 인자는 UserDefaults 로 들어온다(scripts/ios.mjs 가 넘긴다)
+            let head = UserDefaults.standard.string(forKey: "selfcheckHead") ?? ""
+            web.callAsyncJavaScript(script, arguments: ["head": head], in: nil, in: .page) { result in
                 let json: String
                 switch result {
                 case .success(let value): json = value as? String ?? "{\"error\":\"결과가 문자열이 아님\"}"
@@ -37,6 +40,15 @@
             const attempt = async (name, f) => {
               try { r[name] = await f(); } catch (e) { r[name] = { error: String(e) }; }
             };
+            // 앱이 실제로 내주는 main.js 에 찍힌 빌드 표시(esbuild-shared.mjs 의 __BUILD__). 지금 커밋이 아니면 null
+            await attempt('build', async () => {
+              const js = await (await fetch('/main.js')).text();
+              if (js.includes(`"${head}"`)) return head;
+              if (js.includes(`"${head}+"`)) return `${head}+`;
+              return null;
+            });
+            // 스킴 처리기가 dist 밖(앱 묶음의 Info.plist)을 내주지 않는지. %2f 는 주소 정리에서 안 풀려 처리기까지 간다
+            await attempt('traversal', async () => (await fetch('/..%2fInfo.plist')).status);
             await attempt('isSecureContext', () => window.isSecureContext);
             await attempt('language', () => navigator.language);
             await attempt('languages', () => navigator.languages);
