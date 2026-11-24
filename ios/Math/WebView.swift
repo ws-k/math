@@ -61,10 +61,18 @@ struct WebView: UIViewRepresentable {
             decisionHandler(inside ? .allow : .cancel)
         }
 
+        /// 마지막으로 되살린 시각. 되살리자마자 또 죽으면 같은 화면이 원인일 수 있어 판단에 쓴다
+        private var lastRecovery: ContinuousClock.Instant?
+
         /// iOS 가 메모리 때문에 웹 프로세스를 죽이면 웹뷰가 흰 화면으로 남는다. 다시 불러와 되살린다
-        /// (저장은 IndexedDB 라 다시 불러와도 기록은 그대로다)
+        /// (저장은 IndexedDB 라 다시 불러와도 기록은 그대로다).
+        /// 되살린 지 몇 초 안에 또 죽으면 그 화면이 메모리를 못 버티는 것이라 같은 화면을 다시 열면
+        /// 죽고 살리기를 끝없이 되풀이한다. 그때는 가벼운 첫 화면(홈)으로 간다
         func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-            if webView.url == nil {
+            let now = ContinuousClock.now
+            let crashedAgain = lastRecovery.map { now - $0 < .seconds(5) } ?? false
+            lastRecovery = now
+            if webView.url == nil || crashedAgain {
                 webView.load(URLRequest(url: BundleSchemeHandler.startURL))
             } else {
                 webView.reload()
