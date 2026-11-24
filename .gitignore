@@ -6,3 +6,6 @@ dist/
 # 사용자 개인 참고 자료(시험 풀이) — 공개 저장소에 올리지 않음
 reference/
 .claude/worktrees/
+# iOS: 팀 ID 는 사람·기계마다 달라 각자 파일에 둔다(Base.xcconfig 가 있으면 읽는다). Xcode 개인 창 상태도 제외
+ios/Config/Signing.local.xcconfig
+xcuserdata/
