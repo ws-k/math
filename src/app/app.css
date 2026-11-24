@@ -659,7 +659,7 @@ summary:focus-visible {
 .pbody.split {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
 }
-.pbody.tabs {
+.pbody.single {
   grid-template-columns: minmax(0, 1fr);
 }
 .pbody > [hidden] {

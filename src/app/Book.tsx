@@ -184,7 +184,7 @@ export function ProblemScreen(p: ProblemScreenProps) {
       <div
         // 단원이 달라도 문제 id(p101)는 겹칠 수 있다 — 다른 단원 같은 번호로 가면 화면이 새로 만들어져야 한다
         key={`${unit.id}/${pid}`}
-        className={`pbody ${split ? 'split' : 'tabs'} ${turn}`}
+        className={`pbody ${split ? 'split' : 'single'} ${turn}`}
         onPointerDownCapture={onDown}
         onPointerUpCapture={onUp}
         onPointerCancelCapture={onUp}
