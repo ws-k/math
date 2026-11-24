@@ -1,0 +1,46 @@
+// 앱 설정을 pbxproj 대신 여기 둔다 — 읽기 쉬운 텍스트라 손으로 고쳐도 pbxproj 를 건드릴 일이 없다.
+// Debug/Release 둘 다 이 파일을 쓰고, 둘이 달라야 하는 값만 pbxproj 의 구성에 남겼다.
+
+// 번들 ID 는 PM 확정 전 제안값이다. 첫 업로드 뒤에는 바꿀 수 없다.
+PRODUCT_BUNDLE_IDENTIFIER = io.github.ws-k.math
+PRODUCT_NAME = Math
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+
+// 17.0: WebKit 저장 정책이 바뀐 판이고 웹 빌드 대상(safari16)보다 높다. PM 확정 전 추천값.
+IPHONEOS_DEPLOYMENT_TARGET = 17.0
+SDKROOT = iphoneos
+SUPPORTED_PLATFORMS = iphoneos iphonesimulator
+// 아이폰·아이패드. 맥(디자인 포 아이패드)·비전은 확인하지 않았으므로 켜지 않는다
+TARGETED_DEVICE_FAMILY = 1,2
+SUPPORTS_MACCATALYST = NO
+SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO
+SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO
+
+SWIFT_VERSION = 6.0
+// 화면 코드뿐이라 전부 메인 스레드로 둔다 — WebKit 콜백도 메인 스레드라 격리 주석을 붙일 일이 없다
+SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor
+SWIFT_APPROACHABLE_CONCURRENCY = YES
+ENABLE_USER_SCRIPT_SANDBOXING = YES
+ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME =
+ENABLE_PREVIEWS = NO
+ALWAYS_SEARCH_USER_PATHS = NO
+
+// Info.plist: 설정값으로 쓸 수 있는 키는 여기서 만들고, 못 쓰는 키(런치 화면 색)만 Config/Info.plist 에 둔다.
+// Info.plist 를 Math/ 동기화 폴더 밖에 둔 이유: 안에 두면 리소스로 한 번 더 복사돼 빌드가 충돌한다
+GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_FILE = Config/Info.plist
+INFOPLIST_KEY_CFBundleDisplayName = 수학 다시 쌓기
+INFOPLIST_KEY_CFBundleDevelopmentRegion = ko
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.education
+// SwiftUI 앱이라도 이 키가 있어야 Info.plist 에 UIApplicationSceneManifest 가 들어간다.
+// 없으면 iOS 27 에서 Xcode 27 SDK 앱이 켜자마자 꺼진다(UIScene 필수)
+INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES
+INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES
+// 전 방향 허용, 전체 화면 강제 안 함 — 접힘·펼침·아이패드 분할 화면 크기 변화를 웹 CSS 가 받는다
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+
+CODE_SIGN_STYLE = Automatic
+// 팀 ID 는 비밀이 아니지만 사람·기계마다 달라 저장소에 넣지 않는다. 없으면 서명 없이(시뮬레이터) 빌드된다
+#include? "Signing.local.xcconfig"

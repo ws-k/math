@@ -1,4 +1,5 @@
 // dev.mjs 와 build.mjs 가 함께 쓰는 esbuild 설정. 두 곳의 결과가 어긋나지 않게 한 곳에 둔다.
+import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,6 +38,31 @@ export const contentPlugin = {
   },
 };
 
+/**
+ * git 출력 → 빌드 표시. 커밋 안 된 변경이 섞였으면 해시만으로는 무엇이 들어갔는지 알 수 없어 + 를 붙인다.
+ * git 을 못 쓰면 'unknown' — 빌드 표시 때문에 빌드가 멈추지는 않게 한다.
+ */
+export function formatBuildId(hash, porcelain) {
+  const h = hash.trim();
+  if (!h) return 'unknown';
+  return porcelain.trim() ? `${h}+` : h;
+}
+
+/** 지금 커밋으로 만든 빌드 표시. 추적 안 하는 파일(outputs/ 등)은 앱에 안 들어가 변경으로 치지 않는다 */
+export function buildId() {
+  const git = (args) => {
+    try {
+      return execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', stdio: 'pipe' });
+    } catch {
+      return '';
+    }
+  };
+  return formatBuildId(
+    git(['rev-parse', '--short', 'HEAD']),
+    git(['status', '--porcelain', '--untracked-files=no']),
+  );
+}
+
 export function options({ outdir, dev }) {
   return {
     absWorkingDir: root,
@@ -54,6 +80,8 @@ export function options({ outdir, dev }) {
     sourcemap: dev,
     define: {
       __DEV__: String(dev),
+      // 배포 빌드에 커밋 해시를 찍어 설정 화면에 보여 준다(앱에 옛 dist 가 실리는 일을 눈으로 잡게)
+      __BUILD__: JSON.stringify(dev ? 'dev' : buildId()),
       'process.env.NODE_ENV': JSON.stringify(dev ? 'development' : 'production'),
     },
     plugins: [contentPlugin],

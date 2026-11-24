@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "npm run verify && node scripts/build.mjs",
+    "ios:sim": "node scripts/build.mjs && node scripts/ios.mjs sim",
+    "ios:archive": "npm run build && node scripts/ios.mjs archive",
     "verify": "node scripts/dump-problems.ts && .venv/bin/python verify/verify.py .cache/problems.json",
     "gen-content": "node scripts/gen-content.ts",
     "typecheck": "tsc --noEmit -p .",

@@ -11,6 +11,7 @@ import { FIRST, type Profile } from './profile.ts';
 import { Rich } from './Rich.tsx';
 import { type Route, routeHash } from './route.ts';
 import type { Settings } from './settings.ts';
+import { buildLabel, isNativeApp, storageNote } from './shell.ts';
 import { currentProfile } from './store.ts';
 import {
   type Cards,
@@ -563,11 +564,7 @@ export function SettingsScreen(p: {
       </section>
       <section className="card">
         <h2>저장</h2>
-        <p className="muted">
-          {p.persisted
-            ? '영구 저장이 허용되어 기기 안 기록이 지워지지 않아요.'
-            : '영구 저장이 아직 허용되지 않았어요. 홈 화면에 추가해서 열면 허용될 수 있어요.'}
-        </p>
+        <p className="muted">{storageNote(p.persisted, isNativeApp())}</p>
       </section>
       <section className="card">
         <h2>학습 기록 초기화</h2>
@@ -583,6 +580,7 @@ export function SettingsScreen(p: {
       <section className="card">
         <PenDiag />
       </section>
+      <p className="muted">{buildLabel()}</p>
       {resettingAll && (
         <Confirm
           message={`${who ? `'${who}'의 ` : ''}모든 학습 기록을 지울까요? 되돌릴 수 없어요.`}
