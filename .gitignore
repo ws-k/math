@@ -1,6 +1,10 @@
 node_modules/
 dist/
 .venv/
+# 다른 작업 폴더(worktree)에서는 원본의 .venv 를 심볼릭 링크로 걸어 쓴다 — 링크는 폴더가 아니라 .venv/ 에 안 걸린다
+.venv
+# 시안·점검표 같은 산출물(로컬 전용)
+outputs/
 .cache/
 .DS_Store
 # 사용자 개인 참고 자료(시험 풀이) — 공개 저장소에 올리지 않음
