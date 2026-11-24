@@ -5,7 +5,7 @@ import SwiftUI
 struct MathApp: App {
     var body: some Scene {
         WindowGroup {
-            Color("LaunchBackground")
+            WebView()
                 .ignoresSafeArea()
         }
     }
