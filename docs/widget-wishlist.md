@@ -150,3 +150,4 @@
 - (목표 뒤 넘침) 남은 2px 3곳(geo-space-figures perp done, e-circle-area poly hint·done) — `.lesson .toast { min-height: 3.1em }` 때문에 한 줄 글도 두 줄 높이. 숫자 값 뒤 조사({{i02}}로 → "-4/3로")가 읽기와 어긋나는 곳 점검 필요(전 단원)
 - (1-마 count 후속) 벤에 `u` 가 있으면 다 맞힌 뒤 결론 첫 줄이 382 폭에서 두 줄로 꺾이고 여집합 줄까지 붙어 prob-conditional/venn 질문 장면 24px 넘침 / 여집합 줄을 끄는 선택 칸(조건부확률 장면엔 주제 밖) / count 에 `hasGoal` 없어 `afterGoal` 못 씀(h1-set-logic/venn 결론이 분류 전부터 보임) / '넣을 곳' 단추가 고른 카드를 반쯤 가림
 - (1-마 count 후속) 줄 세우기 고정 설명 "자리 — 왼쪽이 {첫 자리 이름}"(Count.tsx 393줄 근처)이 자리 이름에 방향 말이 들어가면 헷갈림 → `words` 로 바꿀 수 있게 / 선 잇기 판이 늘 정다각형이라 일렬 자리(flags·bars 1~5번)도 오각형으로 보임 → 일렬 배치 옵션 / pascal·repeat 은 아직 누르기(누르면 답을 바로 보임 — P2 검토)
+- (1-마 후속) 선 잇기 부품: 변을 미리 그리거나 대각선만 잇는 옵션(m1-plane-figures/diag), "찾은 짝 n가지"·"새 짝이에요" 도 `words` 로 / 확률 실험 표본 크기 단추 줄 때문에 결과 11가지 이상이면 382×580 넘침 → 단추를 기구 줄 옆으로 줄이면 prob-estimation hook 을 `{"device":"die","sizes":[1,2,4],"seed":16,"goal":100}` 로 바꿀 것
