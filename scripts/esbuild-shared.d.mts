@@ -5,3 +5,5 @@ export const root: string;
 export const contentPlugin: Plugin;
 export function options(o: { outdir: string; dev: boolean }): BuildOptions;
 export function copyStatic(outdir: string): void;
+export function formatBuildId(hash: string, porcelain: string): string;
+export function buildId(): string;

@@ -8,7 +8,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { distProblems, judgeSelfcheck } from './ios-lib.ts';
+import { buildProblems, distProblems, judgeSelfcheck } from './ios-lib.ts';
 
 const root = join(import.meta.dirname, '..');
 const dist = join(root, 'dist');
@@ -113,6 +113,8 @@ async function selfcheck() {
 
 function check() {
   checkDist();
+  const problems = buildProblems(readFileSync(join(dist, 'main.js'), 'utf8'), headCommit());
+  if (problems.length) fail(problems.join('\n    '));
   console.log(`\n  ✓ dist 점검 통과 — 커밋 ${headCommit()}\n`);
 }
 

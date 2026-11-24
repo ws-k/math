@@ -49,3 +49,14 @@ export function judgeSelfcheck(r: Record<string, unknown>): SelfcheckVerdict {
   );
   return { ok: problems.length === 0, problems, notes };
 }
+
+/**
+ * 스토어용 dist 가 지금 커밋으로 깨끗하게 만든 것인지. main.js 에 찍힌 빌드 표시(esbuild-shared.mjs 의
+ * __BUILD__)로 판단한다. 옛 dist 나 커밋 안 된 변경이 실리면 어떤 코드가 나갔는지 되짚을 수 없어 막는다.
+ */
+export function buildProblems(mainJs: string, head: string): string[] {
+  if (mainJs.includes(`"${head}"`)) return [];
+  if (mainJs.includes(`"${head}+"`))
+    return [`커밋 안 된 변경이 섞인 빌드예요(${head}+) — 커밋한 뒤 다시 만드세요`];
+  return [`dist 가 지금 커밋(${head})으로 만든 게 아니에요 — npm run build 로 다시 만드세요`];
+}
