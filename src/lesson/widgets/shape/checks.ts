@@ -4,10 +4,19 @@ import { ratStr } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { derivedSym, isDerived, symId } from './derive.ts';
 import { goalMovers, goalStates, goalTable } from './goal.ts';
-import { measureValue, operands, round, shoelace, sub } from './measure.ts';
+import { arcOf, measureValue, operands, round, shoelace, sub } from './measure.ts';
 import { P, shInit } from './model.ts';
 import { pieceChecks } from './piece.ts';
-import type { ShapeParams, ShGoal, ShMeasure, ShPoint, ShState } from './types.ts';
+import type { ShapeParams, ShCircle, ShGoal, ShMeasure, ShPoint, ShState } from './types.ts';
+
+/** sympy 수 글자: 정수는 그대로, 0.5 단위는 Rational(5, 2) — 2.5 를 그대로 적으면 sympy 가 부동소수로 읽는다 */
+export const numSym = (r: number) => (Number.isInteger(r) ? `${r}` : `Rational(${r * 2}, 2)`);
+
+/** 원 위 점의 반지름 식(수, 또는 중심에서 고정 점까지 거리) */
+const radiusSym = (on: { circle: [string, number | string] }, ps: (id: string) => string) => {
+  const r = on.circle[1];
+  return typeof r === 'number' ? numSym(r) : `(${ps(on.circle[0])}).distance(${ps(r)})`;
+};
 
 /** sympy 점 식 */
 export function pointSym(p: ShapeParams, s: ShState, id: string): string {
@@ -16,7 +25,7 @@ export function pointSym(p: ShapeParams, s: ShState, id: string): string {
   const a = P(s, id);
   if (pt.on && 'circle' in pt.on) {
     const c = P(s, pt.on.circle[0]);
-    const r = pt.on.circle[1];
+    const r = radiusSym(pt.on, (j) => pointSym(p, s, j));
     return `Point(${c.x} + ${r}*cos(rad(${a.deg})), ${c.y} + ${r}*sin(rad(${a.deg})))`;
   }
   return `Point(${a.x}, ${a.y})`;
@@ -29,15 +38,35 @@ export const shoelaceSym = (ps: string[]) =>
     })
     .join(' + ')})/2`;
 
+/** B 에서 BA 를 시계 반대 방향으로 돌려 BC 에 닿는 각(도, 0~360): atan2(외적, 내적) 를 2π 로 나눈 나머지 */
+function ccwSym(a: string, b: string, c: string) {
+  const u = (q: string, k: 'x' | 'y') => `((${q}).${k} - (${b}).${k})`;
+  const cross = `${u(a, 'x')}*${u(c, 'y')} - ${u(a, 'y')}*${u(c, 'x')}`;
+  const dot = `${u(a, 'x')}*${u(c, 'x')} + ${u(a, 'y')}*${u(c, 'y')}`;
+  return `deg(Mod(atan2(${cross}, ${dot}), 2*pi))`;
+}
+
 /** 측정값의 sympy 식. ps 는 점 id → sympy 점 글자(고정 점은 값, 목표 검산에서 끄는 점은 상태 기호) */
 export function measureSym(p: ShapeParams, m: ShMeasure, ps: (id: string) => string): string {
   if ('len' in m) return `${ps(m.len[0])}.distance(${ps(m.len[1])})`;
   if ('angle' in m) {
     const [a, b, c] = m.angle.map(ps) as [string, string, string];
+    if (m.ccw) return ccwSym(a, b, c);
     return `deg(acos((${a} - ${b}).dot(${c} - ${b}) / (${a}.distance(${b})*${c}.distance(${b}))))`;
   }
   if ('area' in m) return shoelaceSym((p.polygons[m.area] ?? []).map(ps));
+  if ('arc' in m) {
+    const a = arcOf(p, m.arc);
+    const [o, f, t] = [ps(a.c), ps(a.from), ps(a.to)];
+    return `(${o}).distance(${f})*rad(${ccwSym(f, o, t)})`;
+  }
+  if ('around' in m) {
+    const c = p.circles[m.around] as ShCircle;
+    return `2*pi*${'r' in c ? numSym(c.r) : `(${ps(c.c)}).distance(${ps(c.through)})`}`;
+  }
   const t = operands(m).map((i) => `(${measureSym(p, sub(p, i), ps)})`);
+  if ('sq' in m) return `${t[0]}**2`;
+  if ('sin' in m) return `sin(rad(${t[0]}))`;
   if ('sum' in m) return t.join(' + ');
   if ('diff' in m) return `Abs(${t[0]} - ${t[1]})`;
   return `${t[0]}/${t[1]}`;
@@ -72,7 +101,7 @@ export function goalChecks(p: ShapeParams, g: ShGoal): WidgetCheck {
     if (!movers.has(id)) return pointSym(p, s0, id);
     if (pt.on && 'circle' in pt.on) {
       const c = P(s0, pt.on.circle[0]);
-      const r = pt.on.circle[1];
+      const r = radiusSym(pt.on, ps);
       return `Point(${c.x} + ${r}*cos(rad(pt_${symId(id)}_d)), ${c.y} + ${r}*sin(rad(pt_${symId(id)}_d)))`;
     }
     return `Point(pt_${symId(id)}_x, pt_${symId(id)}_y)`;

@@ -3,11 +3,12 @@ import { growStates, hitTable, sameVal, type Val } from '../../goal.ts';
 import { type Rational, reduce } from '../../sym.ts';
 import { add as qAdd, div as qDiv, qi, neg as qNeg, sub as qSub } from '../q.ts';
 import { dependsOn, latticePt, symId } from './derive.ts';
-import { measureValue, operands, sub } from './measure.ts';
+import { arcOf, measureValue, operands, sub } from './measure.ts';
 import { circlePos, gcd, P, rangeOf, settle, shInit } from './model.ts';
 import {
   CIRCLE_STEP,
   type ShapeParams,
+  type ShCircle,
   type ShGoal,
   type ShMeasure,
   type ShPoint,
@@ -36,7 +37,18 @@ export function measureVal(p: ShapeParams, s: ShState, m: ShMeasure): Val {
   const n = measureValue(p, s, m) ?? Number.NaN;
   let q: Rational | null = null;
   const ops = operands(m);
-  if (ops.length) {
+  if ('sq' in m) {
+    // 격자점 사이 길이의 제곱은 길이가 무리수(√13)여도 늘 정수 — AB² = 13 을 정확히 견주게
+    const l = sub(p, m.sq);
+    if ('len' in l && isLattice(p, l.len)) {
+      const [ax, ay] = ints(s, l.len[0]);
+      const [bx, by] = ints(s, l.len[1]);
+      q = [(ax - bx) ** 2n + (ay - by) ** 2n, 1n];
+    }
+  } else if ('sin' in m) {
+    const a = measureVal(p, s, sub(p, m.sin)).q;
+    if (a && a[0] === 90n * a[1]) q = [1n, 1n];
+  } else if (ops.length) {
     // 묶은 값은 항이 모두 분수일 때만 분수(PF+PG 가 정수여도 항이 무리수면 수로 견주고 sympy 가 정확히 다시 본다)
     const qs = ops.map((i) => measureVal(p, s, sub(p, i)).q);
     if (Number.isFinite(n) && qs.every((x) => x)) {
@@ -67,7 +79,15 @@ export function measureVal(p: ShapeParams, s: ShState, m: ShMeasure): Val {
     const [ax, ay] = ints(s, m.angle[0]);
     const [bx, by] = ints(s, m.angle[1]);
     const [cx, cy] = ints(s, m.angle[2]);
-    if ((ax - bx) * (cx - bx) + (ay - by) * (cy - by) === 0n) q = [90n, 1n];
+    const dot = (ax - bx) * (cx - bx) + (ay - by) * (cy - by);
+    if (!m.ccw) {
+      if (dot === 0n) q = [90n, 1n];
+    } else {
+      // 시계 반대 방향 각: 직각은 90°·270°, 한 직선이면 0°·180°(외적 부호로 가른다)
+      const cross = (ax - bx) * (cy - by) - (ay - by) * (cx - bx);
+      if (dot === 0n) q = [cross > 0n ? 90n : 270n, 1n];
+      else if (cross === 0n) q = [dot > 0n ? 0n : 180n, 1n];
+    }
   }
   return { n, q };
 }
@@ -99,7 +119,13 @@ export function measurePoints(p: ShapeParams, m: ShMeasure): string[] {
   if ('len' in m) ids = m.len;
   else if ('angle' in m) ids = m.angle;
   else if ('area' in m) ids = p.polygons[m.area] ?? [];
-  else ids = operands(m).flatMap((i) => measurePoints(p, sub(p, i)));
+  else if ('arc' in m) {
+    const a = arcOf(p, m.arc);
+    ids = [a.c, a.from, a.to];
+  } else if ('around' in m) {
+    const c = p.circles[m.around] as ShCircle;
+    ids = 'through' in c ? [c.c, c.through] : [c.c];
+  } else ids = operands(m).flatMap((i) => measurePoints(p, sub(p, i)));
   return ids.flatMap((id) => dependsOn(p, id));
 }
 

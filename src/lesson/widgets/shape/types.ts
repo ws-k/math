@@ -1,7 +1,8 @@
 // 도형판 타입과 상수. 다른 모든 shape/ 파일이 이것을 가져온다(아래층).
 import type { GoalCommon, GoalNum, GoalShape } from '../../goal.ts';
 
-export type ShOn = { seg: [string, string] } | { circle: [string, number] };
+/** 원 위 점: 중심과 반지름(수 — 0.5 단위, 또는 고정 점 id — 그 점까지 거리, 컴퍼스로 √2 옮기기) */
+export type ShOn = { seg: [string, string] } | { circle: [string, number | string] };
 export interface ShPoint {
   id: string;
   x?: number;
@@ -25,16 +26,43 @@ export interface ShPoint {
   range?: { x: [number, number]; y: [number, number] };
 }
 /**
- * 측정값. sum·diff·ratio 의 수는 앞 측정값의 번호(길이·각만 — 묶은 값을 다시 묶지 않아 순환·긴 이름이 없다).
- * diff 는 |a − b|(이차곡선 정의가 차의 크기라 부호를 두지 않는다).
+ * 측정값. sum·diff·ratio·sq·sin 의 수는 앞 측정값의 번호(길이·각·제곱만 — 묶은 값을 다시 묶지 않아 순환·긴 이름이 없다).
+ * diff 는 |a − b|(이차곡선 정의가 차의 크기라 부호를 두지 않는다). arc 는 arcs 의 번호(호 길이), around 는
+ * circles 의 번호(원주), sq 는 길이의 제곱(AB²), sin 은 각의 사인(사인법칙 BC ÷ sin A).
  */
-export type ShMeasure =
+export type ShMeasure = (
   | { len: [string, string] }
   | { angle: [string, string, string] }
   | { area: number }
   | { sum: number[] }
   | { diff: [number, number] }
-  | { ratio: [number, number] };
+  | { ratio: [number, number] }
+  | { arc: number }
+  | { around: number }
+  | { sq: number }
+  | { sin: number }
+) &
+  ShMeasureOpts;
+/** 측정값을 보이는 방법 */
+export interface ShMeasureOpts {
+  /** 이름 대신 적는 글(가로·세로·∠A) */
+  label?: string;
+  /** 그림 위에도 값을 적는다(길이는 변 바깥, 넓이는 가운데, 각은 꼭짓점 안쪽, 호는 호 바깥) */
+  tag?: true;
+  /** 각: 꼭짓점에 각 호(직각이면 네모)를 그린다 */
+  mark?: true;
+  /** 각: A 에서 C 로 시계 반대 방향으로 잰 각(0°~360°) — 180° 넘는 오목한 각을 재려고. 없으면 작은 쪽(0°~180°) */
+  ccw?: true;
+}
+/** 원(반지름이 수, 또는 through 점까지 거리 — 끄는 점이면 컴퍼스처럼 원이 늘고 준다) */
+export type ShCircle = { c: string; r: number } | { c: string; through: string };
+/** 선분 그리기 방법: 점선(숨은 선·보조선), 연장선(격자 끝까지 늘인 직선) */
+export interface ShSegStyle {
+  dash?: true;
+  extend?: true;
+}
+/** 길이 단위(넓이는 제곱) */
+export const UNITS = ['mm', 'cm', 'm', 'km'] as const;
 /** 목표가 견주는 것: 수, 또는 다른 측정값의 번호(PF = PH) */
 export type ShIs = { num: GoalNum } | { of: number };
 /** 목표: of 는 measures 의 번호(보이는 측정값만 목표로 — 학습자가 읽을 수 있어야 맞출 수 있다) */
@@ -44,8 +72,14 @@ export interface ShapeParams {
   grid: { w: number; h: number };
   points: ShPoint[];
   polygons: string[][];
-  circles: { c: string; r: number }[];
+  circles: ShCircle[];
   segments: [string, string][];
+  /** segments 와 같은 차례의 그리기 방법(객체로 적은 선분이 하나라도 있을 때만) */
+  segStyle?: ShSegStyle[];
+  /** 원 위 호(중심 c, from 에서 to 까지 시계 반대 방향) — 강조해 그리고 길이를 잴 수 있다 */
+  arcs?: { c: string; from: string; to: string }[];
+  /** 길이 단위(없으면 단위 없이) */
+  unit?: (typeof UNITS)[number];
   measures: ShMeasure[];
   digits: number;
   cut?: { piece: string[]; rest: string[]; by: [number, number]; result: [number, number][] };

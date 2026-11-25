@@ -16,9 +16,18 @@ export const X = (p: ShapeParams, x: number) => r2(shGeom(p).ox + x * shGeom(p).
 export const Y = (p: ShapeParams, y: number) => r2(shGeom(p).oy - y * shGeom(p).u);
 export const rad = (d: number) => (d * Math.PI) / 180;
 
-export function circlePos(s: ShState, on: { circle: [string, number] }, deg: number) {
-  const c = s.pts[on.circle[0]] as { x: number; y: number };
+/** 원 위 점의 반지름: 수, 또는 고정 점까지 거리(√2 처럼 정수가 아닌 반지름) */
+export function radiusOf(s: ShState, on: { circle: [string, number | string] }) {
   const r = on.circle[1];
+  if (typeof r === 'number') return r;
+  const c = s.pts[on.circle[0]] as { x: number; y: number };
+  const q = s.pts[r] as { x: number; y: number };
+  return Math.hypot(q.x - c.x, q.y - c.y);
+}
+
+export function circlePos(s: ShState, on: { circle: [string, number | string] }, deg: number) {
+  const c = s.pts[on.circle[0]] as { x: number; y: number };
+  const r = radiusOf(s, on);
   return { x: c.x + r * Math.cos(rad(deg)), y: c.y + r * Math.sin(rad(deg)), deg };
 }
 

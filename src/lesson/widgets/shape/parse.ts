@@ -3,13 +3,45 @@ import { type GoalShape, goalNum, needHint, parseGoalShape } from '../../goal.ts
 import { arr, fail, int, obj, optStr, str } from '../../parse.ts';
 import { isDerived, parseDerived, parseRange } from './derive.ts';
 import { goalMovers } from './goal.ts';
-import { cutArea, measureKey, measureKind, measureName, shoelace, sub } from './measure.ts';
+import { cutArea, measureKey, measureKind, shoelace, sub } from './measure.ts';
 import { gcd, P, shInit } from './model.ts';
+import { parseMeasures } from './parseMeasure.ts';
 import { parsePieces } from './piece.ts';
-import { CIRCLE_STEP, type ShapeParams, type ShIs, type ShMeasure, type ShPoint } from './types.ts';
+import {
+  CIRCLE_STEP,
+  type ShapeParams,
+  type ShIs,
+  type ShPoint,
+  type ShSegStyle,
+  UNITS,
+} from './types.ts';
 
 // 대문자 한 자, 뒤에 ′ 하나까지(F′ — 옮긴 점·대칭점을 교과서처럼 부르려고)
 const ID = /^[A-Z]′?$/;
+
+/** 점 수 상한. 계단 두 개(n×(n+1))처럼 꼭짓점이 많은 그림까지 — 이름표가 겹치지 않게 labels.ts 가 자리를 고른다 */
+const MAX_POINTS = 20;
+const MAX_SEGS = 12;
+
+/** 0.5 단위 양수(반지름 2.5) — 그보다 잘게 나누면 격자에서 눈으로 읽을 수 없다 */
+function half(v: unknown, at: string): number {
+  if (typeof v !== 'number' || !Number.isInteger(v * 2) || v < 0.5 || v > 12)
+    return fail(at, `0.5~12 사이 0.5 단위 수가 아님 (${String(v)})`);
+  return v;
+}
+
+/** 호 읽기: 중심 c 에서 from 까지가 반지름, to 쪽까지 시계 반대 방향 */
+function parseArcs(raw: unknown, need: (v: unknown, at: string) => string) {
+  return arr(raw, '도형판 arcs', 1, 4).map((ra, i) => {
+    const at = `도형판 호${i + 1}`;
+    const a = obj(ra, at, ['c', 'from', 'to']);
+    return {
+      c: need(a.c, `${at} c`),
+      from: need(a.from, `${at} from`),
+      to: need(a.to, `${at} to`),
+    };
+  });
+}
 
 export function parseShape(raw: unknown): ShapeParams {
   const o = obj(
@@ -25,13 +57,15 @@ export function parseShape(raw: unknown): ShapeParams {
       'cut',
       'pieces',
       'outline',
+      'arcs',
+      'unit',
       'note',
       'goal',
       'done',
     ],
   );
   const g = obj(o.grid, '도형판 grid', ['w', 'h']);
-  const grid = { w: int(g.w, '도형판 grid.w', 2, 16), h: int(g.h, '도형판 grid.h', 2, 12) };
+  const grid = { w: int(g.w, '도형판 grid.w', 2, 16), h: int(g.h, '도형판 grid.h', 2, 16) };
   const ids = new Set<string>();
   const need = (id: unknown, at: string) => {
     const v = str(id, at);
@@ -39,83 +73,96 @@ export function parseShape(raw: unknown): ShapeParams {
     return v;
   };
   const prev = new Map<string, ShPoint>();
-  const points: ShPoint[] = arr(o.points, '도형판 points', o.pieces === undefined ? 1 : 0, 10).map(
-    (rp, i) => {
-      const at = `도형판 점${i + 1}`;
-      const x = obj(
-        rp,
-        at,
-        ['id'],
-        ['x', 'y', 'deg', 'drag', 'on', 'aux', 'foot', 'follow', 'mirror', 'range'],
-      );
-      const id = str(x.id, `${at} id`);
-      if (!ID.test(id)) fail(`${at} id`, '대문자 한 글자(뒤에 ′ 하나까지)');
-      if (ids.has(id)) fail(`${at} id`, `중복 (${id})`);
-      if (x.drag !== undefined && typeof x.drag !== 'boolean') fail(`${at} drag`, 'true/false 만');
-      const pt: ShPoint = { id, drag: x.drag === true };
-      if (x.follow !== undefined || x.mirror !== undefined) {
-        parseDerived(x, pt, at, grid, need, prev);
-        ids.add(id);
-        prev.set(id, pt);
-        return pt;
-      }
-      if (x.foot !== undefined) {
-        // 발은 자리를 늘 계산하는 점 — 자리·끌기·제약을 적으면 계산한 자리와 어긋난다
-        const bad = ['x', 'y', 'deg', 'drag', 'on', 'aux', 'range'].find((k) => x[k] !== undefined);
-        if (bad) fail(`${at} foot`, `수선의 발에는 ${bad} 를 적지 않음(자리는 계산함)`);
-        const f = obj(x.foot, `${at} foot`, ['from', 'line']);
-        const from = need(f.from, `${at} foot.from`);
-        const line = arr(f.line, `${at} foot.line`, 2, 2).map((v, j) =>
-          need(v, `${at} foot.line${j + 1}`),
-        ) as [string, string];
-        if (isDerived(prev.get(from)))
-          fail(`${at} foot.from`, '발은 계산되는 점(발·따라오는 점·마주 보는 점)에서 내리지 않음');
-        // 직선을 고정해 두면 발은 내린 점 하나만 따라간다(검산이 늘어놓는 상태도 그 점의 자리뿐)
-        const [a, b] = line.map((v) => prev.get(v) as ShPoint);
-        for (const e of [a, b])
-          if (e?.drag || e?.on || isDerived(e))
-            fail(`${at} foot.line`, `직선 위 점 ${e?.id} 은 고정된 격자점이어야 함`);
-        if (a?.x === b?.x && a?.y === b?.y) fail(`${at} foot.line`, '직선의 두 점이 같은 자리');
-        pt.foot = { from, line };
-        ids.add(id);
-        prev.set(id, pt);
-        return pt;
-      }
-      if (x.aux !== undefined) {
-        if (x.aux !== true) fail(`${at} aux`, 'true 만');
-        if (pt.drag || x.on !== undefined) fail(`${at} aux`, '보조점은 고정 점(끌기·제약 없음)');
-        pt.aux = true;
-      }
-      if (x.on !== undefined) {
-        const on = obj(x.on, `${at} on`, [], ['seg', 'circle']);
-        if (on.seg !== undefined) {
-          const sg = arr(on.seg, `${at} on.seg`, 2, 2).map((v, j) =>
-            need(v, `${at} on.seg${j + 1}`),
-          );
-          pt.on = { seg: [sg[0] as string, sg[1] as string] };
-        } else if (on.circle !== undefined) {
-          const c = arr(on.circle, `${at} on.circle`, 2, 2);
-          pt.on = { circle: [need(c[0], `${at} 원 중심`), int(c[1], `${at} 반지름`, 1, 12)] };
-        } else fail(`${at} on`, 'seg 나 circle 이 필요');
-      }
-      if (pt.on && 'circle' in pt.on) {
-        const deg = int(x.deg, `${at} deg`, 0, 345);
-        if (deg % CIRCLE_STEP) fail(`${at} deg`, `${CIRCLE_STEP}의 배수가 아님`);
-        pt.deg = deg;
-      } else {
-        const cx = int(x.x, `${at} x`, -99, 99);
-        const cy = int(x.y, `${at} y`, -99, 99);
-        if (cx < 0 || cx > grid.w || cy < 0 || cy > grid.h) fail(at, `격자 밖 (${cx}, ${cy})`);
-        pt.x = cx;
-        pt.y = cy;
-        if (x.deg !== undefined) fail(`${at} deg`, '원 위 점에만');
-      }
-      if (x.range !== undefined) pt.range = parseRange(x.range, pt, at, grid);
+  // 반지름을 정하는 점은 고정 점이어야 원 위 점이 그 점과 함께 흔들리지 않는다
+  const fixedPt = (id: string, at: string) => {
+    const q = prev.get(id);
+    if (q?.drag || q?.on || isDerived(q)) fail(at, `${id} 은 고정된 격자점이어야 함`);
+    return id;
+  };
+  const points: ShPoint[] = arr(
+    o.points,
+    '도형판 points',
+    o.pieces === undefined ? 1 : 0,
+    MAX_POINTS,
+  ).map((rp, i) => {
+    const at = `도형판 점${i + 1}`;
+    const x = obj(
+      rp,
+      at,
+      ['id'],
+      ['x', 'y', 'deg', 'drag', 'on', 'aux', 'foot', 'follow', 'mirror', 'range'],
+    );
+    const id = str(x.id, `${at} id`);
+    if (!ID.test(id)) fail(`${at} id`, '대문자 한 글자(뒤에 ′ 하나까지)');
+    if (ids.has(id)) fail(`${at} id`, `중복 (${id})`);
+    if (x.drag !== undefined && typeof x.drag !== 'boolean') fail(`${at} drag`, 'true/false 만');
+    const pt: ShPoint = { id, drag: x.drag === true };
+    if (x.follow !== undefined || x.mirror !== undefined) {
+      parseDerived(x, pt, at, grid, need, prev);
       ids.add(id);
       prev.set(id, pt);
       return pt;
-    },
-  );
+    }
+    if (x.foot !== undefined) {
+      // 발은 자리를 늘 계산하는 점 — 자리·끌기·제약을 적으면 계산한 자리와 어긋난다
+      const bad = ['x', 'y', 'deg', 'drag', 'on', 'aux', 'range'].find((k) => x[k] !== undefined);
+      if (bad) fail(`${at} foot`, `수선의 발에는 ${bad} 를 적지 않음(자리는 계산함)`);
+      const f = obj(x.foot, `${at} foot`, ['from', 'line']);
+      const from = need(f.from, `${at} foot.from`);
+      const line = arr(f.line, `${at} foot.line`, 2, 2).map((v, j) =>
+        need(v, `${at} foot.line${j + 1}`),
+      ) as [string, string];
+      if (isDerived(prev.get(from)))
+        fail(`${at} foot.from`, '발은 계산되는 점(발·따라오는 점·마주 보는 점)에서 내리지 않음');
+      // 직선을 고정해 두면 발은 내린 점 하나만 따라간다(검산이 늘어놓는 상태도 그 점의 자리뿐)
+      const [a, b] = line.map((v) => prev.get(v) as ShPoint);
+      for (const e of [a, b])
+        if (e?.drag || e?.on || isDerived(e))
+          fail(`${at} foot.line`, `직선 위 점 ${e?.id} 은 고정된 격자점이어야 함`);
+      if (a?.x === b?.x && a?.y === b?.y) fail(`${at} foot.line`, '직선의 두 점이 같은 자리');
+      pt.foot = { from, line };
+      ids.add(id);
+      prev.set(id, pt);
+      return pt;
+    }
+    if (x.aux !== undefined) {
+      if (x.aux !== true) fail(`${at} aux`, 'true 만');
+      if (pt.drag || x.on !== undefined) fail(`${at} aux`, '보조점은 고정 점(끌기·제약 없음)');
+      pt.aux = true;
+    }
+    if (x.on !== undefined) {
+      const on = obj(x.on, `${at} on`, [], ['seg', 'circle']);
+      if (on.seg !== undefined) {
+        const sg = arr(on.seg, `${at} on.seg`, 2, 2).map((v, j) => need(v, `${at} on.seg${j + 1}`));
+        pt.on = { seg: [sg[0] as string, sg[1] as string] };
+      } else if (on.circle !== undefined) {
+        const c = arr(on.circle, `${at} on.circle`, 2, 2);
+        // 반지름: 0.5 단위 수, 또는 고정 점 id(그 점까지 거리 — √2 같은 반지름을 컴퍼스로 옮기기)
+        const r =
+          typeof c[1] === 'string'
+            ? fixedPt(need(c[1], `${at} 반지름 점`), `${at} 반지름 점`)
+            : half(c[1], `${at} 반지름`);
+        pt.on = { circle: [need(c[0], `${at} 원 중심`), r] };
+      } else fail(`${at} on`, 'seg 나 circle 이 필요');
+    }
+    if (pt.on && 'circle' in pt.on) {
+      const deg = int(x.deg, `${at} deg`, 0, 345);
+      if (deg % CIRCLE_STEP) fail(`${at} deg`, `${CIRCLE_STEP}의 배수가 아님`);
+      pt.deg = deg;
+    } else {
+      const cx = int(x.x, `${at} x`, -99, 99);
+      const cy = int(x.y, `${at} y`, -99, 99);
+      if (cx < 0 || cx > grid.w || cy < 0 || cy > grid.h) fail(at, `격자 밖 (${cx}, ${cy})`);
+      pt.x = cx;
+      pt.y = cy;
+      if (x.deg !== undefined) fail(`${at} deg`, '원 위 점에만');
+    }
+    if (x.range !== undefined) pt.range = parseRange(x.range, pt, at, grid);
+    ids.add(id);
+    prev.set(id, pt);
+    return pt;
+  });
+  const rawSegs = o.segments === undefined ? [] : arr(o.segments, '도형판 segments', 0, MAX_SEGS);
   const p: ShapeParams = {
     grid,
     points,
@@ -127,72 +174,51 @@ export function parseShape(raw: unknown): ShapeParams {
     ),
     circles: (o.circles === undefined ? [] : arr(o.circles, '도형판 circles', 0, 3)).map(
       (rc, i) => {
-        const c = obj(rc, `도형판 원${i + 1}`, ['c', 'r']);
-        return { c: need(c.c, `도형판 원${i + 1} c`), r: int(c.r, `도형판 원${i + 1} r`, 1, 12) };
+        const at = `도형판 원${i + 1}`;
+        const c = obj(rc, at, ['c'], ['r', 'through']);
+        if ((c.r === undefined) === (c.through === undefined))
+          fail(at, 'r(반지름) 이나 through(지나는 점) 중 하나');
+        const cc = need(c.c, `${at} c`);
+        // through 점이 끄는 점이면 컴퍼스처럼 원이 늘고 준다
+        return c.r !== undefined
+          ? { c: cc, r: half(c.r, `${at} r`) }
+          : { c: cc, through: need(c.through, `${at} through`) };
       },
     ),
-    segments: (o.segments === undefined ? [] : arr(o.segments, '도형판 segments', 0, 8)).map(
-      (rs, i) => {
-        const sg = arr(rs, `도형판 선분${i + 1}`, 2, 2).map((v, j) =>
-          need(v, `도형판 선분${i + 1} 점${j + 1}`),
-        );
-        return [sg[0], sg[1]] as [string, string];
-      },
-    ),
+    segments: rawSegs.map((rs, i) => {
+      // ["A","B"] 또는 { seg: ["A","B"], dash?, extend? }(점선·연장선)
+      const at = `도형판 선분${i + 1}`;
+      const o2 = Array.isArray(rs) ? { seg: rs } : obj(rs, at, ['seg'], ['dash', 'extend']);
+      const sg = arr(o2.seg, at, 2, 2).map((v, j) => need(v, `${at} 점${j + 1}`));
+      return [sg[0], sg[1]] as [string, string];
+    }),
     measures: [],
     digits: o.digits === undefined ? 1 : int(o.digits, '도형판 digits', 0, 3),
   };
+  const segStyle = rawSegs.map((rs, i) => {
+    if (Array.isArray(rs)) return {};
+    const r = rs as Record<string, unknown>;
+    const st: ShSegStyle = {};
+    for (const k of ['dash', 'extend'] as const)
+      if (r[k] !== undefined) {
+        if (r[k] !== true) fail(`도형판 선분${i + 1} ${k}`, 'true 만');
+        st[k] = true;
+      }
+    return st;
+  });
+  if (rawSegs.some((rs) => !Array.isArray(rs))) p.segStyle = segStyle;
   const note = optStr(o.note, '도형판 note');
   if (note !== undefined) p.note = note;
   const done = optStr(o.done, '도형판 done');
   if (done !== undefined) p.done = done;
-  // 차례로 읽는다 — 합·차·비는 앞에서 읽은 측정값만 가리킨다(순환이 생기지 않게)
-  const rawMeasures = o.measures === undefined ? [] : arr(o.measures, '도형판 measures', 0, 6);
-  rawMeasures.forEach((rm, i) => {
-    const at = `도형판 측정${i + 1}`;
-    const keys = ['len', 'angle', 'area', 'sum', 'diff', 'ratio'];
-    const m = obj(rm, at, [], keys);
-    // 열쇠가 둘이면 앞의 것만 읽혀 나머지가 소리 없이 버려진다
-    if (keys.filter((k) => m[k] !== undefined).length !== 1)
-      fail(at, `${keys.join('·')} 중 하나만`);
-    const combo = (['sum', 'diff', 'ratio'] as const).find((k) => m[k] !== undefined);
-    if (m.len !== undefined) {
-      const l = arr(m.len, `${at} len`, 2, 2).map((v) => need(v, `${at} len`));
-      p.measures.push({ len: [l[0], l[1]] as [string, string] });
-    } else if (m.angle !== undefined) {
-      const l = arr(m.angle, `${at} angle`, 3, 3).map((v) => need(v, `${at} angle`));
-      p.measures.push({ angle: [l[0], l[1], l[2]] as [string, string, string] });
-    } else if (combo) {
-      const n = combo === 'sum' ? 4 : 2;
-      const ops = arr(m[combo], `${at} ${combo}`, 2, n).map((v, j) => {
-        const w = `${at} ${combo}${j + 1}`;
-        if (i === 0) fail(w, '앞 측정값이 없음(묶을 측정값을 먼저 적으세요)');
-        const k = int(v, w, 0, i - 1);
-        const t = p.measures[k] as ShMeasure;
-        if (!('len' in t || 'angle' in t))
-          fail(w, '길이·각 측정값만 묶음(묶은 값·넓이는 다시 묶지 않음)');
-        return k;
-      });
-      // PF + PF·|PF − FP|·PF ÷ PF 는 늘 2PF·0·1 — 끌어서 볼 것이 없다
-      const ks = ops.map((k) => measureKey(p, p.measures[k] as ShMeasure));
-      const dup = ks.findIndex((k, j) => ks.indexOf(k) !== j);
-      if (dup >= 0)
-        fail(
-          at,
-          `같은 측정값을 두 번 묶음 (${measureName(p, p.measures[ops[dup] as number] as ShMeasure)})`,
-        );
-      const kinds = new Set(ops.map((k) => measureKind(p, p.measures[k] as ShMeasure)));
-      if (kinds.size > 1) fail(at, '길이는 길이끼리, 각은 각끼리 묶음');
-      if (combo === 'ratio' && !kinds.has('len')) fail(at, '비는 길이끼리만');
-      p.measures.push(
-        combo === 'sum'
-          ? { sum: ops }
-          : combo === 'diff'
-            ? { diff: ops as [number, number] }
-            : { ratio: ops as [number, number] },
-      );
-    } else p.measures.push({ area: int(m.area, `${at} area`, 0, p.polygons.length - 1) });
-  });
+  if (o.arcs !== undefined) p.arcs = parseArcs(o.arcs, need);
+  if (o.unit !== undefined) {
+    const u = str(o.unit, '도형판 unit');
+    if (!(UNITS as readonly string[]).includes(u))
+      fail('도형판 unit', `${UNITS.join('·')} 중 하나 (${u})`);
+    p.unit = u as ShapeParams['unit'];
+  }
+  parseMeasures(o.measures, p, need);
   // 보조점은 선분 위 점의 끝·선분 끝·수선의 발 직선으로만 — 다각형 꼭짓점·측정·원에 쓰면 보이지 않는 점을 읽게 된다
   const aux = new Set(points.filter((x) => x.aux).map((x) => x.id));
   const noAux = (ids: string[], what: string) => {

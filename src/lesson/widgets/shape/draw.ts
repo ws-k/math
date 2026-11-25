@@ -1,7 +1,8 @@
 // 그릴 목록(상태 → 표시). 화면(Shape.tsx)은 이것을 그리기만 한다.
 import { type Drawing, type Mark, r2 } from '../draw.ts';
 import { placeLabels } from '../labels.ts';
-import { cutArea, round, shMeasures, shoelace } from './measure.ts';
+import { angleMarks, arcMarks, segMark, tagMarks } from './look.ts';
+import { circleR, cutArea, round, shMeasures, shoelace } from './measure.ts';
 import { P, shDone, shGeom, shUnit, X, Y } from './model.ts';
 import { pieceAtTarget, piecesArea, shPiecePts } from './piece.ts';
 import { type ShapeParams, type ShState, W } from './types.ts';
@@ -33,18 +34,14 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
     marks.push({
       k: `circ${i}`,
       tag: 'circle',
-      a: { cx: X(p, o.x), cy: Y(p, o.y), r: r2(c.r * shUnit(p)), class: 'sh-circle' },
+      a: { cx: X(p, o.x), cy: Y(p, o.y), r: r2(circleR(s, c) * shUnit(p)), class: 'sh-circle' },
     });
   });
+  marks.push(...arcMarks(p, s));
   p.segments.forEach(([a, b], i) => {
-    const A = P(s, a);
-    const B = P(s, b);
-    marks.push({
-      k: `seg${i}`,
-      tag: 'line',
-      a: { x1: X(p, A.x), y1: Y(p, A.y), x2: X(p, B.x), y2: Y(p, B.y), class: 'sh-seg' },
-    });
+    marks.push(segMark(p, s, i, a, b));
   });
+  marks.push(...angleMarks(p, s));
   if (p.cut) {
     const c = p.cut;
     marks.push({
@@ -134,6 +131,8 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
       text: pt.id,
     });
   });
+  // 그림 위 값은 점·이름표 위에(가려지지 않게) 맨 나중에
+  marks.push(...tagMarks(p, s));
   const texts: Record<string, string> = {};
   shMeasures(p, s).forEach((t, i) => {
     texts[`m${i}`] = t;

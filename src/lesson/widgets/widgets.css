@@ -271,6 +271,36 @@
 .lesson .sh-pt {
   fill: var(--ink);
 }
+/* 점선(숨은 선·보조선)·연장선 */
+.lesson .sh-seg.dash {
+  stroke: var(--sub);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+/* 원 위 호(강조) */
+.lesson .sh-arc {
+  fill: none;
+  stroke: var(--bad);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+/* 각 표시(호·직각 네모) */
+.lesson .sh-angle {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+}
+/* 그림 위 값: 선 위에 겹쳐도 읽히게 바탕색 테두리를 먼저 칠한다 */
+.lesson .wgt-svg .sh-tag {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
 .lesson .wgt-svg .sh-lab {
   font-weight: 800;
   pointer-events: none;
