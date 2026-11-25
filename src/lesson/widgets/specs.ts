@@ -6,6 +6,7 @@ import { areaModelDef } from './areaModel.ts';
 import { balanceDef } from './balance.ts';
 import { coordDef } from './coord.ts';
 import { countDef } from './count.ts';
+import { factorTreeDef } from './factorTree.ts';
 import { fractionDef } from './fraction.ts';
 import { numberLineDef } from './numberLine.ts';
 import { shapeDef } from './shape.ts';
@@ -53,4 +54,5 @@ export const widgetDefs: Record<string, WidgetDef<any>> = {
   shape: shapeDef,
   count: countDef,
   simulate: simulateDef,
+  factorTree: factorTreeDef,
 };
