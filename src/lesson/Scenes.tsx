@@ -15,7 +15,15 @@ import { NumPad } from '../app/NumPad.tsx';
 import { store } from '../app/store.ts';
 import type { Background, Tool } from '../ink/types.ts';
 import { compareAnswer } from '../lib/answer.ts';
-import { formatValue, handsOnCount, spotEquation, spotFixed, symToTex } from './format.ts';
+import {
+  formatValue,
+  handsOnCount,
+  relSignTex,
+  relTex,
+  spotEquation,
+  spotFixed,
+  tokenTex,
+} from './format.ts';
 import { legacyInkKey, lessonInkKey, migrateInk } from './inkKeys.ts';
 import { optColumns } from './optCols.ts';
 import type {
@@ -45,9 +53,6 @@ export interface SceneEnv {
   current: string;
   onDone(id: string): void;
 }
-
-/** 등식 sym("왼쪽=오른쪽") → TeX */
-const eqTex = (sym: string) => sym.split('=').map(symToTex).join('=');
 
 function Head({ s, big }: { s: Scene; big?: boolean }) {
   return (
@@ -290,17 +295,18 @@ function SpotCard({ it, onFound }: { it: SpotItem; onFound(): void }) {
       <div className="spot">
         {it.from && (
           <>
-            <Tex tex={eqTex(it.from)} />
+            <Tex tex={relTex(it.from)} />
             <span className="arrow">→</span>
           </>
         )}
         {it.tokens.map((t, i) =>
-          'sep' in t ? (
+          'sep' in t && t.sep === '=' ? (
             // biome-ignore lint/suspicious/noArrayIndexKey: 토큰 순서는 데이터에서 고정
             <span key={i} className="arrow">
               =
             </span>
           ) : (
+            // 부등호는 누를 수 있는 토큰 — 방향을 잘못 쓴 실수가 틀린 곳일 수 있고, 부등호만 버튼이면 답이 드러난다
             <button
               type="button"
               // biome-ignore lint/suspicious/noArrayIndexKey: 흔들림을 다시 돌리려고 누른 횟수를 key 에 넣는다
@@ -309,7 +315,7 @@ function SpotCard({ it, onFound }: { it: SpotItem; onFound(): void }) {
               aria-pressed={found && t.bad ? true : undefined}
               onClick={() => press(i, !!t.bad)}
             >
-              <Tex tex={symToTex(t.sym)} />
+              <Tex tex={'sep' in t ? relSignTex(t.sep) : tokenTex(t.sym)} />
             </button>
           ),
         )}
@@ -318,7 +324,7 @@ function SpotCard({ it, onFound }: { it: SpotItem; onFound(): void }) {
         <div className="fix">
           <span className="lbl">이렇게 고쳐요</span>
           {/* 검산한 바로 그 식: bad 토큰 자리에 fix 조각을 끼운 것 */}
-          <Tex tex={eqTex(spotEquation(spotFixed(it.tokens, it.fix.sym)))} className="m" />
+          <Tex tex={relTex(spotEquation(spotFixed(it.tokens, it.fix.sym)))} className="m" />
           <LRich src={it.fix.body} />
         </div>
       )}

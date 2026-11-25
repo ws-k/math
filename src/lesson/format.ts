@@ -1,7 +1,7 @@
 // 레슨 화면 글자를 데이터에서 만들어 내는 순수 함수들. 검사기와 화면이 같은 함수를 써야
 // "검산한 값 = 보이는 값"이 보장된다.
-import { reduce } from './sym.ts';
-import type { Lesson, NumFormat, SpotToken } from './types.ts';
+import { reduce, spotTex } from './sym.ts';
+import type { Lesson, NumFormat, Rel, SpotToken } from './types.ts';
 
 const MINUS = '−';
 
@@ -62,16 +62,53 @@ export function fill(text: string, vars: Record<string, string>): string {
 }
 
 /** 계산식 → KaTeX. 식 구조를 거쳐 만든다(sym.ts) */
-export { symToTex } from './sym.ts';
+export { spotTex, symToTex } from './sym.ts';
 
-/** 틀린 곳 찾기 토큰을 이어 붙인 등식(검산할 "틀린 식") */
+/** 틀린 곳 찾기 토큰을 이어 붙인 식(검산할 "틀린 식"). 관계 토큰이 없으면 등식 아닌 식 */
 export function spotEquation(tokens: SpotToken[]): string {
-  return tokens.map((t) => ('sep' in t ? '=' : t.sym.replace(/\s+/g, ''))).join('');
+  return tokens.map((t) => ('sep' in t ? t.sep : t.sym.replace(/\s+/g, ''))).join('');
 }
 
-/** bad 토큰 자리에 fix 조각을 끼운 토큰들(고친 식). 화면도 검산도 이것으로 그린다 */
+/** bad 토큰 자리에 fix 조각을 끼운 토큰들(고친 식). 화면도 검산도 이것으로 그린다. 부등호가 bad 면 fix 도 부등호 */
 export const spotFixed = (tokens: SpotToken[], fix: string): SpotToken[] =>
-  tokens.map((t) => ('bad' in t && t.bad ? { sym: fix } : t));
+  tokens.map((t) => {
+    if (!('bad' in t && t.bad)) return t;
+    return 'sep' in t ? { sep: fix as Rel } : { sym: fix };
+  });
+
+export const RELS: readonly Rel[] = ['=', '<', '>', '<=', '>='];
+const REL_RE = /<=|>=|<|>|=/;
+const REL_TEX: Record<Rel, string> = { '=': '=', '<': '<', '>': '>', '<=': '\\le ', '>=': '\\ge ' };
+
+/** 관계 기호 하나의 글자(부등호 토큰 버튼) */
+export const relSignTex = (r: Rel) => REL_TEX[r].trim();
+
+/**
+ * 토큰 하나의 글자. 앞 토큰에 × · ÷ 로 이어지는 조각(*(2/5) · ÷2)은 기호를 앞에 그린다 — +·− 로 이어지는 조각은
+ * 원래부터 식 하나로 읽힌다(+4). / 로 이어지는 조각은 분수 칸을 둘로 나눌 수 없어 받지 않는다.
+ * 토큰을 이어 붙인 식 전체는 relTex 로 따로 그리므로, 고친 식에서는 식 구조 그대로 보인다.
+ */
+export function tokenTex(sym: string): string {
+  const s = sym.replace(/\s+/g, '');
+  if (s.startsWith('**')) throw new Error(`식을 읽을 수 없음(거듭제곱으로 시작): ${sym}`);
+  if (s.startsWith('*')) return `\\times${tight(spotTex(s.slice(1)))}`;
+  if (s.startsWith('÷')) return `\\div${tight(spotTex(s.slice(1)))}`;
+  return spotTex(s);
+}
+/** 명령(\times) 뒤에 글자·숫자가 붙으면 다른 명령 이름이 되므로 한 칸 */
+const tight = (t: string) => (/^[\\(]/.test(t) ? t : ` ${t}`);
+
+/**
+ * spot 식("왼쪽 관계 오른쪽", 또는 관계 없는 식) → KaTeX. 등식은 예전 화면과 같은 글자(양쪽을 따로 그려 = 로 잇기).
+ * 관계 기호가 둘 이상이면 예외(1<x<3 같은 이어 쓴 부등식은 아직 검산하지 않는다)
+ */
+export function relTex(s: string): string {
+  const ops = s.match(new RegExp(REL_RE.source, 'g')) ?? [];
+  if (ops.length > 1) throw new Error(`관계 기호가 둘 이상: ${s}`);
+  if (ops.length === 0) return spotTex(s);
+  const [l, r] = s.split(REL_RE) as [string, string];
+  return `${spotTex(l)}${REL_TEX[ops[0] as Rel]}${spotTex(r)}`;
+}
 
 /** 레슨 글의 {{이름}} 값: 연습문제 수 + 레슨 values(검산된 값). 화면과 검사기가 같이 쓴다 */
 export function lessonVars(l: Lesson, problems: number): Record<string, string> {

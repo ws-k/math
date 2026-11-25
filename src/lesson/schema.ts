@@ -10,7 +10,16 @@ import {
   texOk,
 } from '../content/check.ts';
 import type { Example } from '../content/types.ts';
-import { fill, formatValue, spotEquation, spotFixed, symToTex } from './format.ts';
+import {
+  fill,
+  formatValue,
+  RELS,
+  relTex,
+  spotEquation,
+  spotFixed,
+  symToTex,
+  tokenTex,
+} from './format.ts';
 import {
   arr,
   dict,
@@ -24,7 +33,7 @@ import {
   rationalStr,
   str,
 } from './parse.ts';
-import type { NumFormat, SpotToken } from './types.ts';
+import type { NumFormat, Rel, SpotToken } from './types.ts';
 import { widgetDefs } from './widgets/specs.ts';
 
 export interface LessonCtx {
@@ -87,6 +96,23 @@ function equation(v: unknown, at: string): string {
     } catch (e) {
       fail(at, (e as Error).message);
     }
+  }
+  return s;
+}
+
+/**
+ * 틀린 곳 찾기 식(공백을 뺀 글자)을 검사하고 돌려준다. rel 이면 등호·부등호가 꼭 하나, 아니면 없어야 한다(등식 아닌 식).
+ * 화면이 그리는 함수(relTex)로 그려 보는 것이 검사다 — 그릴 수 없는 식이 검산기로만 가지 않게
+ */
+function spotRel(v: unknown, at: string, rel: boolean): string {
+  const s = str(v, at).replace(/\s+/g, '');
+  const ops = s.match(/<=|>=|<|>|=/g) ?? [];
+  if (rel && ops.length !== 1) fail(at, `등호·부등호가 하나인 식이 아님 (${s})`);
+  if (!rel && ops.length > 0) fail(at, `등식 아닌 식에 등호·부등호가 있음 (${s})`);
+  try {
+    relTex(s);
+  } catch (e) {
+    fail(at, (e as Error).message);
   }
   return s;
 }
@@ -343,45 +369,73 @@ export function validateLesson(
         case 'spot': {
           arr(s.items, `${at} items`, 1, 3).forEach((ri, ii) => {
             const ia = `${at} 함정${ii + 1}`;
-            const it = obj(ri, ia, ['prompt', 'mode', 'tokens', 'fix'], ['from']);
+            const it = obj(ri, ia, ['prompt', 'mode', 'tokens', 'fix'], ['from', 'check']);
             text(`${ia} prompt`, str(it.prompt, `${ia} prompt`));
-            const mode = oneOf(it.mode, `${ia} mode`, ['identity', 'equivalent'] as const);
-            const from = it.from === undefined ? undefined : equation(it.from, `${ia} from`);
-            if ((mode === 'equivalent') !== (from !== undefined))
-              fail(ia, 'from 은 equivalent 일 때만, 그리고 반드시 있어야 함');
-            const tokens = arr(it.tokens, `${ia} tokens`, 3, 12).map((rt, ti) => {
+            const mode = oneOf(it.mode, `${ia} mode`, ['identity', 'equivalent', 'value'] as const);
+            // 등식 아닌 식(value)은 관계 기호가 없고, 기준을 보이는 식(from)이나 숨은 검산식(check) 하나로 받는다
+            const value = mode === 'value';
+            const from = it.from === undefined ? undefined : spotRel(it.from, `${ia} from`, !value);
+            const check = it.check === undefined ? undefined : str(it.check, `${ia} check`);
+            // 숨은 기준도 문제 check 와 같은 규칙 — 72 처럼 답을 그대로 적으면 검산이 아무것도 보지 않는다
+            if (check !== undefined) checkExpr(`${ia} check`, check, errors);
+            if (value) {
+              if ((from === undefined) === (check === undefined))
+                fail(ia, 'value 는 from(보이는 식)·check(숨은 검산식) 중 하나만');
+            } else {
+              if (check !== undefined) fail(`${ia} check`, 'check 는 value 일 때만');
+              if ((mode === 'equivalent') !== (from !== undefined))
+                fail(ia, 'from 은 equivalent 일 때만, 그리고 반드시 있어야 함');
+            }
+            const tokens = arr(it.tokens, `${ia} tokens`, value ? 2 : 3, 12).map((rt, ti) => {
               const ta = `${ia} 토큰${ti + 1}`;
               const t = obj(rt, ta, [], ['sym', 'bad', 'sep']);
+              if (t.bad !== undefined && t.bad !== true) fail(ta, 'bad 는 true 만');
               if ('sep' in t) {
-                obj(rt, ta, ['sep']);
-                oneOf(t.sep, ta, ['='] as const);
-                return { sep: '=' } as SpotToken;
+                obj(rt, ta, ['sep'], ['bad']);
+                const sep = oneOf(t.sep, ta, RELS);
+                if (sep === '=' && t.bad) fail(ta, '등호는 틀린 곳이 될 수 없음(부등호만)');
+                return (t.bad ? { sep, bad: true } : { sep }) as SpotToken;
               }
               const sym = str(t.sym, ta);
               try {
-                symToTex(sym);
+                tokenTex(sym);
               } catch (e) {
                 fail(ta, (e as Error).message);
               }
-              if (t.bad !== undefined && t.bad !== true) fail(ta, 'bad 는 true 만');
               return (t.bad ? { sym, bad: true } : { sym }) as SpotToken;
             });
             const seps = tokens.filter((t) => 'sep' in t).length;
-            const bads = tokens.filter((t) => 'bad' in t).length;
-            if (seps !== 1) fail(ia, `등호 토큰이 하나여야 함 (${seps}개)`);
-            if (bads !== 1) fail(ia, `틀린 토큰(bad)이 하나여야 함 (${bads}개)`);
-            const wrong = equation(spotEquation(tokens), `${ia} 토큰 식`);
+            const bads = tokens.filter((t) => 'bad' in t);
+            if (seps !== (value ? 0 : 1))
+              fail(
+                ia,
+                value
+                  ? `등식 아닌 식에 관계 토큰 (${seps}개)`
+                  : `등호 토큰이 하나여야 함 (${seps}개)`,
+              );
+            if (bads.length !== 1) fail(ia, `틀린 토큰(bad)이 하나여야 함 (${bads.length}개)`);
+            const wrong = spotRel(spotEquation(tokens), `${ia} 토큰 식`, !value);
             const fx = obj(it.fix, `${ia} fix`, ['sym', 'body']);
             const fixSym = str(fx.sym, `${ia} fix.sym`).replace(/\s+/g, '');
-            if (fixSym.includes('='))
-              fail(`${ia} fix.sym`, 'bad 토큰 자리에 들어갈 조각만(등식 전체가 아님)');
-            try {
-              symToTex(fixSym);
-            } catch (e) {
-              fail(`${ia} fix.sym`, (e as Error).message);
+            const badSep = bads[0] && 'sep' in bads[0] ? bads[0].sep : undefined;
+            if (badSep !== undefined) {
+              // 부등호가 틀린 곳이면 고친 조각도 다른 부등호 하나
+              if (!RELS.includes(fixSym as Rel) || fixSym === '=' || fixSym === badSep)
+                fail(
+                  `${ia} fix.sym`,
+                  `틀린 부등호 ${badSep} 대신 쓸 다른 부등호(<·>·<=·>=)여야 함`,
+                );
+            } else {
+              if (/[=<>]/.test(fixSym))
+                fail(`${ia} fix.sym`, 'bad 토큰 자리에 들어갈 조각만(등식 전체가 아님)');
+              try {
+                tokenTex(fixSym);
+              } catch (e) {
+                fail(`${ia} fix.sym`, (e as Error).message);
+              }
             }
             // 고친 식 = bad 토큰만 바꿔 끼운 식. 고친 식을 따로 받으면 bad 표시를 엉뚱한 토큰에 달아도 통과한다
-            const fixed = equation(spotEquation(spotFixed(tokens, fixSym)), `${ia} 고친 식`);
+            const fixed = spotRel(spotEquation(spotFixed(tokens, fixSym)), `${ia} 고친 식`, !value);
             text(`${ia} fix.body`, str(fx.body, `${ia} fix.body`));
             items.push({
               ref: ref(id, String(ii + 1)),
@@ -389,6 +443,7 @@ export function validateLesson(
               kind: 'spot',
               mode,
               ...(from !== undefined ? { from } : {}),
+              ...(check !== undefined ? { check } : {}),
               wrong,
               fixed,
             });

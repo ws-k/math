@@ -122,21 +122,40 @@ export interface TermsScene extends Base {
   aside?: string;
 }
 
-/** 틀린 곳 찾기의 토큰: 누를 수 있는 식 조각, 또는 등호 */
-export type SpotToken = { sym: string; bad?: true } | { sep: '=' };
+/** 틀린 곳 찾기의 관계 기호(검산기가 읽는 글자 그대로. 화면은 ≤·≥) */
+export type Rel = '=' | '<' | '>' | '<=' | '>=';
+
+/**
+ * 틀린 곳 찾기의 토큰: 누를 수 있는 식 조각, 또는 관계 기호.
+ * 식 조각은 sym.ts 의 parseSpot 이 읽는 식(÷·factorial·binomial·ff·Sum·Integral·Limit·oo·적분상수 C 포함)이고,
+ * 앞 토큰에 +·−·×(*)·÷ 로 이어지는 조각(+4 · *(2/5) · ÷2)도 된다.
+ * 등호(=)는 누를 수 없고 틀린 곳이 될 수 없다. 부등호는 늘 누를 수 있고(부등호만 버튼이면 답이 드러난다)
+ * 방향을 잘못 쓴 실수를 bad 로 표시할 수 있다.
+ */
+export type SpotToken = { sym: string; bad?: true } | { sep: Rel; bad?: true };
 
 export interface SpotItem {
   prompt: string;
   /**
-   * identity: 토큰으로 만든 등식은 항등식이 아니어야 하고 fix 는 항등식이어야 한다(식 변형 실수).
-   * equivalent: from 과 fix 의 해가 같고, 토큰 등식의 해는 달라야 한다(방정식 변형 실수).
+   * identity: 토큰으로 만든 식(등식·부등식)은 늘 성립하지 않아야 하고 고친 식은 늘 성립해야 한다(식 변형 실수).
+   *   부등식은 미지수가 없으면 참·거짓, 하나면 모든 실수에서 참인지 본다.
+   * equivalent: from 과 고친 식의 해 집합이 같고, 토큰 식의 해 집합은 달라야 한다(방정식·부등식 변형 실수).
+   * value: 등식이 아닌 식. 관계 토큰 없이, 고친 식의 값은 기준(from 또는 check)과 같고 토큰 식의 값은 달라야 한다.
    */
-  mode: 'identity' | 'equivalent';
-  /** equivalent 일 때 변형 전 방정식(누를 수 없음, 화살표 앞에 보인다) */
+  mode: 'identity' | 'equivalent' | 'value';
+  /**
+   * equivalent: 변형 전 방정식·부등식 / value: 바꾸기 전의 식(관계 없는 식).
+   * 누를 수 없고 화살표 앞에 보인다
+   */
   from?: string;
+  /**
+   * value 에서 from 대신: 화면에 보이지 않는 기준 값의 sympy 검산식(문제 check 와 같은 문법 — lcm(24, 36) 처럼
+   * 화면 식으로 적을 수 없는 기준). 무엇의 값인지는 prompt 가 말한다
+   */
+  check?: string;
   tokens: SpotToken[];
   /**
-   * sym: bad 토큰 자리에 들어갈 올바른 조각. 고친 식은 토큰을 이렇게 바꿔 끼워 만든다 —
+   * sym: bad 토큰 자리에 들어갈 올바른 조각(bad 가 부등호면 바꿀 부등호). 고친 식은 토큰을 이렇게 바꿔 끼워 만든다 —
    * 고친 식을 따로 적으면 bad 표시를 엉뚱한 토큰에 달아도 검산이 통과한다.
    */
   fix: { sym: string; body: string };

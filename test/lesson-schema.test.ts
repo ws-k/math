@@ -64,6 +64,128 @@ test('틀린 곳 찾기: 토큰을 이어 붙인 식을 spot 항목으로', () =
   ]);
 });
 
+// 2-마: 부등호·÷·등식 아닌 식(value)·!·C·P·∑·∫·lim
+const spotWith = (items: unknown[]) =>
+  with_((l) => {
+    scene(l, 'spot').items = items as never;
+  });
+const ineqItem = () => ({
+  prompt: '음수로 나눴어요',
+  mode: 'equivalent',
+  from: '-2*x<6',
+  tokens: [{ sym: 'x' }, { sep: '<', bad: true }, { sym: '-3' }],
+  fix: { sym: '>', body: '음수로 나누면 방향이 바뀌어요' },
+});
+const valueItem = () => ({
+  prompt: '나눗셈을 곱셈으로',
+  mode: 'value',
+  from: '(3/4)÷(2/5)',
+  tokens: [{ sym: '3/4' }, { sym: '*(2/5)', bad: true }],
+  fix: { sym: '*(5/2)', body: '나누는 수를 뒤집어요' },
+});
+
+test('틀린 곳 찾기 기호 1차: 부등호 토큰·등식 아닌 식·새 기호를 spot 항목으로', () => {
+  const r = spotWith([
+    ineqItem(),
+    valueItem(),
+    {
+      prompt: '최소공배수',
+      mode: 'value',
+      check: 'lcm(24, 36)',
+      tokens: [{ sym: '2*2' }, { sym: '*3', bad: true }],
+      fix: { sym: '*3*2*3', body: '남은 몫도 곱해요' },
+    },
+  ]);
+  assert.deepEqual(r.errors, []);
+  assert.deepEqual(
+    r.items.filter((i) => 'kind' in i && i.kind === 'spot'),
+    [
+      {
+        ref: 'u/lesson:traps:1',
+        unit: 'u',
+        kind: 'spot',
+        mode: 'equivalent',
+        from: '-2*x<6',
+        wrong: 'x<-3',
+        fixed: 'x>-3',
+      },
+      {
+        ref: 'u/lesson:traps:2',
+        unit: 'u',
+        kind: 'spot',
+        mode: 'value',
+        from: '(3/4)÷(2/5)',
+        wrong: '3/4*(2/5)',
+        fixed: '3/4*(5/2)',
+      },
+      {
+        ref: 'u/lesson:traps:3',
+        unit: 'u',
+        kind: 'spot',
+        mode: 'value',
+        check: 'lcm(24, 36)',
+        wrong: '2*2*3',
+        fixed: '2*2*3*2*3',
+      },
+    ],
+  );
+  const sym = (wrong: string, fix: string) => ({
+    prompt: 'p',
+    mode: 'identity',
+    tokens: [{ sym: wrong.split('=')[0] }, { sep: '=' }, { sym: wrong.split('=')[1], bad: true }],
+    fix: { sym: fix, body: 'b' },
+  });
+  const pairs: [string, string][] = [
+    ['factorial(5)/factorial(3)=factorial(2)', '20'],
+    ['binomial(6,3)=ff(6,3)', 'ff(6,3)/factorial(3)'],
+    ['Sum(2*k,(k,1,n))=n**2', 'n*(n+1)'],
+    ['Integral(x**3,x)=x**4/4', 'x**4/4+C'],
+    ["Limit(Abs(x)/x,x,0,'+')=-1", '1'],
+    ['Limit(1/x,x,oo)=oo', '0'],
+    ['(3/4)÷(2/5)=3/4*(2/5)', '3/4*(5/2)'],
+    ['0.1+0.2=0.03', '0.3'],
+  ];
+  for (const [w, f] of pairs) assert.deepEqual(spotWith([sym(w, f)]).errors, [], w);
+});
+
+for (const [name, item] of [
+  [
+    '등호를 틀린 곳으로',
+    { ...ineqItem(), tokens: [{ sym: 'x' }, { sep: '=', bad: true }, { sym: '-3' }] },
+  ],
+  ['부등호 자리에 식을 끼움', { ...ineqItem(), fix: { sym: 'x', body: 'b' } }],
+  ['부등호를 같은 부등호로 고침', { ...ineqItem(), fix: { sym: '<', body: 'b' } }],
+  [
+    '식 자리에 부등호를 끼움',
+    {
+      ...ineqItem(),
+      tokens: [{ sym: 'x', bad: true }, { sep: '<' }, { sym: '-3' }],
+      fix: { sym: '>', body: 'b' },
+    },
+  ],
+  ['고친 조각에 부등호', { ...valueItem(), fix: { sym: '<(5/2)', body: 'b' } }],
+  [
+    '모르는 관계',
+    { ...ineqItem(), tokens: [{ sym: 'x' }, { sep: '!=', bad: true }, { sym: '-3' }] },
+  ],
+  [
+    'value 에 관계 토큰',
+    { ...valueItem(), tokens: [{ sym: '3/4', bad: true }, { sep: '=' }, { sym: '1' }] },
+  ],
+  ['value 에 from·check 둘 다 없음', (({ from: _, ...it }) => it)(valueItem())],
+  ['value 에 from·check 둘 다', { ...valueItem(), check: '15/8' }],
+  ['value 의 from 이 등식', { ...valueItem(), from: '(3/4)÷(2/5)=15/8' }],
+  ['value 의 check 가 빈 글', (({ from: _, ...it }) => ({ ...it, check: ' ' }))(valueItem())],
+  ['identity 에 check', { ...ineqItem(), mode: 'identity', from: undefined, check: '1' }],
+  ['equivalent 의 from 이 관계 없는 식', { ...ineqItem(), from: '-2*x' }],
+  ['모르는 mode', { ...valueItem(), mode: 'approx' }],
+  ['계산기에 없는 이름', { ...valueItem(), from: 'lcm(24,36)' }],
+] as const) {
+  test(`오류여야 함(틀린 곳 찾기 기호 1차): ${name}`, () => {
+    assert.ok(spotWith([item]).errors.length > 0, '오류가 없음');
+  });
+}
+
 test('직접 풀기: 예제와 같은 검산 항목', () => {
   const r = run(good());
   assert.equal(r.items.filter((i) => i.ref.startsWith('u/lesson:try:')).length, 2);
