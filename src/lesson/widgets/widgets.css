@@ -337,6 +337,20 @@
   fill: var(--bad);
   fill-opacity: 0.45;
 }
+/* 고른 조각(한 번 더 톡 = 돌리기, 화살표 버튼이 옮기는 조각) */
+.lesson .sh-piece[data-sel] {
+  stroke: var(--primary);
+  stroke-width: 3.5;
+}
+/* 조각을 키로 옮긴 뒤 화면 낭독기에만 읽어 주는 자리 글 */
+.lesson .sh .sh-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .lesson .sh-piece:focus-visible {
   outline: none;
   stroke: var(--primary);

@@ -4,7 +4,7 @@ import { placeLabels } from '../labels.ts';
 import { angleMarks, arcMarks, curveMarks, segMark, tagMarks } from './look.ts';
 import { circleR, cutArea, round, shMeasures, shoelace } from './measure.ts';
 import { P, shDone, shGeom, shUnit, X, Y } from './model.ts';
-import { pieceAtTarget, piecesArea, shPiecePts } from './piece.ts';
+import { piecesArea, shPieceMatch, shPiecePts } from './piece.ts';
 import { type ShapeParams, type ShState, W } from './types.ts';
 
 /** 이름표(13px 굵게, 대문자 한 자) 상자. 틈은 예전 자리(가운데가 점에서 오른쪽 12, 기준선이 위 10)와 같게 */
@@ -93,13 +93,14 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
           class: 'sh-ghost',
         },
       });
+    const match = shPieceMatch(p, s);
     p.pieces.forEach((_, i) => {
       marks.push({
         k: `pc${i}`,
         tag: 'polygon',
         a: {
           points: pts(p, shPiecePts(p, s, i)),
-          class: `sh-piece c${i % 3}${pieceAtTarget(p, s, i) ? ' done' : ''}`,
+          class: `sh-piece c${i % 3}${match[i] ? ' done' : ''}`,
         },
       });
     });

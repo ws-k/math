@@ -1,12 +1,18 @@
 // 조각 여러 개 끌어 옮기기·돌리기(pieces). 잘라 옮기기(cut)는 조각 하나를 정한 거리만큼 옮기는 것이라
 // 피타고라스 조각 맞추기·사각형 조각 돌려 붙이기처럼 "여러 조각을 돌려서 빈 틀에 채우기"를 보일 수 없었다.
 // 조각의 자리 = (돌린 횟수 t, 옮긴 칸 d). 돌리기는 조각의 처음 자리 가운데 격자점(옮긴 만큼 따라감) 둘레로 90° 씩 —
-// 격자점 둘레 90° 돌리기는 격자점을 격자점으로 보내 넓이가 정확히 그대로고(돌려도 넓이 불변), 네 번 돌리면 제자리다.
-// 목표 판정은 꼭짓점 자리 모음으로 한다: 정사각형처럼 돌려도 같은 모양이면 몇 번 돌렸든 같은 자리면 맞다.
+// 격자점 둘레 90° 돌리기는 격자점을 격자점으로 보내 넓이가 정확히 그대로다(돌려도 넓이 불변). 격자 가운데에서는
+// 네 번 돌리면 제자리지만, 가장자리에서는 돌린 조각이 격자 안으로 밀려 들어와(clamp) 제자리로 돌아오지 않을 수 있다.
+// 목표 판정은 모양(둘레를 도는 꼭짓점 차례, geom.polyKey)으로 한다: 정사각형처럼 돌려도 같은 모양이면 몇 번 돌렸든
+// 같은 자리면 맞고, 꼭짓점 모음이 같아도 뒤집힌 모양(거울상)은 다르다. 목표 자리와 조각은 일대일로 짝짓는다 —
+// 같은 모양 조각 둘을 한 자리에 겹쳐 놓으면 한 곳만 채운 것이다(리뷰 M2).
+// 끄는 동안(ShState.moving)과 키로 옮긴 뒤 판정 전에는 그 조각을 짝짓지 않는다 — 손을 떼기 전에 초록이 되면
+// 판정을 미리 알려 주는 셈이다(원칙 P3, 리뷰 M1).
 import { arr, fail, int, obj } from '../../parse.ts';
 import { reduce } from '../../sym.ts';
 import { ratStr } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
+import { areaOf, overlapArea, polyKey, triangulate } from './geom.ts';
 import { shoelace } from './measure.ts';
 import { shUnit } from './model.ts';
 import type { ShapeParams, ShPiece, ShPose, ShState } from './types.ts';
@@ -43,12 +49,7 @@ const poseOf = (s: ShState, i: number) => (s.pcs as ShPose[])[i] as ShPose;
 export const shPiecePts = (p: ShapeParams, s: ShState, i: number) =>
   posed(piece(p, i), poseOf(s, i));
 
-/** 꼭짓점 자리 모음의 열쇠(차례·돌린 횟수와 무관) */
-const key = (ps: XY[]) =>
-  ps
-    .map((q) => `${q.x},${q.y}`)
-    .sort()
-    .join(' ');
+const key = polyKey;
 
 /** 조각이 격자 밖으로 나가지 않게 옮긴 칸만 당긴다(돌린 횟수는 그대로) */
 function clamp(p: ShapeParams, pc: ShPiece, pose: ShPose): ShPose {
@@ -75,14 +76,22 @@ function setPose(p: ShapeParams, s: ShState, i: number, pose: ShPose): ShState {
   return { ...s, pcs };
 }
 
-/** 끌기: 시작 상태 s 에서 조각 i 를 화면 거리 (dx,dy)(SVG 단위)만큼 — 격자 칸 단위로 */
+/** 끌기: 시작 상태 s 에서 조각 i 를 화면 거리 (dx,dy)(SVG 단위)만큼 — 격자 칸 단위로. 끄는 중 표시(moving)를 단다 */
 export function shPieceDrag(p: ShapeParams, s: ShState, i: number, dx: number, dy: number) {
   const u = shUnit(p);
   const o = poseOf(s, i);
-  return setPose(p, s, i, {
+  const n = setPose(p, s, i, {
     t: o.t,
     d: [o.d[0] + Math.round(dx / u) || 0, o.d[1] - Math.round(dy / u) || 0],
   });
+  return { ...n, moving: i };
+}
+
+/** 판정할 때(손을 뗌·키 입력이 멈춤): 끄는 중 표시를 뗀 상태. 표시가 없으면 그대로(같은 객체 — 다시 그리지 않게) */
+export function shPieceDrop(s: ShState): ShState {
+  if (s.moving === undefined) return s;
+  const { moving: _, ...rest } = s;
+  return rest;
 }
 
 /** 돌리기: 시계 반대 방향으로 90° */
@@ -104,16 +113,24 @@ export function shPieceKey(p: ShapeParams, s: ShState, i: number, k: string): Sh
 const targetKeys = (p: ShapeParams) =>
   (p.pieces ?? []).map((pc) => key(pc.to.map(([x, y]) => ({ x, y }))));
 
-/** 조각 i 가 어느 목표 자리(제 것이든 같은 모양의 다른 조각 것이든)에 놓였는가 */
-export const pieceAtTarget = (p: ShapeParams, s: ShState, i: number) =>
-  targetKeys(p).includes(key(shPiecePts(p, s, i)));
+/**
+ * 조각마다 목표 자리 하나와 짝지어졌는가(일대일). 적은 차례대로 비어 있는 같은 모양 자리를 차지한다 — 모양이
+ * 같아야만 짝이 되므로 차례대로 고르기로 가장 많이 짝지어진다. 끄는 중인 조각은 짝짓지 않는다.
+ */
+export function shPieceMatch(p: ShapeParams, s: ShState): boolean[] {
+  const free = targetKeys(p);
+  return (p.pieces ?? []).map((_, i) => {
+    if (s.moving === i) return false;
+    const k = free.indexOf(key(shPiecePts(p, s, i)));
+    if (k < 0) return false;
+    free.splice(k, 1);
+    return true;
+  });
+}
 
 /** 모든 조각이 목표 자리를 하나씩 채웠는가(같은 모양 조각끼리는 자리를 바꿔 놓아도 된다) */
 export function shPiecesDone(p: ShapeParams, s: ShState): boolean {
-  if (!p.pieces) return false;
-  const now = p.pieces.map((_, i) => key(shPiecePts(p, s, i))).sort();
-  const want = targetKeys(p).sort();
-  return now.every((k, i) => k === want[i]);
+  return !!p.pieces && shPieceMatch(p, s).every(Boolean);
 }
 
 /** 조각 넓이의 합(돌리고 옮겨도 그대로 — 화면 글로 보인다) */
@@ -167,12 +184,34 @@ export function parsePieces(raw: unknown, rawOutline: unknown, p: ShapeParams): 
     return pc;
   });
   p.pieces = pieces;
+  // 목표 자리끼리: 같은 자리 둘이면 한 조각이 놓일 곳이 없고, 겹치면 '다 채웠다'가 틀을 채운 것이 아니다
+  const tos = pieces.map((pc) => pc.to.map(([x, y]) => ({ x, y })));
+  for (const [i, t] of tos.entries()) {
+    const tri = triangulate(t).reduce((s, q) => s + areaOf(q), 0);
+    // 귀 자르기가 다 못 나눈 모양(자기 교차 등)은 겹침을 셀 수 없다
+    if (Math.abs(tri - areaOf(t)) > 1e-9)
+      fail(
+        `도형판 조각${i + 1} to`,
+        '변이 서로 엇갈리는 모양 — 둘레를 도는 차례로 꼭짓점을 적으세요',
+      );
+    for (let j = 0; j < i; j++) {
+      const u = tos[j] as XY[];
+      if (key(u) === key(t)) fail(`도형판 조각${i + 1} to`, `조각${j + 1} 과 같은 목표 자리`);
+      if (overlapArea(u, t) > 1e-9)
+        fail(`도형판 조각${i + 1} to`, `조각${j + 1} 의 목표 자리와 겹침`);
+    }
+  }
   if (rawOutline !== undefined) {
     p.outline = xyList(rawOutline, '도형판 outline', p.grid);
-    const a = shoelace(p.outline.map(([x, y]) => ({ x, y })));
+    const o = p.outline.map(([x, y]) => ({ x, y }));
+    const a = shoelace(o);
     const sum = pieces.reduce((t, pc) => t + shoelace(pc.at.map(([x, y]) => ({ x, y }))), 0);
     if (Math.abs(a - sum) > 1e-9)
       fail('도형판 outline', `빈 틀 넓이 ${a} 가 조각 넓이의 합 ${sum} 과 다름`);
+    // 목표 자리가 겹치지 않고 넓이 합이 틀과 같으니, 모두 틀 안이면 틀을 빈틈없이 채운다
+    for (const [i, t] of tos.entries())
+      if (Math.abs(overlapArea(t, o) - areaOf(t)) > 1e-9)
+        fail(`도형판 조각${i + 1} to`, '목표 자리가 빈 틀 밖으로 나감');
   }
   const s = {
     pts: {},

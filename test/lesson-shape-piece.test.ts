@@ -9,7 +9,9 @@ import {
   shDraw,
   shInit,
   shPieceDrag,
+  shPieceDrop,
   shPieceKey,
+  shPieceMatch,
   shPiecePts,
   shPiecesDone,
   shPieceTurn,
@@ -86,7 +88,7 @@ test('조각 끌기: 격자 칸 단위로 옮기고 격자 밖으로는 못 나�
   assert.equal(shPieceKey(p, s, 0, 'a'), null);
 });
 
-test('조각 돌리기: 90° 씩, 넷이면 제자리, 돌려도 넓이 그대로', () => {
+test('조각 돌리기: 90° 씩, (격자 가운데에서는) 넷이면 제자리, 돌려도 넓이 그대로', () => {
   const p = parse(rawTwo());
   let s = shInit(p);
   const a0 = area(shPiecePts(p, s, 1));
@@ -110,7 +112,7 @@ test('조각이 모두 목표 자리에 가면 끝(돌린 조각은 돌린 뒤 �
   const s = shInit(p);
   const u = shUnit(p);
   assert.equal(shPiecesDone(p, s), false);
-  const a = shPieceDrag(p, s, 0, u * 4, u * -2);
+  const a = shPieceDrop(shPieceDrag(p, s, 0, u * 4, u * -2));
   assert.equal(shPiecesDone(p, a), false);
   // 돌리지 않고 옮기기만 하면 모양이 틀 자리와 다름
   const wrong = shPieceDrag(p, a, 1, u * 4, u * 3);
@@ -123,7 +125,11 @@ test('조각이 모두 목표 자리에 가면 끝(돌린 조각은 돌린 뒤 �
     x: number;
     y: number;
   };
-  const done = shPieceDrag(p, turned, 1, (want.x - right.x) * u, -(want.y - right.y) * u);
+  const moving = shPieceDrag(p, turned, 1, (want.x - right.x) * u, -(want.y - right.y) * u);
+  // 끄는 동안(손을 떼기 전)은 맞은 자리여도 판정하지 않는다 — 초록으로 칠하지도 않음(P3)
+  assert.equal(shPiecesDone(p, moving), false);
+  assert.doesNotMatch(String(mark(shDraw(p, moving), 'pc1')?.a.class), /done/);
+  const done = shPieceDrop(moving);
   assert.equal(shPiecesDone(p, done), true);
   const d = shDraw(p, done);
   assert.match(String(mark(d, 'pc1')?.a.class), /done/);
@@ -156,7 +162,7 @@ test('돌려 놓아도 같은 모양(정사각형 조각)이면 목표로 봄 �
   const pts = shPiecePts(p, s, 0);
   const minX = Math.min(...pts.map((q) => q.x));
   const minY = Math.min(...pts.map((q) => q.y));
-  const t = shPieceDrag(p, s, 0, (3 - minX) * u, -(1 - minY) * u);
+  const t = shPieceDrop(shPieceDrag(p, s, 0, (3 - minX) * u, -(1 - minY) * u));
   assert.equal(shPiecesDone(p, t), true);
 });
 
@@ -238,4 +244,136 @@ test('조각 형식 오류', () => {
     }),
     /끄는 점/,
   );
+});
+
+// 같은 모양 조각 둘(1×2 막대)과 목표 자리 둘
+const rawTwins = () => ({
+  grid: { w: 8, h: 6 },
+  points: [] as unknown[],
+  pieces: [
+    {
+      at: [
+        [0, 0],
+        [2, 0],
+        [2, 1],
+        [0, 1],
+      ],
+      to: [
+        [4, 2],
+        [6, 2],
+        [6, 3],
+        [4, 3],
+      ],
+    },
+    {
+      at: [
+        [0, 4],
+        [2, 4],
+        [2, 5],
+        [0, 5],
+      ],
+      to: [
+        [4, 3],
+        [6, 3],
+        [6, 4],
+        [4, 4],
+      ],
+    },
+  ],
+  outline: [
+    [4, 2],
+    [6, 2],
+    [6, 4],
+    [4, 4],
+  ],
+});
+
+test('같은 모양 두 조각을 한 목표 자리에 겹쳐 놓으면 한 곳만 채운 것(일대일 짝) — 먼저 놓인 조각만 초록', () => {
+  const p = parse(rawTwins());
+  const s = shInit(p);
+  const u = shUnit(p);
+  const one = shPieceDrop(shPieceDrag(p, s, 0, u * 4, u * -2));
+  const both = shPieceDrop(shPieceDrag(p, one, 1, u * 4, u * 2));
+  assert.deepEqual(shPieceMatch(p, both), [true, false]);
+  assert.equal(shPiecesDone(p, both), false);
+  const d = shDraw(p, both);
+  assert.match(String(mark(d, 'pc0')?.a.class), /done/);
+  assert.doesNotMatch(String(mark(d, 'pc1')?.a.class), /done/);
+  // 둘째를 다른 자리로 옮기면 다 채움(같은 모양끼리 자리를 바꿔 놓아도 됨)
+  const fill = shPieceDrop(shPieceDrag(p, one, 1, u * 4, u * 1));
+  assert.deepEqual(shPieceMatch(p, fill), [true, true]);
+  assert.equal(shPiecesDone(p, fill), true);
+});
+
+test('끄는 조각이 다른 조각이 차지한 자리를 지나가도 그 조각의 초록은 그대로', () => {
+  const p = parse(rawTwins());
+  const s = shInit(p);
+  const u = shUnit(p);
+  // 조각 1 을 먼저 목표 0 자리에 두고, 조각 0 을 그 위로 끄는 중
+  const placed = shPieceDrop(shPieceDrag(p, s, 1, u * 4, u * 2));
+  const over = shPieceDrag(p, placed, 0, u * 4, u * -2);
+  assert.deepEqual(shPieceMatch(p, over), [false, true]);
+});
+
+test('조각 형식 오류(채우기): 목표 자리 중복·틀 밖·목표끼리 겹침·거울상', () => {
+  const twin = (f: (r: ReturnType<typeof rawTwins>) => void) => {
+    const r = rawTwins();
+    f(r);
+    return () => parse(r);
+  };
+  const setTo = (r: ReturnType<typeof rawTwins>, i: number, to: number[][]) => {
+    (r.pieces[i] as { to: number[][] }).to = to;
+  };
+  // 같은 자리 둘(꼭짓점 차례를 바꿔 적어도 같은 자리)
+  assert.throws(
+    twin((r) =>
+      setTo(r, 1, [
+        [6, 3],
+        [4, 3],
+        [4, 2],
+        [6, 2],
+      ]),
+    ),
+    /같은 목표 자리/,
+  );
+  // 틀 밖(넓이 합은 같지만 한 조각이 틀을 벗어남)
+  assert.throws(
+    twin((r) =>
+      setTo(r, 1, [
+        [6, 2],
+        [8, 2],
+        [8, 3],
+        [6, 3],
+      ]),
+    ),
+    /빈 틀 밖/,
+  );
+  // 목표끼리 반쯤 겹침(틀 없이)
+  assert.throws(
+    twin((r) => {
+      r.outline = undefined as never;
+      setTo(r, 1, [
+        [5, 2],
+        [7, 2],
+        [7, 3],
+        [5, 3],
+      ]);
+    }),
+    /겹침/,
+  );
+  // 거울상: 꼭짓점 모음은 같아도 모양이 뒤집힌 조각(왼쪽이 파인 직사각형 ↔ 오른쪽이 다르게 파인 것).
+  // 꼭짓점 모음만 견주면 통과해 버려, 둘레를 도는 차례로 견준다
+  const P = [
+    [0, 0],
+    [4, 0],
+    [4, 2],
+    [0, 2],
+    [1, 1],
+    [3, 1],
+  ] as [number, number][];
+  const one = (to: [number, number][]) => () =>
+    parse({ grid: { w: 8, h: 6 }, points: [], pieces: [{ at: P, to }] });
+  assert.throws(one(P.map(([x, y]) => [7 - x, y + 2])), /돌리고 옮겨서/);
+  // 같은 꼭짓점 모음의 180° 돌린 자리는 된다
+  assert.doesNotThrow(one(P.map(([x, y]) => [7 - x, 4 - y])));
 });

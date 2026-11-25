@@ -109,6 +109,8 @@ export interface ShState {
   cut: [number, number];
   /** 조각마다 자리(pieces 가 있을 때만) */
   pcs?: ShPose[];
+  /** 끄는 중(또는 키로 옮기고 판정 전)인 조각 번호 — 그동안은 목표 자리와 짝짓지 않는다(P3) */
+  moving?: number;
 }
 /** 조각의 자리: 시계 반대 방향 90° 돌린 횟수 t(0~3), 옮긴 격자 칸 d */
 export interface ShPose {
