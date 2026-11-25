@@ -48,6 +48,10 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
     // 끝이 끄는 점이면 부호가 바뀌는 곳(끊는 자리)이 상태마다 달라 검산이 한 식으로 되풀이할 수 없다
     if (e.f === 'abs')
       fail(w, '부호 뗀 합(abs)은 목표로 못 씀 — 집 기준 위치처럼 부호 있는 합(net)으로');
+    // 막대 넓이·정규분포 넓이·덮는 수는 검산이 상태마다 sympy 식을 다시 세워야 해서(구간 끝 올림·내림, erf) 아직 목표에
+    // 쓰지 않는다. 끝을 끄는 장면은 점 자리 목표(place)로 '이 k 를 찾아라'를 묻는다
+    if (e.f === 'area' || e.f === 'prob' || e.f === 'cover')
+      fail(w, `${e.f} 는 아직 목표로 못 씀 — 끄는 점의 자리를 묻는 점 자리 목표(place)로`);
     return e;
   };
   const { shape, common, o } = parseGoalShape<ReadoutExpr, GoalIs>(
@@ -257,7 +261,11 @@ function enumerate(p: CoordParams, g: NewGoal): Enumerated {
   for (const id of m.points) {
     const o = pointOf(p, id);
     const { i0, i1 } = xCells(p.x, o);
-    const [j0, j1] = o.on ? [0, 0] : (iRange(p.y.lo, p.y.hi, p.y.st) as [number, number]);
+    const [j0, j1] = o.on
+      ? [0, 0]
+      : o.drag === 'x'
+        ? [o.j, o.j]
+        : (iRange(p.y.lo, p.y.hi, p.y.st) as [number, number]);
     const opts: { patch: (s: CoordState) => CoordState; sym: Record<string, string> }[] = [];
     for (let i = i0; i <= i1; i++)
       for (let j = j0; j <= j1; j++)

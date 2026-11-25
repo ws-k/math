@@ -2,8 +2,9 @@
 // 실제 코드는 coord/ 폴더에 객체 종류별로 나뉘어 있다 — 그림 객체가 늘어날 때 종류 하나가 파일 하나가 되게.
 //   types(타입) · common(형식 검사 도우미) · frame(px 변환·눈금) ← 아래층
 //   curve(+ piece: 조각 함수·구간만 그리기) · point · line(할선·접선) · segment(선분·화살표) · readout ·
-//   fill(칠하기) · rects(구분구적)
+//   fill(칠하기) · rects(구분구적) · bars(히스토그램·이항분포 막대) · normal(정규분포 넓이 shade) · ci(신뢰구간)
 //     ← 객체 종류마다 형식 검사·그리기·검산 몫
+//   stat(통계 객체 공용: 수 또는 슬라이더·고르는 끝·닿는 상태·분수 반올림 글자)
 //   kinds(종류 표) · task(과제) · goal(목표) · model(상태·손 조작) · parse · draw · checks · smooth(조각 경계 미분 검사)
 //     ← 나눠 주는 곳
 //   slider(슬라이더) · poly(다항식·실근 개수) ← 목표가 값을 분수로 정확히 견주려고 쓰는 도우미
@@ -14,8 +15,12 @@
 //   {fill:{top:'f', x:[0,30]}, look:'soil', name:'밭'} · {id:'R', rects:{of:'f', x:[0,30], n:'n'}} ·
 //   {id:'F', fill:{top:'v', x:[0,'B']}, sign:true} + {readout:'net(F)'}·{readout:'abs(F)'}
 //   {arrow:['O', ['2*k','k']]} · {segment:[[3,0],[3,3]]} · {id:'P', point:{…, drag:'x', range:[1,12]}}
+//   {id:'B', bars:{binom:['n','p'], sel:[null,'K']}} + {readout:'area(B)'} ·
+//   {id:'N', curve:{normal:[0,1]}} + {id:'A', shade:{of:'N', x:[null,'P']}} + {readout:'prob(A)'} ·
+//   {id:'C', ci:{m:50, sd:10, n:'n', z:'z', draws:[…]}} + {readout:'cover(C)'}
 import { compareAnswer } from '../../lib/answer.ts';
 import { parseSym } from '../sym.ts';
+import { checkBarsFit } from './coord/bars.ts';
 import { coordChecks } from './coord/checks.ts';
 import { checkReachable, goalTexts } from './coord/goal.ts';
 import { kindOf } from './coord/kinds.ts';
@@ -25,6 +30,7 @@ import { checkSmooth } from './coord/smooth.ts';
 import type { CoordParams } from './coord/types.ts';
 import type { WidgetDef } from './specs.ts';
 
+export { BINOM_N_MAX, binomPmf, MIN_BAR_PX } from './coord/bars.ts';
 export { coordChecks } from './coord/checks.ts';
 export { MAX_CELLS, MAX_SNAPS } from './coord/common.ts';
 export { dfAt, fAt } from './coord/curve.ts';
@@ -57,6 +63,7 @@ export {
   moveUser,
   removeUser,
 } from './coord/model.ts';
+export { erf, normCdf } from './coord/normal.ts';
 export { parseCoord } from './coord/parse.ts';
 export { pointXY } from './coord/point.ts';
 export { polyOf, rationalRoots, rootCount, rootsBetween } from './coord/poly.ts';
@@ -107,6 +114,7 @@ export const coordDef: WidgetDef<CoordParams> = {
     checkPolyCurves(p);
     checkReachable(p);
     checkSmooth(p);
+    checkBarsFit(p);
   },
   checks: coordChecks,
   texts(p) {

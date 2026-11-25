@@ -55,7 +55,10 @@ export function dragPoint(
     if (Number.isNaN(fAt(p, s, o.on, i * o.snapN))) return s;
     return { ...s, pts: { ...s.pts, [id]: { i, j: 0 } } };
   }
-  return { ...s, pts: { ...s.pts, [id]: inRange(p, id, gridAt(p, wx, wy)) } };
+  const g = inRange(p, id, gridAt(p, wx, wy));
+  // 가로로만 끄는 칸 위 점: 세로 칸은 그대로(손이 위아래로 흔들려도 가로축에서 떨어지지 않게)
+  const j = o.drag === 'x' ? (s.pts[id] ?? o).j : g.j;
+  return { ...s, pts: { ...s.pts, [id]: { i: g.i, j } } };
 }
 
 /** 칸 위 점의 끄는 x 범위(point.ts xCells) 안으로. 범위가 없으면 그대로 */
@@ -110,11 +113,13 @@ export function keyMove(
         return { ...s, pts: { ...s.pts, [handle]: { i, j: 0 } } };
     return s;
   }
+  // 가로로만 끄는 칸 위 점은 위·아래 키도 가로로(곡선 위 점·슬라이더 관례)
+  const [di, dj] = o.drag === 'x' ? [d[0] || d[1], 0] : d;
   return {
     ...s,
     pts: {
       ...s.pts,
-      [handle]: inRange(p, handle, gridAt(p, (g.i + d[0]) * p.x.st, (g.j + d[1]) * p.y.st)),
+      [handle]: inRange(p, handle, gridAt(p, (g.i + di) * p.x.st, (g.j + dj) * p.y.st)),
     },
   };
 }

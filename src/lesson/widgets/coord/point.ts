@@ -183,7 +183,7 @@ export const pointKind: KindDef<PointObj> = {
       if (pp.snap !== undefined) fail(`${at} snap`, '칸 위 점은 칸 간격으로만 움직임');
       const yv = numExpr(pp.y, `${at} y`);
       const drag =
-        pp.drag === undefined ? 'none' : oneOf(pp.drag, `${at} drag`, ['none', 'xy'] as const);
+        pp.drag === undefined ? 'none' : oneOf(pp.drag, `${at} drag`, ['none', 'xy', 'x'] as const);
       const po: PointObj = {
         kind: 'point',
         id,
