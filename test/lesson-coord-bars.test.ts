@@ -4,6 +4,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  barsAt,
   type CoordParams,
   type CoordState,
   coordChecks,
@@ -686,4 +687,14 @@ test('M2 가로로만 끄는 칸 위 점의 점 자리 목표는 x 만(세로는
       ),
     /끄는 칸/,
   );
+});
+test('m1 K 만 끌 때는 (n, p) 가 같으면 막대를 다시 계산하지 않는다(같은 목록)', () => {
+  const p = parseCoord(binomRaw());
+  const o = p.objects[1] as Parameters<typeof barsAt>[2];
+  const a = barsAt(p, st(p, {}, { K: 1 }), o);
+  const b = barsAt(p, st(p, {}, { K: 4 }), o);
+  assert.equal(a, b);
+  const c = barsAt(p, st(p, { n: 5 }), o);
+  assert.notEqual(a, c);
+  assert.equal(c.length, 6);
 });

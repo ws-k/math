@@ -9,7 +9,7 @@
 // 막대 수는 n·계급 크기를 끌면 바뀐다. 그래도 그릴 목록은 늘 경로 두 개(나머지·고른 막대)라 끄는 동안 경로 글자만
 // 바꿔 넣는다(React 렌더 0회 — 구분구적 조각과 같은 방식).
 import { arr, fail, obj, optStr } from '../../parse.ts';
-import type { Rational } from '../../sym.ts';
+import { type Rational, reduce } from '../../sym.ts';
 import { add, cmp, div, mul, num, qi, ratStr, sub } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { clampY, MIN_SNAP_PX, narrowFrame, r1, toPx } from './frame.ts';
@@ -81,33 +81,50 @@ function dataCounts(data: QNum[], from: Rational, w: Rational): number[] {
   return out;
 }
 
-/** B(n,p) 의 확률 k=0..n(정확한 분수). n 이 정수가 아니면 빈 목록 */
+/**
+ * B(n,p) 의 확률 k=0..n(정확한 분수). p = a/d 면 k 번째는 C(n,k)·aᵏ·(d−a)ⁿ⁻ᵏ / dⁿ 로 **모두 분모 dⁿ** —
+ * 항마다 약분(큰 정수 최대공약수)하면 n=60, p=4137/10000 에서 한 프레임이 6ms 를 넘어서, 약분하지 않은 채
+ * 같은 분모로 둔다(값은 같다. 넓이 합은 분자끼리 더한 뒤 한 번만 약분 — barsArea). n 이 정수가 아니면 빈 목록
+ */
 export function binomPmf(n: number, p: Rational): Rational[] {
   if (!Number.isInteger(n) || n < 0) return [];
-  const q = sub(qi(1), p);
-  const pw = [qi(1)];
-  const qw = [qi(1)];
+  const [a, d] = p;
+  const b = d - a;
+  const aw = [1n];
+  const bw = [1n];
   for (let k = 1; k <= n; k++) {
-    pw.push(mul(pw[k - 1] as Rational, p));
-    qw.push(mul(qw[k - 1] as Rational, q));
+    aw.push((aw[k - 1] as bigint) * a);
+    bw.push((bw[k - 1] as bigint) * b);
   }
+  const D = (bw[0] as bigint) * d ** BigInt(n);
   let c = 1n;
   const out: Rational[] = [];
   for (let k = 0; k <= n; k++) {
-    out.push(mul(mul([c, 1n], pw[k] as Rational), qw[n - k] as Rational));
+    out.push([c * (aw[k] as bigint) * (bw[n - k] as bigint), D]);
     c = (c * BigInt(n - k)) / BigInt(k + 1);
   }
   return out;
 }
 
-/** 지금 상태의 막대 전부(높이 0 인 막대도 — 넓이 합·고르기 판정은 막대 자리를 본다) */
+/**
+ * 막대마다 마지막 (n, p) 의 확률 목록. 끝 점 K 만 끌면 (n, p) 가 그대로라 다시 계산하지 않는다 — K 를 끄는 동안
+ * 매 프레임 dⁿ 크기 정수 곱셈을 되풀이하지 않게
+ */
+const pmfMemo = new WeakMap<BarsObj, { n: number; p: Rational; bars: Bar[] }>();
+
+/** 지금 상태의 막대 전부/** 지금 상태의 막대 전부(높이 0 인 막대도 — 넓이 합·고르기 판정은 막대 자리를 본다) */
 export function barsAt(p: CoordParams, s: CoordState, o: BarsObj): Bar[] {
   const src = o.src;
   let bars: Bar[];
   if (src.t === 'binom') {
     const pq = nosQ(p, s, src.p);
-    const pmf = pq ? binomPmf(nosNum(s, src.n), pq) : [];
-    bars = pmf.map((h, k) => ({ lo: sub(qi(k), HALF), hi: add(qi(k), HALF), h }));
+    if (!pq) return [];
+    const n = nosNum(s, src.n);
+    const memo = pmfMemo.get(o);
+    if (memo && memo.n === n && memo.p[0] === pq[0] && memo.p[1] === pq[1]) return memo.bars;
+    bars = binomPmf(n, pq).map((h, k) => ({ lo: sub(qi(k), HALF), hi: add(qi(k), HALF), h }));
+    pmfMemo.set(o, { n, p: pq, bars });
+    return bars;
   } else if (src.t === 'hist') bars = histBars(src);
   else {
     const w = nosQ(p, s, src.w);
@@ -146,7 +163,14 @@ function picked(p: CoordParams, s: CoordState, o: BarsObj): (b: Bar) => boolean 
 /** 고른 막대의 넓이 합(정확한 분수) */
 export function barsArea(p: CoordParams, s: CoordState, o: BarsObj): Rational {
   const pick = picked(p, s, o);
-  return barsAt(p, s, o).reduce((t, b) => (pick(b) ? add(t, mul(b.h, sub(b.hi, b.lo))) : t), Z);
+  const bars = barsAt(p, s, o);
+  if (o.src.t === 'binom') {
+    // 폭 1, 모두 분모 dⁿ(binomPmf) — 분자끼리 더하고 한 번만 약분
+    let sum = 0n;
+    for (const b of bars) if (pick(b)) sum += b.h[0];
+    return reduce(sum, bars[0]?.h[1] ?? 1n);
+  }
+  return bars.reduce((t, b) => (pick(b) ? add(t, mul(b.h, sub(b.hi, b.lo))) : t), Z);
 }
 
 /** 읽는 값 area 의 화면 글자: 분수(frac) 또는 digits 자리 소수(반올림이 값을 바꾸면 ≈) */
