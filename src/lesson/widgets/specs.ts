@@ -4,6 +4,7 @@
 import type { CheckItem } from '../../content/check.ts';
 import { areaModelDef } from './areaModel.ts';
 import { balanceDef } from './balance.ts';
+import { columnDef } from './column.ts';
 import { coordDef } from './coord.ts';
 import { countDef } from './count.ts';
 import { fractionDef } from './fraction.ts';
@@ -53,4 +54,5 @@ export const widgetDefs: Record<string, WidgetDef<any>> = {
   shape: shapeDef,
   count: countDef,
   simulate: simulateDef,
+  column: columnDef,
 };
