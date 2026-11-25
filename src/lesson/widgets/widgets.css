@@ -301,10 +301,6 @@
   fill: var(--bad);
   fill-opacity: 0.45;
 }
-.lesson .wgt-ctl.pc .lbtn.arrow {
-  /* 조각을 고르면 화살표 넷 + 돌리기 하나가 한 줄에 들게(가장 좁은 화면 카드 안쪽 약 300px) */
-  flex-basis: 52px;
-}
 .lesson .sh-piece:focus-visible {
   outline: none;
   stroke: var(--primary);
@@ -313,6 +309,10 @@
 .lesson .wgt-ctl .lbtn.arrow {
   flex: 0 0 56px;
   font-size: 1.3rem;
+}
+.lesson .wgt-ctl.pc .lbtn.arrow {
+  /* 조각을 고르면 화살표 넷 + 돌리기 하나가 한 줄에 들게(가장 좁은 화면 카드 안쪽 약 300px) */
+  flex-basis: 52px;
 }
 .lesson .wgt-note {
   color: var(--sub);
