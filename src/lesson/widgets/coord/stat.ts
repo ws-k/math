@@ -133,10 +133,15 @@ export function checkStateCount(
     const { i0, i1 } = xCells(cx.x, pt);
     n *= i1 - i0 + 1;
   }
+  tooMany(at, what, n);
+}
+
+/** 상태 수 상한 오류(형식 검사·무거운 검사·검산이 같은 글로) — growStates 의 '목표가 바라보는' 글은 목표가 없는 장면에 맞지 않는다 */
+function tooMany(at: string, what: string, n: number): void {
   if (n > GOAL_MAX_STATES)
     fail(
       at,
-      `${what} 가 바뀌는 상태가 ${n}개 — ${GOAL_MAX_STATES}개 이하로(검산이 모든 상태에서 화면 숫자를 sympy 와 견줌). 슬라이더·끄는 점의 칸을 줄이거나 하나를 고정하세요`,
+      `${what} — 바뀌는 상태가 ${n}개, ${GOAL_MAX_STATES}개 이하로(검산이 모든 상태에서 화면 숫자를 sympy 와 견줌). 슬라이더·끄는 점의 칸을 줄이거나 하나를 고정하세요`,
     );
 }
 
@@ -157,6 +162,14 @@ export function statStates(
   points: string[],
   at: string,
 ): StatState[] {
+  // 늘어놓기 전에 수부터 센다 — 넘으면 growStates 의 목표 글이 아니라 이 객체의 글로
+  let count = 1;
+  for (const id of new Set(sliders)) count *= sliderValues(sliderOf(p.sliders, id)).length;
+  for (const id of new Set(points)) {
+    const { i0, i1 } = xCells(p.x, pointOf(p, id));
+    count *= i1 - i0 + 1;
+  }
+  tooMany(at, '슬라이더·끄는 점', count);
   type Acc = { s: CoordState; sym: Record<string, string> };
   let acc: Acc[] = [{ s: initial(p), sym: {} }];
   for (const id of [...new Set(sliders)]) {

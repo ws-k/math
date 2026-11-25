@@ -17,7 +17,7 @@ import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
 import { polyOf, rootCount } from './poly.ts';
 import { rectsOf, sumSym, sums } from './rects.ts';
 import { sliderQ, sliderText, sliderValues } from './slider.ts';
-import { checkStateCount, dragEnds } from './stat.ts';
+import { checkStateCount, dragEnds, inexactQ } from './stat.ts';
 import type {
   CoordParams,
   CoordState,
@@ -101,9 +101,6 @@ export function unitOf(
       return undefined;
   }
 }
-
-/** 보이는 자리수로 반올림하면 값이 달라지는가(정확한 분수 q 를 digits 자리로) — 달라지면 앞에 ≈ */
-const inexact = (q: Rational, digits: number) => (q[0] * 10n ** BigInt(digits)) % q[1] !== 0n;
 
 const withUnit = (t: string, u: string | undefined) => (u && t !== '—' ? `${t} ${u}` : t);
 
@@ -548,7 +545,7 @@ function sumsLine(
   const parts = v
     ? [
         {
-          text: inexact(v.small, o.digits) || inexact(v.big, o.digits) ? '≈ ' : '',
+          text: inexactQ(v.small, o.digits) || inexactQ(v.big, o.digits) ? '≈ ' : '',
           cls: '',
         },
         { text: fmtNum(num(v.small), o.digits), cls: 'lo' },
@@ -586,6 +583,9 @@ export const readoutKind: KindDef<ReadoutObj> = {
     }
     const u = unitOf(cx, e);
     if (typeof u === 'object') fail(at, u.error);
+    // 정규분포 넓이는 (끝이 평균·끝없음일 때 말고는) 무리수 — 분수 꼴로 보일 값이 없다
+    if (c.frac === true && e.f === 'prob')
+      fail(`${at} frac`, '정규분포 넓이(prob)는 무리수라 분수로 못 보임 — digits 자리 소수로');
     const count = e.f === 'roots' || e.f === 'meet' || e.f === 'cover';
     // 확률·넓이 합(area·prob)은 표준정규분포표처럼 4자리가 기본 — 2자리면 0.6827 과 0.6800 이 같아 보인다
     const dflt = e.f === 'area' || e.f === 'prob' ? 4 : 2;
@@ -624,7 +624,7 @@ export const readoutKind: KindDef<ReadoutObj> = {
     else {
       text = fmtNum(v ? v.n : readout(p, s, o.expr), o.digits);
       // 조각 넓이 합은 정확한 분수를 반올림해 보인다 — 반올림이 값을 바꾸면 ≈ (285 가 정확한 값이라고 읽지 않게)
-      if (isArea(o.expr) && v?.q && inexact(v.q, o.digits)) text = `≈ ${text}`;
+      if (isArea(o.expr) && v?.q && inexactQ(v.q, o.digits)) text = `≈ ${text}`;
     }
     readouts.push({ key: `r${k}`, label: o.label, text: withUnit(text, u) });
   },

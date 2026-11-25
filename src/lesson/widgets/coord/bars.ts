@@ -10,7 +10,7 @@
 // 바꿔 넣는다(React 렌더 0회 — 구분구적 조각과 같은 방식).
 import { arr, fail, obj, optStr } from '../../parse.ts';
 import { type Rational, reduce } from '../../sym.ts';
-import { add, cmp, div, mul, num, qi, ratStr, sub } from '../q.ts';
+import { add, cmp, div, mul, num, py, qi, ratStr, sub } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { clampY, MIN_SNAP_PX, narrowFrame, r1, toPx } from './frame.ts';
 import { xCells } from './point.ts';
@@ -45,6 +45,11 @@ import type {
  * 닿는다 — 그보다 큰 n 은 어떤 x 범위로도 막대가 안 보이므로 폭 검사보다 먼저 이 수로 알린다
  */
 export const BINOM_N_MAX = 60;
+/**
+ * p 의 분모 상한(4자리 분모까지, 10000). 확률은 같은 분모 dⁿ(binomPmf)라 n=60 이면 10²⁴⁰ — 이보다 크면 화면·그리기가
+ * 쓰는 부동소수(Number 상한 약 10³⁰⁸)로 바꿀 때 Infinity 가 되어 막대가 사라진다
+ */
+const P_DEN_MAX = 10000n;
 /**
  * 가장 좁은 화면에서 막대 하나의 최소 폭(px). 테두리(1px)를 빼고도 색이 보여야 고른 막대·나머지를 가린다
  * (구분구적 조각 MIN_RECT_PX 와 같은 까닭·같은 값)
@@ -234,7 +239,26 @@ export function checkBarsFit(p: CoordParams): void {
       fitY(at, p.y.hi, top, st.text);
     }
   }
+  for (const ro of p.objects) {
+    if (ro.kind !== 'readout' || ro.expr.f !== 'area' || !ro.frac) continue;
+    const o = barsOf(p, ro.expr.bars);
+    const m = barsMovers(p, o);
+    for (const st of statStates(p, m.sliders, m.points, `좌표 읽는 값 ${ro.src}`)) {
+      const t = areaText(barsArea(p, st.s, o), ro);
+      if ([...t].length > MAX_FRAC_CHARS)
+        fail(
+          `좌표 읽는 값 ${ro.src}`,
+          `분수 글자 '${t}' 가 ${[...t].length}자(${st.text}) — 접은 화면 읽는 값 칸에 ${MAX_FRAC_CHARS}자까지(frac 을 빼고 소수로)`,
+        );
+    }
+  }
 }
+
+/**
+ * 분수로 보이는 넓이 합(area frac)의 글자 수 상한. 접은 화면(382) 상자 폭 298px 의 읽는 값 한 줄에서 이름 칸을 뺀
+ * 값 칸이 절반(149px) 남짓이고, 굵은 숫자 한 자가 약 10.5px 라 14자 — B(10, 3/10) 의 분모 10¹⁰ 같은 글자는 넘친다
+ */
+const MAX_FRAC_CHARS = 14;
 
 function parseSrc(r: Record<string, unknown>, at: string, cx: ParseCtx): BarsSrc {
   const forms = [
@@ -244,11 +268,11 @@ function parseSrc(r: Record<string, unknown>, at: string, cx: ParseCtx): BarsSrc
   ].filter((x) => x !== null);
   if (forms.length !== 1)
     fail(at, '막대는 {x, h}(계급 끝·도수) · {data, from, w}(자료) · {binom:[n,p]} 중 하나만');
+  if (forms[0] !== 'data' && (r.from !== undefined || r.w !== undefined))
+    fail(at, 'from·w 는 자료(data) 히스토그램에서만');
   const f0 = narrowFrame(cx);
   const f0w = f0.r - f0.l;
   if (forms[0] === 'hist') {
-    if (r.from !== undefined || r.w !== undefined)
-      fail(at, 'from·w 는 자료(data) 히스토그램에서만');
     const edges = arr(r.x, `${at} x`, 2, MAX_BARS + 1).map((v, i) => qnum(v, `${at} x${i + 1}`));
     const h = arr(r.h, `${at} h`, 1, MAX_BARS).map((v, i) => qnum(v, `${at} h${i + 1}`));
     if (h.length !== edges.length - 1)
@@ -260,6 +284,9 @@ function parseSrc(r: Record<string, unknown>, at: string, cx: ParseCtx): BarsSrc
       minW = Math.min(minW, num(w));
     }
     if (h.some((x) => cmp(x.q, Z) < 0)) fail(`${at} h`, '도수는 0 이상');
+    // 밀도 = 도수/(총도수×폭) — 총도수가 0 이면 나눌 수 없어 막대가 그려지지 않는다
+    if (r.density === true && h.every((x) => x.q[0] === 0n))
+      fail(`${at} h`, '상대도수 밀도(density)인데 총도수가 0');
     fitX(at, cx, (edges[0] as QNum).n, (edges[edges.length - 1] as QNum).n);
     fitW(at, cx, minW, f0w);
     return { t: 'hist', edges, h };
@@ -297,8 +324,12 @@ function parseSrc(r: Record<string, unknown>, at: string, cx: ParseCtx): BarsSrc
         ? `n 상한 ${BINOM_N_MAX} 을 넘음(${v}) — 막대가 너무 좁고 검산 상태가 너무 많음`
         : null,
   );
-  const pp = numOrSlider(rp, `${at} binom p`, cx, (v) =>
-    v < 0 || v > 1 ? `p 는 0~1 (${v})` : null,
+  const pp = numOrSlider(rp, `${at} binom p`, cx, (v, q) =>
+    v < 0 || v > 1
+      ? `p 는 0~1 (${v})`
+      : q[1] > P_DEN_MAX
+        ? `p 의 분모 ${q[1]} 가 ${P_DEN_MAX} 를 넘음 — 확률의 분모가 (p 의 분모)ⁿ 이라 수로 바꿀 때 넘칠 수 있음`
+        : null,
   );
   if (r.density !== undefined)
     fail(`${at} density`, '이항분포 막대는 이미 확률(폭 1 — 넓이 = 높이)');
@@ -432,6 +463,38 @@ export const barsKind: KindDef<BarsObj> = {
             'K = len(got)',
             'cnt = [sum(1 for v in data if F + i*W <= v < F + (i+1)*W) for i in range(K)]',
             'ans = 1 if cnt == got and all(F <= v < F + K*W for v in data) else 0',
+          ].join('\n'),
+        });
+      }
+    }
+    if (o.density) {
+      // 밀도 높이 = 도수/(총도수×폭): 앱이 낸 분수 = sympy 가 도수(자료면 다시 센 값)로 따로 셈
+      for (const st of statStates(p, barsMovers(p, o).sliders, [], `좌표 막대 ${o.id}`)) {
+        const bars = barsAt(p, st.s, o);
+        const head =
+          src.t === 'hist'
+            ? [
+                `rows = [${src.h.map((h, i) => `(${ratStr((src.edges[i] as QNum).q)}, ${ratStr((src.edges[i + 1] as QNum).q)}, ${ratStr(h.q)})`).join(', ')}]`,
+                'cnt = [h for e0, e1, h in rows]',
+                'Ws = [e1 - e0 for e0, e1, h in rows]',
+              ]
+            : src.t === 'data'
+              ? [
+                  `data = [${src.data.map((v) => ratStr(v.q)).join(', ')}]`,
+                  `F, W = ${ratStr(src.from.q)}, ${ratStr(nosQ(p, st.s, src.w) as Rational)}`,
+                  `cnt = [sum(1 for v in data if F + i*W <= v < F + (i+1)*W) for i in range(${bars.length})]`,
+                  `Ws = [W]*${bars.length}`,
+                ]
+              : [];
+        out.push({
+          name: `막대 ${o.id} 밀도 높이${st.text ? ` ${st.text}` : ''}`,
+          answer: '1',
+          answerType: 'int',
+          check: [
+            ...head,
+            `got = [${bars.map((b) => py(b.h)).join(', ')}]`,
+            'T = sum(cnt)',
+            'ans = 1 if T > 0 and [Rational(c)/(T*w) for c, w in zip(cnt, Ws)] == got else 0',
           ].join('\n'),
         });
       }

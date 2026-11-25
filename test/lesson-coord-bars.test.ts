@@ -698,3 +698,77 @@ test('m1 K 만 끌 때는 (n, p) 가 같으면 막대를 다시 계산하지 않
   assert.notEqual(a, c);
   assert.equal(c.length, 6);
 });
+test('m3 prob 는 frac 이면 형식 오류(무리수라 분수로 못 보임)', () => {
+  const raw = normalRaw();
+  (raw.objects as Raw[])[3] = { readout: 'prob(A)', label: '넓이', frac: true };
+  assert.throws(() => parseCoord(raw), /무리수/);
+});
+
+test('m4 area 를 분수로(frac) 보이면 닿는 모든 상태에서 분수 글자가 접은 화면 폭 안(14자)', () => {
+  const raw = binomRaw();
+  (raw.objects as Raw[])[2] = { readout: 'area(B)', label: '확률', frac: true };
+  // B(10, 3/10) 의 확률은 분모가 10^10 — 글자가 너무 길다
+  assert.throws(() => coordDef.deep?.(parseCoord(raw)), /분수 글자/);
+  const ok = binomRaw({
+    sliders: [{ id: 'n', min: 1, max: 4, step: 1, value: 4, label: '$n$' }],
+  });
+  (ok.objects as Raw[])[1] = { id: 'B', bars: { binom: ['n', '1/2'], sel: [null, 'K'] } };
+  (ok.objects as Raw[])[2] = { readout: 'area(B)', label: '확률', frac: true };
+  assert.doesNotThrow(() => coordDef.deep?.(parseCoord(ok)));
+});
+
+test('m5 상대도수 밀도인데 총도수가 0 이면 형식 오류', () => {
+  assert.throws(() => parseCoord(histRaw({ density: true, h: [0, 0, 0, 0, 0] })), /총도수/);
+});
+
+test('m6 이항분포에 from·w 를 적으면 히스토그램과 같은 오류', () => {
+  assert.throws(
+    () => parseCoord(binomRaw({ objects: [{ id: 'B', bars: { binom: ['n', 'p'], from: 0 } }] })),
+    /from·w 는 자료\(data\) 히스토그램에서만/,
+  );
+});
+
+test('m7 목표가 없을 때 상태가 너무 많으면 목표 말이 아니라 "바뀌는 상태" 말로', () => {
+  const p = parseCoord(
+    binomRaw({
+      x: { min: '-1/2', max: '121/2', step: 10 },
+      sliders: [
+        { id: 'n', min: 1, max: 60, step: 1, value: 4, label: '$n$' },
+        { id: 'p', min: 0, max: 1, step: '1/100', value: '1/2', label: '$p$' },
+      ],
+      objects: [{ id: 'B', bars: { binom: ['n', 'p'] } }],
+    }),
+  );
+  assert.throws(
+    () => coordDef.deep?.(p),
+    (e: Error) => /바뀌는 상태가 6060개/.test(e.message) && !/목표/.test(e.message),
+  );
+});
+
+test('m8 상대도수 밀도 막대 높이 검산: 높이 = 도수/(총도수×폭) 를 sympy 가 따로', () => {
+  const p = parseCoord(histRaw({ density: true }, { y: { min: 0, max: '1/20', step: '1/100' } }));
+  const cs = coordChecks(p).filter((c) => c.name.startsWith('막대 H 밀도 높이'));
+  assert.equal(cs.length, 1);
+  const r = runChecks(cs);
+  assert.ok(r.ok, r.out);
+  assert.equal(runChecks(tamper(cs)).ok, false);
+  const pd = parseCoord(dataRaw({ y: { min: 0, max: '1/10', step: '1/50' } }));
+  assert.equal(coordChecks(pd).filter((c) => c.name.startsWith('막대 D 밀도 높이')).length, 0);
+  const raw = dataRaw({ y: { min: 0, max: '1/10', step: '1/50' } });
+  ((raw.objects as Raw[])[0]?.bars as Raw).density = true;
+  const pd2 = parseCoord(raw);
+  const c2 = coordChecks(pd2).filter((c) => c.name.startsWith('막대 D 밀도 높이'));
+  assert.equal(c2.length, 4);
+  const r2 = runChecks(c2);
+  assert.ok(r2.ok, r2.out);
+});
+
+test('m9 p 의 분모가 4자리를 넘으면 형식 오류(n=60 이면 분모가 10^240 — 수로 바꿀 때 넘침)', () => {
+  assert.throws(
+    () => parseCoord(binomRaw({ objects: [{ id: 'B', bars: { binom: ['n', '1/100000'] } }] })),
+    /분모/,
+  );
+  assert.doesNotThrow(() =>
+    parseCoord(binomRaw({ objects: [{ id: 'B', bars: { binom: ['n', '4137/10000'] } }] })),
+  );
+});
