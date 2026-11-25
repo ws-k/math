@@ -48,6 +48,10 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
     // 끝이 끄는 점이면 부호가 바뀌는 곳(끊는 자리)이 상태마다 달라 검산이 한 식으로 되풀이할 수 없다
     if (e.f === 'abs')
       fail(w, '부호 뗀 합(abs)은 목표로 못 씀 — 집 기준 위치처럼 부호 있는 합(net)으로');
+    // 막대 넓이·정규분포 넓이·덮는 수는 검산이 상태마다 sympy 식을 다시 세워야 해서(구간 끝 올림·내림, erf) 아직 목표에
+    // 쓰지 않는다. 끝을 끄는 장면은 점 자리 목표(place)로 '이 k 를 찾아라'를 묻는다
+    if (e.f === 'area' || e.f === 'prob' || e.f === 'cover')
+      fail(w, `${e.f} 는 아직 목표로 못 씀 — 끄는 점의 자리를 묻는 점 자리 목표(place)로`);
     return e;
   };
   const { shape, common, o } = parseGoalShape<ReadoutExpr, GoalIs>(
@@ -88,6 +92,12 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
       fail(`${at} place`, '곡선 위 점은 x 만(y 는 곡선에서 계산)');
     out.x = target(pl.x, `${at} place.x`);
     out.i = toIndex(val(out.x), pt.snapN, `${at} place.x`);
+  } else if (pt.drag === 'x') {
+    // 가로로만 끄는 칸 위 점은 세로 칸이 늘 처음 칸이라 y 를 물을 까닭이 없다(곡선 위 점과 같은 꼴)
+    if (pl.x === undefined || pl.y !== undefined)
+      fail(`${at} place`, '가로로만 끄는 점은 x 만(세로는 처음 칸 그대로)');
+    out.x = target(pl.x, `${at} place.x`);
+    out.i = toIndex(val(out.x), p.x.st, `${at} place.x`);
   } else {
     if (pl.x === undefined || pl.y === undefined) fail(`${at} place`, 'x 와 y 둘 다');
     out.x = target(pl.x, `${at} place.x`);
@@ -122,7 +132,8 @@ function snapsOk(p: CoordParams, g: NewGoal): NewGoal {
     const o = pointOf(p, id);
     const n = (p.x.hi - p.x.lo) / o.snapN;
     const px = w / n;
-    if (o.on && px < MIN_SNAP_PX - 1e-9)
+    // 가로로만 끄는 칸 위 점도 한 칸을 손가락으로 고르는 목표라 같은 하한(칸 위 xy 점은 칸 수 상한 MAX_CELLS 가 지킨다)
+    if ((o.on || o.drag === 'x') && px < MIN_SNAP_PX - 1e-9)
       fail(
         `좌표 goal`,
         `${id} 의 끄는 칸이 ${Math.round(n)}칸 — 가장 좁은 화면 그림 폭 ${w.toFixed(1)}px 에서 한 칸이 ${px.toFixed(1)}px 로 ${MIN_SNAP_PX}px 보다 작아 끌기가 칸을 건너뜀(${Math.floor(w / MIN_SNAP_PX)}칸 이하로)`,
@@ -257,7 +268,11 @@ function enumerate(p: CoordParams, g: NewGoal): Enumerated {
   for (const id of m.points) {
     const o = pointOf(p, id);
     const { i0, i1 } = xCells(p.x, o);
-    const [j0, j1] = o.on ? [0, 0] : (iRange(p.y.lo, p.y.hi, p.y.st) as [number, number]);
+    const [j0, j1] = o.on
+      ? [0, 0]
+      : o.drag === 'x'
+        ? [o.j, o.j]
+        : (iRange(p.y.lo, p.y.hi, p.y.st) as [number, number]);
     const opts: { patch: (s: CoordState) => CoordState; sym: Record<string, string> }[] = [];
     for (let i = i0; i <= i1; i++)
       for (let j = j0; j <= j1; j++)

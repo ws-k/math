@@ -65,8 +65,18 @@ interface CurveBase {
   /** 정답 곡선: 목표·과제를 이루기 전에는 그리지 않는다(맞힌 뒤 공개) */
   hide?: true;
 }
+/**
+ * 정규분포 곡선 {curve:{normal:[m, s]}} 의 평균·표준편차(식 글자 — 수 또는 슬라이더 식). 곡선 식은 이것으로 만든
+ * 밀도함수라, 넓이(shade·prob)를 식을 다시 알아보지 않고 정규분포 누적으로 낸다(normal.ts)
+ */
+export interface NormalDist {
+  m: string;
+  s: string;
+  mNode: Node;
+  sNode: Node;
+}
 /** 식 하나인 곡선(x 전체). 식을 통째로 다루는 곳(다항식·칠하기·구분구적·과제)은 이 꼴만 받는다(curve.ts wholeCurve) */
-export type PlainCurve = CurveBase & { node: Node; pieces?: undefined };
+export type PlainCurve = CurveBase & { node: Node; pieces?: undefined; normal?: NormalDist };
 /**
  * 조각 함수·구간만 그리기(한 기제: 구간만 그리기는 조각 하나). 식이 하나가 아니라 node 가 없다 — 값은 늘
  * curve.ts fAt·curveExact 로(조각을 고른 뒤) 구하게 컴파일러가 막는다
@@ -78,6 +88,7 @@ export interface PointObj {
   id: string;
   /** 곡선 위 점이면 곡선 id. 아니면 칸 위 점 */
   on?: string;
+  /** x 는 곡선 위 점이면 곡선을 따라, 칸 위 점이면 가로로만(세로 칸 그대로 — 막대·넓이의 끝을 가로축 위에서 끈다) */
   drag: 'none' | 'x' | 'xy';
   /** 곡선 위 점이 x 로 움직이는 간격(원문). 칸 위 점은 칸 간격 */
   snap: string;
@@ -124,7 +135,13 @@ export type ReadoutExpr =
   /** 두 곡선(다항식)의 교점 개수 = f(x)=g(x) 의 서로 다른 실근 개수 */
   | { f: 'meet'; a: string; b: string }
   /** 슬라이더로 계산하는 식 값(판별식 b**2-4*a*c 등) */
-  | { f: 'calc'; src: string; node: Node };
+  | { f: 'calc'; src: string; node: Node }
+  /** 막대 B 의 고른 막대(없으면 모든 막대) 넓이 합(정확한 분수) — 이항분포면 확률, 히스토그램이면 도수×계급의 크기 */
+  | { f: 'area'; bars: string }
+  /** 정규분포 넓이 A(무리수 — 반올림해 ≈ 로 보이고 approx 로 검산) */
+  | { f: 'prob'; shade: string }
+  /** 신뢰구간 C 중 평균 m 을 품은 구간 수 */
+  | { f: 'cover'; ci: string };
 export interface ReadoutObj {
   kind: 'readout';
   src: string;
@@ -196,6 +213,56 @@ export interface RectsObj {
   /** 구간에서 오르는 곡선인가(오르면 큰 어림 = 오른쪽 끝 높이) */
   rising: boolean;
 }
+/** 수 하나(형식 검사가 읽은 원문·수·분수) */
+export interface QNum {
+  src: string;
+  n: number;
+  q: Rational;
+}
+/** 수 또는 슬라이더 이름(이항분포의 n·p, 계급의 크기, 신뢰구간의 n·z) */
+export type NumOrSlider = { slider: string } | QNum;
+/** 고르는 구간의 끝: 수, 앞에 나온 점(그 x 를 따라감), 또는 null(끝없음) */
+export type SelEnd = QNum | { pt: string } | null;
+/**
+ * 막대의 출처. hist = 계급 끝과 도수를 그대로, data = 자료를 계급의 크기(w)로 나눠 센 도수(왼쪽 닫힘 [a, a+w)),
+ * binom = 이항분포 B(n,p) 의 확률(가운데 k, 폭 1)
+ */
+export type BarsSrc =
+  | { t: 'hist'; edges: QNum[]; h: QNum[] }
+  | { t: 'data'; data: QNum[]; from: QNum; w: NumOrSlider }
+  | { t: 'binom'; n: NumOrSlider; p: NumOrSlider };
+/**
+ * 막대 {id, bars:{…, sel?:[a,b], density?}, label?}: 가운데가 [a,b] 안인 막대를 '고른 막대'로 따로 칠하고, 읽는 값
+ * area 가 그 넓이 합을 낸다. density 면 높이 = 도수/(총도수×폭) — 넓이 합이 상대도수라 정규분포 곡선과 겹쳐 볼 수 있다
+ */
+export interface BarsObj {
+  kind: 'bars';
+  id: string;
+  src: BarsSrc;
+  density?: true;
+  sel?: [SelEnd, SelEnd];
+  label?: string;
+}
+/** 정규분포 넓이 {id, shade:{of:'N', x:[a,b]}}: 정규분포 곡선 N 아래 a~b 를 칠한다(끝은 수·점·null=끝없음) */
+export interface ShadeObj {
+  kind: 'shade';
+  id: string;
+  of: string;
+  ends: [SelEnd, SelEnd];
+}
+/**
+ * 신뢰구간 여러 개 {id, ci:{m, sd, n, z, draws}}: 표본마다 [x̄ − zσ/√n, x̄ + zσ/√n] 을 가로 막대로(줄 k 는 y=k).
+ * draws 는 표준화한 표본평균 u = (x̄ − m)/(σ/√n) — 그래서 n 을 바꾸면 구간이 좁아질 뿐 m 을 품는지(|u| ≤ z)는 그대로다
+ */
+export interface CiObj {
+  kind: 'ci';
+  id: string;
+  m: QNum;
+  sd: QNum;
+  n: NumOrSlider;
+  z: NumOrSlider;
+  draws: QNum[];
+}
 /** 선분·화살표의 끝: 앞에 나온 점, 또는 좌표 식 [x, y](슬라이더 이름만 — 슬라이더를 따라 움직임, k·a 의 끝 (2k, k)) */
 export type SegEnd = { pt: string } | { x: string; y: string; nx: Node; ny: Node };
 /** 선분 {segment:[끝, 끝]} · 화살표 {arrow:[꼬리, 머리]}(벡터). 곡선 꼼수 식 없이 세로 벡터도 그린다 */
@@ -223,7 +290,10 @@ export type CoordObj =
   | FillObj
   | RectsObj
   | SegmentObj
-  | ArrowObj;
+  | ArrowObj
+  | BarsObj
+  | ShadeObj
+  | CiObj;
 
 export interface Slider {
   id: string;
@@ -412,6 +482,10 @@ export interface ParseCtx {
   rects: Map<string, RectsObj>;
   /** 이름 붙은 칠하기(읽는 값 net·abs 가 가리킨다) */
   fills: Map<string, FillObj>;
+  /** 막대·정규분포 넓이·신뢰구간(읽는 값 area·prob·cover 가 가리킨다) */
+  bars: Map<string, BarsObj>;
+  shades: Map<string, ShadeObj>;
+  cis: Map<string, CiObj>;
   /** 축척 같게(조각 폭 상한을 셀 때 그림 영역이 달라진다) */
   equal: boolean;
   /** 새 이름을 검사하고 등록한다(중복이면 형식 오류) */

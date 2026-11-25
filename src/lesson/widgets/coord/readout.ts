@@ -7,13 +7,17 @@ import { GOAL_MAX_STATES, type Val } from '../../goal.ts';
 import { fail, int, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { div, num, qi, ratStr, sub } from '../q.ts';
+import { areaChecks, areaText, barsArea, barsMovers, barsOf, barsSliders } from './bars.ts';
+import { ciMovers, ciOf, coverAt } from './ci.ts';
 import { curveDerivExact, curveOf, curveVars, dfAt, plainOf, wholeCurve } from './curve.ts';
 import { fillEnds, fillOf, fillSums, fillSumsAt } from './fill.ts';
 import { fmtNum } from './frame.ts';
+import { distSliders, probAt, probChecks, probText, shadeMovers, shadeOf } from './normal.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
 import { polyOf, rootCount } from './poly.ts';
 import { rectsOf, sumSym, sums } from './rects.ts';
 import { sliderQ, sliderText, sliderValues } from './slider.ts';
+import { checkStateCount, dragEnds, inexactQ } from './stat.ts';
 import type {
   CoordParams,
   CoordState,
@@ -21,7 +25,9 @@ import type {
   FillArea,
   FillObj,
   KindDef,
+  NormalDist,
   ParseCtx,
+  PlainCurve,
   ReadoutExpr,
   ReadoutLine,
   ReadoutObj,
@@ -35,9 +41,16 @@ const ROOTS_RE = /^roots\((\w+)\)$/;
 const MEET_RE = /^meet\((\w+),(\w+)\)$/;
 const RECTS_RE = /^(sums|big|small|gap)\((\w+)\)$/;
 const FILL_RE = /^(net|abs)\((\w+)\)$/;
+const STAT_RE = /^(area|prob|cover)\((\w+)\)$/;
+/** 통계 읽는 값: 가리키는 객체 표와 없을 때의 글 */
+const STAT: Record<'area' | 'prob' | 'cover', { map: 'bars' | 'shades' | 'cis'; what: string }> = {
+  area: { map: 'bars', what: '막대' },
+  prob: { map: 'shades', what: '정규분포 넓이(shade 에 id 를 붙이세요)' },
+  cover: { map: 'cis', what: '신뢰구간' },
+};
 
 const FORMS =
-  'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·sums(R)·big(R)·small(R)·gap(R)·net(F)·abs(F)·슬라이더 식(b**2-4*a*c)';
+  'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·sums(R)·big(R)·small(R)·gap(R)·net(F)·abs(F)·area(B)·prob(A)·cover(C)·슬라이더 식(b**2-4*a*c)';
 
 // ---- 단위 ----
 
@@ -92,9 +105,6 @@ export function unitOf(
       return undefined;
   }
 }
-
-/** 보이는 자리수로 반올림하면 값이 달라지는가(정확한 분수 q 를 digits 자리로) — 달라지면 앞에 ≈ */
-const inexact = (q: Rational, digits: number) => (q[0] * 10n ** BigInt(digits)) % q[1] !== 0n;
 
 const withUnit = (t: string, u: string | undefined) => (u && t !== '—' ? `${t} ${u}` : t);
 
@@ -206,6 +216,15 @@ export function parseReadoutExpr(s: string, at: string, cx: ParseCtx): ReadoutEx
     if (fo.hide) fail(at, `숨긴 칠하기 ${id} 의 합은 읽지 못함(맞히기 전에 드러남)`);
     return { f: m[1] as 'net' | 'abs', fill: id };
   }
+  m = t.match(STAT_RE);
+  if (m) {
+    const f = m[1] as keyof typeof STAT;
+    const id = m[2] as string;
+    if (!cx[STAT[f].map].has(id)) fail(at, `앞에 없는 ${STAT[f].what} ${id}`);
+    if (f === 'area') return { f, bars: id };
+    if (f === 'prob') return { f, shade: id };
+    return { f, ci: id };
+  }
   // 나머지는 슬라이더로 계산하는 식(판별식 등). x 를 쓰면 곡선이지 읽는 값이 아니다
   try {
     return {
@@ -285,6 +304,12 @@ export function readout(p: CoordParams, s: CoordState, e: ReadoutExpr): number {
       const v = fillSums(p, s, fillOf(p, e.fill));
       return v ? num(v[e.f]) : Number.NaN;
     }
+    case 'area':
+      return num(barsArea(p, s, barsOf(p, e.bars)));
+    case 'prob':
+      return probAt(p, s, shadeOf(p, e.shade));
+    case 'cover':
+      return coverAt(p, s, ciOf(p, e.ci));
   }
 }
 
@@ -330,6 +355,15 @@ export function readoutVal(p: CoordParams, s: CoordState, e: ReadoutExpr): Val {
       case 'net':
       case 'abs':
         return fillSums(p, s, fillOf(p, e.fill))?.[e.f] ?? null;
+      case 'area':
+        return barsArea(p, s, barsOf(p, e.bars));
+      case 'cover': {
+        const n = coverAt(p, s, ciOf(p, e.ci));
+        return Number.isNaN(n) ? null : [BigInt(n), 1n];
+      }
+      case 'prob':
+        // 무리수(끝이 m·끝없음인 경우만 0·1/2·1) — 수로만 견준다
+        return null;
     }
   };
   const q = exact();
@@ -386,6 +420,11 @@ export function readoutSym(p: CoordParams, e: ReadoutExpr): { expr: string; root
     case 'abs':
       // 목표 형식 검사(goal.ts)가 막는다 — 끝이 상태 기호면 끊는 곳(근)이 상태마다 달라 한 식으로 적지 않는다
       throw new Error('abs 는 목표로 못 씀');
+    case 'area':
+    case 'prob':
+    case 'cover':
+      // 목표 형식 검사(goal.ts)가 막는다 — 검산은 읽는 값 자기 항목(areaChecks·probChecks·신뢰구간)이 상태마다 따로 낸다
+      throw new Error(`${e.f} 는 목표로 못 씀`);
   }
 }
 
@@ -476,6 +515,17 @@ export function readoutMovers(
       if (o.toPt) point(o.toPt);
       break;
     }
+    case 'area':
+    case 'prob': {
+      const m =
+        e.f === 'area' ? barsMovers(p, barsOf(p, e.bars)) : shadeMovers(p, shadeOf(p, e.shade));
+      for (const id of m.sliders) sl.add(id);
+      for (const id of m.points) point(id);
+      break;
+    }
+    case 'cover':
+      for (const id of ciMovers(ciOf(p, e.ci))) sl.add(id);
+      break;
   }
   return { points: [...pts], sliders: [...sl] };
 }
@@ -492,7 +542,7 @@ function sumsLine(
   const parts = v
     ? [
         {
-          text: inexact(v.small, o.digits) || inexact(v.big, o.digits) ? '≈ ' : '',
+          text: inexactQ(v.small, o.digits) || inexactQ(v.big, o.digits) ? '≈ ' : '',
           cls: '',
         },
         { text: fmtNum(num(v.small), o.digits), cls: 'lo' },
@@ -516,16 +566,33 @@ export const readoutKind: KindDef<ReadoutObj> = {
     if (c.frac !== undefined && c.frac !== true) fail(`${at} frac`, 'true 만');
     const src = str(c.readout, `${at} readout`);
     const e = parseReadoutExpr(src, at, cx);
+    if (e.f === 'area' || e.f === 'prob') {
+      const drag = (id: string) => cx.points.get(id)?.drag !== 'none';
+      const o = e.f === 'area' ? cx.bars.get(e.bars) : cx.shades.get(e.shade);
+      const sl =
+        o?.kind === 'bars'
+          ? barsSliders(o)
+          : o?.kind === 'shade'
+            ? distSliders((cx.curves.get(o.of) as PlainCurve).normal as NormalDist, cx.sliders)
+            : [];
+      const ends = o?.kind === 'bars' ? (o.sel ?? []) : o?.kind === 'shade' ? o.ends : [];
+      checkStateCount(cx, sl, dragEnds(ends, drag), at, `읽는 값 ${src}`);
+    }
     const u = unitOf(cx, e);
     if (typeof u === 'object') fail(at, u.error);
-    const count = e.f === 'roots' || e.f === 'meet';
+    // 정규분포 넓이는 (끝이 평균·끝없음일 때 말고는) 무리수 — 분수 꼴로 보일 값이 없다
+    if (c.frac === true && e.f === 'prob')
+      fail(`${at} frac`, '정규분포 넓이(prob)는 무리수라 분수로 못 보임 — digits 자리 소수로');
+    const count = e.f === 'roots' || e.f === 'meet' || e.f === 'cover';
+    // 확률·넓이 합(area·prob)은 표준정규분포표처럼 4자리가 기본 — 2자리면 0.6827 과 0.6800 이 같아 보인다
+    const dflt = e.f === 'area' || e.f === 'prob' ? 4 : 2;
     return {
       kind: 'readout',
       src,
       expr: e,
       label: str(c.label, `${at} label`),
       // 개수는 늘 정수로 보인다
-      digits: count ? 0 : c.digits === undefined ? 2 : int(c.digits, `${at} digits`, 0, 4),
+      digits: count ? 0 : c.digits === undefined ? dflt : int(c.digits, `${at} digits`, 0, 4),
       ...(c.frac === true ? { frac: true as const } : {}),
     };
   },
@@ -533,6 +600,14 @@ export const readoutKind: KindDef<ReadoutObj> = {
     const u = unitOf(p, o.expr) as string | undefined;
     if (o.expr.f === 'sums') {
       readouts.push(sumsLine(p, s, o, `r${k}`, u));
+      return;
+    }
+    if (o.expr.f === 'area' || o.expr.f === 'prob') {
+      const text =
+        o.expr.f === 'area'
+          ? areaText(barsArea(p, s, barsOf(p, o.expr.bars)), o)
+          : probText(p, s, shadeOf(p, o.expr.shade), o.digits);
+      readouts.push({ key: `r${k}`, label: o.label, text: withUnit(text, u) });
       return;
     }
     let text: string;
@@ -546,12 +621,14 @@ export const readoutKind: KindDef<ReadoutObj> = {
     else {
       text = fmtNum(v ? v.n : readout(p, s, o.expr), o.digits);
       // 조각 넓이 합은 정확한 분수를 반올림해 보인다 — 반올림이 값을 바꾸면 ≈ (285 가 정확한 값이라고 읽지 않게)
-      if (isArea(o.expr) && v?.q && inexact(v.q, o.digits)) text = `≈ ${text}`;
+      if (isArea(o.expr) && v?.q && inexactQ(v.q, o.digits)) text = `≈ ${text}`;
     }
     readouts.push({ key: `r${k}`, label: o.label, text: withUnit(text, u) });
   },
   checks(o, { p, out }) {
     const e = o.expr;
+    if (e.f === 'area') return areaChecks(p, o, e.bars, out);
+    if (e.f === 'prob') return probChecks(p, o, e.shade, out);
     if (e.f !== 'net' && e.f !== 'abs') return;
     // 닿는 모든 끝 자리에서 앱의 분수 = sympy integrate(원칙 P7 — 목표가 아니어도 보이는 값은 모두 검산)
     const fo = fillOf(p, e.fill);

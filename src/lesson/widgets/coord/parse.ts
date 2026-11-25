@@ -10,6 +10,8 @@ import { segKey } from './segment.ts';
 import { parseSliders } from './slider.ts';
 import { parseTask } from './task.ts';
 import type {
+  BarsObj,
+  CiObj,
   CoordObj,
   CoordParams,
   CurveObj,
@@ -17,6 +19,7 @@ import type {
   ParseCtx,
   PointObj,
   RectsObj,
+  ShadeObj,
 } from './types.ts';
 
 export function parseCoord(raw: unknown): CoordParams {
@@ -64,6 +67,9 @@ export function parseCoord(raw: unknown): CoordParams {
   const points = new Map<string, PointObj>();
   const rects = new Map<string, RectsObj>();
   const fills = new Map<string, FillObj>();
+  const bars = new Map<string, BarsObj>();
+  const shades = new Map<string, ShadeObj>();
+  const cis = new Map<string, CiObj>();
   const named = (id: unknown, at: string) => {
     const s = str(id, at);
     if (!ID.test(s)) fail(at, `이름은 영문으로 시작하는 6자 이하 (${s})`);
@@ -84,7 +90,22 @@ export function parseCoord(raw: unknown): CoordParams {
     if (p.hide && !hidden) fail(at, `숨긴 점 ${p.id} 은 목표만 가리킬 수 있음`);
     return p;
   };
-  const base = { x, y, equal, sliders, vars, env0, curves, points, rects, fills, named };
+  const base = {
+    x,
+    y,
+    equal,
+    sliders,
+    vars,
+    env0,
+    curves,
+    points,
+    rects,
+    fills,
+    bars,
+    shades,
+    cis,
+    named,
+  };
   const ctx: ParseCtx = { ...base, curveRef: curveRef(false), pointRef: pointRef(false) };
   const goalCtx: ParseCtx = { ...base, curveRef: curveRef(true), pointRef: pointRef(true) };
   // 열쇠 이름으로 종류를 알아본다(표에 적힌 순서대로 — 앞 종류가 먼저)
