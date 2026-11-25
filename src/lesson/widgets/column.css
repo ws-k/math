@@ -1,0 +1,499 @@
+/* 세로셈 가족(Column.tsx) 자기 CSS — 레인 규칙대로 이 부품의 .tsx 가 직접 불러온다. 색은 앱 토큰(app.css :root)만 쓴다.
+   칸 자리·크기는 D3 시안(outputs/widgets-v2/d3/long-drag·synth·ladder.html)의 값 그대로다. 판은 카드 안쪽 폭 298px 을
+   기준으로 짜서 그보다 넓은 화면에서는 가운데에 같은 크기로 둔다 — 늘리면 칸 사이만 벌어지고 손가락 칸은 그대로라 얻는 게 없다.
+   판 전체에는 touch-action 을 걸지 않는다: 판 위를 쓸면 페이지가 스크롤되고, 끄는 것(손잡이·내릴 수·카드)에서 시작한
+   터치만 끌기다(useDrag 가 그 터치의 스크롤을 막는다). */
+.lesson .cl {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.lesson .cl-long {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  justify-content: center;
+}
+.lesson .cl-dg,
+.lesson .cl-bar,
+.lesson .cl-sg,
+.lesson .cl-lg {
+  position: relative;
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.lesson .cl-sg,
+.lesson .cl-lg {
+  width: 298px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.lesson .cl svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.lesson .cl svg path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+@keyframes cl-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes cl-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ---- 긴 나눗셈: 세로셈 판 ---- */
+.lesson .cl-dg {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.lesson .cl-c {
+  position: absolute;
+  width: 20px;
+  margin: -14px 0 0 -10px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+.lesson .cl-c.dv {
+  width: 34px;
+  margin-left: 0;
+}
+.lesson .cl-c.faint {
+  color: var(--faint);
+}
+.lesson .cl-c.q {
+  color: var(--primary);
+}
+.lesson .cl-c.q.faint {
+  color: var(--faint);
+}
+.lesson .cl-c.cur {
+  background: var(--primary-soft);
+  border-radius: 6px;
+}
+.lesson .cl-c.rep {
+  background: var(--good-soft);
+  color: var(--good);
+  border-radius: 6px;
+}
+.lesson .cl-c.new {
+  animation: cl-pop 0.35s;
+}
+.lesson .cl-uline {
+  position: absolute;
+  height: 2px;
+  background: var(--ink);
+  transform-origin: left;
+}
+.lesson .cl-uline.new {
+  animation: cl-grow 0.3s;
+}
+/* 내려 쓸 수: 글자는 20px 이지만 누르는 칸은 44px. 놓을 점선 칸은 남은 수 바로 옆 하나 */
+.lesson .cl-bring {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 12px;
+  border: 2px solid var(--primary);
+  background: var(--bg);
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 900;
+  touch-action: none;
+  cursor: grab;
+  z-index: 3;
+}
+.lesson .cl-bring[data-lift] {
+  cursor: grabbing;
+  box-shadow: 0 10px 24px rgba(22, 27, 38, 0.22);
+}
+.lesson .cl-slot {
+  position: absolute;
+  width: 26px;
+  height: 32px;
+  margin: -16px 0 0 -13px;
+  border: 2px dashed var(--faint);
+  border-radius: 8px;
+}
+.lesson .cl-slot[data-over] {
+  border-color: var(--primary);
+}
+
+/* ---- 긴 나눗셈: 덜어 내기 막대 ---- */
+.lesson .cl-frame {
+  position: absolute;
+  width: 44px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  transition:
+    height 0.3s,
+    top 0.3s;
+}
+.lesson .cl-nlab {
+  position: absolute;
+  width: 44px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  transition: top 0.3s;
+}
+.lesson .cl-bar.done .cl-frame,
+.lesson .cl-bar.done .cl-nlab {
+  opacity: 0.35;
+}
+.lesson .cl-blk {
+  position: absolute;
+  width: 36px;
+  border-radius: 4px;
+  background: var(--primary-soft);
+  border: 1.5px solid var(--primary);
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* 막대를 넘은 토막: 정답 신호가 아니라 '길이가 모자라다'는 사실 그대로. 색은 중립(빨강은 놓은 뒤 말로만, P3) */
+.lesson .cl-blk[data-over] {
+  background: repeating-linear-gradient(135deg, var(--surface-2) 0 4px, transparent 4px 8px);
+  border: 1.5px dashed var(--sub);
+  color: var(--sub);
+}
+.lesson .cl-hdl {
+  position: absolute;
+  width: 64px;
+  height: 48px;
+  margin-top: -24px;
+  border-radius: 14px;
+  border: 2px solid var(--primary);
+  background: var(--bg);
+  color: var(--primary);
+  font: inherit;
+  font-weight: 900;
+  line-height: 1.15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  touch-action: none;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(22, 27, 38, 0.08);
+}
+.lesson .cl-hdl[hidden] {
+  display: none;
+}
+.lesson .cl-hdl small {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--sub);
+}
+.lesson .cl-hdl[data-lift] {
+  cursor: grabbing;
+  box-shadow: 0 10px 24px rgba(22, 27, 38, 0.22);
+}
+/* 손잡이와 막대를 잇는 짧은 선: 손잡이 높이 = 쌓은 토막 꼭대기 */
+.lesson .cl-hdl::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 12px;
+  border-top: 2px solid var(--primary);
+}
+.lesson .cl-trail {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-height: 30px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--sub);
+}
+.lesson .cl-r {
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+.lesson .cl-r.rep {
+  background: var(--good-soft);
+  color: var(--good);
+}
+/* 순환소수 되풀이 마디의 처음·끝 숫자 위 점 */
+.lesson .cl-ov {
+  position: relative;
+  display: inline-block;
+}
+.lesson .cl-ov::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -0.05em;
+  width: 0.26em;
+  height: 0.26em;
+  margin-left: -0.13em;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---- 조립제법 ---- */
+.lesson .cl-lab {
+  position: absolute;
+  width: 56px;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sub);
+  white-space: nowrap;
+}
+.lesson .cl-num {
+  position: absolute;
+  width: 48px;
+  height: 44px;
+  margin: -22px 0 0 -24px;
+  display: grid;
+  place-items: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  border-radius: 12px;
+}
+.lesson .cl-num.new {
+  animation: cl-pop 0.35s;
+}
+.lesson .cl-num.a {
+  border: 2px solid var(--sub);
+  color: var(--sub);
+}
+.lesson .cl-num.rem {
+  background: var(--good-soft);
+  color: var(--good);
+}
+/* 지금 옮길 수: 칩처럼 테두리. 아래에 같은 수가 남고, 들어 올리면 '값 × 근' 그림자로 바뀌어 손가락을 따라간다 */
+.lesson .cl-num.act {
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  background: var(--bg);
+  padding: 0;
+  font: inherit;
+  font-size: 1.3rem;
+  font-weight: 900;
+  touch-action: none;
+  cursor: grab;
+  z-index: 3;
+}
+.lesson .cl-num.act.sel {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.lesson .cl-ghost {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 56px;
+  height: 44px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: 1.05rem;
+  font-weight: 900;
+  place-items: center;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(22, 27, 38, 0.22);
+}
+.lesson .cl-num.act[data-lift] {
+  z-index: 6;
+  cursor: grabbing;
+  border-color: transparent;
+  background: transparent;
+}
+.lesson .cl-num.act[data-lift] .cl-ghost {
+  display: grid;
+}
+/* 빈칸은 모두 같은 점선 — 정답 칸만 다르게 그리지 않는다(어디에 놓을지는 학생이 정한다) */
+.lesson .cl-sslot {
+  position: absolute;
+  width: 48px;
+  height: 44px;
+  margin: -22px 0 0 -24px;
+  border: 2px dashed color-mix(in srgb, var(--faint) 60%, transparent);
+  border-radius: 12px;
+  background: transparent;
+  padding: 0;
+}
+.lesson .cl-sslot[data-over] {
+  border-color: var(--primary);
+  border-style: solid;
+}
+.lesson .cl-res {
+  text-align: center;
+  font-weight: 800;
+  line-height: 1.45;
+  min-height: 52px;
+  font-variant-numeric: tabular-nums;
+}
+.lesson .cl-res .faint {
+  color: var(--faint);
+}
+.lesson .cl-res .f {
+  font-size: 0.88rem;
+  color: var(--sub);
+  font-weight: 700;
+}
+.lesson .cl-res.done .f {
+  color: var(--good);
+}
+
+/* ---- 나눗셈 사다리 ---- */
+.lesson .cl-n {
+  position: absolute;
+  width: 56px;
+  height: 44px;
+  margin: -22px 0 0 -28px;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  border-radius: 12px;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+.lesson .cl-n.new {
+  animation: cl-pop 0.35s;
+}
+.lesson .cl-n.dv {
+  color: var(--primary);
+}
+.lesson .cl-n.gcd {
+  background: var(--primary-soft);
+}
+.lesson .cl-n.rest {
+  background: var(--good-soft);
+  color: var(--good);
+}
+.lesson .cl-lg svg path.ell {
+  stroke: var(--good);
+  stroke-dasharray: 5 4;
+}
+.lesson .cl-target {
+  position: absolute;
+  width: 48px;
+  height: 44px;
+  margin: -22px 0 0 -24px;
+  border: 2px dashed var(--faint);
+  border-radius: 12px;
+  background: transparent;
+  padding: 0;
+}
+.lesson .cl-target[data-over] {
+  border-color: var(--primary);
+  border-style: solid;
+}
+.lesson .cl-trayhint {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--sub);
+  margin-bottom: -4px;
+}
+.lesson .cl-tray {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.lesson .cl-chip {
+  position: relative;
+  width: 56px;
+  height: 52px;
+  border-radius: 16px;
+  border: 2px solid var(--primary);
+  background: var(--bg);
+  color: var(--primary);
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  touch-action: none;
+  cursor: grab;
+}
+.lesson .cl-chip[data-lift] {
+  z-index: 6;
+  cursor: grabbing;
+  box-shadow: 0 10px 24px rgba(22, 27, 38, 0.22);
+}
+.lesson .cl-chip.sel {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.lesson .cl-done {
+  width: 100%;
+}
+.lesson .cl-ldres {
+  text-align: center;
+  font-weight: 800;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.lesson .cl-ldres .g {
+  color: var(--primary);
+}
+.lesson .cl-ldres .l {
+  color: var(--good);
+}
+.lesson .cl-ldres .tag {
+  color: var(--sub);
+  font-size: 0.8rem;
+}
+
+/* 화면 낭독기만 읽는 안내 */
+.lesson .cl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lesson .cl-c.new,
+  .lesson .cl-uline.new,
+  .lesson .cl-num.new,
+  .lesson .cl-n.new {
+    animation: none;
+  }
+  .lesson .cl-frame,
+  .lesson .cl-nlab {
+    transition: none;
+  }
+}
