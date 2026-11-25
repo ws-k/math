@@ -39,8 +39,11 @@ import type {
   ReadoutObj,
 } from './types.ts';
 
-/** 이항분포 n 의 상한. 막대가 손가락보다 한참 좁아지고, 닿는 n·p·끝 상태(검산)가 너무 많아진다 */
-export const BINOM_N_MAX = 100;
+/**
+ * 이항분포 n 의 상한. 가장 좁은 화면 그림 폭 250px 에 막대 61개(−1/2~60.5)면 4.1px 로 막대 폭 하한(MIN_BAR_PX)에
+ * 닿는다 — 그보다 큰 n 은 어떤 x 범위로도 막대가 안 보이므로 폭 검사보다 먼저 이 수로 알린다
+ */
+export const BINOM_N_MAX = 60;
 /**
  * 가장 좁은 화면에서 막대 하나의 최소 폭(px). 테두리(1px)를 빼고도 색이 보여야 고른 막대·나머지를 가린다
  * (구분구적 조각 MIN_RECT_PX 와 같은 까닭·같은 값)
@@ -151,17 +154,18 @@ export function areaText(q: Rational, ro: Pick<ReadoutObj, 'digits' | 'frac'>): 
   return `${inexactQ(q, ro.digits) ? '≈ ' : ''}${minus(roundQ(q, ro.digits))}`;
 }
 
-/** 막대를 바꾸는 슬라이더(n·p·계급 크기)와 고르는 구간의 끄는 점 */
-export function barsMovers(p: CoordParams, o: BarsObj): { sliders: string[]; points: string[] } {
+/** 막대를 바꾸는 슬라이더(n·p·계급 크기) */
+export function barsSliders(o: BarsObj): string[] {
   const src = o.src;
-  const sliders =
-    src.t === 'binom'
-      ? [...nosSliders(src.n), ...nosSliders(src.p)]
-      : src.t === 'data'
-        ? nosSliders(src.w)
-        : [];
-  return { sliders, points: o.sel ? endPoints(p, o.sel) : [] };
+  if (src.t === 'binom') return [...nosSliders(src.n), ...nosSliders(src.p)];
+  return src.t === 'data' ? nosSliders(src.w) : [];
 }
+
+/** 막대를 바꾸는 슬라이더와 고르는 구간의 끄는 점 */
+export const barsMovers = (p: CoordParams, o: BarsObj) => ({
+  sliders: barsSliders(o),
+  points: o.sel ? endPoints(p, o.sel) : [],
+});
 
 /** 막대를 그리는 가로 범위가 화면 안인가 — 잘린 막대는 넓이를 눈으로 견줄 수 없다 */
 function fitX(at: string, cx: { x: CoordParams['x'] }, lo: number, hi: number) {

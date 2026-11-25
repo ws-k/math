@@ -123,13 +123,17 @@ export function probText(p: CoordParams, s: CoordState, o: ShadeObj, digits: num
   return exactProb(p, s, o) ? t : `≈ ${t}`;
 }
 
-/** 넓이를 바꾸는 슬라이더(곡선의 m·s)와 끄는 점(끝) */
-export function shadeMovers(p: CoordParams, o: ShadeObj): { sliders: string[]; points: string[] } {
-  const d = distOf(p, o);
-  const ids = new Set(p.sliders.map((x) => x.id));
-  const sl = [...varsOf(d.mNode), ...varsOf(d.sNode)].filter((v) => ids.has(v));
-  return { sliders: [...new Set(sl)], points: endPoints(p, o.ends) };
+/** 곡선의 m·s 에 쓰인 슬라이더 */
+export function distSliders(d: NormalDist, sliders: { id: string }[]): string[] {
+  const ids = new Set(sliders.map((x) => x.id));
+  return [...new Set([...varsOf(d.mNode), ...varsOf(d.sNode)].filter((v) => ids.has(v)))];
 }
+
+/** 넓이를 바꾸는 슬라이더(곡선의 m·s)와 끄는 점(끝) */
+export const shadeMovers = (p: CoordParams, o: ShadeObj) => ({
+  sliders: distSliders(distOf(p, o), p.sliders),
+  points: endPoints(p, o.ends),
+});
 
 export const shadeKind: KindDef<ShadeObj> = {
   parse(ro, at, cx) {

@@ -139,7 +139,7 @@ test('막대 + 정규분포 곡선 겹치기: 막대는 곡선 아래 층(곡선
   assert.ok(top && top.t === 'path' && top.d.length > 100);
 });
 
-test('이항분포 형식 검사: n 상한(100)·막대 폭·화면 밖 막대·p 범위·정수 아닌 n', () => {
+test('이항분포 형식 검사: n 상한(60)·막대 폭·화면 밖 막대·p 범위·정수 아닌 n', () => {
   const sl = (n: Raw, pp: Raw = {}) =>
     binomRaw({
       sliders: [
@@ -147,16 +147,24 @@ test('이항분포 형식 검사: n 상한(100)·막대 폭·화면 밖 막대·
         { id: 'p', min: '1/10', max: '9/10', step: '1/10', value: '1/2', label: '$p$', ...pp },
       ],
     });
-  // n 이 100 을 넘으면(고정 수도) 형식 오류 — 막대가 손가락보다 한참 좁고 검산 상태가 너무 많아진다
+  // n 이 60 을 넘으면(고정 수도) 형식 오류 — 가장 좁은 화면에 막대 61개(4.1px)가 끝이라 그보다 크면 늘 너무 좁다
   assert.throws(
     () =>
       parseCoord(
         binomRaw({
-          x: { min: '-1/2', max: '203/2', step: 10 },
-          objects: [{ id: 'B', bars: { binom: [101, '1/2'] } }],
+          x: { min: '-1/2', max: '123/2', step: 10 },
+          objects: [{ id: 'B', bars: { binom: [61, '1/2'] } }],
         }),
       ),
     /n 상한/,
+  );
+  // n=60 은 가로 −1/2~121/2 에 딱 들어간다(막대 4.1px)
+  assert.doesNotThrow(() =>
+    parseCoord({
+      ...sl({ max: 60 }),
+      x: { min: '-1/2', max: '121/2', step: 10 },
+      objects: [{ id: 'B', bars: { binom: ['n', 'p'] } }],
+    }),
   );
   // n=60 을 가로 0~200 에 그리면 막대 하나가 1px 남짓
   assert.throws(
@@ -179,6 +187,29 @@ test('이항분포 형식 검사: n 상한(100)·막대 폭·화면 밖 막대·
   assert.throws(() => parseCoord(sl({ step: '1/2', value: 4 })), /정수/);
   // 막대 아래가 잘리는 세로 범위(가로축이 그림 안에 없음)
   assert.throws(() => parseCoord(binomRaw({ y: { min: '1/10', max: 1, step: '1/10' } })), /y min/);
+});
+
+test('읽는 값이 바뀌는 상태가 2000 을 넘으면 형식 오류(검산이 모든 상태를 본다) — n·p·K 를 한 장면에 다 두면 넘음', () => {
+  const big = binomRaw({
+    x: { min: '-1/2', max: '41/2', step: 1 },
+    sliders: [
+      { id: 'n', min: 1, max: 20, step: 1, value: 4, label: '$n$' },
+      { id: 'p', min: '1/10', max: '9/10', step: '1/10', value: '1/2', label: '$p$' },
+    ],
+  });
+  // n 20 × p 9 × K 21칸 = 3780
+  assert.throws(() => parseCoord(big), /상태가 3780개/);
+  const pr = normalRaw({
+    objects: [
+      { id: 'N', curve: { normal: [0, 1] } },
+      { id: 'P', point: { on: 'N', x: -1, drag: 'x', snap: '1/5' } },
+      { id: 'Q', point: { on: 'N', x: 1, drag: 'x', snap: '1/5' } },
+      { id: 'A', shade: { of: 'N', x: ['P', 'Q'] } },
+      { readout: 'prob(A)', label: '넓이' },
+    ],
+  });
+  // 두 끝 41칸 × 41칸 = 1681 — 됨
+  assert.doesNotThrow(() => parseCoord(pr));
 });
 
 test('이항분포 형식 검사(무거운 것): 닿는 n·p 에서 가장 높은 막대가 그림 위로 잘리면 오류', () => {

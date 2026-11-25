@@ -7,16 +7,17 @@ import { GOAL_MAX_STATES, type Val } from '../../goal.ts';
 import { fail, int, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { div, num, qi, ratStr, sub } from '../q.ts';
-import { areaChecks, areaText, barsArea, barsMovers, barsOf } from './bars.ts';
+import { areaChecks, areaText, barsArea, barsMovers, barsOf, barsSliders } from './bars.ts';
 import { ciMovers, ciOf, coverAt } from './ci.ts';
 import { curveDerivExact, curveOf, curveVars, dfAt, plainOf, wholeCurve } from './curve.ts';
 import { fillEnds, fillOf, fillSums, fillSumsAt } from './fill.ts';
 import { fmtNum } from './frame.ts';
-import { probAt, probChecks, probText, shadeMovers, shadeOf } from './normal.ts';
+import { distSliders, probAt, probChecks, probText, shadeMovers, shadeOf } from './normal.ts';
 import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
 import { polyOf, rootCount } from './poly.ts';
 import { rectsOf, sumSym, sums } from './rects.ts';
 import { sliderQ, sliderText, sliderValues } from './slider.ts';
+import { checkStateCount, dragEnds } from './stat.ts';
 import type {
   CoordParams,
   CoordState,
@@ -24,7 +25,9 @@ import type {
   FillArea,
   FillObj,
   KindDef,
+  NormalDist,
   ParseCtx,
+  PlainCurve,
   ReadoutExpr,
   ReadoutLine,
   ReadoutObj,
@@ -569,6 +572,18 @@ export const readoutKind: KindDef<ReadoutObj> = {
     if (c.frac !== undefined && c.frac !== true) fail(`${at} frac`, 'true 만');
     const src = str(c.readout, `${at} readout`);
     const e = parseReadoutExpr(src, at, cx);
+    if (e.f === 'area' || e.f === 'prob') {
+      const drag = (id: string) => cx.points.get(id)?.drag !== 'none';
+      const o = e.f === 'area' ? cx.bars.get(e.bars) : cx.shades.get(e.shade);
+      const sl =
+        o?.kind === 'bars'
+          ? barsSliders(o)
+          : o?.kind === 'shade'
+            ? distSliders((cx.curves.get(o.of) as PlainCurve).normal as NormalDist, cx.sliders)
+            : [];
+      const ends = o?.kind === 'bars' ? (o.sel ?? []) : o?.kind === 'shade' ? o.ends : [];
+      checkStateCount(cx, sl, dragEnds(ends, drag), at, `읽는 값 ${src}`);
+    }
     const u = unitOf(cx, e);
     if (typeof u === 'object') fail(at, u.error);
     const count = e.f === 'roots' || e.f === 'meet' || e.f === 'cover';

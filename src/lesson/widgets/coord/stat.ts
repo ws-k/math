@@ -2,7 +2,7 @@
 // 늘어놓기, 분수를 정해진 자리로 반올림한 글자. 세 객체가 각자 만들면 '닿는 상태'와 '화면 숫자 꼴'이 어긋난다 —
 // 검산(approx)은 화면 숫자 글자를 그대로 sympy 반올림과 견주므로 그 글자를 한곳에서 만든다.
 import { compile, evalNum, exactOf, exactStr } from '../../expr.ts';
-import { growStates } from '../../goal.ts';
+import { GOAL_MAX_STATES, growStates } from '../../goal.ts';
 import { fail, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { mul, qi, ratStr } from '../q.ts';
@@ -108,9 +108,37 @@ export function endQ(p: CoordParams, s: CoordState, e: SelEnd): Rational | null 
   return e.q;
 }
 
-/** 끝을 바꾸는 끄는 점 */
+/** 끝을 바꾸는 끄는 점. drag 는 점 id → 끄는 점인가(형식 검사 중에는 ParseCtx 의 점 표로, 그 뒤에는 매개변수로) */
+export const dragEnds = (ends: SelEnd[], drag: (id: string) => boolean): string[] =>
+  ends.flatMap((e) => (e && 'pt' in e && drag(e.pt) ? [e.pt] : []));
 export const endPoints = (p: CoordParams, ends: SelEnd[]): string[] =>
-  ends.flatMap((e) => (e && 'pt' in e && pointOf(p, e.pt).drag !== 'none' ? [e.pt] : []));
+  dragEnds(ends, (id) => pointOf(p, id).drag !== 'none');
+
+/**
+ * 형식 검사: 읽는 값이 바뀌는 상태 수(슬라이더 칸 × 끄는 점 칸)가 상한 안인가. 검산이 그 모든 상태에서 화면 숫자를
+ * sympy 와 견주므로(areaChecks·probChecks), 넘으면 검산 때가 아니라 지금 무엇을 줄일지 알려 준다
+ */
+export function checkStateCount(
+  cx: ParseCtx,
+  sliders: string[],
+  points: string[],
+  at: string,
+  what: string,
+): void {
+  let n = 1;
+  for (const id of new Set(sliders)) n *= sliderValues(sliderOf(cx.sliders, id)).length;
+  for (const id of new Set(points)) {
+    const pt = cx.points.get(id);
+    if (!pt) continue;
+    const { i0, i1 } = xCells(cx.x, pt);
+    n *= i1 - i0 + 1;
+  }
+  if (n > GOAL_MAX_STATES)
+    fail(
+      at,
+      `${what} 가 바뀌는 상태가 ${n}개 — ${GOAL_MAX_STATES}개 이하로(검산이 모든 상태에서 화면 숫자를 sympy 와 견줌). 슬라이더·끄는 점의 칸을 줄이거나 하나를 고정하세요`,
+    );
+}
 
 /** 닿는 상태 하나: 상태, 그 상태를 적은 글('n=10, p=3/10, K=3' — 검산 항목 이름), sympy 값(슬라이더 이름 → 분수 글자) */
 export interface StatState {
