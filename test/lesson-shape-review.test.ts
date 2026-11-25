@@ -10,6 +10,7 @@ import {
   shKey,
   shMeasures,
 } from '../src/lesson/widgets/shape.ts';
+import { runChecks } from './widget-verify.ts';
 
 const parse = (raw: unknown) => shapeDef.parse(raw) as ShapeParams;
 const full = (raw: unknown) => {
@@ -163,4 +164,31 @@ test('단위: 조각 넓이·잘라 옮기기 넓이·길이 ÷ sin 에도', () 
     digits: 2,
   });
   assert.deepEqual(shMeasures(sine, shInit(sine)).slice(2), ['sin ∠A = 0.6', 'BC ÷ sin ∠A = 5 cm']);
+});
+
+// 검산기의 수로 걸러 내기(리뷰 M4): 목표에서 먼 상태는 기호 대입을 건너뛰어도, 앱 판정표가 틀리면 여전히 잡는다
+test('목표 판정 검산: 앱이 빠뜨린 자리·잘못 센 자리를 모두 잡음(수로 걸러 내도)', () => {
+  const p = full({
+    grid: { w: 8, h: 8 },
+    points: [
+      { id: 'O', x: 4, y: 4 },
+      // A 는 고정(24상태) — 테스트를 짧게. 걸러 내는 길은 상태 수와 상관없이 같다
+      { id: 'A', deg: 0, on: { circle: ['O', 3] } },
+      { id: 'B', deg: 90, on: { circle: ['O', 3] }, drag: true },
+    ],
+    circles: [{ c: 'O', r: 3 }],
+    arcs: [{ c: 'O', from: 'A', to: 'B' }],
+    measures: [{ arc: 0 }],
+    goal: { visit: { of: 0, at: ['pi', '2*pi'] }, hint: 'h' },
+  });
+  const cs = shapeDef.checks(p);
+  const r = runChecks(cs);
+  assert.ok(r.ok, r.out);
+  const goal = cs.find((c) => c.name === '목표 판정') as unknown as { hits: number[][] };
+  const swap = (hits: number[][]) =>
+    cs.map((c) => (c.name === '목표 판정' ? { ...c, hits } : c)) as typeof cs;
+  const [h0 = [], h1 = []] = goal.hits;
+  assert.equal(runChecks(swap([h0.slice(1), h1])).ok, false);
+  const wrong = [0, 1, 2].find((k) => !h0.includes(k)) as number;
+  assert.equal(runChecks(swap([[...h0, wrong].sort((a, b) => a - b), h1])).ok, false);
 });
