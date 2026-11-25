@@ -41,9 +41,13 @@ const ROOTS_RE = /^roots\((\w+)\)$/;
 const MEET_RE = /^meet\((\w+),(\w+)\)$/;
 const RECTS_RE = /^(sums|big|small|gap)\((\w+)\)$/;
 const FILL_RE = /^(net|abs)\((\w+)\)$/;
-const AREA_RE = /^area\((\w+)\)$/;
-const PROB_RE = /^prob\((\w+)\)$/;
-const COVER_RE = /^cover\((\w+)\)$/;
+const STAT_RE = /^(area|prob|cover)\((\w+)\)$/;
+/** 통계 읽는 값: 가리키는 객체 표와 없을 때의 글 */
+const STAT: Record<'area' | 'prob' | 'cover', { map: 'bars' | 'shades' | 'cis'; what: string }> = {
+  area: { map: 'bars', what: '막대' },
+  prob: { map: 'shades', what: '정규분포 넓이(shade 에 id 를 붙이세요)' },
+  cover: { map: 'cis', what: '신뢰구간' },
+};
 
 const FORMS =
   'slope(P,Q)·deriv(f,P)·x(P)·y(P)·value(a)·roots(f)·meet(f,g)·sums(R)·big(R)·small(R)·gap(R)·net(F)·abs(F)·area(B)·prob(A)·cover(C)·슬라이더 식(b**2-4*a*c)';
@@ -212,21 +216,14 @@ export function parseReadoutExpr(s: string, at: string, cx: ParseCtx): ReadoutEx
     if (fo.hide) fail(at, `숨긴 칠하기 ${id} 의 합은 읽지 못함(맞히기 전에 드러남)`);
     return { f: m[1] as 'net' | 'abs', fill: id };
   }
-  m = t.match(AREA_RE);
+  m = t.match(STAT_RE);
   if (m) {
-    if (!cx.bars.has(m[1] as string)) fail(at, `앞에 없는 막대 ${m[1]}`);
-    return { f: 'area', bars: m[1] as string };
-  }
-  m = t.match(PROB_RE);
-  if (m) {
-    if (!cx.shades.has(m[1] as string))
-      fail(at, `앞에 없는 정규분포 넓이 ${m[1]}(shade 에 id 를 붙이세요)`);
-    return { f: 'prob', shade: m[1] as string };
-  }
-  m = t.match(COVER_RE);
-  if (m) {
-    if (!cx.cis.has(m[1] as string)) fail(at, `앞에 없는 신뢰구간 ${m[1]}`);
-    return { f: 'cover', ci: m[1] as string };
+    const f = m[1] as keyof typeof STAT;
+    const id = m[2] as string;
+    if (!cx[STAT[f].map].has(id)) fail(at, `앞에 없는 ${STAT[f].what} ${id}`);
+    if (f === 'area') return { f, bars: id };
+    if (f === 'prob') return { f, shade: id };
+    return { f, ci: id };
   }
   // 나머지는 슬라이더로 계산하는 식(판별식 등). x 를 쓰면 곡선이지 읽는 값이 아니다
   try {

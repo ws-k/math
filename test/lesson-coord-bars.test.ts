@@ -772,3 +772,19 @@ test('m9 p 의 분모가 4자리를 넘으면 형식 오류(n=60 이면 분모�
     parseCoord(binomRaw({ objects: [{ id: 'B', bars: { binom: ['n', '4137/10000'] } }] })),
   );
 });
+
+test('통계 읽는 값이 앞에 없는 객체를 가리키면 형식 오류(area·prob·cover)', () => {
+  const ro = (r: string) =>
+    parseCoord(
+      binomRaw({
+        objects: [
+          { id: 'B', bars: { binom: ['n', 'p'] } },
+          { readout: r, label: '값' },
+        ],
+      }),
+    );
+  assert.throws(() => ro('area(Q)'), /앞에 없는 막대 Q/);
+  assert.throws(() => ro('prob(B)'), /앞에 없는 정규분포 넓이/);
+  assert.throws(() => ro('cover(B)'), /앞에 없는 신뢰구간 B/);
+  assert.doesNotThrow(() => ro('area(B)'));
+});

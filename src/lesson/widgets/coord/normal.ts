@@ -5,7 +5,7 @@
 // 정확한 분수)와 따로 두고, 화면 숫자는 digits(기본 4 — 표준정규분포표 자리) 자리로 반올림해 ≈ 를 붙인다. 검산은
 // 기존 approx 종류: 닿는 모든 상태에서 화면 글자 = sympy erf 를 같은 자리로 반올림한 값(0.5 는 0 에서 먼 쪽).
 // erf 는 부동소수 오차가 1e-15 안이어야 4자리 반올림이 sympy 와 갈리지 않는다 — 근사식(Abramowitz–Stegun 1.5e-7)을
-// 쓰지 않고, 작은 x 는 양의 항만 있는 급수(지우는 오차가 없음), 큰 x 는 erfc 연분수로 계산한다.
+// 쓰지 않고, 양의 항만 있는 급수(지우는 오차가 없음) 하나로 계산한다.
 import { evalNum, varsOf } from '../../expr.ts';
 import { arr, fail, obj } from '../../parse.ts';
 import { ratStr } from '../q.ts';
@@ -23,14 +23,14 @@ import type {
   ShadeObj,
 } from './types.ts';
 
-/** 급수와 연분수가 바뀌는 자리. 급수는 항이 e^{x²} 만큼 커져 큰 x 에서 자리를 잃고, 연분수는 작은 x 에서 늦게 모인다 */
-const SPLIT = 3;
-
-/** erf(x) = 2/√π · e^{−x²} · Σ 2ⁿ x^{2n+1}/(1·3·…·(2n+1)) — 모든 항이 양수라 빼서 지워지는 자리가 없다 */
+/**
+ * erf(x) = 2/√π · e^{−x²} · Σ 2ⁿ x^{2n+1}/(1·3·…·(2n+1)) — 모든 항이 양수라 빼서 지워지는 자리가 없다.
+ * x ≤ 6 이면 항이 약 130개 안에 모이고, 6 보다 크면 1 − erf(x) < 2·10⁻¹⁷ 이라 부동소수로는 1 이다
+ */
 function erfSeries(x: number): number {
   let term = x;
   let sum = x;
-  for (let n = 1; n < 200; n++) {
+  for (let n = 1; n < 400; n++) {
     term *= (2 * x * x) / (2 * n + 1);
     sum += term;
     if (term < 1e-17 * sum) break;
@@ -38,45 +38,22 @@ function erfSeries(x: number): number {
   return (2 / Math.sqrt(Math.PI)) * Math.exp(-x * x) * sum;
 }
 
-/** erfc(x), x > 0: e^{−x²}/√π · 1/(x + (1/2)/(x + 1/(x + (3/2)/(x + …)))) — 수정 Lentz 법 */
-function erfcCF(x: number): number {
-  const tiny = 1e-300;
-  let f = x;
-  let C = f;
-  let D = 0;
-  for (let k = 1; k < 500; k++) {
-    const a = k / 2;
-    D = x + a * D;
-    D = Math.abs(D) < tiny ? 1 / tiny : 1 / D;
-    C = x + a / C;
-    if (Math.abs(C) < tiny) C = tiny;
-    const delta = C * D;
-    f *= delta;
-    if (Math.abs(delta - 1) < 1e-16) break;
-  }
-  return Math.exp(-x * x) / Math.sqrt(Math.PI) / f;
-}
-
 /** 오차함수 erf(x) */
 export function erf(x: number): number {
   if (Number.isNaN(x)) return Number.NaN;
   if (x < 0) return -erf(-x);
-  if (x === Number.POSITIVE_INFINITY) return 1;
-  return x < SPLIT ? erfSeries(x) : 1 - erfcCF(x);
+  return x > 6 ? 1 : erfSeries(x);
 }
 
-/** 1 − erf(x) (x ≥ 0). 큰 x 에서 1 − erf 로 빼면 자리를 다 잃는 꼬리 넓이를 바로 낸다 */
-function erfc(x: number): number {
-  if (x === Number.POSITIVE_INFINITY) return 0;
-  return x < SPLIT ? 1 - erfSeries(x) : erfcCF(x);
-}
-
-/** 표준정규분포 누적 Φ(z). 왼쪽 꼬리는 erfc 로(작은 확률의 자리를 지키려고) */
+/**
+ * 표준정규분포 누적 Φ(z) = (1 + erf(z/√2))/2. 아주 먼 왼쪽 꼬리(z < −8, 10⁻¹⁵ 아래)는 빼기로 자리를 잃지만
+ * 화면은 4자리라 0 으로 보여 상관없다
+ */
 export function normCdf(z: number): number {
   if (Number.isNaN(z)) return Number.NaN;
   if (z === Number.NEGATIVE_INFINITY) return 0;
   if (z === Number.POSITIVE_INFINITY) return 1;
-  return z < 0 ? erfc(-z / Math.SQRT2) / 2 : 1 - erfc(z / Math.SQRT2) / 2;
+  return (1 + erf(z / Math.SQRT2)) / 2;
 }
 
 export const shadeOf = (p: CoordParams, id: string) =>
