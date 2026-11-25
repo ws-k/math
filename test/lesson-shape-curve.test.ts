@@ -58,7 +58,7 @@ test('타원 위 점: 어디로 끌어도 PF + PG = 10(2a), 곡선을 따라만 
   const P0 = shInit(p).pts.P as { x: number; y: number };
   const t = shDrag(p, shInit(p), 'P', (5 - P0.x) * u, -(7.4 - P0.y) * u);
   assert.equal(t.pts.P?.deg, 90);
-  assert.deepEqual(shGoalHits(p, t), ['P:5,7']);
+  assert.deepEqual(shGoalHits(p, t), ['P:90°']);
   const d = shDraw(p, t);
   // 반지름 a·b 는 격자 한 칸(27.5px)의 5배·3배
   assert.match(String(mark(d, 'curve0')?.a.d), /^M [\d.]+ [\d.]+ A 137.5 82.5 /);

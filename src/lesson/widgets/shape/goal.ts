@@ -105,7 +105,11 @@ export function shGoalHits(p: ShapeParams, s: ShState): string[] {
   if (g.places === 1) return ['0'];
   return [
     goalMovers(p, g)
-      .map((id) => `${id}:${P(s, id).x},${P(s, id).y}`)
+      // 원·곡선 위 점은 각도로 — 좌표는 4.999999999999999 같은 부동소수 찌꺼기가 끼어 열쇠가 흔들린다
+      .map((id) => {
+        const q = P(s, id);
+        return q.deg !== undefined ? `${id}:${q.deg}°` : `${id}:${q.x},${q.y}`;
+      })
       .join(' '),
   ];
 }

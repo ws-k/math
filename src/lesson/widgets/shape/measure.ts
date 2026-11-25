@@ -101,6 +101,8 @@ export function measureKind(p: ShapeParams, m: ShMeasure): 'len' | 'angle' | 'ar
   if ('angle' in m) return 'angle';
   // 길이의 제곱은 넓이와 같은 단위(m²) — 정사각형 넓이와 AB² 를 견줄 수 있다
   if ('area' in m || 'sq' in m) return 'area';
+  // 길이 ÷ sin 은 길이(사인법칙의 2R) — 단위를 붙이고 길이와 견줄 수 있다
+  if ('ratio' in m && 'sin' in sub(p, m.ratio[1])) return 'len';
   if ('ratio' in m || 'sin' in m) return 'ratio';
   return measureKind(p, sub(p, operands(m)[0] as number));
 }

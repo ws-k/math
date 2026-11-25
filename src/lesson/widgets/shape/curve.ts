@@ -84,7 +84,14 @@ export function checkCurves(p: ShapeParams, s: ShState) {
     if (!pt.on || !('curve' in pt.on)) continue;
     const at = `도형판 ${pt.id}`;
     const i = int(pt.on.curve, `${at} on.curve`, 0, (p.curves?.length ?? 0) - 1);
-    if (!curveSteps(p, s, i).includes(pt.deg as number))
-      fail(`${at} deg`, `곡선 위 격자 안 자리가 아님(${curveSteps(p, s, i).join('·')}° 중 하나)`);
+    const steps = curveSteps(p, s, i);
+    if (!steps.includes(pt.deg as number))
+      fail(`${at} deg`, `곡선 위 격자 안 자리가 아님(${steps.join('·')}° 중 하나)`);
+    // 끌어도 제자리인 손잡이는 뜻 없는 끌기(원칙 P1)
+    if (pt.drag && steps.length < 2)
+      fail(
+        at,
+        '곡선 위에서 격자 안에 닿는 자리가 하나뿐이라 움직일 곳이 없음 — 곡선이나 격자를 바꾸세요',
+      );
   }
 }

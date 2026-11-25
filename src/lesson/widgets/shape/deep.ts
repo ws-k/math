@@ -1,10 +1,10 @@
 // 닿는 자리를 모두 늘어놓는 형식 검사(수선의 발이 그린 직선 위인가·같아 보이는데 목표가 아닌 자리). 장면을 열 때는 건너뛴다.
-import { checkHitTable, checkNotAtStart, growStates } from '../../goal.ts';
+import { checkHitTable, checkNotAtStart, GOAL_MAX_STATES, growStates } from '../../goal.ts';
 import { fail } from '../../parse.ts';
 import { r2 } from '../draw.ts';
 import { dependsOn } from './derive.ts';
 import { goalMovers, goalStates, goalTable, moverOptions, shGoalHits, shGoalNeed } from './goal.ts';
-import { dist, measureName, measureValue, round, sub } from './measure.ts';
+import { circleR, dist, measureName, measureValue, round, sub } from './measure.ts';
 import { P, shInit } from './model.ts';
 import type { ShapeParams, ShGoal, ShMeasure, ShPoint, ShState } from './types.ts';
 
@@ -53,25 +53,72 @@ export function checkFeet(p: ShapeParams) {
  * 갇혀도 대칭점은 건너편 격자 밖(그림 밖)으로 나가 사라질 수 있다 — 고치는 길은 끄는 점의 range 를 좁히는 것.
  */
 export function checkDerived(p: ShapeParams) {
-  const s0 = shInit(p);
   for (const pt of p.points) {
     if (!pt.follow && !pt.mirror) continue;
-    const movers = p.points.filter((x) => x.drag && dependsOn(p, pt.id).includes(x.id));
-    let acc = [{ s: s0, sym: {} as Record<string, string> }];
-    for (const m of movers) acc = growStates(acc, moverOptions(p, m.id), `도형판 ${pt.id}`);
-    for (const { s } of acc) {
+    const movers = p.points
+      .filter((x) => x.drag && dependsOn(p, pt.id).includes(x.id))
+      .map((x) => x.id);
+    for (const { s } of reachable(p, movers, `도형판 ${pt.id}`)) {
       const q = P(s, pt.id);
-      const out = q.x < -1e-9 || q.x > p.grid.w + 1e-9 || q.y < -1e-9 || q.y > p.grid.h + 1e-9;
-      if (!out) continue;
-      const where = movers
-        .map((m) => `${m.id}(${r2(P(s, m.id).x)}, ${r2(P(s, m.id).y)})`)
-        .join(' ');
+      if (!offGrid(p, q.x, q.x, q.y, q.y)) continue;
       fail(
         `도형판 ${pt.id}`,
-        `${where} 에서 ${pt.id} 가 (${r2(q.x)}, ${r2(q.y)}) — 격자 밖이라 그림에서 사라짐. 끄는 점의 range 를 좁히세요`,
+        `${whereText(s, movers)}${pt.id} 가 (${r2(q.x)}, ${r2(q.y)}) — 격자 밖이라 그림에서 사라짐. ${
+          movers.length ? '끄는 점의 range 를 좁히세요' : '기대는 점의 자리를 바꾸세요'
+        }`,
       );
     }
   }
+}
+
+/** 상자 [x0,x1]×[y0,y1] 가 격자 밖으로 나가는가(부동소수 찌꺼기는 봐줌) */
+const offGrid = (p: ShapeParams, x0: number, x1: number, y0: number, y1: number) =>
+  x0 < -1e-9 || x1 > p.grid.w + 1e-9 || y0 < -1e-9 || y1 > p.grid.h + 1e-9;
+
+/** 오류 글 앞머리: 끄는 점들의 자리("C(4, 2) 에서 "). 끄는 점이 없으면 처음 자리라 앞머리 없이 */
+const whereText = (s: ShState, movers: string[]) =>
+  movers.length
+    ? `${movers.map((m) => `${m}(${r2(P(s, m).x)}, ${r2(P(s, m).y)})`).join(' ')} 에서 `
+    : '처음 자리에서 ';
+
+/**
+ * 끄는 점들이 닿는 모든 상태(형식 검사용 — 목표가 없어도 쓴다). 상한을 넘으면 목표 글이 아닌 이 검사의 글로 —
+ * 목표가 없는 장면에 '목표가 바라보는 상태'라고 하면 무엇을 줄여야 하는지 알 수 없다(리뷰 Minor 7)
+ */
+function reachable(p: ShapeParams, movers: string[], at: string): { s: ShState }[] {
+  const opts = movers.map((m) => moverOptions(p, m));
+  const n = opts.reduce((t, o) => t * o.length, 1);
+  if (n > GOAL_MAX_STATES)
+    fail(
+      at,
+      `기대는 끄는 점들이 닿는 자리가 너무 많음(${n}곳 > ${GOAL_MAX_STATES}) — 끄는 점의 range 를 좁히세요`,
+    );
+  let acc = [{ s: shInit(p), sym: {} as Record<string, string> }];
+  for (const o of opts) acc = growStates(acc, o, at);
+  return acc;
+}
+
+/**
+ * 형식 검사: 지나는 점(through)이 움직이는 원은 닿는 모든 자리에서 격자 안이어야 한다 — 컴퍼스처럼 원을 키우다
+ * 격자 밖(그림 밖)으로 잘린다(리뷰 Minor 4). 고치는 길은 지나는 점의 range 를 좁히는 것.
+ */
+export function checkThrough(p: ShapeParams) {
+  p.circles.forEach((c, i) => {
+    if (!('through' in c)) return;
+    const deps = new Set([...dependsOn(p, c.c), ...dependsOn(p, c.through)]);
+    const movers = p.points.filter((x) => x.drag && deps.has(x.id)).map((x) => x.id);
+    for (const { s } of reachable(p, movers, `도형판 원${i + 1}`)) {
+      const o = P(s, c.c);
+      const r = circleR(s, c);
+      if (!offGrid(p, o.x - r, o.x + r, o.y - r, o.y + r)) continue;
+      fail(
+        `도형판 원${i + 1}`,
+        `${whereText(s, movers)}반지름 ${r2(r)} — 원이 격자 밖으로 나가 잘림. ${
+          movers.length ? '지나는 점의 range 를 좁히세요' : '중심이나 지나는 점을 바꾸세요'
+        }`,
+      );
+    }
+  });
 }
 
 /**
@@ -103,6 +150,7 @@ export function checkSameText(p: ShapeParams, g: ShGoal, states: ShState[]) {
 export function shapeDeep(p: ShapeParams) {
   checkFeet(p);
   checkDerived(p);
+  checkThrough(p);
   const g = p.goal;
   if (!g) return;
   const at = '도형판 goal';

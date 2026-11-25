@@ -13,6 +13,9 @@ export const LABEL = { charW: 9, h: 13, gx: 7.5, gy: 7, dotR: 6 };
 export const pts = (p: ShapeParams, ps: { x: number; y: number }[]) =>
   ps.map((a) => `${X(p, a.x)},${Y(p, a.y)}`).join(' ');
 
+/** 넓이 단위 글(단위가 없으면 빈 글 — 단위를 적지 않은 장면의 글은 그대로) */
+const areaUnit = (p: ShapeParams) => (p.unit ? ` ${p.unit}²` : '');
+
 export function shDraw(p: ShapeParams, s: ShState): Drawing {
   const marks: Mark[] = [];
   p.polygons.forEach((poly, i) => {
@@ -142,16 +145,17 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
     const whole = shoelace((p.polygons[0] ?? []).map((id) => P(s, id)));
     const moved = cutArea(s, p.cut.rest) + cutArea(s, p.cut.piece);
     const a = round(whole, p.digits).s;
+    const sq = areaUnit(p);
     texts.area =
       s.cut[0] === 0 && s.cut[1] === 0
-        ? `넓이 = ${a}`
-        : `넓이 = ${a} → 옮긴 뒤 넓이 = ${round(moved, p.digits).s}`;
+        ? `넓이 = ${a}${sq}`
+        : `넓이 = ${a}${sq} → 옮긴 뒤 넓이 = ${round(moved, p.digits).s}${sq}`;
   }
   if (p.pieces) {
     const outline = p.outline
-      ? ` · 빈 틀 넓이 = ${round(shoelace(p.outline.map(([x, y]) => ({ x, y }))), p.digits).s}`
+      ? ` · 빈 틀 넓이 = ${round(shoelace(p.outline.map(([x, y]) => ({ x, y }))), p.digits).s}${areaUnit(p)}`
       : '';
-    texts.pieces = `조각 넓이의 합 = ${round(piecesArea(p, s), p.digits).s}${outline}`;
+    texts.pieces = `조각 넓이의 합 = ${round(piecesArea(p, s), p.digits).s}${areaUnit(p)}${outline}`;
   }
   return { marks, texts };
 }
