@@ -1,8 +1,8 @@
 // 저울 화면. 접시 위 물건(컵·동전·묶음)을 손으로 끌어 바닥에 내리고 다시 올린다.
 // 무엇이 어디에 있고 무엇을 옮길 수 있는지, 얼마나 기우는지는 balance.ts(board·layout·moveItem·tiltDeg)가
-// 정하고 여기서는 그리기와 손 처리만 한다. 끄는 동안은 useDrag 가 프레임마다 부르는 onMove 에서 그 물건의
-// transform 만 직접 고친다(React 렌더 0회). 손을 떼면 놓인 자리로 결과를 한 번 정하고 상태를 바꾼다 —
-// 그때 막대 기울기는 CSS 전환으로 움직인다(매 프레임 계산이 필요 없는 움직임이라).
+// 정하고 여기서는 그리기와 손 처리만 한다. 끄는 동안은 끌어 놓기 공용 장치(dropDrag.ts — count 와 같이 쓴다)가
+// 프레임마다 그 물건의 transform 만 직접 고친다(React 렌더 0회). 손을 떼면 놓인 자리로 결과를 한 번 정하고 상태를
+// 바꾼다 — 그때 막대 기울기는 CSS 전환으로 움직인다(매 프레임 계산이 필요 없는 움직임이라).
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -14,10 +14,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import { flyFrom } from '../fly.ts';
+import { centerOf, FAILS_FOR_TAP, inBox, isTap } from '../drag.ts';
+import { landAt, rectsOf, useSettleFx } from '../fly.ts';
 import { formatValue } from '../format.ts';
 import { LRich, Tex } from '../ui.tsx';
-import { useDrag } from '../useDrag.ts';
 import {
   type BalanceParams,
   type Board,
@@ -32,12 +32,9 @@ import {
   tiltDeg,
   view,
 } from './balance.ts';
+import { useDropDrag } from './dropDrag.ts';
 import type { WidgetProps } from './index.tsx';
 
-/** 이만큼 못 움직였으면 끌기가 아니라 누르기로 본다 */
-const TAP_PX = 8;
-/** 끌기를 이만큼 놓치면 '눌러서 옮기기'를 켠다 */
-const FAILS_FOR_TAP = 2;
 /**
  * 받침점에서 접시 끈이 걸린 자리까지 거리(viewBox 단위)와 그림 폭. 접시(폭 48%)의 가운데는 그림 폭의
  * 24% 자리라 받침점(190)에서 190 − 0.24 × 380 만큼 떨어져 있다 — 막대 끝(150)으로 계산하면 끈이 막대를 뚫는다.
@@ -90,14 +87,6 @@ function Cup({ atom }: { atom: string }) {
   );
 }
 
-/** 지금 화면에 있는 낱개(동전·컵)의 자리. 상태가 바뀐 뒤 낱개마다 옛 자리에서 날려 보내려고 잰다 */
-function atomRects(host: ParentNode | null | undefined): Map<string, DOMRect> {
-  const m = new Map<string, DOMRect>();
-  for (const el of host?.querySelectorAll<HTMLElement>('[data-atom]') ?? [])
-    m.set(el.dataset.atom as string, el.getBoundingClientRect());
-  return m;
-}
-
 /** 끄는 중 표시(data-)를 이 저울 안에서만 지운다 */
 function clearLift(host: Element | null | undefined) {
   for (const h of host?.querySelectorAll<HTMLElement>('[data-lift],[data-dragging]') ?? []) {
@@ -118,21 +107,18 @@ interface PieceProps {
   onActivate(item: Item, side: 'l' | 'r', at: Where): void;
 }
 
-/** 끄는 물건 하나. 물건마다 useDrag 를 붙이려고 컴포넌트로 뺐다(훅은 반복문에서 못 부른다) */
+/** 끄는 물건 하나. 물건마다 useDropDrag 를 붙이려고 컴포넌트로 뺐다(훅은 반복문에서 못 부른다) */
 function Piece({ item, side, at, label, busy, onDrop, onKey, onActivate }: PieceProps) {
   const ref = useRef<HTMLButtonElement>(null);
-  /** 이 물건이 끌기를 잡았을 때 그 요소. 끄는 도중 물건이 사라져도(ref 가 비어도) 정리할 수 있게 쥐어 둔다 */
-  const held = useRef<HTMLElement | null>(null);
-  useDrag(ref, {
-    pick: () => !busy.current,
-    onStart() {
-      const el = ref.current;
-      if (!el) return;
-      busy.current = true;
-      held.current = el;
-      for (const a of el.getAnimations({ subtree: true })) a.cancel();
-      // 끄는 물건이 다른 접시·바닥 아래로 숨지 않게 그 물건이 든 칸을 위로 올린다(속성은 data- 로 —
-      // className 을 직접 고치면 React 가 다시 그릴 때 지워진다)
+  useDropDrag(ref, {
+    busy,
+    follow(dx, dy) {
+      // 옮길 수 없는 물건은 살짝만 따라와 '걸려 있다'는 느낌만 준다
+      const k = item.can ? 1 : 0.15;
+      return `translate(${dx * k}px,${dy * k}px)`;
+    },
+    lift(el) {
+      // 끄는 물건이 다른 접시·바닥 아래로 숨지 않게 그 물건이 든 칸을 위로 올린다
       el.dataset.dragging = '';
       for (const h of [
         el.closest<HTMLElement>('.pan'),
@@ -140,26 +126,8 @@ function Piece({ item, side, at, label, busy, onDrop, onKey, onActivate }: Piece
       ])
         if (h) h.dataset.lift = '';
     },
-    onMove(dx, dy) {
-      const el = held.current;
-      if (!el) return;
-      // 옮길 수 없는 물건은 살짝만 따라와 '걸려 있다'는 느낌만 준다
-      const k = item.can ? 1 : 0.15;
-      el.style.transform = `translate(${dx * k}px,${dy * k}px)`;
-    },
-    onEnd(dx, dy, cancelled) {
-      const el = held.current;
-      held.current = null;
-      // 잠금은 요소가 남아 있든 없든 먼저 푼다 — 끄는 도중 물건이 사라지면 ref 는 이미 비어 있다
-      if (!el) return;
-      busy.current = false;
-      clearLift(el.closest('.bal'));
-      if (cancelled || !el.isConnected) {
-        el.style.transform = '';
-        return;
-      }
-      onDrop(item, side, at, el, dx, dy);
-    },
+    land: (el) => clearLift(el.closest('.bal')),
+    onDrop: (el, dx, dy) => onDrop(item, side, at, el, dx, dy),
   });
   return (
     <button
@@ -204,8 +172,10 @@ export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams
   const busy = useRef(false);
   const pans = { l: useRef<HTMLDivElement>(null), r: useRef<HTMLDivElement>(null) };
   const root = useRef<HTMLDivElement>(null);
-  /** 상태가 바뀐 뒤 낱개마다 날아가기 시작할 옛 자리와, 키보드로 옮겼을 때 다시 잡을 초점 */
-  const fly = useRef<Map<string, DOMRect> | null>(null);
+  // 낱개(동전·컵)마다 옛 자리에서 새 자리로 — 옮긴 물건은 놓은 자리에서, 묶음으로 묶이거나 풀린 동전은
+  // 원래 있던 자리에서 묶음 자리로 옮겨 간다
+  const fx = useSettleFx(root, 'data-atom', FLY_MS);
+  /** 키보드로 옮겼을 때 다시 잡을 초점 */
   const focusKey = useRef<string | null>(null);
   const gRef = useRef(g);
   gRef.current = g;
@@ -221,15 +191,6 @@ export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams
 
   useLayoutEffect(() => {
     const host = root.current;
-    const old = fly.current;
-    fly.current = null;
-    if (host && old)
-      // 낱개(동전·컵)마다 옛 자리에서 새 자리로 — 옮긴 물건은 놓은 자리에서, 묶음으로 묶이거나 풀린 동전은
-      // 원래 있던 자리에서 묶음 자리로 옮겨 간다. 자리가 그대로인 것은 움직이지 않는다
-      for (const el of host.querySelectorAll<HTMLElement>('[data-atom]')) {
-        const r = old.get(el.dataset.atom as string);
-        if (r) flyFrom(el, r, { duration: FLY_MS });
-      }
     if (host && focusKey.current) {
       host.querySelector<HTMLElement>(`[data-key="${focusKey.current}"]`)?.focus();
       focusKey.current = null;
@@ -239,9 +200,7 @@ export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams
   /** 옮긴 배치를 반영한다. dropped = 끌어 놓은 물건의 낱개 자리(놓은 그 자리에서 날아가게) */
   const commit = (next: Board, dropped?: Map<string, DOMRect>) => {
     const { guide } = gRef.current;
-    const rects = atomRects(root.current);
-    for (const [k, r] of dropped ?? []) rects.set(k, r);
-    fly.current = rects;
+    fx.mark(dropped);
     const v = view(p, next.s);
     const t = talk(p, guide, next.s);
     setG({
@@ -294,11 +253,10 @@ export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams
     dx: number,
     dy: number,
   ) => {
-    const rect = el.getBoundingClientRect();
-    const dropped = atomRects(el);
-    el.style.transform = '';
-    const back = () => flyFrom(el, rect, { duration: FLY_MS });
-    const tap = Math.hypot(dx, dy) < TAP_PX;
+    // 묶음 안 동전들의 놓인 자리도 transform 을 지우기 전에 잰다
+    const dropped = rectsOf(el, 'data-atom');
+    const { rect, back } = landAt(el, FLY_MS);
+    const tap = isTap(dx, dy);
     if (!item.can) {
       back();
       if (item.lock) say(lockSay(p, item.lock));
@@ -314,17 +272,10 @@ export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams
       return;
     }
     // 놓은 자리: 접시 상자(조금 넓혀서) 안이면 그 접시 위, 어느 접시에도 안 걸리면 바닥
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
+    const [cx, cy] = centerOf(rect);
     const over = (['l', 'r'] as const).find((sd) => {
       const b = pans[sd].current?.getBoundingClientRect();
-      return (
-        !!b &&
-        cx >= b.left - PAN_SLOP &&
-        cx <= b.right + PAN_SLOP &&
-        cy >= b.top - PAN_SLOP &&
-        cy <= b.bottom + PAN_SLOP
-      );
+      return !!b && inBox(cx, cy, b, PAN_SLOP);
     });
     const ok = at === 'pan' ? over === undefined : over === side;
     const n = ok ? moveItem(p, gRef.current.b, item.key) : null;
@@ -341,7 +292,7 @@ export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams
   const reset = () => {
     busy.current = false;
     clearLift(root.current);
-    fly.current = atomRects(root.current);
+    fx.mark();
     setG(fresh());
   };
 
