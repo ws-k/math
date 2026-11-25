@@ -93,6 +93,13 @@ test('모든 단원의 앱 화면(단원 홈·문제·홈·지도·오답·설�
   }
 });
 
+test('배포 빌드의 설정 화면에는 펜 진단(개발용 숫자)이 없고 전체 초기화는 있다', async () => {
+  const { units, renderScreens } = await entry;
+  const all = renderScreens(units[0] as (typeof units)[number]).join('');
+  assert.doesNotMatch(all, /펜 진단/);
+  assert.match(all, /전체 초기화/);
+});
+
 test('곱의 미분 레슨: 좌표평면·넓이 모형 부품이 그려진다(손잡이·확인하기 포함)', async () => {
   const { units, renderLesson } = await entry;
   const u = units.find((x) => x.id === 'math2-diff-product-rule');

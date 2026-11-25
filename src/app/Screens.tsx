@@ -577,9 +577,12 @@ export function SettingsScreen(p: {
           </button>
         </div>
       </section>
-      <section className="card">
-        <PenDiag />
-      </section>
+      {/* 펜 진단(압력 등 숫자)은 개발 중 기기 맞춤용이라 배포 빌드(웹·앱)에는 보이지 않는다 */}
+      {__DEV__ && (
+        <section className="card">
+          <PenDiag />
+        </section>
+      )}
       <p className="muted">{buildLabel()}</p>
       {resettingAll && (
         <Confirm
