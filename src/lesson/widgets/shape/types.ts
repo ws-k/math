@@ -14,6 +14,15 @@ export interface ShPoint {
   aux?: true;
   /** 수선의 발: from 에서 직선 line(고정 점 둘)에 내린 발. 자리는 적지 않고 늘 계산한다 */
   foot?: { from: string; line: [string, string] };
+  /**
+   * 따라오는 점(모양 지키며 끌기): x·y 를 다른 점의 x·y 로 받는다. 직사각형의 한 꼭짓점을 끌면 이웃 꼭짓점이
+   * 가로·세로만 따라와 직사각형이 그대로다 — 꼭짓점 넷을 따로 끌게 하면 '넓이 12 인 직사각형' 대신 아무 사각형이 된다.
+   */
+  follow?: { x?: string; y?: string };
+  /** 마주 보는 점: of 를 점 about 에 대해 점대칭, 또는 직선 across 에 대해 선대칭한 자리. 늘 계산한다 */
+  mirror?: { of: string; about: string } | { of: string; across: [string, string] };
+  /** 끄는 자유 점이 닿는 격자 범위(양끝 포함). 없으면 격자 전체 — 끄는 점이 셋 이상일 때 판정 자리를 줄인다 */
+  range?: { x: [number, number]; y: [number, number] };
 }
 /**
  * 측정값. sum·diff·ratio 의 수는 앞 측정값의 번호(길이·각만 — 묶은 값을 다시 묶지 않아 순환·긴 이름이 없다).

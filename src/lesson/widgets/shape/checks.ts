@@ -2,19 +2,16 @@
 import { reduce } from '../../sym.ts';
 import { ratStr } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
+import { derivedSym, isDerived, symId } from './derive.ts';
 import { goalMovers, goalStates, goalTable } from './goal.ts';
 import { measureValue, operands, round, shoelace, sub } from './measure.ts';
 import { P, shInit } from './model.ts';
 import type { ShapeParams, ShGoal, ShMeasure, ShPoint, ShState } from './types.ts';
 
-/** 수선의 발의 sympy 식. ps 는 발을 내린 점·직선 점의 식(목표 검산에서는 끄는 점이 상태 기호) */
-export const footSym = (f: NonNullable<ShPoint['foot']>, ps: (id: string) => string) =>
-  `Line(${ps(f.line[0])}, ${ps(f.line[1])}).projection(${ps(f.from)})`;
-
 /** sympy 점 식 */
 export function pointSym(p: ShapeParams, s: ShState, id: string): string {
   const pt = p.points.find((x) => x.id === id) as ShPoint;
-  if (pt.foot) return footSym(pt.foot, (j) => pointSym(p, s, j));
+  if (isDerived(pt)) return derivedSym(pt, (j) => pointSym(p, s, j));
   const a = P(s, id);
   if (pt.on && 'circle' in pt.on) {
     const c = P(s, pt.on.circle[0]);
@@ -69,15 +66,15 @@ export function goalChecks(p: ShapeParams, g: ShGoal): WidgetCheck {
   const movers = new Set(goalMovers(p, g));
   const ps = (id: string): string => {
     const pt = p.points.find((x) => x.id === id) as ShPoint;
-    // 발은 끄는 점을 따라오므로 그 점의 상태 기호로 식을 세운다(처음 자리 값으로 굳히지 않게)
-    if (pt.foot) return footSym(pt.foot, ps);
+    // 계산되는 점은 끄는 점을 따라오므로 그 점의 상태 기호로 식을 세운다(처음 자리 값으로 굳히지 않게)
+    if (isDerived(pt)) return derivedSym(pt, ps);
     if (!movers.has(id)) return pointSym(p, s0, id);
     if (pt.on && 'circle' in pt.on) {
       const c = P(s0, pt.on.circle[0]);
       const r = pt.on.circle[1];
-      return `Point(${c.x} + ${r}*cos(rad(pt_${id}_d)), ${c.y} + ${r}*sin(rad(pt_${id}_d)))`;
+      return `Point(${c.x} + ${r}*cos(rad(pt_${symId(id)}_d)), ${c.y} + ${r}*sin(rad(pt_${symId(id)}_d)))`;
     }
-    return `Point(pt_${id}_x, pt_${id}_y)`;
+    return `Point(pt_${symId(id)}_x, pt_${symId(id)}_y)`;
   };
   const states = goalStates(p, g);
   return {

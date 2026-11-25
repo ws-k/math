@@ -1,12 +1,14 @@
 // 형식 검사(매개변수 읽기). 틀린 칸은 fail 로 어디가 왜 틀렸는지 알린다.
 import { type GoalShape, goalNum, needHint, parseGoalShape } from '../../goal.ts';
 import { arr, fail, int, obj, optStr, str } from '../../parse.ts';
+import { isDerived, parseDerived, parseRange } from './derive.ts';
 import { goalMovers } from './goal.ts';
 import { cutArea, measureKey, measureKind, measureName, shoelace, sub } from './measure.ts';
 import { gcd, P, shInit } from './model.ts';
 import { CIRCLE_STEP, type ShapeParams, type ShIs, type ShMeasure, type ShPoint } from './types.ts';
 
-const ID = /^[A-Z]$/;
+// 대문자 한 자, 뒤에 ′ 하나까지(F′ — 옮긴 점·대칭점을 교과서처럼 부르려고)
+const ID = /^[A-Z]′?$/;
 
 export function parseShape(raw: unknown): ShapeParams {
   const o = obj(
@@ -26,27 +28,39 @@ export function parseShape(raw: unknown): ShapeParams {
   const prev = new Map<string, ShPoint>();
   const points: ShPoint[] = arr(o.points, '도형판 points', 1, 10).map((rp, i) => {
     const at = `도형판 점${i + 1}`;
-    const x = obj(rp, at, ['id'], ['x', 'y', 'deg', 'drag', 'on', 'aux', 'foot']);
+    const x = obj(
+      rp,
+      at,
+      ['id'],
+      ['x', 'y', 'deg', 'drag', 'on', 'aux', 'foot', 'follow', 'mirror', 'range'],
+    );
     const id = str(x.id, `${at} id`);
-    if (!ID.test(id)) fail(`${at} id`, '대문자 한 글자');
+    if (!ID.test(id)) fail(`${at} id`, '대문자 한 글자(뒤에 ′ 하나까지)');
     if (ids.has(id)) fail(`${at} id`, `중복 (${id})`);
     if (x.drag !== undefined && typeof x.drag !== 'boolean') fail(`${at} drag`, 'true/false 만');
     const pt: ShPoint = { id, drag: x.drag === true };
+    if (x.follow !== undefined || x.mirror !== undefined) {
+      parseDerived(x, pt, at, grid, need, prev);
+      ids.add(id);
+      prev.set(id, pt);
+      return pt;
+    }
     if (x.foot !== undefined) {
       // 발은 자리를 늘 계산하는 점 — 자리·끌기·제약을 적으면 계산한 자리와 어긋난다
-      const bad = ['x', 'y', 'deg', 'drag', 'on', 'aux'].find((k) => x[k] !== undefined);
+      const bad = ['x', 'y', 'deg', 'drag', 'on', 'aux', 'range'].find((k) => x[k] !== undefined);
       if (bad) fail(`${at} foot`, `수선의 발에는 ${bad} 를 적지 않음(자리는 계산함)`);
       const f = obj(x.foot, `${at} foot`, ['from', 'line']);
       const from = need(f.from, `${at} foot.from`);
       const line = arr(f.line, `${at} foot.line`, 2, 2).map((v, j) =>
         need(v, `${at} foot.line${j + 1}`),
       ) as [string, string];
-      if (prev.get(from)?.foot) fail(`${at} foot.from`, '발에서 다시 발을 내리지 않음');
+      if (isDerived(prev.get(from)))
+        fail(`${at} foot.from`, '발은 계산되는 점(발·따라오는 점·마주 보는 점)에서 내리지 않음');
       // 직선을 고정해 두면 발은 내린 점 하나만 따라간다(검산이 늘어놓는 상태도 그 점의 자리뿐)
       const [a, b] = line.map((v) => prev.get(v) as ShPoint);
       for (const e of [a, b])
-        if (e?.drag || e?.on || e?.foot)
-          fail(`${at} foot.line`, `직선 위 점 ${e.id} 은 고정된 격자점이어야 함`);
+        if (e?.drag || e?.on || isDerived(e))
+          fail(`${at} foot.line`, `직선 위 점 ${e?.id} 은 고정된 격자점이어야 함`);
       if (a?.x === b?.x && a?.y === b?.y) fail(`${at} foot.line`, '직선의 두 점이 같은 자리');
       pt.foot = { from, line };
       ids.add(id);
@@ -80,6 +94,7 @@ export function parseShape(raw: unknown): ShapeParams {
       pt.y = cy;
       if (x.deg !== undefined) fail(`${at} deg`, '원 위 점에만');
     }
+    if (x.range !== undefined) pt.range = parseRange(x.range, pt, at, grid);
     ids.add(id);
     prev.set(id, pt);
     return pt;
@@ -181,13 +196,14 @@ export function parseShape(raw: unknown): ShapeParams {
   for (const pt of points)
     if (pt.on && 'seg' in pt.on) {
       const [a, b] = pt.on.seg.map((id) => points.find((x) => x.id === id) as ShPoint);
-      if (a?.drag || b?.drag || a?.on || b?.on || a?.foot || b?.foot)
+      if (a?.drag || b?.drag || a?.on || b?.on || isDerived(a) || isDerived(b))
         fail(`도형판 ${pt.id}`, '선분 끝점은 고정된 격자점이어야 함');
       if (gcd((b?.x ?? 0) - (a?.x ?? 0), (b?.y ?? 0) - (a?.y ?? 0)) < 2)
         fail(`도형판 ${pt.id}`, '선분 위 격자점이 양끝뿐이라 움직일 곳이 없음');
     } else if (pt.on && 'circle' in pt.on) {
       const c = points.find((x) => x.id === (pt.on as { circle: [string, number] }).circle[0]);
-      if (c?.drag || c?.on || c?.foot) fail(`도형판 ${pt.id}`, '원 중심은 고정된 격자점이어야 함');
+      if (c?.drag || c?.on || isDerived(c))
+        fail(`도형판 ${pt.id}`, '원 중심은 고정된 격자점이어야 함');
     }
   if (o.cut !== undefined) {
     const c = obj(o.cut, '도형판 cut', ['piece', 'rest', 'by', 'result']);

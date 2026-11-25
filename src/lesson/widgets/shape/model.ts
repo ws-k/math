@@ -1,6 +1,7 @@
 // 좌표와 상태, 손으로 바꾸기(순수): 처음 상태·끌기·방향키·수선의 발 다시 계산. 화면이 손 조작마다 부르는 함수들.
 import { r2 } from '../draw.ts';
-import { CIRCLE_STEP, type ShapeParams, type ShState, W } from './types.ts';
+import { derivedPos, isDerived } from './derive.ts';
+import { CIRCLE_STEP, type ShapeParams, type ShPoint, type ShState, W } from './types.ts';
 
 export function shUnit(p: ShapeParams) {
   return Math.min(288 / p.grid.w, 220 / p.grid.h);
@@ -33,25 +34,19 @@ export function shInit(p: ShapeParams): ShState {
 }
 
 /**
- * 수선의 발 자리를 지금 점들로 다시 계산한 상태. 점을 옮기는 모든 길(끌기·키·검산용 상태 늘어놓기)이 이것을
- * 거쳐야 발이 끄는 점을 따라온다. 정수 좌표면 (내적×방향)/길이² 순서로 나눠 0.3×10 같은 부동소수 찌꺼기를 피한다.
+ * 계산되는 점(수선의 발·따라오는 점·마주 보는 점) 자리를 지금 점들로 다시 계산한 상태. 점을 옮기는 모든 길(끌기·키·
+ * 검산용 상태 늘어놓기)이 이것을 거쳐야 계산되는 점이 끄는 점을 따라온다. 적은 차례대로 — 앞에 적은 점만 기댄다.
  */
 export function settle(p: ShapeParams, s: ShState): ShState {
-  if (!p.points.some((x) => x.foot)) return s;
+  if (!p.points.some(isDerived)) return s;
   const pts = { ...s.pts };
-  for (const pt of p.points) {
-    if (!pt.foot) continue;
-    const a = pts[pt.foot.line[0]] as { x: number; y: number };
-    const b = pts[pt.foot.line[1]] as { x: number; y: number };
-    const q = pts[pt.foot.from] as { x: number; y: number };
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const dot = (q.x - a.x) * dx + (q.y - a.y) * dy;
-    const l2 = dx * dx + dy * dy;
-    pts[pt.id] = { x: a.x + (dot * dx) / l2, y: a.y + (dot * dy) / l2 };
-  }
+  for (const pt of p.points) if (isDerived(pt)) pts[pt.id] = derivedPos(pt, pts);
   return { ...s, pts };
 }
+
+/** 자유 점이 닿는 격자 범위(range 가 없으면 격자 전체) */
+export const rangeOf = (p: ShapeParams, pt: ShPoint) =>
+  pt.range ?? { x: [0, p.grid.w] as [number, number], y: [0, p.grid.h] as [number, number] };
 
 export const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : Math.abs(a));
 
@@ -75,9 +70,10 @@ export function place(p: ShapeParams, s: ShState, id: string, tx: number, ty: nu
       Math.round((Math.atan2(ty - c.y, tx - c.x) * 180) / Math.PI / CIRCLE_STEP) * CIRCLE_STEP;
     n = circlePos(s, pt.on, ((deg % 360) + 360) % 360);
   } else {
+    const r = rangeOf(p, pt);
     n = {
-      x: Math.min(p.grid.w, Math.max(0, Math.round(tx))),
-      y: Math.min(p.grid.h, Math.max(0, Math.round(ty))),
+      x: Math.min(r.x[1], Math.max(r.x[0], Math.round(tx))),
+      y: Math.min(r.y[1], Math.max(r.y[0], Math.round(ty))),
     };
   }
   return settle(p, { ...s, pts: { ...s.pts, [id]: n } });

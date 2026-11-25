@@ -1,7 +1,8 @@
 // 닿는 자리를 모두 늘어놓는 형식 검사(수선의 발이 그린 직선 위인가·같아 보이는데 목표가 아닌 자리). 장면을 열 때는 건너뛴다.
-import { checkHitTable, checkNotAtStart } from '../../goal.ts';
+import { checkHitTable, checkNotAtStart, growStates } from '../../goal.ts';
 import { fail } from '../../parse.ts';
 import { r2 } from '../draw.ts';
+import { dependsOn } from './derive.ts';
 import { goalMovers, goalStates, goalTable, moverOptions, shGoalHits, shGoalNeed } from './goal.ts';
 import { dist, measureName, measureValue, round, sub } from './measure.ts';
 import { P, shInit } from './model.ts';
@@ -48,6 +49,32 @@ export function checkFeet(p: ShapeParams) {
 }
 
 /**
+ * 형식 검사: 따라오는 점·마주 보는 점은 기대는 끄는 점이 닿는 모든 자리에서 격자 안이어야 한다. 끄는 점은 격자에
+ * 갇혀도 대칭점은 건너편 격자 밖(그림 밖)으로 나가 사라질 수 있다 — 고치는 길은 끄는 점의 range 를 좁히는 것.
+ */
+export function checkDerived(p: ShapeParams) {
+  const s0 = shInit(p);
+  for (const pt of p.points) {
+    if (!pt.follow && !pt.mirror) continue;
+    const movers = p.points.filter((x) => x.drag && dependsOn(p, pt.id).includes(x.id));
+    let acc = [{ s: s0, sym: {} as Record<string, string> }];
+    for (const m of movers) acc = growStates(acc, moverOptions(p, m.id), `도형판 ${pt.id}`);
+    for (const { s } of acc) {
+      const q = P(s, pt.id);
+      const out = q.x < -1e-9 || q.x > p.grid.w + 1e-9 || q.y < -1e-9 || q.y > p.grid.h + 1e-9;
+      if (!out) continue;
+      const where = movers
+        .map((m) => `${m.id}(${r2(P(s, m.id).x)}, ${r2(P(s, m.id).y)})`)
+        .join(' ');
+      fail(
+        `도형판 ${pt.id}`,
+        `${where} 에서 ${pt.id} 가 (${r2(q.x)}, ${r2(q.y)}) — 격자 밖이라 그림에서 사라짐. 끄는 점의 range 를 좁히세요`,
+      );
+    }
+  }
+}
+
+/**
  * 형식 검사: 측정값끼리 견주는 목표에서, 두 측정값이 화면에 같은 수로 보이는데(PA ≈ 9, PB ≈ 9) 목표가 아닌 자리가
  * 있으면 오류. 학습자는 '같아 보이는데 왜 아니지'를 알 길이 없다. = 와 ≈ 의 차이만으로 가르지 않는다(PA = 3 과
  * PB ≈ 3 은 학습자 눈에 같다). 고치는 길은 digits 를 늘리는 것 — 정확한 분수 표시는 비(比)만 고칠 수 있어 택하지 않았다.
@@ -75,6 +102,7 @@ export function checkSameText(p: ShapeParams, g: ShGoal, states: ShState[]) {
 // 닿는 자리를 모두 늘어놓는 검사(발의 자리·목표에 닿을 수 있는가)는 형식 검사에서만 — 장면을 열 때는 건너뛴다
 export function shapeDeep(p: ShapeParams) {
   checkFeet(p);
+  checkDerived(p);
   const g = p.goal;
   if (!g) return;
   const at = '도형판 goal';

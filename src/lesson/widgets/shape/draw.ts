@@ -86,7 +86,8 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
   const at = shownPts.map((pt) => ({ x: X(p, P(s, pt.id).x), y: Y(p, P(s, pt.id).y) }));
   // 이름표: 가까운 점끼리 겹치지 않고 그림 안에(labels.ts). 아무것도 겹치지 않으면 예전처럼 점의 오른쪽 위
   const labs = placeLabels(
-    at.map((q) => ({ ...q, n: 1 })),
+    // 이름표 폭은 글자 수만큼(F′ 은 두 자)
+    at.map((q, i) => ({ ...q, n: (shownPts[i] as { id: string }).id.length })),
     at,
     { l: 0, t: 0, r: W, b: shGeom(p).h },
     LABEL,

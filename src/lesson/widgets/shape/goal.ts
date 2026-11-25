@@ -2,8 +2,9 @@
 import { growStates, hitTable, sameVal, type Val } from '../../goal.ts';
 import { type Rational, reduce } from '../../sym.ts';
 import { add as qAdd, div as qDiv, qi, neg as qNeg, sub as qSub } from '../q.ts';
+import { dependsOn, latticePt, symId } from './derive.ts';
 import { measureValue, operands, sub } from './measure.ts';
-import { circlePos, gcd, P, settle, shInit } from './model.ts';
+import { circlePos, gcd, P, rangeOf, settle, shInit } from './model.ts';
 import {
   CIRCLE_STEP,
   type ShapeParams,
@@ -13,12 +14,8 @@ import {
   type ShState,
 } from './types.ts';
 
-// 수선의 발은 격자점이 아닐 수 있다 — 격자점으로 반올림해 분수로 견주면 틀린 판정이 나므로 수로만 견준다
-export const isLattice = (p: ShapeParams, ids: string[]) =>
-  ids.every((id) => {
-    const pt = p.points.find((x) => x.id === id);
-    return pt?.deg === undefined && !pt?.foot;
-  });
+// 원 위 점·수선의 발·선대칭은 격자점이 아닐 수 있다 — 격자점으로 반올림해 분수로 견주면 틀린 판정이 나므로 수로만 견준다
+export const isLattice = (p: ShapeParams, ids: string[]) => ids.every((id) => latticePt(p, id));
 export const isqrt = (n: bigint) => {
   if (n < 0n) return null;
   let r = BigInt(Math.round(Math.sqrt(Number(n))));
@@ -96,17 +93,14 @@ export function shGoalHits(p: ShapeParams, s: ShState): string[] {
 export const shGoalNeed = (p: ShapeParams) =>
   !p.goal ? 1 : p.goal.kind === 'visit' ? p.goal.at.length : p.goal.places;
 
-/** 측정이 쓰는 점들(묶은 값은 항들의 점, 수선의 발은 그 발을 내린 점까지 — 발은 그 점을 따라 움직이므로) */
+/** 측정이 쓰는 점들(묶은 값은 항들의 점, 계산되는 점은 기대는 점까지 — 그 점을 따라 움직이므로) */
 export function measurePoints(p: ShapeParams, m: ShMeasure): string[] {
   let ids: string[];
   if ('len' in m) ids = m.len;
   else if ('angle' in m) ids = m.angle;
   else if ('area' in m) ids = p.polygons[m.area] ?? [];
   else ids = operands(m).flatMap((i) => measurePoints(p, sub(p, i)));
-  return ids.flatMap((id) => {
-    const f = p.points.find((x) => x.id === id)?.foot;
-    return f ? [id, f.from] : [id];
-  });
+  return ids.flatMap((id) => dependsOn(p, id));
 }
 
 /** 목표가 바라보는 끄는 점(선분 끝·원 중심·발의 직선은 고정이라 끄는 점끼리는 서로 기대지 않는다) */
@@ -121,12 +115,16 @@ export function goalMovers(p: ShapeParams, g: ShGoal): string[] {
 export function moverOptions(p: ShapeParams, id: string) {
   const pt = p.points.find((x) => x.id === id) as ShPoint;
   const opts: { patch: (s: ShState) => ShState; sym: Record<string, string> }[] = [];
+  const xy = (x: number, y: number) => ({
+    [`pt_${symId(id)}_x`]: String(x),
+    [`pt_${symId(id)}_y`]: String(y),
+  });
   const set = (pos: { x: number; y: number; deg?: number }, sym: Record<string, string>) =>
     opts.push({ patch: (s) => settle(p, { ...s, pts: { ...s.pts, [id]: pos } }), sym });
   if (pt.on && 'circle' in pt.on) {
     const on = pt.on;
     for (let d = 0; d < 360; d += CIRCLE_STEP)
-      set(circlePos(shInit(p), on, d), { [`pt_${id}_d`]: String(d) });
+      set(circlePos(shInit(p), on, d), { [`pt_${symId(id)}_d`]: String(d) });
   } else if (pt.on && 'seg' in pt.on) {
     const s0 = shInit(p);
     const a = P(s0, pt.on.seg[0]);
@@ -135,12 +133,13 @@ export function moverOptions(p: ShapeParams, id: string) {
     for (let k = 0; k <= N; k++) {
       const x = a.x + (k * (b.x - a.x)) / N;
       const y = a.y + (k * (b.y - a.y)) / N;
-      set({ x, y }, { [`pt_${id}_x`]: String(x), [`pt_${id}_y`]: String(y) });
+      set({ x, y }, xy(x, y));
     }
-  } else
-    for (let x = 0; x <= p.grid.w; x++)
-      for (let y = 0; y <= p.grid.h; y++)
-        set({ x, y }, { [`pt_${id}_x`]: String(x), [`pt_${id}_y`]: String(y) });
+  } else {
+    const r = rangeOf(p, pt);
+    for (let x = r.x[0]; x <= r.x[1]; x++)
+      for (let y = r.y[0]; y <= r.y[1]; y++) set({ x, y }, xy(x, y));
+  }
   return opts;
 }
 
