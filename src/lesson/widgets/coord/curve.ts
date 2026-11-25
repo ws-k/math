@@ -1,18 +1,30 @@
 // 곡선 객체 {id, curve:'x**2'}: 형식 검사·곡선 경로 그리기·검산(앱 계산 = sympy)과 곡선 값 계산.
 // 점·직선·과제가 곡선 값을 빌려 쓰므로 객체 파일 가운데 가장 아래에 둔다.
 // 조각 함수·구간만 그리기({curve:[{y, x}…]} · {curve, x})도 곡선이다 — 점이 그 위에 놓이고 접선이 닿아야 해서.
+// 정규분포 곡선({curve:{normal:[m, s]}})도 곡선이다 — 점이 그 위를 달리고, 넓이(normal.ts)가 m·s 를 그대로 쓴다.
 // 조각 몫(구간 읽기·끝 표시·Piecewise 검산)은 piece.ts 에 있고, 곡선 값은 늘 여기 fAt·curveExact 로 구한다.
-import { compile, derivative, evalExact, evalNum, paritySamples, varsOf } from '../../expr.ts';
-import { fail, obj, oneOf, str } from '../../parse.ts';
+import {
+  compile,
+  derivative,
+  evalExact,
+  evalNum,
+  exactStr,
+  paritySamples,
+  varsOf,
+} from '../../expr.ts';
+import { arr, fail, obj, oneOf, str } from '../../parse.ts';
 import type { Node, Rational } from '../../sym.ts';
 import { samplePath } from './frame.ts';
 import { drawEnds, nodeAt, parsePieces, pieceChecks, piecesPath, piecesSym } from './piece.ts';
+import { sliderCombos } from './slider.ts';
 import {
   type CoordParams,
   type CoordState,
   type CurveObj,
   type Frame,
   type KindDef,
+  type NormalDist,
+  type ParseCtx,
   type PlainCurve,
   TONES,
 } from './types.ts';
@@ -100,6 +112,45 @@ function curvePath(p: CoordParams, s: CoordState, c: CurveObj, f: Frame): string
   return samplePath(p, f, p.x.lo, p.x.hi, n, (x) => evalNum(node, { ...s.vars, x }));
 }
 
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** 정규분포 밀도함수 식(sympy·앱 공용 글자) */
+const normalExpr = (d: NormalDist) => `exp(-(x-(${d.m}))**2/(2*(${d.s})**2))/((${d.s})*sqrt(2*pi))`;
+
+/**
+ * 정규분포 곡선 {curve:{normal:[m, s]}}: 평균·표준편차(수 또는 슬라이더 식, x 는 못 씀)로 밀도함수를 만든다.
+ * 식을 손으로 적지 않게 해 두어야 넓이(normal.ts shade·prob)가 '이 곡선이 정말 정규분포인가'를 다시 알아보지 않아도 된다.
+ * 표준편차는 닿는 모든 슬라이더 값에서 0 보다 커야 한다 — 0 이하면 곡선이 사라지고 넓이를 정할 수 없다
+ */
+function parseNormal(c: Record<string, unknown>, at: string, cx: ParseCtx): NormalDist {
+  if (c.x !== undefined)
+    fail(`${at} x`, '정규분포 곡선(normal)은 x 전체에 그림 — 구간을 적지 않음');
+  const r = obj(c.curve, `${at} curve`, ['normal']);
+  const [rm, rs] = arr(r.normal, `${at} curve.normal`, 2, 2);
+  const ids = cx.sliders.map((s) => s.id);
+  const read = (v: unknown, w: string): [string, Node] => {
+    const src = typeof v === 'number' ? exactStr(v) : str(v, w).replace(/\s+/g, '');
+    try {
+      return [src, compile(src, ids)];
+    } catch (e) {
+      return fail(w, (e as Error).message);
+    }
+  };
+  const [m, mNode] = read(rm, `${at} curve.normal m`);
+  const [s, sNode] = read(rs, `${at} curve.normal s`);
+  const used = [...varsOf(sNode)].filter((v) => ids.includes(v));
+  for (const combo of sliderCombos(cx.sliders, used, `${at} curve.normal s`)) {
+    const v = evalNum(sNode, combo.num);
+    if (!(v > 0))
+      fail(
+        `${at} curve.normal s`,
+        `표준편차는 0 보다 커야 함(${combo.text || s} 에서 ${Number.isNaN(v) ? '정의 안 됨' : v})`,
+      );
+  }
+  return { m, s, mNode, sNode };
+}
+
 export const curveKind: KindDef<CurveObj> = {
   parse(ro, at, cx) {
     const c = obj(ro, at, ['id', 'curve'], ['label', 'tone', 'hide', 'x']);
@@ -112,8 +163,13 @@ export const curveKind: KindDef<CurveObj> = {
         return fail(w, (e as Error).message);
       }
     };
-    const pieces = parsePieces(c, at, cx, compileY);
-    const expr = pieces ? piecesSym(pieces) : str(c.curve, `${at} curve`).replace(/\s+/g, '');
+    const normal = isObj(c.curve) ? parseNormal(c, at, cx) : undefined;
+    const pieces = normal ? undefined : parsePieces(c, at, cx, compileY);
+    const expr = normal
+      ? normalExpr(normal)
+      : pieces
+        ? piecesSym(pieces)
+        : str(c.curve, `${at} curve`).replace(/\s+/g, '');
     const base = {
       kind: 'curve' as const,
       id,
@@ -124,7 +180,7 @@ export const curveKind: KindDef<CurveObj> = {
     };
     const co: CurveObj = pieces
       ? { ...base, pieces }
-      : { ...base, node: compileY(expr, `${at} curve`) };
+      : { ...base, node: compileY(expr, `${at} curve`), ...(normal ? { normal } : {}) };
     cx.curves.set(id, co);
     return co;
   },
