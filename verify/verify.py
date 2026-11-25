@@ -489,6 +489,68 @@ def _goal_match(v, t, tol):
     return bool(sympy.N(sympy.Abs(v - t), 50) <= tol)
 
 
+def _goal_far(comps, targets, tol, states, hits):
+    """상태마다 '어느 목표와도 수로 확실히 먼가'(True 면 기호 대입을 건너뛴다). 상태마다 subs 로 기호 대입하면
+    도형판 끄는 점 둘(576상태)에 15초, 셋(1,728상태)에 68초가 걸렸다(리뷰 M4) — 식을 한 번 lambdify 해 40자리
+    수로 걸러 내고, 목표에 가깝거나(차가 1e-20 상대오차 + tol 이하) 앱이 '닿았다'고 한 상태만 기호로 다시 판정한다.
+    수로 셀 수 없는 상태(0/0·복소수·무한)는 멀다고 보지 않는다(기호 판정으로 넘김). 실근 세기(roots)는 수로 걸러
+    낼 수 없어 이 길을 쓰지 않는다(None)."""
+    if any(roots for _, roots in comps) or not states:
+        return None
+    import mpmath
+
+    names = sorted({n for st in states for n in st})
+    syms = [sympy.Symbol(n) for n in names]
+    try:
+        fv = [sympy.lambdify(syms, e, modules="mpmath") for e, _ in comps]
+        ft = [[sympy.lambdify(syms, t, modules="mpmath") for t in tg] for tg in targets]
+    except Exception:
+        return None
+    claimed = {k for h in hits for k in h}
+    seen = {}
+    out = []
+    with mpmath.workdps(40):
+
+        def num(f, args):
+            try:
+                v = f(*args)
+            except Exception:
+                return None
+            # 상수 목표(pi)는 mpmath 상수 객체라 mpf 로 바꿔 쓴다. 복소수는 셀 수 없음
+            if isinstance(v, (mpmath.mpc, complex)):
+                return None
+            try:
+                v = mpmath.mpf(v)
+            except Exception:
+                return None
+            return v if mpmath.isfinite(v) else None
+
+        margin_tol = mpmath.mpf(sympy.N(tol, 40)) if tol != 0 else mpmath.mpf(0)
+        for k, st in enumerate(states):
+            if k in claimed or set(st) != set(names):
+                out.append(False)
+                continue
+            # 상태 값은 같은 글자가 되풀이된다(격자 좌표·15° 각도) — 한 번만 읽는다
+            for n in names:
+                if st[n] not in seen:
+                    seen[st[n]] = mpmath.mpf(str(sympy.N(read(st[n]), 45)))
+            args = [seen[st[n]] for n in names]
+            vals = [num(f, args) for f in fv]
+            near = False
+            for tg in ft:
+                # 목표 하나라도 '모든 칸이 가깝거나 셀 수 없음'이면 기호로 판정해야 한다
+                if all(
+                    v is None
+                    or t is None
+                    or abs(v - t) <= margin_tol + mpmath.mpf("1e-20") * max(1, abs(t))
+                    for v, t in ((v, num(f, args)) for v, f in zip(vals, tg))
+                ):
+                    near = True
+                    break
+            out.append(not near)
+    return out
+
+
 def check_goal(it):
     """부품 목표 판정(원칙 P7): 끌기·슬라이더로 닿는 모든 상태(states)에서 앱이 '목표에 닿았다'고 본 상태(hits)가
     sympy 로 다시 판정한 것과 같은가. 목표마다 need 곳 이상 닿을 수 있어야 하고(닿을 수 없는 목표 금지),
@@ -503,7 +565,10 @@ def check_goal(it):
     targets = [[exact(t) for t in tg] for tg in it["targets"]]
     tol = read(it["tol"])
     got = [[] for _ in targets]
+    far = _goal_far(comps, targets, tol, it["states"], it["hits"])
     for k, st in enumerate(it["states"]):
+        if far is not None and far[k]:
+            continue
         sub = {sympy.Symbol(n): read(v) for n, v in st.items()}
         # 한꺼번에 대입: 차례로 넣으면 x/√(x²+y²) 에 x=0 이 먼저 들어가 0 이 되고 y=0 이 들어가도 0 으로 남아,
         # 점이 꼭짓점과 겹쳐 각을 정할 수 없는 자리(0/0)가 90° 로 나온다

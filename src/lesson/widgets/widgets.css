@@ -271,6 +271,42 @@
 .lesson .sh-pt {
   fill: var(--ink);
 }
+/* 점선(숨은 선·보조선)·연장선 */
+.lesson .sh-seg.dash {
+  stroke: var(--sub);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+/* 곡선(타원·쌍곡선) */
+.lesson .sh-curve {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+/* 원 위 호(강조) */
+.lesson .sh-arc {
+  fill: none;
+  stroke: var(--bad);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+/* 각 표시(호·직각 네모) */
+.lesson .sh-angle {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+}
+/* 그림 위 값: 선 위에 겹쳐도 읽히게 바탕색 테두리를 먼저 칠한다 */
+.lesson .wgt-svg .sh-tag {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
 .lesson .wgt-svg .sh-lab {
   font-weight: 800;
   pointer-events: none;
@@ -292,9 +328,41 @@
   fill: var(--good);
   fill-opacity: 0.45;
 }
+/* 조각 여러 개(pieces): 조각마다 색을 달리해 어느 조각을 옮겼는지 보이게. 목표 자리에 간 조각은 위의 done 색 */
+.lesson .sh-piece.c1:not(.done) {
+  fill: var(--primary);
+  fill-opacity: 0.5;
+}
+.lesson .sh-piece.c2:not(.done) {
+  fill: var(--bad);
+  fill-opacity: 0.45;
+}
+/* 고른 조각(한 번 더 톡 = 돌리기, 화살표 버튼이 옮기는 조각) */
+.lesson .sh-piece[data-sel] {
+  stroke: var(--primary);
+  stroke-width: 3.5;
+}
+/* 조각을 키로 옮긴 뒤 화면 낭독기에만 읽어 주는 자리 글 */
+.lesson .sh .sh-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.lesson .sh-piece:focus-visible {
+  outline: none;
+  stroke: var(--primary);
+  stroke-width: 3.5;
+}
 .lesson .wgt-ctl .lbtn.arrow {
   flex: 0 0 56px;
   font-size: 1.3rem;
+}
+.lesson .wgt-ctl.pc .lbtn.arrow {
+  /* 조각을 고르면 화살표 넷 + 돌리기 하나가 한 줄에 들게(가장 좁은 화면 카드 안쪽 약 300px) */
+  flex-basis: 52px;
 }
 .lesson .wgt-note {
   color: var(--sub);
