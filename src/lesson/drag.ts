@@ -54,6 +54,29 @@ export function nearest<T extends { x: number; y: number }>(
   return best;
 }
 
+// ---- 끌어 놓기 판정(count 의 칩·카드와 저울의 물건이 같이 쓴다) ----
+
+/** 이만큼 못 움직였으면 끌기가 아니라 누르기로 본다 — 손가락은 누르기만 해도 몇 px 흔들린다 */
+export const TAP_PX = 8;
+export const isTap = (dx: number, dy: number) => Math.hypot(dx, dy) < TAP_PX;
+/**
+ * 끌기를 이만큼 놓치면(그냥 누르기·아무 데도 아닌 곳에 놓기) '눌러서 해도 돼요'로 넘어간다(P4 — '넘어가기'와 같은 기준).
+ * 한 번은 실수일 수 있고, 두 번이면 끌기가 어려운 사람의 신호로 본다.
+ */
+export const FAILS_FOR_TAP = 2;
+
+/** 놓은 요소의 가운데(화면 좌표). 손가락 끝이 아니라 요소 가운데로 판정해야 어디를 잡고 끌었든 같은 결과다 */
+export const centerOf = (r: { left: number; top: number; width: number; height: number }) =>
+  [r.left + r.width / 2, r.top + r.height / 2] as const;
+
+/** 점이 상자를 사방 slop 만큼 넓힌 안(경계 포함)인가. 가장자리에 걸쳐 놓아도 그 칸으로 쳐 준다 */
+export const inBox = (
+  x: number,
+  y: number,
+  b: { left: number; right: number; top: number; bottom: number },
+  slop = 0,
+) => x >= b.left - slop && x <= b.right + slop && y >= b.top - slop && y <= b.bottom + slop;
+
 /** 화면 가장자리 여백. iOS 는 가장자리에서 시작한 끌기를 '뒤로 가기' 쓸기로 가로챈다 */
 export const EDGE = 20;
 export const edgeSafe = (x: number, width: number) => clamp(x, EDGE, width - EDGE);

@@ -93,6 +93,8 @@ export function options({ outdir, dev }) {
     loader: { '.woff2': 'file', '.woff': 'file', '.ttf': 'file' },
     assetNames: 'fonts/[name]-[hash]',
     minify: !dev,
+    // 한글을 \uXXXX(6바이트)가 아니라 글자 그대로(3바이트) 낸다 — index.html·앱 응답 모두 utf-8 이라 안전, 묶음이 약 25% 줄어든다
+    charset: 'utf8',
     sourcemap: dev,
     define: {
       __DEV__: String(dev),

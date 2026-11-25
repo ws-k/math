@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { clamp, crossedSign, edgeSafe, keyStep, nearest, snap } from '../src/lesson/drag.ts';
+import {
+  centerOf,
+  clamp,
+  crossedSign,
+  edgeSafe,
+  FAILS_FOR_TAP,
+  inBox,
+  isTap,
+  keyStep,
+  nearest,
+  snap,
+  TAP_PX,
+} from '../src/lesson/drag.ts';
 
 test('snap: 가장 가까운 칸으로(간격 기준점 min)', () => {
   assert.equal(snap(0.26, 0.5), 0.5);
@@ -46,6 +58,26 @@ test('edgeSafe: 손잡이를 화면 가장자리에서 20px 이상 떨어뜨린�
   assert.equal(edgeSafe(5, 400), 20);
   assert.equal(edgeSafe(395, 400), 380);
   assert.equal(edgeSafe(200, 400), 200);
+});
+
+test('끌어 놓기 판정: 8px 못 움직였으면 누르기, 두 번 놓치면 눌러서 하기(count·저울 같은 값)', () => {
+  assert.equal(TAP_PX, 8);
+  assert.equal(FAILS_FOR_TAP, 2);
+  assert.equal(isTap(0, 0), true);
+  assert.equal(isTap(5, 6), true); // 7.81
+  assert.equal(isTap(8, 0), false); // 딱 8 은 끌기
+  assert.equal(isTap(6, -6), false); // 8.49
+});
+
+test('끌어 놓기 판정: 놓은 요소의 가운데, 여유를 둔 상자 안(경계 포함)', () => {
+  assert.deepEqual(centerOf({ left: 10, top: 20, width: 40, height: 30 }), [30, 35]);
+  const b = { left: 100, right: 200, top: 50, bottom: 80 };
+  assert.equal(inBox(150, 60, b), true);
+  assert.equal(inBox(99, 60, b), false);
+  assert.equal(inBox(84, 60, b, 16), true);
+  assert.equal(inBox(83.9, 60, b, 16), false);
+  assert.equal(inBox(216, 96, b, 16), true);
+  assert.equal(inBox(216, 96.1, b, 16), false);
 });
 
 // 끌기 장치(useDrag 의 알맹이)를 가짜 요소에 붙여 본다. Node 의 EventTarget 으로 포인터 사건을 흉내 낸다.
