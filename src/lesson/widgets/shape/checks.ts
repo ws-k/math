@@ -1,12 +1,11 @@
 // 검산 항목(sympy 식): 처음 자리 측정값·잘라 옮기기 넓이·목표 판정.
-import { reduce } from '../../sym.ts';
-import { ratStr } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { curveSym, shapeOf } from './curve.ts';
 import { derivedSym, isDerived, symId } from './derive.ts';
 import { goalMovers, goalStates, goalTable } from './goal.ts';
-import { arcOf, measureValue, operands, round, shoelace, sub } from './measure.ts';
+import { arcOf, measureValue, operands, round, sub } from './measure.ts';
 import { P, shInit } from './model.ts';
+import { latticeArea, shoelaceSym } from './num.ts';
 import { pieceChecks } from './piece.ts';
 import type {
   ShapeParams,
@@ -43,13 +42,6 @@ export function pointSym(p: ShapeParams, s: ShState, id: string): string {
   }
   return `Point(${a.x}, ${a.y})`;
 }
-export const shoelaceSym = (ps: string[]) =>
-  `Abs(${ps
-    .map((a, i) => {
-      const b = ps[(i + 1) % ps.length];
-      return `(${a}).x*(${b}).y - (${b}).x*(${a}).y`;
-    })
-    .join(' + ')})/2`;
 
 /** B 에서 BA 를 시계 반대 방향으로 돌려 BC 에 닿는 각(도, 0~360): atan2(외적, 내적) 를 2π 로 나눈 나머지 */
 function ccwSym(a: string, b: string, c: string) {
@@ -142,10 +134,6 @@ export function goalChecks(p: ShapeParams, g: ShGoal): WidgetCheck {
     need: g.kind === 'value' ? g.places : 1,
   };
 }
-
-/** 격자점 넓이의 정확한 분수(2배 넓이는 정수) */
-export const latticeArea = (ps: { x: number; y: number }[]) =>
-  ratStr(reduce(BigInt(Math.round(shoelace(ps) * 2)), 2n));
 
 export function shapeChecks(p: ShapeParams): WidgetCheck[] {
   const s = shInit(p);

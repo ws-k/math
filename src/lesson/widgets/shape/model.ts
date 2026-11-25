@@ -2,6 +2,7 @@
 import { r2 } from '../draw.ts';
 import { curveAt, curveSteps } from './curve.ts';
 import { derivedPos, isDerived } from './derive.ts';
+import { rad } from './num.ts';
 import {
   CIRCLE_STEP,
   type ShapeParams,
@@ -22,7 +23,7 @@ export function shGeom(p: ShapeParams) {
 }
 export const X = (p: ShapeParams, x: number) => r2(shGeom(p).ox + x * shGeom(p).u);
 export const Y = (p: ShapeParams, y: number) => r2(shGeom(p).oy - y * shGeom(p).u);
-export const rad = (d: number) => (d * Math.PI) / 180;
+export { rad };
 
 /** 곡선 i 위 매개변수 d 의 자리(deg 를 같이 적어 둔다 — 방향키·검산 기호가 매개변수로 움직인다) */
 export function curvePos(p: ShapeParams, s: ShState, i: number, d: number) {

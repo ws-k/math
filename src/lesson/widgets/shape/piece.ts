@@ -9,12 +9,11 @@
 // 끄는 동안(ShState.moving)과 키로 옮긴 뒤 판정 전에는 그 조각을 짝짓지 않는다 — 손을 떼기 전에 초록이 되면
 // 판정을 미리 알려 주는 셈이다(원칙 P3, 리뷰 M1).
 import { arr, fail, int, obj } from '../../parse.ts';
-import { reduce } from '../../sym.ts';
-import { ratStr } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { areaOf, overlapArea, polyKey, triangulate } from './geom.ts';
 import { shoelace } from './measure.ts';
 import { shUnit } from './model.ts';
+import { shoelaceSym as areaSym, latticeArea } from './num.ts';
 import type { ShapeParams, ShPiece, ShPose, ShState } from './types.ts';
 
 type XY = { x: number; y: number };
@@ -221,15 +220,6 @@ export function parsePieces(raw: unknown, rawOutline: unknown, p: ShapeParams): 
   if (shPiecesDone(p, s as ShState))
     fail('도형판 pieces', '처음 자리가 이미 목표 — 옮길 것이 없음');
 }
-
-const latticeArea = (ps: XY[]) => ratStr(reduce(BigInt(Math.round(shoelace(ps) * 2)), 2n));
-const areaSym = (ps: string[]) =>
-  `Abs(${ps
-    .map((a, i) => {
-      const b = ps[(i + 1) % ps.length];
-      return `(${a}).x*(${b}).y - (${b}).x*(${a}).y`;
-    })
-    .join(' + ')})/2`;
 
 /**
  * 검산: 조각마다 sympy 가 처음 꼭짓점을 같은 둘레로 같은 횟수 돌리고(rotate) 옮긴 자리 = 앱이 계산한 목표 자리,

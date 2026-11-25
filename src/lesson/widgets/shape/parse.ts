@@ -6,6 +6,7 @@ import { isDerived, parseDerived, parseRange } from './derive.ts';
 import { goalMovers } from './goal.ts';
 import { cutArea, measureKey, measureKind, shoelace, sub } from './measure.ts';
 import { gcd, P, shInit } from './model.ts';
+import { half } from './num.ts';
 import { parseMeasures } from './parseMeasure.ts';
 import { parsePieces } from './piece.ts';
 import {
@@ -23,13 +24,6 @@ const ID = /^[A-Z]′?$/;
 /** 점 수 상한. 계단 두 개(n×(n+1))처럼 꼭짓점이 많은 그림까지 — 이름표가 겹치지 않게 labels.ts 가 자리를 고른다 */
 const MAX_POINTS = 20;
 const MAX_SEGS = 12;
-
-/** 0.5 단위 양수(반지름 2.5) — 그보다 잘게 나누면 격자에서 눈으로 읽을 수 없다 */
-function half(v: unknown, at: string): number {
-  if (typeof v !== 'number' || !Number.isInteger(v * 2) || v < 0.5 || v > 12)
-    return fail(at, `0.5~12 사이 0.5 단위 수가 아님 (${String(v)})`);
-  return v;
-}
 
 /** 호 읽기: 중심 c 에서 from 까지가 반지름, to 쪽까지 시계 반대 방향 */
 function parseArcs(raw: unknown, need: (v: unknown, at: string) => string) {
@@ -143,7 +137,7 @@ export function parseShape(raw: unknown): ShapeParams {
         const r =
           typeof c[1] === 'string'
             ? fixedPt(need(c[1], `${at} 반지름 점`), `${at} 반지름 점`)
-            : half(c[1], `${at} 반지름`);
+            : half(c[1], `${at} 반지름`, 12);
         pt.on = { circle: [need(c[0], `${at} 원 중심`), r] };
       } else if (on.curve !== undefined) {
         // 곡선은 점 뒤에 읽는다(중심이 점이라) — 번호가 맞는지는 곡선을 읽은 뒤 checkCurves 가 본다
@@ -186,7 +180,7 @@ export function parseShape(raw: unknown): ShapeParams {
         const cc = need(c.c, `${at} c`);
         // through 점이 끄는 점이면 컴퍼스처럼 원이 늘고 준다
         return c.r !== undefined
-          ? { c: cc, r: half(c.r, `${at} r`) }
+          ? { c: cc, r: half(c.r, `${at} r`, 12) }
           : { c: cc, through: need(c.through, `${at} through`) };
       },
     ),

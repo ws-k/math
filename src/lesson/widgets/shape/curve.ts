@@ -3,11 +3,11 @@
 // 예전에는 곡선 위에 마침 놓인 격자점 몇 곳으로 대신해 '곡선 위가 아닌데 맞았다'고 세는 자리가 생겼다(요청 106·묶음 다).
 // 격자 밖으로 나가는 t(쌍곡선 끝 쪽)와 점이 무한히 먼 t(쌍곡선 90°·270°)는 건너뛴다 — 닿는 자리를 처음 상태로 미리 정한다.
 import { arr, fail, int, obj } from '../../parse.ts';
+import { half, rad } from './num.ts';
 import type { ShapeParams, ShCurve, ShState } from './types.ts';
 
 type XY = { x: number; y: number };
 export const CURVE_STEP = 15;
-const rad = (d: number) => (d * Math.PI) / 180;
 
 export const shapeOf = (cv: ShCurve) => ('ellipse' in cv ? cv.ellipse : cv.hyperbola);
 
@@ -42,13 +42,6 @@ export function curveSym(cv: ShCurve, o: string, t: string, num: (v: number) => 
   return `Point((${o}).x + ${num(a)}/cos(rad(${t})), (${o}).y + ${num(b)}*tan(rad(${t})))`;
 }
 
-/** 0.5 단위 양수 */
-const half = (v: unknown, at: string) => {
-  if (typeof v !== 'number' || !Number.isInteger(v * 2) || v < 0.5 || v > 16)
-    return fail(at, `0.5~16 사이 0.5 단위 수가 아님 (${String(v)})`);
-  return v;
-};
-
 /** 곡선 읽기. 중심은 앞에 적은 고정 점(fixed 가 확인) */
 export function parseCurves(
   raw: unknown,
@@ -64,8 +57,8 @@ export function parseCurves(
     const e = obj(o[kind], `${at} ${kind}`, ['c', 'a', 'b']);
     const shape = {
       c: fixed(need(e.c, `${at} c`), `${at} c`),
-      a: half(e.a, `${at} a`),
-      b: half(e.b, `${at} b`),
+      a: half(e.a, `${at} a`, 16),
+      b: half(e.b, `${at} b`, 16),
     };
     return kind === 'ellipse' ? { ellipse: shape } : { hyperbola: shape };
   });

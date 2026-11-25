@@ -4,10 +4,10 @@ import { type Mark, r2 } from '../draw.ts';
 import { shapeOf } from './curve.ts';
 import { ccwAngle, measureValue, round, unitText } from './measure.ts';
 import { P, shGeom, X, Y } from './model.ts';
+import { rad } from './num.ts';
 import type { ShapeParams, ShMeasure, ShState } from './types.ts';
 
 type XY = { x: number; y: number };
-const rad = (d: number) => (d * Math.PI) / 180;
 const deg = (r: number) => (r * 180) / Math.PI;
 /** 화면 좌표의 점 */
 const scr = (p: ShapeParams, q: XY) => ({ x: X(p, q.x), y: Y(p, q.y) });
