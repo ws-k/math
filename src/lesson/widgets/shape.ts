@@ -24,6 +24,7 @@ export { shGoalHits, shGoalNeed } from './shape/goal.ts';
 export { shMeasures } from './shape/measure.ts';
 export { shDone, shDrag, shGeom, shInit, shKey, shUnit } from './shape/model.ts';
 export {
+  pieceAtTarget as shPieceAtTarget,
   shPieceDrag,
   shPieceKey,
   shPiecePts,

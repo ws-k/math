@@ -23,6 +23,7 @@ import {
   shGoalNeed,
   shInit,
   shKey,
+  shPieceAtTarget,
   shPieceDrag,
   shPieceKey,
   shPiecesDone,
@@ -203,7 +204,19 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
         ))}
       </div>
       {p.goal && <GoalLine prog={prog} need={need} texts={{ done: p.done, hint: p.goal.hint }} />}
-      <div className="wgt-ctl">
+      {/* 조각 채우기: 몇 조각이 자리를 찾았는지와 다 채운 뒤 글. 상태는 손을 뗄 때만 바뀌어 끄는 도중엔 그대로(P3) */}
+      {p.pieces && (
+        <GoalLine
+          prog={{
+            seen: p.pieces.flatMap((_, i) => (shPieceAtTarget(p, s, i) ? [String(i)] : [])),
+            tries: 0,
+            done: shPiecesDone(p, s),
+          }}
+          need={p.pieces.length}
+          texts={{ done: p.done }}
+        />
+      )}
+      <div className={`wgt-ctl${selPc !== null ? ' pc' : ''}`}>
         {sel &&
           (free || selPc !== null) &&
           (
@@ -252,12 +265,13 @@ export function Shape({ params: p, onDone }: WidgetProps<ShapeParams>) {
         {selPc !== null && (
           <button
             type="button"
-            className="lbtn soft"
+            // 화살표와 한 줄에(접은 화면에서 줄 하나를 아낀다)
+            className="lbtn soft arrow"
             aria-label={`조각 ${selPc + 1} 돌리기`}
             onClick={() => pieceStep(selPc, 'turn')}
             onBlur={judge.flush}
           >
-            ⟲ 돌리기
+            ⟲
           </button>
         )}
         {p.cut && (
