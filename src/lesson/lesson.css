@@ -1348,6 +1348,44 @@
 .lesson .coord .ahead.accent {
   fill: var(--good);
 }
+/* 통계 막대(히스토그램·이항분포): 나머지는 옅은 파랑, 고른 막대는 구분구적 큰 어림과 같은 노랑 — '칠한 넓이 = 읽는 값'.
+   막대끼리 붙어 있어 테두리가 곧 계급 경계다 */
+.lesson .coord .bar {
+  fill: var(--primary-soft);
+  stroke: var(--primary);
+  stroke-width: 1;
+}
+.lesson .coord .bar.sel {
+  fill: var(--rect-big);
+  stroke: var(--coin-edge);
+}
+/* 정규분포 넓이: 고른 막대와 같은 노랑(격자 아래 층이라 격자선이 비친다) */
+.lesson .coord .fillr.shade {
+  fill: var(--rect-big);
+}
+/* 신뢰구간: 모평균을 품은 구간은 파랑, 못 품은 구간은 빨강 — 색만으로 세지 않게 모평균 세로선(점선)을 지나는지도 보인다 */
+.lesson .coord .ci {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.lesson .coord .ci.hit {
+  stroke: var(--primary);
+}
+.lesson .coord .ci.miss {
+  stroke: var(--bad);
+}
+.lesson .coord .ci-dot {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+.lesson .coord .ci-m {
+  fill: none;
+  stroke: var(--sub);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
 
 /* 넓이 모형 */
 .lesson .area .base {

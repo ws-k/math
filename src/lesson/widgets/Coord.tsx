@@ -437,18 +437,21 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     );
   };
   const dragPts = p.objects.filter((o): o is PointObj => o.kind === 'point' && o.drag === 'x');
-  // 숨긴 정답 곡선의 범례는 맞힌 뒤에. 선분·화살표(벡터 a·b)도 이름이 있으면 범례에 — 색이 곧 어느 벡터인지라
+  // 숨긴 정답 곡선의 범례는 맞힌 뒤에. 선분·화살표(벡터 a·b)도 이름이 있으면 범례에 — 색이 곧 어느 벡터인지라.
+  // 막대는 네모 견본(base — 넓이 모형과 같은 꼴): 막대와 겹친 곡선(정규분포 근사)을 범례에서 구분하려고
   const legend = p.objects.flatMap((o) =>
     (o.kind === 'curve' && o.label && !(o.hide && !st.solved)) ||
     ((o.kind === 'segment' || o.kind === 'arrow') && o.label)
       ? [
           {
             key: o.kind === 'curve' ? o.id : `${o.kind} ${o.ref}`,
-            tone: o.tone,
+            tone: o.tone as string,
             label: o.label as string,
           },
         ]
-      : [],
+      : o.kind === 'bars' && o.label
+        ? [{ key: `bars ${o.id}`, tone: 'base', label: o.label }]
+        : [],
   );
 
   const touch = p.mode === 'sketch' && sketching ? 'none' : 'manipulation';
