@@ -1,6 +1,7 @@
 // 형식 검사(매개변수 읽기). 틀린 칸은 fail 로 어디가 왜 틀렸는지 알린다.
 import { type GoalShape, goalNum, needHint, parseGoalShape } from '../../goal.ts';
 import { arr, fail, int, obj, optStr, str } from '../../parse.ts';
+import { checkCurves, parseCurves } from './curve.ts';
 import { isDerived, parseDerived, parseRange } from './derive.ts';
 import { goalMovers } from './goal.ts';
 import { cutArea, measureKey, measureKind, shoelace, sub } from './measure.ts';
@@ -58,6 +59,7 @@ export function parseShape(raw: unknown): ShapeParams {
       'pieces',
       'outline',
       'arcs',
+      'curves',
       'unit',
       'note',
       'goal',
@@ -131,7 +133,7 @@ export function parseShape(raw: unknown): ShapeParams {
       pt.aux = true;
     }
     if (x.on !== undefined) {
-      const on = obj(x.on, `${at} on`, [], ['seg', 'circle']);
+      const on = obj(x.on, `${at} on`, [], ['seg', 'circle', 'curve']);
       if (on.seg !== undefined) {
         const sg = arr(on.seg, `${at} on.seg`, 2, 2).map((v, j) => need(v, `${at} on.seg${j + 1}`));
         pt.on = { seg: [sg[0] as string, sg[1] as string] };
@@ -143,9 +145,12 @@ export function parseShape(raw: unknown): ShapeParams {
             ? fixedPt(need(c[1], `${at} 반지름 점`), `${at} 반지름 점`)
             : half(c[1], `${at} 반지름`);
         pt.on = { circle: [need(c[0], `${at} 원 중심`), r] };
-      } else fail(`${at} on`, 'seg 나 circle 이 필요');
+      } else if (on.curve !== undefined) {
+        // 곡선은 점 뒤에 읽는다(중심이 점이라) — 번호가 맞는지는 곡선을 읽은 뒤 checkCurves 가 본다
+        pt.on = { curve: int(on.curve, `${at} on.curve`, 0, 1) };
+      } else fail(`${at} on`, 'seg·circle·curve 중 하나가 필요');
     }
-    if (pt.on && 'circle' in pt.on) {
+    if (pt.on && ('circle' in pt.on || 'curve' in pt.on)) {
       const deg = int(x.deg, `${at} deg`, 0, 345);
       if (deg % CIRCLE_STEP) fail(`${at} deg`, `${CIRCLE_STEP}의 배수가 아님`);
       pt.deg = deg;
@@ -211,6 +216,18 @@ export function parseShape(raw: unknown): ShapeParams {
   if (note !== undefined) p.note = note;
   const done = optStr(o.done, '도형판 done');
   if (done !== undefined) p.done = done;
+  if (o.curves !== undefined) p.curves = parseCurves(o.curves, need, fixedPt);
+  for (const pt of points)
+    if (pt.on && 'curve' in pt.on)
+      int(pt.on.curve, `도형판 ${pt.id} on.curve`, 0, (p.curves?.length ?? 0) - 1);
+  // 곡선 위 점의 자리는 아직 정할 수 없으니(그 deg 가 맞는지 보는 중) 고정 격자점만 놓은 상태로 본다 — 중심은 고정 점
+  if (p.curves)
+    checkCurves(p, {
+      pts: Object.fromEntries(
+        points.filter((x) => x.x !== undefined).map((x) => [x.id, { x: x.x ?? 0, y: x.y ?? 0 }]),
+      ),
+      cut: [0, 0],
+    });
   if (o.arcs !== undefined) p.arcs = parseArcs(o.arcs, need);
   if (o.unit !== undefined) {
     const u = str(o.unit, '도형판 unit');

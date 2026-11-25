@@ -1,6 +1,7 @@
 // 보이는 것 더하기(그릴 목록의 일부): 점선·연장선, 원 위 호, 각 호·직각 네모, 그림 위 값(tag).
 // 모두 상태에서 다시 계산하는 표시라 끄는 동안 applyDrawing 이 그대로 따라 고친다(키는 늘 그대로, 안 보이면 visibility).
 import { type Mark, r2 } from '../draw.ts';
+import { shapeOf } from './curve.ts';
 import { ccwAngle, measureValue, round, unitText } from './measure.ts';
 import { P, shGeom, X, Y } from './model.ts';
 import type { ShapeParams, ShMeasure, ShState } from './types.ts';
@@ -200,4 +201,34 @@ function tagAt(p: ShapeParams, s: ShState, m: ShMeasure, mid: XY): XY | null {
     return polar(scr(p, O), dirOf(O, F) + sweep / 2, r + OUT + 2);
   }
   return null;
+}
+
+/** 곡선 그리기: 타원은 반원 호 둘, 쌍곡선은 격자 안 부분을 잘게 나눈 꺾은선 두 갈래 */
+export function curveMarks(p: ShapeParams, s: ShState): Mark[] {
+  const u = shGeom(p).u;
+  return (p.curves ?? []).map((cv, i) => {
+    const { c, a, b } = shapeOf(cv);
+    const o = P(s, c);
+    let d: string;
+    if ('ellipse' in cv) {
+      const [l, r, y] = [X(p, o.x - a), X(p, o.x + a), Y(p, o.y)];
+      const [ra, rb] = [r2(a * u), r2(b * u)];
+      d = `M ${l} ${y} A ${ra} ${rb} 0 1 0 ${r} ${y} A ${ra} ${rb} 0 1 0 ${l} ${y}`;
+    } else {
+      // 오른쪽·왼쪽 갈래를 t = −89°~89° 로 1° 간격, 격자 안 점만 이어 그린다(밖으로 나가면 끊는다)
+      const parts: string[] = [];
+      for (const side of [1, -1]) {
+        let pen = false;
+        for (let t = -89; t <= 89; t++) {
+          const x = o.x + (side * a) / Math.cos(rad(t));
+          const y = o.y + b * Math.tan(rad(t));
+          const inside = x >= 0 && x <= p.grid.w && y >= 0 && y <= p.grid.h;
+          if (inside) parts.push(`${pen ? 'L' : 'M'} ${X(p, x)} ${Y(p, y)}`);
+          pen = inside;
+        }
+      }
+      d = parts.join(' ') || 'M 0 0';
+    }
+    return { k: `curve${i}`, tag: 'path', a: { d, class: 'sh-curve' } };
+  });
 }

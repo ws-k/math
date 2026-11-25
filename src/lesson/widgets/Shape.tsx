@@ -343,5 +343,8 @@ function handleText(
 ): string {
   if (!at) return '';
   if (h.on && 'circle' in h.on) return `${at.deg ?? 0}°`;
+  // 곡선 위 점은 매개변수 각이 학습자에게 뜻이 없어 자리(소수 한 자리)로
+  if (h.on && 'curve' in h.on)
+    return `x ${Math.round(at.x * 10) / 10}, y ${Math.round(at.y * 10) / 10}`.replace(/-/g, '−');
   return `x ${at.x}, y ${at.y}`.replace(/-/g, '−');
 }

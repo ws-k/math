@@ -277,6 +277,12 @@
   stroke-width: 1.5;
   stroke-dasharray: 5 4;
 }
+/* 곡선(타원·쌍곡선) */
+.lesson .sh-curve {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
 /* 원 위 호(강조) */
 .lesson .sh-arc {
   fill: none;

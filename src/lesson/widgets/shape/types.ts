@@ -2,7 +2,15 @@
 import type { GoalCommon, GoalNum, GoalShape } from '../../goal.ts';
 
 /** 원 위 점: 중심과 반지름(수 — 0.5 단위, 또는 고정 점 id — 그 점까지 거리, 컴퍼스로 √2 옮기기) */
-export type ShOn = { seg: [string, string] } | { circle: [string, number | string] };
+export type ShOn =
+  | { seg: [string, string] }
+  | { circle: [string, number | string] }
+  /** curves 의 번호(곡선 위 점 — deg 는 매개변수) */
+  | { curve: number };
+/** 곡선: 중심 c, 반지름 a(가로)·b(세로). 쌍곡선은 가로로 벌어진 두 갈래 x²/a² − y²/b² = 1 */
+export type ShCurve =
+  | { ellipse: { c: string; a: number; b: number } }
+  | { hyperbola: { c: string; a: number; b: number } };
 export interface ShPoint {
   id: string;
   x?: number;
@@ -76,6 +84,8 @@ export interface ShapeParams {
   segments: [string, string][];
   /** segments 와 같은 차례의 그리기 방법(객체로 적은 선분이 하나라도 있을 때만) */
   segStyle?: ShSegStyle[];
+  /** 곡선(타원·쌍곡선) — 그 위 점은 on: { curve: 번호 } */
+  curves?: ShCurve[];
   /** 원 위 호(중심 c, from 에서 to 까지 시계 반대 방향) — 강조해 그리고 길이를 잴 수 있다 */
   arcs?: { c: string; from: string; to: string }[];
   /** 길이 단위(없으면 단위 없이) */

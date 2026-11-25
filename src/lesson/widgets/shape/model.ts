@@ -1,7 +1,15 @@
 // 좌표와 상태, 손으로 바꾸기(순수): 처음 상태·끌기·방향키·수선의 발 다시 계산. 화면이 손 조작마다 부르는 함수들.
 import { r2 } from '../draw.ts';
+import { curveAt, curveSteps } from './curve.ts';
 import { derivedPos, isDerived } from './derive.ts';
-import { CIRCLE_STEP, type ShapeParams, type ShPoint, type ShState, W } from './types.ts';
+import {
+  CIRCLE_STEP,
+  type ShapeParams,
+  type ShCurve,
+  type ShPoint,
+  type ShState,
+  W,
+} from './types.ts';
 
 export function shUnit(p: ShapeParams) {
   return Math.min(288 / p.grid.w, 220 / p.grid.h);
@@ -15,6 +23,12 @@ export function shGeom(p: ShapeParams) {
 export const X = (p: ShapeParams, x: number) => r2(shGeom(p).ox + x * shGeom(p).u);
 export const Y = (p: ShapeParams, y: number) => r2(shGeom(p).oy - y * shGeom(p).u);
 export const rad = (d: number) => (d * Math.PI) / 180;
+
+/** 곡선 i 위 매개변수 d 의 자리(deg 를 같이 적어 둔다 — 방향키·검산 기호가 매개변수로 움직인다) */
+export function curvePos(p: ShapeParams, s: ShState, i: number, d: number) {
+  const q = curveAt(s, (p.curves ?? [])[i] as ShCurve, d) as { x: number; y: number };
+  return { x: q.x, y: q.y, deg: d };
+}
 
 /** 원 위 점의 반지름: 수, 또는 고정 점까지 거리(√2 처럼 정수가 아닌 반지름) */
 export function radiusOf(s: ShState, on: { circle: [string, number | string] }) {
@@ -39,6 +53,8 @@ export function shInit(p: ShapeParams): ShState {
   for (const pt of p.points)
     if (pt.deg !== undefined && pt.on && 'circle' in pt.on)
       pts[pt.id] = circlePos(s, pt.on, pt.deg);
+    else if (pt.deg !== undefined && pt.on && 'curve' in pt.on)
+      pts[pt.id] = curvePos(p, s, pt.on.curve, pt.deg);
   if (p.pieces) s.pcs = p.pieces.map(() => ({ t: 0, d: [0, 0] }));
   return settle(p, s);
 }
@@ -74,6 +90,15 @@ export function place(p: ShapeParams, s: ShState, id: string, tx: number, ty: nu
     const t = ((tx - a.x) * dx + (ty - a.y) * dy) / (dx * dx + dy * dy);
     const k = Math.min(N, Math.max(0, Math.round(t * N)));
     n = { x: a.x + (k * dx) / N, y: a.y + (k * dy) / N };
+  } else if (pt.on && 'curve' in pt.on) {
+    // 곡선 위: 닿는 매개변수 자리 중 손가락에서 가장 가까운 곳
+    const i = pt.on.curve;
+    const best = curveSteps(p, s, i)
+      .map((d) => ({ d, q: curvePos(p, s, i, d) }))
+      .reduce((a, b) =>
+        Math.hypot(b.q.x - tx, b.q.y - ty) < Math.hypot(a.q.x - tx, a.q.y - ty) ? b : a,
+      );
+    n = best.q;
   } else if (pt.on && 'circle' in pt.on) {
     const c = s.pts[pt.on.circle[0]] as { x: number; y: number };
     const deg =
@@ -115,6 +140,14 @@ export function shKey(p: ShapeParams, s: ShState, id: string, key: string): ShSt
   const pt = p.points.find((x) => x.id === id);
   const cur = s.pts[id];
   if (!pt || !cur) return null;
+  if (pt.on && 'curve' in pt.on) {
+    // 다음(또는 앞) 닿는 자리로 — 격자 밖이라 건너뛴 자리는 넘어간다
+    const steps = curveSteps(p, s, pt.on.curve);
+    const k = steps.indexOf(cur.deg ?? 0);
+    const dir = v[0] + v[1];
+    const d = steps[(k + dir + steps.length) % steps.length] as number;
+    return settle(p, { ...s, pts: { ...s.pts, [id]: curvePos(p, s, pt.on.curve, d) } });
+  }
   if (pt.on && 'circle' in pt.on) {
     const deg = ((((cur.deg ?? 0) + (v[0] + v[1]) * CIRCLE_STEP) % 360) + 360) % 360;
     return settle(p, { ...s, pts: { ...s.pts, [id]: circlePos(s, pt.on, deg) } });

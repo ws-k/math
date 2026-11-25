@@ -1,7 +1,7 @@
 // 그릴 목록(상태 → 표시). 화면(Shape.tsx)은 이것을 그리기만 한다.
 import { type Drawing, type Mark, r2 } from '../draw.ts';
 import { placeLabels } from '../labels.ts';
-import { angleMarks, arcMarks, segMark, tagMarks } from './look.ts';
+import { angleMarks, arcMarks, curveMarks, segMark, tagMarks } from './look.ts';
 import { circleR, cutArea, round, shMeasures, shoelace } from './measure.ts';
 import { P, shDone, shGeom, shUnit, X, Y } from './model.ts';
 import { pieceAtTarget, piecesArea, shPiecePts } from './piece.ts';
@@ -37,7 +37,7 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
       a: { cx: X(p, o.x), cy: Y(p, o.y), r: r2(circleR(s, c) * shUnit(p)), class: 'sh-circle' },
     });
   });
-  marks.push(...arcMarks(p, s));
+  marks.push(...curveMarks(p, s), ...arcMarks(p, s));
   p.segments.forEach(([a, b], i) => {
     marks.push(segMark(p, s, i, a, b));
   });

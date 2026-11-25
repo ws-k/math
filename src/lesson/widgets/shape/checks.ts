@@ -2,12 +2,21 @@
 import { reduce } from '../../sym.ts';
 import { ratStr } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
+import { curveSym, shapeOf } from './curve.ts';
 import { derivedSym, isDerived, symId } from './derive.ts';
 import { goalMovers, goalStates, goalTable } from './goal.ts';
 import { arcOf, measureValue, operands, round, shoelace, sub } from './measure.ts';
 import { P, shInit } from './model.ts';
 import { pieceChecks } from './piece.ts';
-import type { ShapeParams, ShCircle, ShGoal, ShMeasure, ShPoint, ShState } from './types.ts';
+import type {
+  ShapeParams,
+  ShCircle,
+  ShCurve,
+  ShGoal,
+  ShMeasure,
+  ShPoint,
+  ShState,
+} from './types.ts';
 
 /** sympy 수 글자: 정수는 그대로, 0.5 단위는 Rational(5, 2) — 2.5 를 그대로 적으면 sympy 가 부동소수로 읽는다 */
 export const numSym = (r: number) => (Number.isInteger(r) ? `${r}` : `Rational(${r * 2}, 2)`);
@@ -27,6 +36,10 @@ export function pointSym(p: ShapeParams, s: ShState, id: string): string {
     const c = P(s, pt.on.circle[0]);
     const r = radiusSym(pt.on, (j) => pointSym(p, s, j));
     return `Point(${c.x} + ${r}*cos(rad(${a.deg})), ${c.y} + ${r}*sin(rad(${a.deg})))`;
+  }
+  if (pt.on && 'curve' in pt.on) {
+    const cv = (p.curves ?? [])[pt.on.curve] as ShCurve;
+    return curveSym(cv, pointSym(p, s, shapeOf(cv).c), String(a.deg), numSym);
   }
   return `Point(${a.x}, ${a.y})`;
 }
@@ -103,6 +116,10 @@ export function goalChecks(p: ShapeParams, g: ShGoal): WidgetCheck {
       const c = P(s0, pt.on.circle[0]);
       const r = radiusSym(pt.on, ps);
       return `Point(${c.x} + ${r}*cos(rad(pt_${symId(id)}_d)), ${c.y} + ${r}*sin(rad(pt_${symId(id)}_d)))`;
+    }
+    if (pt.on && 'curve' in pt.on) {
+      const cv = (p.curves ?? [])[pt.on.curve] as ShCurve;
+      return curveSym(cv, ps(shapeOf(cv).c), `pt_${symId(id)}_d`, numSym);
     }
     return `Point(pt_${symId(id)}_x, pt_${symId(id)}_y)`;
   };

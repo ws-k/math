@@ -2,9 +2,10 @@
 import { growStates, hitTable, sameVal, type Val } from '../../goal.ts';
 import { type Rational, reduce } from '../../sym.ts';
 import { add as qAdd, div as qDiv, qi, neg as qNeg, sub as qSub } from '../q.ts';
+import { curveSteps } from './curve.ts';
 import { dependsOn, latticePt, symId } from './derive.ts';
 import { arcOf, measureValue, operands, sub } from './measure.ts';
-import { circlePos, gcd, P, rangeOf, settle, shInit } from './model.ts';
+import { circlePos, curvePos, gcd, P, rangeOf, settle, shInit } from './model.ts';
 import {
   CIRCLE_STEP,
   type ShapeParams,
@@ -147,7 +148,12 @@ export function moverOptions(p: ShapeParams, id: string) {
   });
   const set = (pos: { x: number; y: number; deg?: number }, sym: Record<string, string>) =>
     opts.push({ patch: (s) => settle(p, { ...s, pts: { ...s.pts, [id]: pos } }), sym });
-  if (pt.on && 'circle' in pt.on) {
+  if (pt.on && 'curve' in pt.on) {
+    const i = pt.on.curve;
+    const s0 = shInit(p);
+    for (const d of curveSteps(p, s0, i))
+      set(curvePos(p, s0, i, d), { [`pt_${symId(id)}_d`]: String(d) });
+  } else if (pt.on && 'circle' in pt.on) {
     const on = pt.on;
     for (let d = 0; d < 360; d += CIRCLE_STEP)
       set(circlePos(shInit(p), on, d), { [`pt_${symId(id)}_d`]: String(d) });
