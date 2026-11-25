@@ -567,7 +567,6 @@ test('막대 넓이·정규분포 넓이·덮는 수는 아직 목표로 못 씀
         place: {
           point: 'K',
           x: { value: '2', check: 'floor(4*Rational(1,2))' },
-          y: { value: '0', check: '0*1' },
         },
         hint: '…',
       },
@@ -649,5 +648,42 @@ test('M1 이항분포를 끄는 점으로 고르면: 점의 칸이 막대(폭 1)
         ],
       }),
     ),
+  );
+});
+test('M2 가로로만 끄는 칸 위 점의 점 자리 목표는 x 만(세로는 처음 칸), 가장 좁은 화면 한 칸 8px 이상', () => {
+  const goal = (place: Raw, over: Raw = {}) =>
+    binomRaw({
+      ...over,
+      goal: { place: { point: 'K', ...place }, hint: '…' },
+      objects: [
+        { id: 'K', point: { x: 0, y: 0, drag: 'x' }, name: 'K' },
+        { id: 'B', bars: { binom: ['n', 'p'], sel: [null, 'K'] } },
+      ],
+    });
+  const x = { value: '2', check: 'floor(4*Rational(1,2))' };
+  assert.throws(() => parseCoord(goal({ x, y: { value: '0', check: '0*1' } })), /x 만/);
+  const p = parseCoord(goal({ x }));
+  assert.doesNotThrow(() => coordDef.deep?.(p));
+  const gc = coordChecks(p).filter((c) => c.name.startsWith('목표'));
+  assert.ok(gc.some((c) => c.name === '목표 점 x'));
+  assert.ok(!gc.some((c) => c.name === '목표 점 y'));
+  const r = runChecks(gc);
+  assert.ok(r.ok, r.out);
+  // 가로 40칸(−1/2~79/2): 가장 좁은 화면 한 칸 6.2px < 8px
+  assert.throws(
+    () =>
+      parseCoord(
+        goal(
+          { x },
+          {
+            x: { min: '-1/2', max: '79/2', step: 1 },
+            sliders: [
+              { id: 'n', min: 1, max: 39, step: 1, value: 4, label: '$n$' },
+              { id: 'p', min: '1/10', max: '9/10', step: '1/10', value: '1/2', label: '$p$' },
+            ],
+          },
+        ),
+      ),
+    /끄는 칸/,
   );
 });

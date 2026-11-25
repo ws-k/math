@@ -92,6 +92,12 @@ export function parseGoal(raw: unknown, p: CoordParams, gx: ParseCtx): Goal {
       fail(`${at} place`, '곡선 위 점은 x 만(y 는 곡선에서 계산)');
     out.x = target(pl.x, `${at} place.x`);
     out.i = toIndex(val(out.x), pt.snapN, `${at} place.x`);
+  } else if (pt.drag === 'x') {
+    // 가로로만 끄는 칸 위 점은 세로 칸이 늘 처음 칸이라 y 를 물을 까닭이 없다(곡선 위 점과 같은 꼴)
+    if (pl.x === undefined || pl.y !== undefined)
+      fail(`${at} place`, '가로로만 끄는 점은 x 만(세로는 처음 칸 그대로)');
+    out.x = target(pl.x, `${at} place.x`);
+    out.i = toIndex(val(out.x), p.x.st, `${at} place.x`);
   } else {
     if (pl.x === undefined || pl.y === undefined) fail(`${at} place`, 'x 와 y 둘 다');
     out.x = target(pl.x, `${at} place.x`);
@@ -126,7 +132,8 @@ function snapsOk(p: CoordParams, g: NewGoal): NewGoal {
     const o = pointOf(p, id);
     const n = (p.x.hi - p.x.lo) / o.snapN;
     const px = w / n;
-    if (o.on && px < MIN_SNAP_PX - 1e-9)
+    // 가로로만 끄는 칸 위 점도 한 칸을 손가락으로 고르는 목표라 같은 하한(칸 위 xy 점은 칸 수 상한 MAX_CELLS 가 지킨다)
+    if ((o.on || o.drag === 'x') && px < MIN_SNAP_PX - 1e-9)
       fail(
         `좌표 goal`,
         `${id} 의 끄는 칸이 ${Math.round(n)}칸 — 가장 좁은 화면 그림 폭 ${w.toFixed(1)}px 에서 한 칸이 ${px.toFixed(1)}px 로 ${MIN_SNAP_PX}px 보다 작아 끌기가 칸을 건너뜀(${Math.floor(w / MIN_SNAP_PX)}칸 이하로)`,
