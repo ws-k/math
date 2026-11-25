@@ -30,6 +30,7 @@ export function shInit(p: ShapeParams): ShState {
   for (const pt of p.points)
     if (pt.deg !== undefined && pt.on && 'circle' in pt.on)
       pts[pt.id] = circlePos(s, pt.on, pt.deg);
+  if (p.pieces) s.pcs = p.pieces.map(() => ({ t: 0, d: [0, 0] }));
   return settle(p, s);
 }
 

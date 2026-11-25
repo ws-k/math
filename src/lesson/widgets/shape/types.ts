@@ -49,6 +49,10 @@ export interface ShapeParams {
   measures: ShMeasure[];
   digits: number;
   cut?: { piece: string[]; rest: string[]; by: [number, number]; result: [number, number][] };
+  /** 끌어 옮기고 돌리는 조각들(piece.ts) */
+  pieces?: ShPiece[];
+  /** 조각으로 채울 빈 틀(점선, 격자점 목록) */
+  outline?: [number, number][];
   /** 화면 위 안내 한 줄(선택) */
   note?: string;
   goal?: ShGoal;
@@ -59,6 +63,19 @@ export interface ShState {
   pts: Record<string, { x: number; y: number; deg?: number }>;
   /** 잘라 낸 조각의 이동(격자 칸) */
   cut: [number, number];
+  /** 조각마다 자리(pieces 가 있을 때만) */
+  pcs?: ShPose[];
+}
+/** 조각의 자리: 시계 반대 방향 90° 돌린 횟수 t(0~3), 옮긴 격자 칸 d */
+export interface ShPose {
+  t: number;
+  d: [number, number];
+}
+/** 조각: 처음 꼭짓점 at, 목표 꼭짓점 to(형식 검사가 돌리고 옮겨 닿는 자리 pose 를 찾아 둔다) */
+export interface ShPiece {
+  at: [number, number][];
+  to: [number, number][];
+  pose: ShPose;
 }
 
 export const W = 320;

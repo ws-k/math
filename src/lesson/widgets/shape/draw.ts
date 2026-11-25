@@ -3,6 +3,7 @@ import { type Drawing, type Mark, r2 } from '../draw.ts';
 import { placeLabels } from '../labels.ts';
 import { cutArea, round, shMeasures, shoelace } from './measure.ts';
 import { P, shDone, shGeom, shUnit, X, Y } from './model.ts';
+import { pieceAtTarget, piecesArea, shPiecePts } from './piece.ts';
 import { type ShapeParams, type ShState, W } from './types.ts';
 
 /** 이름표(13px 굵게, 대문자 한 자) 상자. 틈은 예전 자리(가운데가 점에서 오른쪽 12, 기준선이 위 10)와 같게 */
@@ -81,6 +82,31 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
       },
     });
   }
+  if (p.pieces) {
+    // 빈 틀(점선) 위에 조각들. 조각은 화면(Shape.tsx)이 끄는 요소로 따로 그린다(키 pc<번호>)
+    if (p.outline)
+      marks.push({
+        k: 'outline',
+        tag: 'polygon',
+        a: {
+          points: pts(
+            p,
+            p.outline.map(([x, y]) => ({ x, y })),
+          ),
+          class: 'sh-ghost',
+        },
+      });
+    p.pieces.forEach((_, i) => {
+      marks.push({
+        k: `pc${i}`,
+        tag: 'polygon',
+        a: {
+          points: pts(p, shPiecePts(p, s, i)),
+          class: `sh-piece c${i % 3}${pieceAtTarget(p, s, i) ? ' done' : ''}`,
+        },
+      });
+    });
+  }
   // 보조점은 그리지 않는다(점·이름표 모두)
   const shownPts = p.points.filter((pt) => !pt.aux);
   const at = shownPts.map((pt) => ({ x: X(p, P(s, pt.id).x), y: Y(p, P(s, pt.id).y) }));
@@ -120,6 +146,12 @@ export function shDraw(p: ShapeParams, s: ShState): Drawing {
       s.cut[0] === 0 && s.cut[1] === 0
         ? `넓이 = ${a}`
         : `넓이 = ${a} → 옮긴 뒤 넓이 = ${round(moved, p.digits).s}`;
+  }
+  if (p.pieces) {
+    const outline = p.outline
+      ? ` · 빈 틀 넓이 = ${round(shoelace(p.outline.map(([x, y]) => ({ x, y }))), p.digits).s}`
+      : '';
+    texts.pieces = `조각 넓이의 합 = ${round(piecesArea(p, s), p.digits).s}${outline}`;
   }
   return { marks, texts };
 }

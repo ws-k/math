@@ -6,6 +6,7 @@ import { derivedSym, isDerived, symId } from './derive.ts';
 import { goalMovers, goalStates, goalTable } from './goal.ts';
 import { measureValue, operands, round, shoelace, sub } from './measure.ts';
 import { P, shInit } from './model.ts';
+import { pieceChecks } from './piece.ts';
 import type { ShapeParams, ShGoal, ShMeasure, ShPoint, ShState } from './types.ts';
 
 /** sympy 점 식 */
@@ -127,6 +128,7 @@ export function shapeChecks(p: ShapeParams): WidgetCheck[] {
       check: `${shoelaceSym(c.rest.map(ps))} + ${shoelaceSym(c.piece.map((id) => `(${ps(id)} + Point(${c.by[0]}, ${c.by[1]}))`))}`,
     });
   }
+  if (p.pieces) out.push(...pieceChecks(p));
   if (p.goal) out.push(goalChecks(p, p.goal));
   return out;
 }

@@ -23,13 +23,22 @@ export { shDraw } from './shape/draw.ts';
 export { shGoalHits, shGoalNeed } from './shape/goal.ts';
 export { shMeasures } from './shape/measure.ts';
 export { shDone, shDrag, shGeom, shInit, shKey, shUnit } from './shape/model.ts';
+export {
+  shPieceDrag,
+  shPieceKey,
+  shPiecePts,
+  shPiecesDone,
+  shPieceTurn,
+} from './shape/piece.ts';
 export type {
   ShapeParams,
   ShGoal,
   ShIs,
   ShMeasure,
   ShOn,
+  ShPiece,
   ShPoint,
+  ShPose,
   ShState,
 } from './shape/types.ts';
 export { W } from './shape/types.ts';
@@ -43,5 +52,5 @@ export const shapeDef: WidgetDef<ShapeParams> = {
     ...(p.done ? [p.done] : []),
     ...(p.goal ? [p.goal.hint] : []),
   ],
-  hasGoal: (p) => !!p.cut || !!p.goal,
+  hasGoal: (p) => !!p.cut || !!p.goal || !!p.pieces,
 };

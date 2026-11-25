@@ -292,6 +292,20 @@
   fill: var(--good);
   fill-opacity: 0.45;
 }
+/* 조각 여러 개(pieces): 조각마다 색을 달리해 어느 조각을 옮겼는지 보이게. 목표 자리에 간 조각은 위의 done 색 */
+.lesson .sh-piece.c1:not(.done) {
+  fill: var(--primary);
+  fill-opacity: 0.5;
+}
+.lesson .sh-piece.c2:not(.done) {
+  fill: var(--bad);
+  fill-opacity: 0.45;
+}
+.lesson .sh-piece:focus-visible {
+  outline: none;
+  stroke: var(--primary);
+  stroke-width: 3.5;
+}
 .lesson .wgt-ctl .lbtn.arrow {
   flex: 0 0 56px;
   font-size: 1.3rem;

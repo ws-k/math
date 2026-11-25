@@ -5,6 +5,7 @@ import { isDerived, parseDerived, parseRange } from './derive.ts';
 import { goalMovers } from './goal.ts';
 import { cutArea, measureKey, measureKind, measureName, shoelace, sub } from './measure.ts';
 import { gcd, P, shInit } from './model.ts';
+import { parsePieces } from './piece.ts';
 import { CIRCLE_STEP, type ShapeParams, type ShIs, type ShMeasure, type ShPoint } from './types.ts';
 
 // 대문자 한 자, 뒤에 ′ 하나까지(F′ — 옮긴 점·대칭점을 교과서처럼 부르려고)
@@ -15,7 +16,19 @@ export function parseShape(raw: unknown): ShapeParams {
     raw,
     '도형판',
     ['grid', 'points'],
-    ['polygons', 'circles', 'segments', 'measures', 'digits', 'cut', 'note', 'goal', 'done'],
+    [
+      'polygons',
+      'circles',
+      'segments',
+      'measures',
+      'digits',
+      'cut',
+      'pieces',
+      'outline',
+      'note',
+      'goal',
+      'done',
+    ],
   );
   const g = obj(o.grid, '도형판 grid', ['w', 'h']);
   const grid = { w: int(g.w, '도형판 grid.w', 2, 16), h: int(g.h, '도형판 grid.h', 2, 12) };
@@ -26,79 +39,83 @@ export function parseShape(raw: unknown): ShapeParams {
     return v;
   };
   const prev = new Map<string, ShPoint>();
-  const points: ShPoint[] = arr(o.points, '도형판 points', 1, 10).map((rp, i) => {
-    const at = `도형판 점${i + 1}`;
-    const x = obj(
-      rp,
-      at,
-      ['id'],
-      ['x', 'y', 'deg', 'drag', 'on', 'aux', 'foot', 'follow', 'mirror', 'range'],
-    );
-    const id = str(x.id, `${at} id`);
-    if (!ID.test(id)) fail(`${at} id`, '대문자 한 글자(뒤에 ′ 하나까지)');
-    if (ids.has(id)) fail(`${at} id`, `중복 (${id})`);
-    if (x.drag !== undefined && typeof x.drag !== 'boolean') fail(`${at} drag`, 'true/false 만');
-    const pt: ShPoint = { id, drag: x.drag === true };
-    if (x.follow !== undefined || x.mirror !== undefined) {
-      parseDerived(x, pt, at, grid, need, prev);
+  const points: ShPoint[] = arr(o.points, '도형판 points', o.pieces === undefined ? 1 : 0, 10).map(
+    (rp, i) => {
+      const at = `도형판 점${i + 1}`;
+      const x = obj(
+        rp,
+        at,
+        ['id'],
+        ['x', 'y', 'deg', 'drag', 'on', 'aux', 'foot', 'follow', 'mirror', 'range'],
+      );
+      const id = str(x.id, `${at} id`);
+      if (!ID.test(id)) fail(`${at} id`, '대문자 한 글자(뒤에 ′ 하나까지)');
+      if (ids.has(id)) fail(`${at} id`, `중복 (${id})`);
+      if (x.drag !== undefined && typeof x.drag !== 'boolean') fail(`${at} drag`, 'true/false 만');
+      const pt: ShPoint = { id, drag: x.drag === true };
+      if (x.follow !== undefined || x.mirror !== undefined) {
+        parseDerived(x, pt, at, grid, need, prev);
+        ids.add(id);
+        prev.set(id, pt);
+        return pt;
+      }
+      if (x.foot !== undefined) {
+        // 발은 자리를 늘 계산하는 점 — 자리·끌기·제약을 적으면 계산한 자리와 어긋난다
+        const bad = ['x', 'y', 'deg', 'drag', 'on', 'aux', 'range'].find((k) => x[k] !== undefined);
+        if (bad) fail(`${at} foot`, `수선의 발에는 ${bad} 를 적지 않음(자리는 계산함)`);
+        const f = obj(x.foot, `${at} foot`, ['from', 'line']);
+        const from = need(f.from, `${at} foot.from`);
+        const line = arr(f.line, `${at} foot.line`, 2, 2).map((v, j) =>
+          need(v, `${at} foot.line${j + 1}`),
+        ) as [string, string];
+        if (isDerived(prev.get(from)))
+          fail(`${at} foot.from`, '발은 계산되는 점(발·따라오는 점·마주 보는 점)에서 내리지 않음');
+        // 직선을 고정해 두면 발은 내린 점 하나만 따라간다(검산이 늘어놓는 상태도 그 점의 자리뿐)
+        const [a, b] = line.map((v) => prev.get(v) as ShPoint);
+        for (const e of [a, b])
+          if (e?.drag || e?.on || isDerived(e))
+            fail(`${at} foot.line`, `직선 위 점 ${e?.id} 은 고정된 격자점이어야 함`);
+        if (a?.x === b?.x && a?.y === b?.y) fail(`${at} foot.line`, '직선의 두 점이 같은 자리');
+        pt.foot = { from, line };
+        ids.add(id);
+        prev.set(id, pt);
+        return pt;
+      }
+      if (x.aux !== undefined) {
+        if (x.aux !== true) fail(`${at} aux`, 'true 만');
+        if (pt.drag || x.on !== undefined) fail(`${at} aux`, '보조점은 고정 점(끌기·제약 없음)');
+        pt.aux = true;
+      }
+      if (x.on !== undefined) {
+        const on = obj(x.on, `${at} on`, [], ['seg', 'circle']);
+        if (on.seg !== undefined) {
+          const sg = arr(on.seg, `${at} on.seg`, 2, 2).map((v, j) =>
+            need(v, `${at} on.seg${j + 1}`),
+          );
+          pt.on = { seg: [sg[0] as string, sg[1] as string] };
+        } else if (on.circle !== undefined) {
+          const c = arr(on.circle, `${at} on.circle`, 2, 2);
+          pt.on = { circle: [need(c[0], `${at} 원 중심`), int(c[1], `${at} 반지름`, 1, 12)] };
+        } else fail(`${at} on`, 'seg 나 circle 이 필요');
+      }
+      if (pt.on && 'circle' in pt.on) {
+        const deg = int(x.deg, `${at} deg`, 0, 345);
+        if (deg % CIRCLE_STEP) fail(`${at} deg`, `${CIRCLE_STEP}의 배수가 아님`);
+        pt.deg = deg;
+      } else {
+        const cx = int(x.x, `${at} x`, -99, 99);
+        const cy = int(x.y, `${at} y`, -99, 99);
+        if (cx < 0 || cx > grid.w || cy < 0 || cy > grid.h) fail(at, `격자 밖 (${cx}, ${cy})`);
+        pt.x = cx;
+        pt.y = cy;
+        if (x.deg !== undefined) fail(`${at} deg`, '원 위 점에만');
+      }
+      if (x.range !== undefined) pt.range = parseRange(x.range, pt, at, grid);
       ids.add(id);
       prev.set(id, pt);
       return pt;
-    }
-    if (x.foot !== undefined) {
-      // 발은 자리를 늘 계산하는 점 — 자리·끌기·제약을 적으면 계산한 자리와 어긋난다
-      const bad = ['x', 'y', 'deg', 'drag', 'on', 'aux', 'range'].find((k) => x[k] !== undefined);
-      if (bad) fail(`${at} foot`, `수선의 발에는 ${bad} 를 적지 않음(자리는 계산함)`);
-      const f = obj(x.foot, `${at} foot`, ['from', 'line']);
-      const from = need(f.from, `${at} foot.from`);
-      const line = arr(f.line, `${at} foot.line`, 2, 2).map((v, j) =>
-        need(v, `${at} foot.line${j + 1}`),
-      ) as [string, string];
-      if (isDerived(prev.get(from)))
-        fail(`${at} foot.from`, '발은 계산되는 점(발·따라오는 점·마주 보는 점)에서 내리지 않음');
-      // 직선을 고정해 두면 발은 내린 점 하나만 따라간다(검산이 늘어놓는 상태도 그 점의 자리뿐)
-      const [a, b] = line.map((v) => prev.get(v) as ShPoint);
-      for (const e of [a, b])
-        if (e?.drag || e?.on || isDerived(e))
-          fail(`${at} foot.line`, `직선 위 점 ${e?.id} 은 고정된 격자점이어야 함`);
-      if (a?.x === b?.x && a?.y === b?.y) fail(`${at} foot.line`, '직선의 두 점이 같은 자리');
-      pt.foot = { from, line };
-      ids.add(id);
-      prev.set(id, pt);
-      return pt;
-    }
-    if (x.aux !== undefined) {
-      if (x.aux !== true) fail(`${at} aux`, 'true 만');
-      if (pt.drag || x.on !== undefined) fail(`${at} aux`, '보조점은 고정 점(끌기·제약 없음)');
-      pt.aux = true;
-    }
-    if (x.on !== undefined) {
-      const on = obj(x.on, `${at} on`, [], ['seg', 'circle']);
-      if (on.seg !== undefined) {
-        const sg = arr(on.seg, `${at} on.seg`, 2, 2).map((v, j) => need(v, `${at} on.seg${j + 1}`));
-        pt.on = { seg: [sg[0] as string, sg[1] as string] };
-      } else if (on.circle !== undefined) {
-        const c = arr(on.circle, `${at} on.circle`, 2, 2);
-        pt.on = { circle: [need(c[0], `${at} 원 중심`), int(c[1], `${at} 반지름`, 1, 12)] };
-      } else fail(`${at} on`, 'seg 나 circle 이 필요');
-    }
-    if (pt.on && 'circle' in pt.on) {
-      const deg = int(x.deg, `${at} deg`, 0, 345);
-      if (deg % CIRCLE_STEP) fail(`${at} deg`, `${CIRCLE_STEP}의 배수가 아님`);
-      pt.deg = deg;
-    } else {
-      const cx = int(x.x, `${at} x`, -99, 99);
-      const cy = int(x.y, `${at} y`, -99, 99);
-      if (cx < 0 || cx > grid.w || cy < 0 || cy > grid.h) fail(at, `격자 밖 (${cx}, ${cy})`);
-      pt.x = cx;
-      pt.y = cy;
-      if (x.deg !== undefined) fail(`${at} deg`, '원 위 점에만');
-    }
-    if (x.range !== undefined) pt.range = parseRange(x.range, pt, at, grid);
-    ids.add(id);
-    prev.set(id, pt);
-    return pt;
-  });
+    },
+  );
   const p: ShapeParams = {
     grid,
     points,
@@ -206,6 +223,8 @@ export function parseShape(raw: unknown): ShapeParams {
         fail(`도형판 ${pt.id}`, '원 중심은 고정된 격자점이어야 함');
     }
   if (o.cut !== undefined) {
+    if (o.pieces !== undefined)
+      fail('도형판 pieces', 'pieces 와 cut 중 하나만(cut 은 조각 하나 옮기기)');
     const c = obj(o.cut, '도형판 cut', ['piece', 'rest', 'by', 'result']);
     if (points.some((x) => x.drag || x.on))
       fail('도형판 cut', '잘라 옮기기에는 끄는 점·제약 점을 두지 않음');
@@ -237,6 +256,13 @@ export function parseShape(raw: unknown): ShapeParams {
     if (Math.abs(whole - res) > 1e-9)
       fail('도형판 cut.result', '결과 모양의 넓이가 처음 넓이와 다름');
   }
+  if (o.pieces !== undefined) {
+    // 조각을 목표 자리에 채우는 것이 이 장면의 목표 — 다른 목표·끄는 점이 같이 있으면 무엇을 하면 끝인지 흐려진다
+    if (o.goal !== undefined)
+      fail('도형판 pieces', '조각을 채우는 것이 목표 — goal 을 따로 두지 않음');
+    if (points.some((x) => x.drag)) fail('도형판 pieces', '조각 옮기기에는 끄는 점을 두지 않음');
+    parsePieces(o.pieces, o.outline, p);
+  } else if (o.outline !== undefined) fail('도형판 outline', '조각(pieces)이 있을 때만');
   if (o.goal !== undefined) {
     const at = '도형판 goal';
     if (p.cut) fail(at, '잘라 옮기기는 조각을 제자리에 옮기는 것이 목표 — 따로 두지 않음');
@@ -262,6 +288,7 @@ export function parseShape(raw: unknown): ShapeParams {
     }
     if (!goalMovers(p, g).length) fail(at, '그 측정값을 바꾸는 끄는 점이 없음');
     p.goal = g;
-  } else if (o.done !== undefined) fail('도형판 done', '목표(goal)가 있을 때만');
+  } else if (o.done !== undefined && !p.pieces)
+    fail('도형판 done', '목표(goal)나 조각(pieces)이 있을 때만');
   return p;
 }
