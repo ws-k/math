@@ -106,12 +106,13 @@ test('dropDrag: 놓을 때는 그때의 설정(마지막으로 그린 부품의 
   assert.deepEqual(got, ['new']);
 });
 
-test('dropDrag: 잡을 때 요소가 없었으면 잠그지 않고, 끝도 아무 일 없이 잠금만 푼다', () => {
+test('dropDrag: 잡을 때 요소가 없었으면 잠그지 않고, 끝나도 남의 잠금을 건드리지 않는다', () => {
   const { h, opts, drops } = setup({}, null);
   h.onStart?.(0, 0);
   assert.equal(opts.busy.current, false);
   h.onMove(10, 10);
+  opts.busy.current = true; // 다른 손잡이가 끄는 중
   h.onEnd(10, 10, false);
-  assert.equal(opts.busy.current, false);
+  assert.equal(opts.busy.current, true);
   assert.deepEqual(drops, []);
 });

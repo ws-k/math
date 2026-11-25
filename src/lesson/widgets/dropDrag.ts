@@ -60,9 +60,9 @@ export function dropDrag(target: () => HTMLElement | null, get: () => DropOpts):
       const el = held;
       held = null;
       const o = get();
-      // 잠금은 요소가 남아 있든 없든 먼저 푼다 — 끄는 도중 요소가 사라지면 ref 는 이미 비어 있다
-      o.busy.current = false;
+      // 잠근 쪽(집은 요소가 있는 손잡이)만 잠금을 푼다 — 집지 못한 손잡이가 남의 끌기 잠금을 풀지 않게
       if (!el) return;
+      o.busy.current = false;
       (o.land ?? landSelf)(el);
       if (cancelled || !el.isConnected) {
         el.style.transform = '';
