@@ -15,6 +15,9 @@ import {
   ftHeight,
   ftInit,
   ftLayout,
+  ftMoveFrom,
+  ftNextLeaf,
+  ftOrder,
   ftPad,
   ftPrime,
   ftRedoMsg,
@@ -22,6 +25,7 @@ import {
   ftSelect,
   ftSplit,
   ftStartMsg,
+  josa,
   type Msg,
   type Step,
   TREE_W,
@@ -32,6 +36,8 @@ import './factorTree.css';
 
 const MOVE_MS = 280;
 type Pt = { x: number; y: number };
+/** 조작 뒤 키보드 포커스를 옮길 곳: 마디 번호, 또는 '다른 방법으로 다시' 단추 */
+type FocusTo = number | 'redo';
 
 export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTreeParams>) {
   const [s, setS] = useState<TState>(() => ftInit(p));
@@ -42,27 +48,31 @@ export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTree
   /** 나무를 새로 시작한 횟수. 마디 key 에 넣어 옛 나무의 자리에서 미끄러져 나오지 않게 한다 */
   const [gen, setGen] = useState(0);
   const reached = useRef(false);
+  const root = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
-  /** 지난번 그린 마디 자리(나무 좌표). 새로 그린 뒤 여기서부터 움직인다 */
+  const redo = useRef<HTMLButtonElement>(null);
+  /** 지금 화면에 보이는 마디 자리(나무 좌표). 움직이는 동안 프레임마다 고쳐 써서, 중간에 또 쪼개면 거기서 이어 간다 */
   const shown = useRef<{ gen: number; pos: Pt[] } | null>(null);
+  const focusTo = useRef<FocusTo | null>(null);
 
   const done = ftDone(s);
   const pos = ftLayout(s);
   const h = ftHeight(p);
   const pad = ftPad(s);
 
+  // 마디가 늘 때(쪼갬)와 새 나무일 때만 움직인다. 고르기·동그라미처럼 자리가 그대로인 다시 그리기에서는 돌던 움직임을
+  // 끊지 않는다 — 의존값 없이 매번 돌면 0.28초 안에 다시 그릴 때 정리 함수가 움직임을 멈춰 마디·가지가 중간에 굳었다
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pos·s 는 nodes.length·gen 이 같으면 자리가 같다(의도한 의존값)
   useLayoutEffect(() => {
-    const old = shown.current;
-    shown.current = { gen, pos };
+    const last = shown.current?.gen === gen ? shown.current.pos : null;
+    const from = reducedMotion() ? null : ftMoveFrom(last, s);
+    const cur = { gen, pos: from ? [...from] : pos };
+    shown.current = cur;
     const el = box.current;
-    if (!el || !old || old.gen !== gen || reducedMotion()) return;
-    // 새 마디는 부모의 옛 자리에서 나온다(부모도 옛 자리가 없으면 제자리)
-    const from = pos.map((to, i) => {
-      if (old.pos[i]) return old.pos[i] as Pt;
-      const par = s.nodes[i]?.parent;
-      return (par != null && old.pos[par]) || to;
-    });
-    if (from.every((f, i) => f.x === pos[i]?.x && f.y === pos[i]?.y)) return;
+    if (!el || !from || from.every((f, i) => f.x === pos[i]?.x && f.y === pos[i]?.y)) {
+      cur.pos = pos;
+      return;
+    }
     const nodes = [...el.querySelectorAll<HTMLElement>('[data-nd]')];
     const lines = [...el.querySelectorAll<SVGLineElement>('[data-edge]')];
     // 마디 자리는 상자 폭에 대한 비율이라, 화면 px 로 옮길 때 실제 폭 / TREE_W 를 곱한다
@@ -72,21 +82,20 @@ export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTree
     const frame = (t: number) => {
       const u = Math.min(1, (t - t0) / MOVE_MS);
       const e = 1 - (1 - u) ** 3;
-      const at = (i: number): Pt => {
+      cur.pos = pos.map((to, i) => {
         const f = from[i] as Pt;
-        const to = pos[i] as Pt;
         return { x: f.x + (to.x - f.x) * e, y: f.y + (to.y - f.y) * e };
-      };
+      });
       for (const nd of nodes) {
         const i = Number(nd.dataset.nd);
-        const c = at(i);
+        const c = cur.pos[i] as Pt;
         const to = pos[i] as Pt;
         nd.style.transform = u < 1 ? `translate(${(c.x - to.x) * k}px,${c.y - to.y}px)` : '';
       }
       for (const ln of lines) {
         const [a, b] = (ln.dataset.edge as string).split('-').map(Number) as [number, number];
-        const pa = at(a);
-        const pb = at(b);
+        const pa = cur.pos[a] as Pt;
+        const pb = cur.pos[b] as Pt;
         ln.setAttribute('x1', String(pa.x));
         ln.setAttribute('y1', String(pa.y));
         ln.setAttribute('x2', String(pb.x));
@@ -94,13 +103,32 @@ export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTree
       }
       if (u < 1) raf = requestAnimationFrame(frame);
     };
+    // 첫 프레임은 지금 바로 — 새로 그린 끝 자리가 한 번이라도 화면에 찍히지 않게
+    frame(t0);
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
+  }, [gen, s.nodes.length]);
+
+  // 누른 단추가 꺼지거나(숫자판) 사라지면(다 끝남) 키보드 포커스가 문서 밖으로 빠진다 — 다음에 누를 곳으로 옮긴다
+  useLayoutEffect(() => {
+    const to = focusTo.current;
+    focusTo.current = null;
+    if (to === null) return;
+    const el =
+      to === 'redo' ? redo.current : box.current?.querySelector<HTMLElement>(`[data-nd="${to}"]`);
+    el?.focus({ preventScroll: true });
   });
 
-  const apply = (r: Step) => {
+  /** 포커스가 이 부품 안에 있을 때만(키보드로 조작 중) 옮긴다. 손가락·마우스로 누른 사람의 화면은 건드리지 않는다 */
+  const moveFocus = (to: FocusTo | null) => {
+    if (to !== null && root.current?.contains(document.activeElement)) focusTo.current = to;
+  };
+
+  const apply = (r: Step, kind: 'select' | 'split' | 'prime') => {
     if (!r.ok && r.msg.cls === 'bad') onMiss();
     if (r.say) setSay(r.say);
+    if (r.ok && kind === 'split') moveFocus(r.s.nodes.length - 2);
+    if (r.ok && kind === 'prime' && s.sel !== null) moveFocus(ftNextLeaf(r.s, s.sel) ?? 'redo');
     if (r.ok && ftDone(r.s) && !ftDone(s)) {
       const res = ftResult(r.s);
       setS(r.s);
@@ -117,8 +145,9 @@ export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTree
     setMsg(r.msg);
   };
 
-  const restart = (keepPrev: boolean, text: string) => {
-    if (!keepPrev) setPrev(null);
+  /** 새 나무. 처음 끝낸 나무(prev)는 남긴다 — 두 번째 나무 도중에 처음부터 다시 해도 견줄 나무가 있어야 한다 */
+  const restart = (text: string) => {
+    moveFocus(0);
     setS(ftInit(p));
     setGen((g) => g + 1);
     setMsg({ text, cls: '' });
@@ -126,17 +155,9 @@ export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTree
   };
 
   const res = done ? ftResult(s) : null;
-  // 화면 낭독기·Tab 은 위층부터, 같은 층은 왼쪽부터 읽게 마디를 자리 순으로 놓는다(만든 순서가 아니라)
-  const order = s.nodes
-    .map((_, i) => i)
-    .sort((a, b) => {
-      const pa = pos[a] as Pt;
-      const pb = pos[b] as Pt;
-      return pa.y - pb.y || pa.x - pb.x;
-    });
 
   return (
-    <div className="wgt ft">
+    <div className="wgt ft" ref={root}>
       <div className="ft-tree" ref={box} style={{ height: h }}>
         <svg
           className="ft-edges"
@@ -158,49 +179,29 @@ export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTree
             )),
           )}
         </svg>
-        <button
-          type="button"
-          className="ft-reset"
-          aria-label="처음부터 다시"
-          onClick={() => restart(false, ftStartMsg().text)}
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M3 12a9 9 0 1 0 3-6.7" />
-            <path d="M3 4v5h5" />
-          </svg>
-        </button>
-        {order.map((i) => {
+        {/* 화면 낭독기·Tab 은 위층부터, 같은 층은 왼쪽부터 읽게 마디를 자리 순으로 놓는다(만든 순서가 아니라) */}
+        {ftOrder(s).map((i) => {
           const x = s.nodes[i] as TState['nodes'][number];
           const at = pos[i] as Pt;
-          const kids = x.kids?.map((c) => s.nodes[c]?.n);
+          const kids = x.kids?.map((c) => s.nodes[c]?.n as number);
           const leaf = !x.kids && !x.prime;
           return (
             <button
               type="button"
               key={`${gen}:${i}`}
               data-nd={i}
-              className={`ft-nd${x.kids ? ' split' : x.prime ? ' pr' : ''}${s.sel === i ? ' sel' : ''}`}
+              className={`ft-nd${x.kids ? ' ft-split' : x.prime ? ' ft-pr' : ''}${s.sel === i ? ' ft-sel' : ''}`}
               style={{ left: `${(at.x / TREE_W) * 100}%`, top: at.y }}
               aria-pressed={leaf ? s.sel === i : undefined}
               aria-label={
                 kids
-                  ? `${x.n}, ${kids[0]} 곱하기 ${kids[1]} 로 쪼갬`
+                  ? `${x.n}, ${kids[0]} 곱하기 ${kids[1]} ${josa(kids[1] as number, '으로')} 쪼갬`
                   : x.prime
                     ? `${x.n}, 소수`
                     : `${x.n}, 아직 쪼갤 수 있는지 모름`
               }
               disabled={done}
-              onClick={() => apply(ftSelect(s, i))}
+              onClick={() => apply(ftSelect(s, i), 'select')}
             >
               {x.n}
             </button>
@@ -217,7 +218,8 @@ export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTree
           <button
             type="button"
             className="lbtn ft-redo"
-            onClick={() => restart(true, ftRedoMsg(p, res))}
+            ref={redo}
+            onClick={() => restart(ftRedoMsg(p, prev ? [res, prev] : [res]))}
           >
             다른 방법으로 다시 쪼개기
           </button>
@@ -230,21 +232,43 @@ export function FactorTree({ params: p, onDone, onMiss }: WidgetProps<FactorTree
               type="button"
               key={d}
               disabled={!pad.enabled}
-              onClick={() => apply(ftSplit(s, d))}
+              onClick={() => apply(ftSplit(s, d), 'split')}
             >
               {d}
             </button>
           ))}
           <button
             type="button"
-            className="pr"
+            className="ft-pr"
             disabled={!pad.enabled}
-            onClick={() => apply(ftPrime(s))}
+            onClick={() => apply(ftPrime(s), 'prime')}
           >
             소수예요
           </button>
         </div>
       )}
+      {/* 처음부터 다시는 나무 오른쪽 위에 보이지만 Tab 순서는 맨 뒤 — 나무·숫자판을 다 지나서 만나게 */}
+      <button
+        type="button"
+        className="ft-reset"
+        aria-label="처음부터 다시"
+        onClick={() => restart(ftStartMsg().text)}
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 12a9 9 0 1 0 3-6.7" />
+          <path d="M3 4v5h5" />
+        </svg>
+      </button>
       <div className={`toast ${msg.cls}`} aria-live="polite">
         {msg.text}
       </div>

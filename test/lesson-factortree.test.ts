@@ -9,12 +9,15 @@ import {
   ftInit,
   ftLayout,
   ftLeafSets,
+  ftMoveFrom,
+  ftNextLeaf,
   ftPad,
   ftPrime,
   ftRedoMsg,
   ftResult,
   ftSelect,
   ftSplit,
+  josa,
   TREE_W,
   type TState,
 } from '../src/lesson/widgets/factorTree.ts';
@@ -76,7 +79,7 @@ test('처음: 뿌리 하나, 고른 마디 없음, 숫자판은 꺼져 있음', 
 test('수를 고르면 숫자판이 켜지는데, 나누어떨어지는 수만 켜지지는 않는다(P3 — 정답 목록을 미리 안 보임)', () => {
   const r = ftSelect(ftInit(P72), 0);
   assert.equal(r.s.sel, 0);
-  assert.equal(r.msg.text, "72 을 어떤 수로 나눌까요? 더 못 쪼개면 '소수예요'.");
+  assert.equal(r.msg.text, "72 를 어떤 수로 나눌까요? 더 못 쪼개면 '소수예요'.");
   // 5·7 처럼 72 를 못 나누는 수도 똑같이 눌린다 — 판정은 누른 뒤에
   assert.deepEqual(ftPad(r.s), { digits: [2, 3, 4, 5, 6, 7, 8, 9], enabled: true });
   // 같은 마디를 다시 누르면 고르기 풀림
@@ -88,7 +91,7 @@ test('쪼개기: 나누어떨어지면 (나눈 수, 몫) 두 마디가 생기고
   assert.equal(r.ok, true);
   assert.equal(r.msg.text, '72 = 8 × 9. 끝의 수를 눌러 계속 쪼개요.');
   assert.equal(r.msg.cls, '');
-  assert.equal(r.say, '72 은 8 곱하기 9');
+  assert.equal(r.say, '72 는 8 곱하기 9');
   assert.deepEqual(
     r.s.nodes.map((x) => x.n),
     [72, 8, 9],
@@ -119,14 +122,14 @@ test('소수예요: 소수면 동그라미, 아니면 "나누어떨어지는 수
   const s = act(ftInit(P72), 72, 8).s;
   const bad = ftPrime(ftSelect(s, 2).s); // 9
   assert.deepEqual(bad.msg, {
-    text: '9 은 1 과 9 말고도 나누어떨어지는 수가 있어요.',
+    text: '9 는 1 과 9 말고도 나누어떨어지는 수가 있어요.',
     cls: 'bad',
   });
   assert.equal(bad.ok, false);
   const s2 = act(s, 8, 2).s;
   const good = act(s2, 2, 'pr');
   assert.equal(good.ok, true);
-  assert.deepEqual(good.msg, { text: '2 은 1 과 2 으로만 나뉘는 소수예요. 동그라미!', cls: 'ok' });
+  assert.deepEqual(good.msg, { text: '2 는 1 과 2 로만 나뉘는 소수예요. 동그라미!', cls: 'ok' });
   assert.equal(good.s.nodes[3]?.prime, true);
 });
 
@@ -134,9 +137,9 @@ test('이미 쪼갠 수·동그라미 친 수를 누르면 안내만', () => {
   const s = act(ftInit(P72), 72, 8).s;
   const r = ftSelect(s, 0);
   assert.equal(r.s.sel, null);
-  assert.equal(r.msg.text, '72 은 이미 쪼갰어요. 나무 맨 끝의 수를 골라요.');
+  assert.equal(r.msg.text, '72 는 이미 쪼갰어요. 나무 맨 끝의 수를 골라요.');
   const s2 = act(act(s, 8, 2).s, 2, 'pr').s;
-  assert.equal(ftSelect(s2, 3).msg.text, '2 은 이미 동그라미 친 소수예요.');
+  assert.equal(ftSelect(s2, 3).msg.text, '2 는 이미 동그라미 친 소수예요.');
 });
 
 test('끝까지: 잎이 모두 소수면 끝, 결과는 작은 소수부터·거듭제곱', () => {
@@ -151,7 +154,7 @@ test('끝까지: 잎이 모두 소수면 끝, 결과는 작은 소수부터·거
   assert.equal(r.flatTex, '72=2\\times2\\times2\\times3\\times3');
   assert.equal(r.powTex, '=2^{3}\\times3^{2}');
   assert.equal(r.powText, '2³ × 3²');
-  assert.equal(r.say, '72 는 2 × 2 × 2 × 3 × 3');
+  assert.equal(r.say, '72 는 2 곱하기 2 곱하기 2 곱하기 3 곱하기 3');
   assert.equal(ftDone(run(P72, TREE_89.slice(0, -1))), false);
 });
 
@@ -175,9 +178,9 @@ test('다른 방법으로 다시: 모양이 달라도 잎이 같으면 "지난�
 
 test('다시 쪼갤 때 권하는 첫 쪼개기는 지난번과 다른, 가장 고른 두 수', () => {
   const first = ftResult(run(P72, TREE_236));
-  assert.equal(ftRedoMsg(P72, first), '이번엔 처음과 다른 수로 쪼개 볼까요? 예: 8 × 9.');
+  assert.equal(ftRedoMsg(P72, [first]), '이번엔 처음과 다른 수로 쪼개 볼까요? 예: 8 × 9.');
   const r89 = ftResult(run(P72, TREE_89));
-  assert.equal(ftRedoMsg(P72, r89), '이번엔 처음과 다른 수로 쪼개 볼까요? 예: 6 × 12.');
+  assert.equal(ftRedoMsg(P72, [r89]), '이번엔 처음과 다른 수로 쪼개 볼까요? 예: 6 × 12.');
 });
 
 test('어떻게 쪼개 시작해도 끝에 남는 소수 조각은 한 가지(닿는 나무를 모두 늘어놓음)', () => {
@@ -253,4 +256,73 @@ test('검산: 잎 = sympy factorint, 소수 판정 = sympy isprime', () => {
 test('목표가 있는 부품(끝까지 쪼개기), 글 칸 없음', () => {
   assert.equal(factorTreeDef.hasGoal?.(P72), true);
   assert.deepEqual(factorTreeDef.texts(P72), []);
+});
+
+test('조사: 숫자 끝 자리 읽기에 받침이 있으면 은·을, 으로는 ㄹ 받침이 아닐 때만', () => {
+  // 0 영·3 삼·6 육 = 받침(ㄹ 아님) / 1 일·7 칠·8 팔 = ㄹ 받침 / 2 이·4 사·5 오·9 구 = 받침 없음
+  const ds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  assert.deepEqual(
+    ds.map((d) => josa(d, '은')),
+    ['은', '은', '는', '은', '는', '는', '은', '은', '은', '는'],
+  );
+  assert.deepEqual(
+    ds.map((d) => josa(d, '을')),
+    ['을', '을', '를', '을', '를', '를', '을', '을', '을', '를'],
+  );
+  assert.deepEqual(
+    ds.map((d) => josa(d, '으로')),
+    ['으로', '로', '로', '으로', '로', '로', '으로', '로', '로', '로'],
+  );
+  assert.equal(josa(72, '을'), '를');
+  assert.equal(josa(36, '으로'), '으로');
+  // 쪼개기 글: "8 ÷ 7 은"(칠)
+  const s8 = ftSelect(act(ftInit(P72), 72, 8).s, 1).s;
+  assert.equal(ftSplit(s8, 7).msg.text, '8 ÷ 7 은 나누어떨어지지 않아요 (나머지 1).');
+  assert.equal(act(ftInit(P72), 72, 2).say, '72 는 2 곱하기 36');
+  const s3 = act(act(ftInit(P72), 72, 8).s, 9, 3).s;
+  assert.equal(act(s3, 3, 'pr').msg.text, '3 은 1 과 3 으로만 나뉘는 소수예요. 동그라미!');
+});
+
+test('2 에 더 큰 수를 누르면 "작은 수로" 대신 소수예요를 권한다(숫자판에 2 보다 작은 수가 없음)', () => {
+  const s = ftSelect(act(ftInit(P72), 72, 2).s, 1).s; // 2
+  assert.deepEqual(ftSplit(s, 3).msg, {
+    text: "2 는 더 쪼갤 수 없어요. '소수예요'를 눌러요.",
+    cls: 'bad',
+  });
+});
+
+test('셋째 나무: 권하는 첫 쪼개기는 앞의 두 나무 어느 것과도 다르다', () => {
+  const first = ftResult(run(P72, TREE_236)); // 2 × 36
+  const second = ftResult(run(P72, TREE_89)); // 8 × 9
+  assert.equal(ftRedoMsg(P72, [second, first]), '이번엔 처음과 다른 수로 쪼개 볼까요? 예: 6 × 12.');
+});
+
+test('형식 검사: 쪼개다 숫자판으로 못 쪼개는 합성수가 나오면 오류', () => {
+  assert.throws(() => parse({ n: 121 }), /숫자판\(2~9\)으로 못 쪼개는 121/);
+  assert.throws(() => parse({ n: 242 }), /숫자판\(2~9\)으로 못 쪼개는 121/);
+});
+
+test('포커스: 동그라미 뒤에는 자리 순으로 다음 남은 끝 마디(끝까지 가면 처음으로 돌아감)', () => {
+  // 72 → 8, 9 → 8 → 2, 4. 자리 순(위층부터, 왼쪽부터): 9(1층), 2·4(2층)
+  const s = act(act(ftInit(P72), 72, 8).s, 8, 2).s;
+  const id = (n: number) => s.nodes.findIndex((x) => x.n === n && !x.kids);
+  assert.equal(ftNextLeaf(s, id(2)), id(4));
+  assert.equal(ftNextLeaf(s, id(4)), id(9));
+  assert.equal(ftNextLeaf(run(P72, TREE_89), 3), null);
+});
+
+test('움직임 출발점: 움직이던 중간 자리에서 이어 가고, 새 마디는 부모의 지금 자리에서 나온다', () => {
+  const s1 = act(ftInit(P72), 72, 8).s;
+  const mid = [
+    { x: 149, y: 22 },
+    { x: 90, y: 50 },
+    { x: 200, y: 50 },
+  ];
+  const s2 = act(s1, 8, 2).s;
+  const from = ftMoveFrom(mid, s2);
+  assert.deepEqual(from?.slice(0, 3), mid);
+  assert.deepEqual(from?.[3], mid[1]);
+  assert.deepEqual(from?.[4], mid[1]);
+  // 지난 자리가 없으면(처음·새 나무) 움직이지 않는다
+  assert.equal(ftMoveFrom(null, s2), null);
 });

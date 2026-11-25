@@ -71,11 +71,28 @@ function primeFactors(n: number): number[] {
   return out;
 }
 
+/**
+ * 숫자 뒤 조사. 읽는 소리의 끝 자리로 정한다: 0 영·1 일·3 삼·6 육·7 칠·8 팔 은 받침이 있어 '은·을', 그중 ㄹ 받침
+ * (일·칠·팔)은 '으로' 대신 '로'. 10·100 처럼 0 으로 끝나는 수도 십·백 이라 받침(ㄹ 아님)이 있어 같은 규칙에 든다.
+ * TODO: 3-바 공용화 때 교체(장면 공용 글 도우미로 옮겨 다른 부품과 같이 쓴다)
+ */
+export function josa(n: number, kind: '은' | '을' | '으로'): string {
+  const d = Math.abs(n) % 10;
+  const batchim = [0, 1, 3, 6, 7, 8].includes(d);
+  if (kind === '은') return batchim ? '은' : '는';
+  if (kind === '을') return batchim ? '을' : '를';
+  return [0, 3, 6].includes(d) ? '으로' : '로';
+}
+
 /** m 을 d 로 쪼갤 수 있으면 [d, 몫], 아니면 못 쪼개는 까닭(학생에게 보일 글). 화면과 검산이 같이 쓴다 */
 function splitOf(m: number, d: number): [number, number] | string {
   if (d === m) return `${m} ÷ ${m} = 1 — 1 은 조각이 아니에요. 더 못 쪼개면 '소수예요'.`;
-  if (d > m) return `${m} 보다 작은 수로 나눠요.`;
-  if (m % d) return `${m} ÷ ${d} 는 나누어떨어지지 않아요 (나머지 ${m % d}).`;
+  // 숫자판에 m 보다 작은 수가 없으면(m = 2) '더 작은 수로'는 따를 수 없는 안내라 소수예요를 권한다
+  if (d > m)
+    return m <= PAD[0]
+      ? `${m} ${josa(m, '은')} 더 쪼갤 수 없어요. '소수예요'를 눌러요.`
+      : `${m} 보다 작은 수로 나눠요.`;
+  if (m % d) return `${m} ÷ ${d} ${josa(d, '은')} 나누어떨어지지 않아요 (나머지 ${m % d}).`;
   return [d, m / d];
 }
 
@@ -109,19 +126,22 @@ export function ftSelect(s: TState, id: number): Step {
   if (x.kids)
     return {
       s: { ...s, sel: null },
-      msg: { text: `${x.n} 은 이미 쪼갰어요. 나무 맨 끝의 수를 골라요.`, cls: '' },
+      msg: { text: `${x.n} ${josa(x.n, '은')} 이미 쪼갰어요. 나무 맨 끝의 수를 골라요.`, cls: '' },
       ok: false,
     };
   if (x.prime)
     return {
       s: { ...s, sel: null },
-      msg: { text: `${x.n} 은 이미 동그라미 친 소수예요.`, cls: '' },
+      msg: { text: `${x.n} ${josa(x.n, '은')} 이미 동그라미 친 소수예요.`, cls: '' },
       ok: false,
     };
   if (s.sel === id) return { s: { ...s, sel: null }, msg: ftStartMsg(), ok: true };
   return {
     s: { ...s, sel: id },
-    msg: { text: `${x.n} 을 어떤 수로 나눌까요? 더 못 쪼개면 '소수예요'.`, cls: '' },
+    msg: {
+      text: `${x.n} ${josa(x.n, '을')} 어떤 수로 나눌까요? 더 못 쪼개면 '소수예요'.`,
+      cls: '',
+    },
     ok: true,
   };
 }
@@ -151,7 +171,7 @@ export function ftSplit(s: TState, d: number): Step {
     s: { nodes, sel: null },
     msg: { text: `${x.n} = ${r[0]} × ${r[1]}. 끝의 수를 눌러 계속 쪼개요.`, cls: '' },
     ok: true,
-    say: `${x.n} 은 ${r[0]} 곱하기 ${r[1]}`,
+    say: `${x.n} ${josa(x.n, '은')} ${r[0]} 곱하기 ${r[1]}`,
   };
 }
 
@@ -163,13 +183,19 @@ export function ftPrime(s: TState): Step {
   if (!isPrime(x.n))
     return {
       s,
-      msg: { text: `${x.n} 은 1 과 ${x.n} 말고도 나누어떨어지는 수가 있어요.`, cls: 'bad' },
+      msg: {
+        text: `${x.n} ${josa(x.n, '은')} 1 과 ${x.n} 말고도 나누어떨어지는 수가 있어요.`,
+        cls: 'bad',
+      },
       ok: false,
     };
   const nodes = s.nodes.map((y, i) => (i === id ? { ...y, prime: true } : y));
   return {
     s: { nodes, sel: null },
-    msg: { text: `${x.n} 은 1 과 ${x.n} 으로만 나뉘는 소수예요. 동그라미!`, cls: 'ok' },
+    msg: {
+      text: `${x.n} ${josa(x.n, '은')} 1 과 ${x.n} ${josa(x.n, '으로')}만 나뉘는 소수예요. 동그라미!`,
+      cls: 'ok',
+    },
     ok: true,
   };
 }
@@ -223,7 +249,8 @@ export function ftResult(s: TState): FtResult {
     powText: pow.map(([p, k]) => `${p}${sup(k)}`).join(' × '),
     shape: shapeOf(s, 0),
     first: [Math.min(...kids), Math.max(...kids)] as [number, number],
-    say: `${root.n} 는 ${flat.join(' × ')}`,
+    // 낭독기는 '×'를 '곱하기'로 읽지 않는 것이 있어 말로 적는다(쪼갤 때의 낭독과 같은 말)
+    say: `${root.n} ${josa(root.n, '은')} ${flat.join(' 곱하기 ')}`,
   };
 }
 
@@ -241,10 +268,14 @@ export function ftDoneMsg(cur: FtResult, prev: FtResult | null): Msg {
   return { text: '모든 끝이 소수예요. 다르게 쪼개도 같을까요? 다시 해 봐요.', cls: 'ok' };
 }
 
-/** '다른 방법으로 다시'의 안내. 지난번 첫 쪼개기와 다른 것 중 가장 고른 두 수를 예로 든다(72: 2 × 36 → 8 × 9) */
-export function ftRedoMsg(p: FactorTreeParams, last: FtResult): string {
+/**
+ * '다른 방법으로 다시'의 안내. 지금까지 끝낸 나무들(방금 것·처음 것)의 첫 쪼개기와 모두 다른 것 중 가장 고른 두 수를
+ * 예로 든다(72: 2 × 36 → 8 × 9). 방금 것만 빼면 셋째 나무에서 처음 나무의 쪼개기를 다시 권하게 된다
+ */
+export function ftRedoMsg(p: FactorTreeParams, done: readonly FtResult[]): string {
+  const used = new Set(done.map((r) => String(r.first)));
   const other = rootPairs(p.n)
-    .filter((pr) => String(pr) !== String(last.first))
+    .filter((pr) => !used.has(String(pr)))
     .sort((a, b) => b[0] - a[0])[0];
   return `이번엔 처음과 다른 수로 쪼개 볼까요?${other ? ` 예: ${other[0]} × ${other[1]}.` : ''}`;
 }
@@ -275,6 +306,51 @@ export function ftLayout(s: TState): { x: number; y: number }[] {
   };
   up(0);
   return out;
+}
+
+type Pt = { x: number; y: number };
+
+/** 자리 순서(위층부터, 같은 층은 왼쪽부터). 화면의 Tab·낭독 순서와 '다음 끝 마디'가 같은 순서를 쓴다 */
+export function ftOrder(s: TState): number[] {
+  const pos = ftLayout(s);
+  return s.nodes
+    .map((_, i) => i)
+    .sort((a, b) => {
+      const pa = pos[a] as Pt;
+      const pb = pos[b] as Pt;
+      return pa.y - pb.y || pa.x - pb.x;
+    });
+}
+
+/**
+ * 동그라미를 친 뒤 키보드 포커스를 옮길 다음 끝 마디(아직 안 쪼갠·동그라미 안 친 것). 자리 순으로 from 다음부터 찾고
+ * 끝에 닿으면 처음부터. 없으면(다 끝남) null — 그때 포커스는 '다른 방법으로 다시'로 간다
+ */
+export function ftNextLeaf(s: TState, from: number): number | null {
+  const order = ftOrder(s);
+  const at = order.indexOf(from);
+  const open = (i: number) => !s.nodes[i]?.kids && !s.nodes[i]?.prime;
+  for (let k = 1; k <= order.length; k++) {
+    const i = order[(at + k) % order.length] as number;
+    if (open(i)) return i;
+  }
+  return null;
+}
+
+/**
+ * 쪼갠 뒤 움직임의 출발 자리. last 는 바로 전까지 화면에 보이던 자리 — 움직이는 중에 또 쪼개면 중간 자리라서,
+ * 거기서 이어 가야 마디가 끝 자리로 튀었다가 다시 움직이지 않는다. 새 마디는 부모의 그 자리에서 나온다.
+ * last 가 없으면(처음 그림·새 나무) 움직이지 않는다(null)
+ */
+export function ftMoveFrom(last: readonly Pt[] | null, s: TState): Pt[] | null {
+  if (!last) return null;
+  const to = ftLayout(s);
+  return to.map((p, i) => {
+    const old = last[i];
+    if (old) return old;
+    const par = s.nodes[i]?.parent;
+    return (par != null && last[par]) || p;
+  });
 }
 
 /** 나무 상자 높이. 가장 깊은 나무(소수로만 쪼갬)도 들어가게 소인수 개수로 정해 둔다 — 자라면서 높이가 바뀌면 아래 숫자판이 튄다 */
@@ -337,9 +413,11 @@ export const factorTreeDef: WidgetDef<FactorTreeParams> = {
         at,
         `소인수 ${fs.length}개 — ${MAX_FACTORS}개까지(나무가 ${fs.length}층이 되어 접은 화면 382×580 을 넘침. 예: 96 = 2⁵ × 3)`,
       );
-    // 소인수 둘이 모두 10 보다 크면(121 = 11 × 11) 그 곱은 숫자판 2~9 로 못 쪼개 나무가 끝나지 않는다
-    if (fs.filter((f) => f > 9).length > 1)
-      fail(at, '숫자판(2~9)으로 못 쪼개는 수가 생김 — 10 보다 큰 소인수는 하나까지');
+    // 쪼개다 나올 수 있는 합성수마다 숫자판 2~9 에 나누는 수가 있어야 나무가 끝난다(121 = 11 × 11 은 막힘).
+    // 소인수 조건으로 어림하지 않고 화면과 같은 쪼개기 규칙(splitOf)으로 닿는 수를 모두 본다
+    for (const v of reachable(n))
+      if (!isPrime(v) && PAD.every((d) => typeof splitOf(v, d) === 'string'))
+        fail(at, `숫자판(2~9)으로 못 쪼개는 ${v} 가 생김 — 10 보다 큰 소인수는 하나까지`);
     if (rootPairs(n).length < 2)
       fail(at, "첫 쪼개기가 한 가지뿐이라 '다른 방법으로 다시'를 해 볼 수 없음");
     return { n };
