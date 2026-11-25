@@ -278,9 +278,17 @@ def solutions(eq):
 
 
 # ---- 틀린 곳 찾기(spot) 식 ----
-# 소수는 글자 그대로 분수로 읽는다(rationalize). 부동소수로 읽으면 0.1+0.2=0.3 이 '성립 안 함'이 되고
-# 0.1+0.2=0.30000000000000004 가 '성립'이 되어 판정이 거꾸로 난다(요청 17)
-SPOT_TRANSFORMS = standard_transformations + (rationalize,)
+# 소수는 글자 그대로 분수로 읽는다(rationalize). 부동소수로 읽으면 0.1+0.2 가 0.30000000000000004 가 되어
+# 맞는 식 0.1+0.2=0.3 이 '성립 안 함'으로 판정된다(요청 17 — 예전 검산기에서 실제로 그랬다).
+# 부품 목표 판정(check_goal)도 같은 read_exact 로 읽는다 — 소수를 분수로 바꾸는 길을 하나로
+EXACT_TRANSFORMS = standard_transformations + (rationalize,)
+
+
+def read_exact(s, ns=None):
+    """식 글자 → sympy 식. 정수는 Integer, 소수는 글자 그대로의 분수"""
+    return parse_expr(str(s), local_dict=dict(NS if ns is None else ns), transformations=EXACT_TRANSFORMS)
+
+
 _REL = {"<=": sympy.Le, ">=": sympy.Ge, "<": sympy.Lt, ">": sympy.Gt, "=": sympy.Eq}
 _REL_RE = re.compile(r"<=|>=|<|>|=")
 # 부정적분의 적분상수. 소문자는 NS 에 이미 기호로 있고, 대문자 C 는 sympy 에 없는 이름이라 여기서만 둔다
@@ -290,16 +298,49 @@ _CONST = sympy.Symbol("C")
 def _limit(f, v, a, d="+-"):
     """화면의 x→a 는 양쪽 극한이다. sympy 의 Limit 기본은 오른쪽(+)이라 그대로 두면 lim |x|/x (x→0) 이 1 이 되어
     '극한 없음' 함정이 성립하는 식으로 읽힌다. 한쪽 극한은 화면에 a+ · a- 로 보이는 넷째 인자로만."""
+    if d not in ("+", "-", "+-"):
+        raise ValueError(f"Limit 의 방향은 '+'·'-' 만: {d}")
     return sympy.Limit(f, v, a, d)
 
 
 SPOT_NS = dict(NS, C=_CONST, Limit=_limit)
 _BIG = (sympy.Sum, sympy.Integral, sympy.Limit)
+# 문자가 든 채로 부등식에 오면 판정하지 않는 것 — 자연수라는 조건을 검산기가 다루지 않아 n=1/2 같은 반례로
+# '틀렸다'고 하거나 풀지 못해 소리 없이 넘어간다(types.ts 에 적어 둠)
+_COMB = (sympy.factorial, sympy.binomial, sympy.FallingFactorial, sympy.Sum)
+# ff(n,2) 는 읽자마자 n(n−1) 로 풀려 식 구조로는 못 알아본다 — 글자로 본다
+_COMB_RE = re.compile(r"\b(factorial|binomial|ff|Sum)\(")
+
+
+def _guard_comb(s):
+    """문자가 든 부등식에 계승·조합·순열·∑ 가 있으면 판정하지 않는다(형식 검사 schema.ts 도 같은 규칙)"""
+    ops = _REL_RE.findall(s)
+    if not ops or ops[0] == "=" or not _COMB_RE.search(s):
+        return
+    if any(_spot_read(side).free_symbols for side in _REL_RE.split(s)):
+        raise Undecided("문자가 든 계승·조합·순열·∑ 의 부등식은 판정하지 않음(자연수 조건을 다루지 않음)")
+
+
+class Undecided(ValueError):
+    """성립하는지 아닌지 정하지 못했다. '틀린 식은 성립하지 않음'을 증명 없이 통과시키지 않으려고 검산 실패로 올린다"""
+
+
+def _reval(e):
+    """계산을 미뤄 읽은(evaluate=False) 식을 다시 계산된 꼴로. 부정적분 같은 미계산 객체는 그대로 둔다(doit 아님)"""
+    if e.is_Atom:
+        return e
+    return e.func(*[_reval(a) for a in e.args])
 
 
 def _spot_read(s):
-    """식 하나. ÷ 는 / 와 우선순위·결합 방향이 같아(파이썬과 같게 sym.ts 가 읽는다) 글자만 바꿔 읽어도 같은 식이다"""
-    return parse_expr(s.replace("÷", "/"), local_dict=dict(SPOT_NS), transformations=SPOT_TRANSFORMS)
+    """식 하나. ÷ 는 / 와 우선순위·결합 방향이 같아(파이썬과 같게 sym.ts 가 읽는다) 글자만 바꿔 읽어도 같은 식이다.
+    극한이 든 식은 계산을 미뤄 읽고 극한을 먼저 값으로 바꾼다 — 그대로 읽으면 L−L·L×0 이 극한을 따지기 전에 0 으로
+    지워져 '극한 없음'이 사라진다"""
+    s = s.replace("÷", "/")
+    if "Limit" not in s:
+        return parse_expr(s, local_dict=dict(SPOT_NS), transformations=EXACT_TRANSFORMS)
+    e = parse_expr(s, local_dict=dict(SPOT_NS), transformations=EXACT_TRANSFORMS, evaluate=False)
+    return _reval(e.replace(lambda a: isinstance(a, sympy.Limit), _limit_value))
 
 
 def parse_spot(s):
@@ -313,23 +354,98 @@ def parse_spot(s):
     return _spot_read(left), ops[0], _spot_read(right)
 
 
-def _limit_value(lim):
-    """양쪽 극한이 다르면 sympy 는 예외를 낸다 — '극한 없음'은 어떤 값과도 같지 않은 nan 으로 둔다.
-    고친 식 쪽이 nan 이면 성립하지 않아 검산 실패로 드러난다"""
+# ---- 극한: sympy 값을 수치로 대 본다 ----
+# 다른 글자(a·h 등)가 든 몸통은 수치로 대 볼 때만 이 값을 넣는다
+_OTHER = [Rational(7, 3), Rational(5, 4), Rational(-3, 2), Rational(11, 5)]
+# 10⁻⁹ 까지 가면 2^(−10⁹) 같은 수의 수치 계산이 수십 초 걸린다 — 10⁻⁷ 이면 매끄러운 몸통의 오차(약 10⁻⁷)가 허용 오차(10⁻³)보다 한참 작다
+_STEPS = (Rational(1, 10**4), Rational(1, 10**7))
+
+
+def _n(e):
+    """40자리 수치. 실수로 정의되지 않으면 None"""
     try:
-        return lim.doit()
-    except ValueError:
+        y = sympy.N(e, 40)
+    except Exception:
+        return None
+    return y if (y.is_real is True and y.is_finite is True) else None
+
+
+def _nc(e):
+    """40자리 수치(복소수 허용). 유한한 수가 아니면 None"""
+    try:
+        y = sympy.N(e, 40)
+    except Exception:
+        return None
+    return y if (y.is_number and y.is_finite is True and not y.has(sympy.nan, sympy.zoo)) else None
+
+
+def _side(f, v, a, d):
+    """한쪽 극한(d = '+'·'-', a 가 ±∞ 면 그쪽). sympy 1.14 는 lim 2^(1/x) (x→0−) 를 ∞ 로 낸다(실제 0) — 그래서
+    a 가까이(10⁻⁴·10⁻⁷ 떨어진 곳, ∞ 면 10⁴·10⁷)의 수치와 대 보고 어긋나면 판정하지 않는다.
+    진동해서 없는 극한(AccumBounds)은 nan. 그쪽에서 식이 실수가 아니면(√x 의 왼쪽) 오류 — 양쪽 극한이면 한쪽으로 적기."""
+    f = _reval(f)
+    try:
+        s = sympy.limit(f, v, a) if a in (sympy.oo, -sympy.oo) else sympy.limit(f, v, a, d)
+    except Exception as ex:
+        raise Undecided(f"극한을 계산하지 못함 {v}→{a}{d}: {ex}") from ex
+    if isinstance(s, sympy.AccumBounds):
         return sympy.nan
+    others = sorted(f.free_symbols - {v}, key=str)
+    sub = {o: _OTHER[i % len(_OTHER)] for i, o in enumerate(others)}
+    g, sv, at = f.xreplace(sub), s.xreplace(sub), a.xreplace(sub)
+    if a == sympy.oo:
+        pts = [1 / h for h in _STEPS]
+    elif a == -sympy.oo:
+        pts = [-1 / h for h in _STEPS]
+    else:
+        pts = [at + h if d == "+" else at - h for h in _STEPS]
+    # 50자리 소수로 넣는다 — 분수 그대로 넣으면 2^(−10⁷) 이 분모가 삼백만 자리인 분수로 정확히 계산되어 수십 초 걸린다.
+    # 극한점이 π/2 같은 수여도 되게 Float 가 아니라 N 으로
+    pts = [sympy.N(p, 50) for p in pts]
+    ys = [_n(g.subs(v, p)) for p in pts]
+    if None in ys:
+        raise Undecided(
+            f"{v}→{a}{d} 쪽에서 식이 실수가 아님(정의되지 않는 쪽) — 양쪽 극한이면 한쪽 극한으로 적어 주세요"
+        )
+    y1, y2 = ys
+    if sv in (sympy.oo, -sympy.oo):
+        sign = 1 if sv == sympy.oo else -1
+        ok = y2 * sign > 10 and abs(y2) > abs(y1)
+    else:
+        t = _n(sv)
+        if t is None:
+            raise Undecided(f"극한값이 실수가 아님 {v}→{a}{d}: {s}")
+        tol = sympy.Rational(1, 1000) * max(1, abs(t))
+        # 천천히 다가가는 극한(1/log x)도 있어, 오차 안이거나 분명히 다가가고 있으면 맞다고 본다
+        ok = abs(y2 - t) <= tol or (abs(y2 - t) < abs(y1 - t) * Rational(9, 10) and abs(y2 - t) < 100 * tol)
+    if not ok:
+        raise Undecided(f"sympy 극한 {s} ({v}→{a}{d}) 가 수치 {sympy.N(y1, 8)}, {sympy.N(y2, 8)} 와 어긋남")
+    return s
+
+
+def _limit_value(lim):
+    """극한의 값. 양쪽 극한은 왼쪽·오른쪽을 따로 구해 둘 다 실수(또는 같은 ±∞)로 같을 때만 값이 있다.
+    '극한 없음'은 어떤 값과도 같지 않은 nan — 고친 식 쪽이 nan 이면 성립하지 않아 검산 실패로 드러난다"""
+    f, v, a, d = lim.args
+    d = str(d)
+    if a in (sympy.oo, -sympy.oo):
+        return _side(f, v, a, "-" if a == sympy.oo else "+")
+    if d != "+-":
+        return _side(f, v, a, d)
+    lo, hi = _side(f, v, a, "-"), _side(f, v, a, "+")
+    if lo is sympy.nan or hi is sympy.nan or lo != hi:
+        return sympy.nan
+    return lo
 
 
 def _calc(e):
-    """∑·∫·lim 을 계산한 값. 계산하지 못하고 남으면 '성립 안 함'으로 넘기지 않고 오류로 올린다 — 틀린 식 쪽에서
-    소리 없이 '틀렸다'로 통과하면 검산이 아무것도 보지 않은 셈이 된다"""
+    """∑·∫ 을 계산한 값(극한은 읽을 때 이미 값으로 바꿨다). 계산하지 못하고 남으면 '성립 안 함'으로 넘기지 않고
+    오류로 올린다 — 틀린 식 쪽에서 소리 없이 '틀렸다'로 통과하면 검산이 아무것도 보지 않은 셈이 된다"""
     if not e.has(*_BIG):
         return e
     e = e.replace(lambda a: isinstance(a, sympy.Limit), _limit_value).doit()
     if e.has(*_BIG):
-        raise ValueError(f"sympy 가 계산하지 못한 식: {e}")
+        raise Undecided(f"sympy 가 계산하지 못한 식: {e}")
     return e
 
 
@@ -337,51 +453,164 @@ def _indefinite(e):
     return [i for i in e.atoms(sympy.Integral) if any(len(lim) == 1 for lim in i.limits)]
 
 
-def spot_holds(left, op, right):
-    """식이 성립하는가. 등식은 항등식인가, 부등식은 미지수가 없으면 참인가·하나면 모든 실수에서 참인가."""
-    if op == "=":
-        ints = _indefinite(left) + _indefinite(right)
-        if not ints:
-            return equal(_calc(left), _calc(right))
-        # 부정적분은 '원시함수 + 적분상수' 묶음이다. 한쪽에만 상수가 있으면(C 를 빠뜨림) 같은 식이 아니고,
-        # 양쪽에 있으면 적분변수로 미분해 같은지 본다(상수만큼 달라도 같은 묶음)
-        vs = {lim[0] for i in ints for lim in i.limits}
-        if len(vs) != 1:
-            raise ValueError(f"부정적분의 적분변수가 하나가 아님: {vs}")
-        v = vs.pop()
+def _undefined(e):
+    """정의 안 되는 값(극한 없음 nan·0 으로 나눔 zoo)이 든 식 — 그런 등식·부등식은 성립하지 않는다"""
+    return e.has(sympy.nan, sympy.zoo)
 
-        def has_const(e):
-            return bool(_indefinite(e)) or _CONST in e.free_symbols
 
-        if has_const(left) != has_const(right):
+# ---- 반례 찾기: '성립하지 않음'은 반례가 있을 때만 ----
+_PTS = [Rational(p) for p in ("0", "1", "-1", "2", "-2", "1/2", "-1/2", "3", "-3", "1/3", "5/2", "-7/3", "10", "-10", "7/4", "1/10")]
+
+
+def _points(syms):
+    """글자마다 다른 자리의 수를 넣은 점들(글자끼리 같은 수가 되어 우연히 맞는 일을 줄이려고 어긋나게)"""
+    syms = sorted(syms, key=str)
+    for i in range(len(_PTS)):
+        yield {s: _PTS[(i + 5 * j) % len(_PTS)] for j, s in enumerate(syms)}
+
+
+def _refute_eq(lv, rv):
+    """양쪽이 유한한 수로 정의되고 값이 분명히 다른 점이 있으면 False. 못 찾으면 판정 보류.
+    등식은 허수가 든 단원(h1-complex: −2i = 2i)도 있어 복소수 값도 견준다"""
+    for p in _points(lv.free_symbols | rv.free_symbols):
+        a, b = _nc(lv.xreplace(p)), _nc(rv.xreplace(p))
+        if a is None or b is None:
+            continue
+        if abs(a - b) > sympy.Float("1e-20", 40) * max(1, abs(a), abs(b)):
             return False
-        return equal(sympy.diff(_calc(left) - _calc(right), v), 0)
+    raise Undecided(f"같다고 증명도, 다르다는 반례도 못 찾음: {lv} = {rv}")
+
+
+def _refute_rel(op, lv, rv):
+    """양쪽이 실수로 정의되는 점에서 부등식이 정확히 거짓이면 False. 못 찾으면 판정 보류(정의되는 곳에선 늘 참인
+    1/x² > 0 같은 식을 '틀렸다'로 넘기지 않게)"""
+    for p in _points(lv.free_symbols | rv.free_symbols):
+        a, b = lv.xreplace(p), rv.xreplace(p)
+        if not (defined(a) and defined(b)):
+            continue
+        if _REL[op](a, b) is sympy.false:
+            return False
+    raise Undecided(f"늘 성립하는지 증명도, 반례도 못 찾음: {lv} {op} {rv}")
+
+
+def _unsolved(ss):
+    return isinstance(ss, sympy.ConditionSet) or ss.has(sympy.ConditionSet) or ss.has(sympy.Piecewise)
+
+
+def _ae(e):
+    """한 점에서만 다른 갈래(Eq 조건)를 버린 꼴. ln|x| 를 실수 x 로 미분하면 x=0 갈래가 붙는데, 원시함수 비교는
+    점 하나에서의 값과 상관없다"""
+
+    def f(pw):
+        *rest, (last, cond) = pw.args
+        if cond == sympy.true and all(isinstance(c, sympy.Eq) for _, c in rest):
+            return last
+        return pw
+
+    return e.replace(lambda a: isinstance(a, sympy.Piecewise), f)
+
+
+def _indef_holds(left, right, ints):
+    """부정적분은 '원시함수 + 적분상수' 묶음이다. 한쪽에만 상수가 있으면(C 를 빠뜨림) 같은 식이 아니고, 양쪽에 있으면
+    적분하기 전에 적분변수로 미분해 같은지 본다 — 먼저 적분하면 x^n 이 n=−1 갈래(Piecewise)로 나뉘어 공식이 성립하지
+    않는다고 나온다. 미분해도 부정적분이 남으면(x·∫1dx) 묶음끼리의 곱이라 판정하지 않는다.
+    ln|x| 를 미분하려면 변수가 실수여야 해서 실수 기호로 바꿔 미분한다."""
+    vs = {lim[0] for i in ints for lim in i.limits}
+    if len(vs) != 1:
+        raise Undecided(f"부정적분의 적분변수가 하나가 아님: {vs}")
+    v = vs.pop()
+    vr = sympy.Symbol(v.name, real=True)
+
+    def has_const(e):
+        return bool(_indefinite(e)) or _CONST in e.free_symbols
+
+    if has_const(left) != has_const(right):
+        return False
+    d = sympy.diff((left - right).xreplace({v: vr}), vr)
+    if _indefinite(d):
+        raise Undecided(f"미분해도 부정적분이 남는 식은 판정하지 않음: {left} = {right}")
+    d = _ae(sympy.simplify(_calc(d)))
+    if equal(d, 0):
+        return True
+    return _refute_eq(d, sympy.Integer(0))
+
+
+def spot_holds(left, op, right):
+    """식이 늘 성립하는가. True 는 증명, False 는 반례(또는 C 빠뜨림·정의 안 되는 값)가 있을 때만 — 둘 다 아니면
+    Undecided 로 검산 실패. 등식은 항등식인가, 부등식은 미지수가 없으면 참인가·하나면 모든 실수에서 참인가."""
+    ints = _indefinite(left) + _indefinite(right)
+    if ints:
+        if op != "=":
+            raise Undecided("부정적분이 든 부등식은 판정하지 않음")
+        return _indef_holds(left, right, ints)
     lv, rv = _calc(left), _calc(right)
-    syms = (lv - rv).free_symbols
+    if _undefined(lv) or _undefined(rv):
+        return False
+    if op == "=":
+        # oo − oo 는 nan 이라 equal 로는 같은 무한대도 다르다고 나온다
+        if lv in (sympy.oo, -sympy.oo) or rv in (sympy.oo, -sympy.oo):
+            return lv == rv
+        if equal(lv, rv):
+            return True
+        return _refute_eq(lv, rv)
+    syms = lv.free_symbols | rv.free_symbols
     rel = _REL[op](lv, rv)
     if not syms:
         if rel not in (sympy.true, sympy.false):
-            raise ValueError(f"참·거짓을 정하지 못한 부등식: {rel}")
+            raise Undecided(f"참·거짓을 정하지 못한 부등식: {rel}")
         return rel == sympy.true
+    if any(a.free_symbols for a in left.atoms(*_COMB) | right.atoms(*_COMB)):
+        raise Undecided("문자가 든 계승·조합·순열·∑ 의 부등식은 판정하지 않음(자연수 조건을 다루지 않음)")
     if len(syms) != 1:
-        raise ValueError(f"부등식은 미지수 하나까지 판정: {rel}")
-    return sympy.solveset(rel, syms.pop(), domain=sympy.S.Reals) == sympy.S.Reals
+        raise Undecided(f"부등식은 미지수 하나까지 판정: {rel}")
+    ss = sympy.solveset(rel, next(iter(syms)), domain=sympy.S.Reals)
+    if _unsolved(ss):
+        raise Undecided(f"sympy 가 부등식을 풀지 못함: {rel} → {ss}")
+    if ss == sympy.S.Reals:
+        return True
+    return _refute_rel(op, lv, rv)
 
 
 def spot_solutions(left, op, right):
+    """(미지수, 실수 해 집합). 풀지 못하면(ConditionSet·Piecewise) 판정 보류"""
+    if _indefinite(left) or _indefinite(right):
+        raise Undecided("부정적분이 든 방정식·부등식의 해는 판정하지 않음")
     lv, rv = _calc(left), _calc(right)
-    syms = (lv - rv).free_symbols
+    syms = lv.free_symbols | rv.free_symbols
     if len(syms) != 1:
         raise ValueError(f"미지수가 하나인 식이 아님: {lv} {op} {rv}")
-    return sympy.solveset(_REL[op](lv, rv), syms.pop(), domain=sympy.S.Reals)
+    v = next(iter(syms))
+    ss = sympy.solveset(_REL[op](lv, rv), v, domain=sympy.S.Reals)
+    if _unsolved(ss):
+        raise Undecided(f"sympy 가 풀지 못함: {lv} {op} {rv} → {ss}")
+    return v, ss
+
+
+def _sets_differ(a, b):
+    """두 해 집합이 정말 다른가: 한쪽에만 드는 점이 있는가. 같은 집합을 다른 꼴로 적어 '다름'이 되는 일을 막는다.
+    경계점(−3 이 드는가 안 드는가)도 넣어 본다"""
+    pts = list(_PTS)
+    for s in (a, b):
+        bd = s.boundary
+        if isinstance(bd, sympy.FiniteSet):
+            pts += [p for p in bd if p.is_real and p.is_finite]
+    for p in pts:
+        x, y = a.contains(p), b.contains(p)
+        if x in (sympy.true, sympy.false) and y in (sympy.true, sympy.false) and x != y:
+            return True
+    raise Undecided(f"해 집합 {a}, {b} 가 다르다는 점을 찾지 못함")
 
 
 def check_spot(it):
     """틀린 곳 찾기: 틀린 식은 성립하지 않고(또는 해·값이 달라지고), 고친 식은 성립해야(해·값이 같아야) 한다.
-    identity: 등식·부등식이 늘 성립하는가 / equivalent: from 과 해 집합이 같은가 /
-    value: 등식이 아닌 식 — 보이는 식 from 이나 숨은 검산식 check(문제 check 와 같은 문법)와 값이 같은가."""
-    wrong, fixed = parse_spot(it["wrong"]), parse_spot(it["fixed"])
+    identity: 등식·부등식이 늘 성립하는가 / equivalent: from 과 해 집합이 같은가(미지수도 같아야) /
+    value: 등식이 아닌 식 — 보이는 식 from 이나 숨은 검산식 check(문제 check 와 같은 문법)와 값이 같은가.
+    '성립 안 함'·'해가 다름'은 반례가 있어야 인정한다 — 증명 못 함을 틀림으로 넘기면 틀린 식이 사실 맞는 식이어도 통과한다."""
     mode = it["mode"]
+    for key in ("wrong", "fixed", "from"):
+        if key in it:
+            _guard_comb(it[key])
+    wrong, fixed = parse_spot(it["wrong"]), parse_spot(it["fixed"])
     if mode == "value":
         if wrong[1] or fixed[1]:
             return "등식 아닌 식(value)에 등호·부등호가 있음"
@@ -402,11 +631,17 @@ def check_spot(it):
             return f"고친 식 {it['fixed']} 이 항등식이 아님"
         return None
     if mode == "equivalent":
-        want = spot_solutions(*parse_spot(it["from"]))
-        if spot_solutions(*fixed) != want:
-            return f"고친 식의 해 {spot_solutions(*fixed)} ≠ 원래 식의 해 {want}"
-        if spot_solutions(*wrong) == want:
+        fv, want = spot_solutions(*parse_spot(it["from"]))
+        xv, got = spot_solutions(*fixed)
+        wv, bad = spot_solutions(*wrong)
+        # 미지수마다 따로 풀면 2x<6 → y<3 도 '해가 같음'이 된다
+        if not fv == xv == wv:
+            return f"from·틀린 식·고친 식의 미지수가 다름 ({fv}, {wv}, {xv})"
+        if got != want:
+            return f"고친 식의 해 {got} ≠ 원래 식의 해 {want}"
+        if bad == want:
             return f"틀린 식 {it['wrong']} 의 해가 원래 식과 같음 {want}"
+        _sets_differ(want, bad)
         return None
     return f"알 수 없는 mode {mode}"
 
@@ -612,12 +847,9 @@ def check_goal(it):
     허용 오차가 있으면(무리수 목표, 원칙 P10) 닿는 자리가 정확히 need 곳이어야 한다 — 오차 안에 자리가 여럿이면
     더듬어 맞히기가 되거나 정답이 아닌 자리를 맞았다고 하게 된다."""
     # 곡선 식의 소수(0.1)는 분수로 — 앱은 소수 계수를 분수로 정확히 계산하므로(expr.ts evalExact) 실수로 읽으면
-    # 0.1·3 = 0.30000000000000004 처럼 어긋나 앱과 다른 판정이 난다
-    def exact(s):
-        return sympy.nsimplify(read(s), rational=True)
-
-    comps = [(exact(c["expr"]), bool(c.get("roots"))) for c in it["of"]]
-    targets = [[exact(t) for t in tg] for tg in it["targets"]]
+    # 0.1·3 = 0.30000000000000004 처럼 어긋나 앱과 다른 판정이 난다. 틀린 곳 찾기와 같은 read_exact 로 읽는다
+    comps = [(read_exact(c["expr"]), bool(c.get("roots"))) for c in it["of"]]
+    targets = [[read_exact(t) for t in tg] for tg in it["targets"]]
     tol = read(it["tol"])
     got = [[] for _ in targets]
     for k, st in enumerate(it["states"]):

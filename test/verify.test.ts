@@ -141,9 +141,42 @@ const SPOT_OK: [string, object][] = [
   ['lim x→∞', { mode: 'identity', wrong: 'Limit(1/x,x,oo)=1', fixed: 'Limit(1/x,x,oo)=0' }],
   ['소수(정확히 분수로)', { mode: 'identity', wrong: '0.1+0.2=0.03', fixed: '0.1+0.2=0.3' }],
   [
-    // 부동소수로 읽으면 0.1+0.2 와 0.30000000000000004 가 같은 수라 틀린 식이 성립해 버린다
-    '소수: 부동소수 오차로 같아 보이는 수',
+    // 글자 그대로의 분수로 읽어 0.1+0.2 와 0.30000000000000004 를 다른 수로 본다(부동소수 근삿값에 기대지 않게)
+    '소수: 아주 조금 다른 수',
     { mode: 'identity', wrong: '0.1+0.2=0.30000000000000004', fixed: '0.1+0.2=3/10' },
+  ],
+  // ---- 검토 반영(M2~M4·m7) ----
+  [
+    '∫: ln|x| (실수 변수로 미분)',
+    { mode: 'identity', wrong: 'Integral(1/x,x)=log(x)', fixed: 'Integral(1/x,x)=log(Abs(x))+C' },
+  ],
+  [
+    '∫: 거듭제곱 공식(문자 n)',
+    {
+      mode: 'identity',
+      wrong: 'Integral(x**n,x)=x**(n+1)+C',
+      fixed: 'Integral(x**n,x)=x**(n+1)/(n+1)+C',
+    },
+  ],
+  [
+    '무한대끼리는 같은 무한대인지로',
+    { mode: 'identity', wrong: 'Limit(1/x**2,x,0)=0', fixed: 'Limit(1/x**2,x,0)=oo' },
+  ],
+  [
+    'lim: 진동해서 없는 극한(AccumBounds)',
+    { mode: 'identity', wrong: 'Limit(sin(1/x),x,0)=0', fixed: 'Limit(x*sin(1/x),x,0)=0' },
+  ],
+  [
+    'lim: 없는 극한에 0 을 곱해도 없음',
+    { mode: 'identity', wrong: 'Limit(Abs(x)/x,x,0)*0=0', fixed: "Limit(Abs(x)/x,x,0,'+')*0=0" },
+  ],
+  [
+    'lim: 양쪽 극한이 다른 무한대면 없음',
+    { mode: 'identity', wrong: 'Limit(1/x,x,0)=oo', fixed: "Limit(1/x,x,0,'+')=oo" },
+  ],
+  [
+    'lim: 극한점이 π/2',
+    { mode: 'identity', wrong: 'Limit(tan(x),x,pi/2)=oo', fixed: "Limit(tan(x),x,pi/2,'-')=oo" },
   ],
 ];
 
@@ -195,13 +228,66 @@ const SPOT_BAD: [string, object][] = [
     '소수: 부동소수 오차 수를 고친 식으로',
     { mode: 'identity', wrong: '0.1+0.2=0.03', fixed: '0.1+0.2=0.30000000000000004' },
   ],
+  // ---- 검토 반영: '증명 못 함'을 '틀림'으로 넘기지 않는다(M2~M4·m7) ----
+  [
+    '∫: 부정적분에 x 를 곱한 식(미분해도 적분이 남음)',
+    { mode: 'identity', wrong: 'x*Integral(1,x)=x+C', fixed: 'x*Integral(1,x)=x**2+C' },
+  ],
+  [
+    '∫: 부정적분이 든 부등식',
+    { mode: 'identity', wrong: 'Integral(2*x,x)<0', fixed: 'Integral(2*x,x)>=0' },
+  ],
+  [
+    '부등호: 참인데 sympy 가 풀지 못함(ConditionSet) — 틀린 식으로 넘기지 않음',
+    { mode: 'identity', wrong: 'Abs(x+1)<=Abs(x)+1', fixed: 'x**2>=0' },
+  ],
+  [
+    '부등호: 정의되는 곳에서는 늘 참 — 반례 없음',
+    { mode: 'identity', wrong: '1/x**2>0', fixed: 'x**2>=0' },
+  ],
+  [
+    '부등호: 문자 n 의 계승(자연수 문맥은 판정 안 함)',
+    { mode: 'identity', wrong: 'factorial(n)>=n', fixed: 'factorial(n)>0' },
+  ],
+  [
+    // ff(n,2) 는 읽자마자 n(n−1) 로 풀려 식 구조로는 못 알아본다 — 글자로 막는다
+    '부등호: 문자 n 의 순열(읽자마자 풀리는 ff)',
+    { mode: 'identity', wrong: 'ff(n,2)<0', fixed: 'ff(n,2)>=0' },
+  ],
+  [
+    '부등호(equivalent): sympy 가 풀지 못함',
+    { mode: 'equivalent', from: 'E**x>=x+1', wrong: 'x>0', fixed: 'E**x-x>=1' },
+  ],
+  ['equivalent: 미지수가 다름', { mode: 'equivalent', from: '2*x<6', wrong: 'x>3', fixed: 'y<3' }],
+  [
+    // sympy 1.14 는 왼쪽 극한을 ∞ 로 낸다(실제 0) — 수치로 대 보아 어긋나면 판정하지 않는다
+    'lim: sympy 가 틀린 한쪽 극한(수치와 어긋남)',
+    { mode: 'identity', wrong: "Limit(2**(1/x),x,0,'-')=oo", fixed: "Limit(2**(1/x),x,0,'-')=0" },
+  ],
+  [
+    'lim: 양쪽 극한인데 한쪽을 sympy 가 틀림',
+    { mode: 'identity', wrong: 'Limit(2**(-1/x),x,0)=1', fixed: 'Limit(2**(-1/x),x,0)=0' },
+  ],
+  [
+    'lim: 한쪽이 실수 밖(√) — 한쪽 극한으로 적어야',
+    { mode: 'identity', wrong: 'Limit(sqrt(x),x,0)=1', fixed: 'Limit(sqrt(x),x,0)=0' },
+  ],
+  [
+    'lim: 없는 극한끼리 빼도 0 이 아님',
+    {
+      mode: 'identity',
+      wrong: 'Limit(Abs(x)/x,x,0)=1',
+      fixed: 'Limit(Abs(x)/x,x,0)-Limit(Abs(x)/x,x,0)=0',
+    },
+  ],
 ];
+
+const reEscape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 test('틀린 곳 찾기 기호 1차: 판정이 뒤집힌 짝은 하나하나 실패', () => {
   const r = runVerify(SPOT_BAD.map(([n, it]) => ({ ...spot, ref: `u/lesson:bad:${n}`, ...it })));
   assert.equal(r.status, 1, r.stdout + r.stderr);
-  for (const [n] of SPOT_BAD)
-    assert.match(r.stdout, new RegExp(`lesson:bad:${n.replace(/[()]/g, '.')}:`), n);
+  for (const [n] of SPOT_BAD) assert.match(r.stdout, new RegExp(`lesson:bad:${reEscape(n)}:`), n);
   assert.match(r.stdout, new RegExp(`실패 ${SPOT_BAD.length}건`));
 });
 
