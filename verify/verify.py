@@ -7,6 +7,7 @@ import ast
 import json
 import multiprocessing
 import os
+import re
 import sys
 from collections import defaultdict
 
@@ -16,6 +17,7 @@ from sympy.parsing.sympy_parser import (
     convert_xor,
     implicit_multiplication_application,
     parse_expr,
+    rationalize,
     standard_transformations,
 )
 
@@ -275,23 +277,138 @@ def solutions(eq):
     return sympy.solveset(sympy.Eq(l, r), syms.pop(), domain=sympy.S.Reals)
 
 
+# ---- 틀린 곳 찾기(spot) 식 ----
+# 소수는 글자 그대로 분수로 읽는다(rationalize). 부동소수로 읽으면 0.1+0.2=0.3 이 '성립 안 함'이 되고
+# 0.1+0.2=0.30000000000000004 가 '성립'이 되어 판정이 거꾸로 난다(요청 17)
+SPOT_TRANSFORMS = standard_transformations + (rationalize,)
+_REL = {"<=": sympy.Le, ">=": sympy.Ge, "<": sympy.Lt, ">": sympy.Gt, "=": sympy.Eq}
+_REL_RE = re.compile(r"<=|>=|<|>|=")
+# 부정적분의 적분상수. 소문자는 NS 에 이미 기호로 있고, 대문자 C 는 sympy 에 없는 이름이라 여기서만 둔다
+_CONST = sympy.Symbol("C")
+
+
+def _limit(f, v, a, d="+-"):
+    """화면의 x→a 는 양쪽 극한이다. sympy 의 Limit 기본은 오른쪽(+)이라 그대로 두면 lim |x|/x (x→0) 이 1 이 되어
+    '극한 없음' 함정이 성립하는 식으로 읽힌다. 한쪽 극한은 화면에 a+ · a- 로 보이는 넷째 인자로만."""
+    return sympy.Limit(f, v, a, d)
+
+
+SPOT_NS = dict(NS, C=_CONST, Limit=_limit)
+_BIG = (sympy.Sum, sympy.Integral, sympy.Limit)
+
+
+def _spot_read(s):
+    """식 하나. ÷ 는 / 와 우선순위·결합 방향이 같아(파이썬과 같게 sym.ts 가 읽는다) 글자만 바꿔 읽어도 같은 식이다"""
+    return parse_expr(s.replace("÷", "/"), local_dict=dict(SPOT_NS), transformations=SPOT_TRANSFORMS)
+
+
+def parse_spot(s):
+    """spot 식 → (왼쪽, 관계, 오른쪽). 관계가 없는 식(등식 아닌 식)은 (식, None, None)"""
+    ops = _REL_RE.findall(s)
+    if not ops:
+        return _spot_read(s), None, None
+    if len(ops) != 1:
+        raise ValueError(f"등호·부등호가 하나인 식이 아님: {s}")
+    left, right = _REL_RE.split(s)
+    return _spot_read(left), ops[0], _spot_read(right)
+
+
+def _limit_value(lim):
+    """양쪽 극한이 다르면 sympy 는 예외를 낸다 — '극한 없음'은 어떤 값과도 같지 않은 nan 으로 둔다.
+    고친 식 쪽이 nan 이면 성립하지 않아 검산 실패로 드러난다"""
+    try:
+        return lim.doit()
+    except ValueError:
+        return sympy.nan
+
+
+def _calc(e):
+    """∑·∫·lim 을 계산한 값. 계산하지 못하고 남으면 '성립 안 함'으로 넘기지 않고 오류로 올린다 — 틀린 식 쪽에서
+    소리 없이 '틀렸다'로 통과하면 검산이 아무것도 보지 않은 셈이 된다"""
+    if not e.has(*_BIG):
+        return e
+    e = e.replace(lambda a: isinstance(a, sympy.Limit), _limit_value).doit()
+    if e.has(*_BIG):
+        raise ValueError(f"sympy 가 계산하지 못한 식: {e}")
+    return e
+
+
+def _indefinite(e):
+    return [i for i in e.atoms(sympy.Integral) if any(len(lim) == 1 for lim in i.limits)]
+
+
+def spot_holds(left, op, right):
+    """식이 성립하는가. 등식은 항등식인가, 부등식은 미지수가 없으면 참인가·하나면 모든 실수에서 참인가."""
+    if op == "=":
+        ints = _indefinite(left) + _indefinite(right)
+        if not ints:
+            return equal(_calc(left), _calc(right))
+        # 부정적분은 '원시함수 + 적분상수' 묶음이다. 한쪽에만 상수가 있으면(C 를 빠뜨림) 같은 식이 아니고,
+        # 양쪽에 있으면 적분변수로 미분해 같은지 본다(상수만큼 달라도 같은 묶음)
+        vs = {lim[0] for i in ints for lim in i.limits}
+        if len(vs) != 1:
+            raise ValueError(f"부정적분의 적분변수가 하나가 아님: {vs}")
+        v = vs.pop()
+
+        def has_const(e):
+            return bool(_indefinite(e)) or _CONST in e.free_symbols
+
+        if has_const(left) != has_const(right):
+            return False
+        return equal(sympy.diff(_calc(left) - _calc(right), v), 0)
+    lv, rv = _calc(left), _calc(right)
+    syms = (lv - rv).free_symbols
+    rel = _REL[op](lv, rv)
+    if not syms:
+        if rel not in (sympy.true, sympy.false):
+            raise ValueError(f"참·거짓을 정하지 못한 부등식: {rel}")
+        return rel == sympy.true
+    if len(syms) != 1:
+        raise ValueError(f"부등식은 미지수 하나까지 판정: {rel}")
+    return sympy.solveset(rel, syms.pop(), domain=sympy.S.Reals) == sympy.S.Reals
+
+
+def spot_solutions(left, op, right):
+    lv, rv = _calc(left), _calc(right)
+    syms = (lv - rv).free_symbols
+    if len(syms) != 1:
+        raise ValueError(f"미지수가 하나인 식이 아님: {lv} {op} {rv}")
+    return sympy.solveset(_REL[op](lv, rv), syms.pop(), domain=sympy.S.Reals)
+
+
 def check_spot(it):
-    """틀린 곳 찾기: 틀린 식은 성립하지 않고(또는 해가 달라지고), 고친 식은 성립해야(해가 같아야) 한다."""
-    wrong, fixed = parse_eq(it["wrong"]), parse_eq(it["fixed"])
-    if it["mode"] == "identity":
-        if holds(wrong):
+    """틀린 곳 찾기: 틀린 식은 성립하지 않고(또는 해·값이 달라지고), 고친 식은 성립해야(해·값이 같아야) 한다.
+    identity: 등식·부등식이 늘 성립하는가 / equivalent: from 과 해 집합이 같은가 /
+    value: 등식이 아닌 식 — 보이는 식 from 이나 숨은 검산식 check(문제 check 와 같은 문법)와 값이 같은가."""
+    wrong, fixed = parse_spot(it["wrong"]), parse_spot(it["fixed"])
+    mode = it["mode"]
+    if mode == "value":
+        if wrong[1] or fixed[1]:
+            return "등식 아닌 식(value)에 등호·부등호가 있음"
+        if ("from" in it) == ("check" in it):
+            return "value 는 from(보이는 식)·check(숨은 검산식) 중 하나만"
+        want = _spot_read(it["from"]) if "from" in it else evaluate(it["check"])
+        if spot_holds(wrong[0], "=", want):
+            return f"틀린 식 {it['wrong']} 의 값이 {want} 와 같음"
+        if not spot_holds(fixed[0], "=", want):
+            return f"고친 식 {it['fixed']} 의 값이 {want} 와 다름"
+        return None
+    if wrong[1] is None or fixed[1] is None:
+        return "등호·부등호가 없는 식"
+    if mode == "identity":
+        if spot_holds(*wrong):
             return f"틀린 식 {it['wrong']} 이 사실은 항등식"
-        if not holds(fixed):
+        if not spot_holds(*fixed):
             return f"고친 식 {it['fixed']} 이 항등식이 아님"
         return None
-    if it["mode"] == "equivalent":
-        want = solutions(parse_eq(it["from"]))
-        if solutions(fixed) != want:
-            return f"고친 식의 해 {solutions(fixed)} ≠ 원래 식의 해 {want}"
-        if solutions(wrong) == want:
+    if mode == "equivalent":
+        want = spot_solutions(*parse_spot(it["from"]))
+        if spot_solutions(*fixed) != want:
+            return f"고친 식의 해 {spot_solutions(*fixed)} ≠ 원래 식의 해 {want}"
+        if spot_solutions(*wrong) == want:
             return f"틀린 식 {it['wrong']} 의 해가 원래 식과 같음 {want}"
         return None
-    return f"알 수 없는 mode {it['mode']}"
+    return f"알 수 없는 mode {mode}"
 
 
 def check_equiv(it):

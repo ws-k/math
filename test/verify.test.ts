@@ -84,6 +84,127 @@ for (const [name, it] of [
   });
 }
 
+// 2-마 기호 1차. 기호마다 "틀린 식은 성립 안 함 · 고친 식은 성립" 하는 짝(통과)과, 그 판정이 뒤집힌 짝(실패)을 둔다.
+// sympy 를 한 번만 띄우려고 실패 짝도 한 번에 넣고, ref 마다 실패 목록에 이름이 오르는지 본다.
+const SPOT_OK: [string, object][] = [
+  [
+    '부등호 < >(수끼리, 부등호가 틀린 곳)',
+    { mode: 'identity', wrong: '2/3>3/4', fixed: '2/3<3/4' },
+  ],
+  [
+    '부등호 ≥(미지수 하나, 모든 실수에서 성립)',
+    { mode: 'identity', wrong: 'x**2>=2*x', fixed: 'x**2+1>=2*x' },
+  ],
+  [
+    '부등호: 음수로 나누고 방향을 안 바꿈(해 집합 비교)',
+    { mode: 'equivalent', from: '-2*x<6', wrong: 'x<-3', fixed: 'x>-3' },
+  ],
+  ['부등호 ≤', { mode: 'equivalent', from: '-3*x>=9', wrong: 'x>=-3', fixed: 'x<=-3' }],
+  ['÷', { mode: 'identity', wrong: '(3/4)÷(2/5)=(3/4)*(2/5)', fixed: '(3/4)÷(2/5)=(3/4)*(5/2)' }],
+  [
+    '등식 아닌 식(보이는 식에서 바꿈)',
+    { mode: 'value', from: '(3/4)÷(2/5)', wrong: '(3/4)*(2/5)', fixed: '(3/4)*(5/2)' },
+  ],
+  [
+    '등식 아닌 식(숨은 검산식)',
+    { mode: 'value', check: 'lcm(24, 36)', wrong: '2*2*3', fixed: '2*2*3*2*3' },
+  ],
+  [
+    '계승 !',
+    {
+      mode: 'identity',
+      wrong: 'factorial(5)/factorial(3)=factorial(2)',
+      fixed: 'factorial(5)/factorial(3)=20',
+    },
+  ],
+  ['조합 C', { mode: 'identity', wrong: 'binomial(6,3)=ff(6,3)', fixed: 'binomial(6,3)=20' }],
+  ['순열 P(문자)', { mode: 'identity', wrong: 'ff(n,2)=n**2', fixed: 'ff(n,2)=n*(n-1)' }],
+  ['∑', { mode: 'identity', wrong: 'Sum(2*k,(k,1,n))=n**2', fixed: 'Sum(2*k,(k,1,n))=n*(n+1)' }],
+  [
+    '∫ 정적분',
+    { mode: 'identity', wrong: 'Integral(x**2,(x,0,3))=27', fixed: 'Integral(x**2,(x,0,3))=9' },
+  ],
+  [
+    '∫ 부정적분: 적분상수 C 를 빠뜨림',
+    { mode: 'identity', wrong: 'Integral(x**3,x)=x**4/4', fixed: 'Integral(x**3,x)=x**4/4+C' },
+  ],
+  [
+    '∫ 부정적분: 원시함수가 틀림',
+    { mode: 'identity', wrong: 'Integral(x**3,x)=x**4+C', fixed: 'Integral(x**3,x)=x**4/4+C' },
+  ],
+  ['lim', { mode: 'identity', wrong: 'Limit(sin(x)/x,x,0)=0', fixed: 'Limit(sin(x)/x,x,0)=1' }],
+  [
+    // 화면의 x→0 은 양쪽 극한 — sympy 기본(오른쪽)으로 읽으면 틀린 식이 성립해 버린다
+    'lim: 양쪽 극한이 없으면 한쪽 극한으로',
+    { mode: 'identity', wrong: 'Limit(Abs(x)/x,x,0)=1', fixed: "Limit(Abs(x)/x,x,0,'+')=1" },
+  ],
+  ['lim x→∞', { mode: 'identity', wrong: 'Limit(1/x,x,oo)=1', fixed: 'Limit(1/x,x,oo)=0' }],
+  ['소수(정확히 분수로)', { mode: 'identity', wrong: '0.1+0.2=0.03', fixed: '0.1+0.2=0.3' }],
+  [
+    // 부동소수로 읽으면 0.1+0.2 와 0.30000000000000004 가 같은 수라 틀린 식이 성립해 버린다
+    '소수: 부동소수 오차로 같아 보이는 수',
+    { mode: 'identity', wrong: '0.1+0.2=0.30000000000000004', fixed: '0.1+0.2=3/10' },
+  ],
+];
+
+test('틀린 곳 찾기 기호 1차: 틀린 식은 성립 안 함 · 고친 식은 성립', () => {
+  const r = runVerify(SPOT_OK.map(([n, it]) => ({ ...spot, ref: `u/lesson:ok:${n}`, ...it })));
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+const SPOT_BAD: [string, object][] = [
+  ['부등호: 틀린 식이 사실은 참', { mode: 'identity', wrong: '2/3<3/4', fixed: '2/3<3/4' }],
+  ['부등호: 고친 식이 거짓', { mode: 'identity', wrong: '2/3>3/4', fixed: '2/3>=3/4' }],
+  [
+    '부등호: 틀린 식의 해 집합이 같음',
+    { mode: 'equivalent', from: '-2*x<6', wrong: '-x<3', fixed: 'x>-3' },
+  ],
+  ['부등호: 미지수 둘은 판정 안 함', { mode: 'identity', wrong: 'a>b', fixed: 'a**2+b**2>=2*a*b' }],
+  ['부등호 둘', { mode: 'identity', wrong: '1<2<3', fixed: '1<2' }],
+  ['÷: 고친 식이 틀림', { mode: 'identity', wrong: '6÷2=2', fixed: '6÷2*3=1' }],
+  [
+    '등식 아닌 식: 틀린 식의 값이 같음',
+    { mode: 'value', from: '(3/4)÷(2/5)', wrong: '(3/4)*(5/2)', fixed: '(3/4)*(5/2)' },
+  ],
+  [
+    '등식 아닌 식: 고친 식의 값이 다름',
+    { mode: 'value', check: 'lcm(24, 36)', wrong: '2*2*3', fixed: '2*2*3*3' },
+  ],
+  ['등식 아닌 식에 등호', { mode: 'value', check: '72', wrong: '2*2*3=12', fixed: '72' }],
+  [
+    '등식 아닌 식: from·check 둘 다',
+    { mode: 'value', from: '72', check: '72', wrong: '12', fixed: '72' },
+  ],
+  [
+    '조합: 고친 식이 틀림',
+    { mode: 'identity', wrong: 'binomial(6,3)=120', fixed: 'binomial(6,3)=ff(6,3)' },
+  ],
+  [
+    '∑: 고친 식이 틀림',
+    { mode: 'identity', wrong: 'Sum(k,(k,1,n))=n', fixed: 'Sum(k,(k,1,n))=n**2/2' },
+  ],
+  [
+    '∫: 고친 식에 C 가 없음',
+    { mode: 'identity', wrong: 'Integral(x**3,x)=x**4', fixed: 'Integral(x**3,x)=x**4/4' },
+  ],
+  [
+    'lim: 양쪽 극한이 없는데 고친 식으로',
+    { mode: 'identity', wrong: 'Limit(Abs(x)/x,x,0)=0', fixed: 'Limit(Abs(x)/x,x,0)=1' },
+  ],
+  [
+    '소수: 부동소수 오차 수를 고친 식으로',
+    { mode: 'identity', wrong: '0.1+0.2=0.03', fixed: '0.1+0.2=0.30000000000000004' },
+  ],
+];
+
+test('틀린 곳 찾기 기호 1차: 판정이 뒤집힌 짝은 하나하나 실패', () => {
+  const r = runVerify(SPOT_BAD.map(([n, it]) => ({ ...spot, ref: `u/lesson:bad:${n}`, ...it })));
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  for (const [n] of SPOT_BAD)
+    assert.match(r.stdout, new RegExp(`lesson:bad:${n.replace(/[()]/g, '.')}:`), n);
+  assert.match(r.stdout, new RegExp(`실패 ${SPOT_BAD.length}건`));
+});
+
 const equiv = { unit: 'u', ref: 'u/lesson:scale:연산1', kind: 'equiv' };
 
 test('식 변형(equiv): 같은 해면 expect=true, 다른 해면 expect=false 가 통과', () => {
