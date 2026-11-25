@@ -12,7 +12,8 @@ import { arr, fail, obj, optStr } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { add, cmp, div, mul, num, qi, ratStr, sub } from '../q.ts';
 import type { WidgetCheck } from '../specs.ts';
-import { clampY, narrowFrame, r1, toPx } from './frame.ts';
+import { clampY, MIN_SNAP_PX, narrowFrame, r1, toPx } from './frame.ts';
+import { xCells } from './point.ts';
 import {
   endPoints,
   endQ,
@@ -283,6 +284,31 @@ function parseSrc(r: Record<string, unknown>, at: string, cx: ParseCtx): BarsSrc
   return { t: 'binom', n, p: pp };
 }
 
+/**
+ * 이항분포 막대(폭 1)를 끄는 점으로 고를 때: 점이 모든 막대 가운데(정수)에 설 수 있어야 한다 — 칸이 2 면 홀수 k 의
+ * P(X≤k) 를 고를 수 없다. 끄는 칸(1/칸이 정수)과, 곡선 위 점이면 가장 좁은 화면에서 한 칸이 MIN_SNAP_PX 이상인지도 본다
+ * (모자라면 끌기가 칸을 2·5칸씩 묶어(model.ts snapMult) 막대를 건너뛴다). 칸 위 점은 묶지 않지만 x 축이 40칸까지라
+ * 칸 1 이면 n ≤ 39
+ */
+function binomEndOk(id: string, at: string, cx: ParseCtx): void {
+  const pt = cx.points.get(id);
+  if (!pt || pt.drag === 'none') return;
+  const { step, stepN } = xCells(cx.x, pt);
+  const per = step ? div(qi(1), step) : null;
+  if (per?.[1] !== 1n)
+    fail(
+      at,
+      `끝 점 ${id} 의 끄는 칸(${pt.snap})이 막대를 건너뜀 — 칸이 1 을 나누어떨어지게(1·1/2 …)`,
+    );
+  const f0 = narrowFrame(cx);
+  const px = (stepN / (cx.x.hi - cx.x.lo)) * (f0.r - f0.l);
+  if (pt.on && px < MIN_SNAP_PX)
+    fail(
+      at,
+      `끝 점 ${id} 의 한 칸이 가장 좁은 화면에서 ${px.toFixed(1)}px — ${MIN_SNAP_PX}px 보다 좁으면 끌기가 칸을 묶어 막대를 건너뜀(x 범위를 좁히거나 칸 위 점으로)`,
+    );
+}
+
 export const barsKind: KindDef<BarsObj> = {
   parse(ro, at, cx) {
     const c = obj(ro, at, ['id', 'bars'], ['label']);
@@ -306,6 +332,8 @@ export const barsKind: KindDef<BarsObj> = {
         fail(`${at} sel`, '두 끝이 다 끝없음이면 sel 을 빼세요(모든 막대)');
       const [qa, qb] = sel.map((e) => (e && 'q' in e ? e.q : null));
       if (qa && qb && cmp(qa, qb) > 0) fail(`${at} sel`, '끝이 시작보다 작음');
+      if (src.t === 'binom')
+        for (const e of sel) if (e && 'pt' in e) binomEndOk(e.pt, `${at} sel`, cx);
     }
     const o: BarsObj = {
       kind: 'bars',

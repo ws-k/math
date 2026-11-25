@@ -30,7 +30,7 @@ import { checkSmooth } from './coord/smooth.ts';
 import type { CoordParams } from './coord/types.ts';
 import type { WidgetDef } from './specs.ts';
 
-export { BINOM_N_MAX, binomPmf, MIN_BAR_PX } from './coord/bars.ts';
+export { BINOM_N_MAX, barsAt, binomPmf, MIN_BAR_PX } from './coord/bars.ts';
 export { coordChecks } from './coord/checks.ts';
 export { MAX_CELLS, MAX_SNAPS } from './coord/common.ts';
 export { dfAt, fAt } from './coord/curve.ts';

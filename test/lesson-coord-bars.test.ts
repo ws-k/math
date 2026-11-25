@@ -591,3 +591,63 @@ test('글 모음: 막대 범례 글이 문구 검사에 들어간다', () => {
   const p = parseCoord(raw);
   assert.ok(coordDef.texts(p).includes('이항분포 $B(n,p)$'));
 });
+
+// ---- 검토 반영(2-가 리뷰) ----
+
+test('M1 이항분포를 끄는 점으로 고르면: 점의 칸이 막대(폭 1)를 건너뛰면 형식 오류', () => {
+  // x 칸 2 면 K 가 홀수 막대에 서지 못한다(P(X≤1) 을 고를 수 없음)
+  assert.throws(
+    () =>
+      parseCoord(
+        binomRaw({
+          x: { min: '-1/2', max: '21/2', step: 2 },
+          objects: [
+            { id: 'K', point: { x: 2, y: 0, drag: 'x' }, name: 'K' },
+            { id: 'B', bars: { binom: ['n', 'p'], sel: [null, 'K'] } },
+          ],
+        }),
+      ),
+    /막대를 건너뜀/,
+  );
+  // 곡선 위 점: 끄는 간격 3/2 도 건너뛴다
+  const onCurve = (snap: string) =>
+    binomRaw({
+      objects: [
+        { id: 'g', curve: '0', tone: 'soft' },
+        { id: 'K', point: { on: 'g', x: 3, drag: 'x', snap } },
+        { id: 'B', bars: { binom: ['n', 'p'], sel: [null, 'K'] } },
+      ],
+    });
+  assert.throws(() => parseCoord(onCurve('3/2')), /막대를 건너뜀/);
+  // 1/2 간격은 모든 막대에 선다
+  assert.doesNotThrow(() => parseCoord(onCurve('1/2')));
+  // 곡선 위 점은 가장 좁은 화면에서 한 칸이 8px 아래면 끌기가 칸을 묶어(snapMult) 막대를 건너뛴다
+  assert.throws(
+    () =>
+      parseCoord({
+        ...onCurve('1'),
+        x: { min: '-1/2', max: '79/2', step: 1 },
+        sliders: [
+          { id: 'n', min: 1, max: 39, step: 1, value: 4, label: '$n$' },
+          { id: 'p', min: '1/10', max: '9/10', step: '1/10', value: '1/2', label: '$p$' },
+        ],
+      }),
+    /막대를 건너뜀/,
+  );
+  // 칸 위 점은 묶지 않으므로 n=39(가로 40칸)까지 된다
+  assert.doesNotThrow(() =>
+    parseCoord(
+      binomRaw({
+        x: { min: '-1/2', max: '79/2', step: 1 },
+        sliders: [
+          { id: 'n', min: 1, max: 39, step: 1, value: 4, label: '$n$' },
+          { id: 'p', min: '1/10', max: '9/10', step: '1/10', value: '1/2', label: '$p$' },
+        ],
+        objects: [
+          { id: 'K', point: { x: 2, y: 0, drag: 'x' }, name: 'K' },
+          { id: 'B', bars: { binom: ['n', 'p'], sel: [null, 'K'] } },
+        ],
+      }),
+    ),
+  );
+});
