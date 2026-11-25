@@ -8,6 +8,7 @@
 // 부품 문구는 중립어('자리'·'경우'·'짝')이고, 원탁·깃발 같은 장면은 words 칸으로 자리 이름·결론 글을 바꾼다.
 // 화면에 보이는 수(결론 식의 각 수)는 모두 여기서 계산하고 checks 가 sympy 로 다시 센다(P7).
 // 전체 개수는 모델이 직접 다 늘어놓아 세고, checks 가 그 수를 sympy 의 공식(ff·binomial·거듭제곱)과 대조한다.
+import { FAILS_FOR_TAP } from '../drag.ts';
 import { arr, fail, int, obj, oneOf, str } from '../parse.ts';
 import type { WidgetCheck, WidgetDef } from './specs.ts';
 
@@ -248,9 +249,6 @@ export const nodeInner = (r: number) => 2 * r * 0.8 - 4;
 export const cardInner = () => V_CARD - 10;
 
 // ---- 누르기(눌러서 하기 · 화면 낭독기) ----
-
-/** 그냥 누르기가 이만큼이면 '눌러서 해도 돼요' 안내를 띄운다(P4 — 저울·'넘어가기'와 같은 기준) */
-export const FAILS_FOR_TAP = 2;
 
 /**
  * 움직임 없는 누르기 한 번. 누르기는 첫 번부터 고르기로 동작한다: 화면 낭독기(VoiceOver)의 두 번 두드리기는

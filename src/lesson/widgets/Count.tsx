@@ -8,7 +8,7 @@
 // 안내 글만 두 번째에 '눌러도 돼요'를 띄운다(P4). 키보드는 처음부터 늘 된다.
 // 결론 글(곱·나눗셈 식)은 안내 칸(토스트)이 아니라 읽는 값 줄에 둔다 — 다 찾은 뒤 다른 안내가 와도 지워지지 않게.
 // 문구는 중립어('자리'·'경우'·'짝')이고 장면이 words 칸으로 바꾼다(count.ts CWords).
-// 같은 끌어 놓기가 저울(Balance.tsx)에도 있다 — 공용으로 꺼내는 것은 1-사 묶음 몫이라 여기서는 이 부품 안에 둔다.
+// 끌어 놓기 손 처리(들기·따라오기·놓기)는 저울과 같이 쓰는 dropDrag.ts, 놓은 뒤 날아가기는 fly.ts 에 있다.
 import {
   type ButtonHTMLAttributes,
   type CSSProperties,
@@ -21,7 +21,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import { flyFrom } from '../fly.ts';
+import { centerOf, FAILS_FOR_TAP, isTap } from '../drag.ts';
+import { landAt, useSettleFx } from '../fly.ts';
 import { useDrag } from '../useDrag.ts';
 import {
   CARD_FONT,
@@ -38,7 +39,6 @@ import {
   cTap,
   cTotal,
   cTree,
-  FAILS_FOR_TAP,
   fitPx,
   L_W,
   LABEL_MIN,
@@ -73,12 +73,11 @@ import {
   vPut,
   vRegionAt,
 } from './count.ts';
+import { useDropDrag } from './dropDrag.ts';
 import type { WidgetProps } from './index.tsx';
 
 type Msg = { text: string; cls: '' | 'ok' | 'bad' };
 
-/** 이만큼 못 움직였으면 끌기가 아니라 누르기로 본다(저울과 같은 값) */
-const TAP_PX = 8;
 /** 놓은 뒤 새 자리로 미끄러져 가는 시간 */
 const FLY_MS = 220;
 /** 이미 찾은 경우·짝을 깜빡이는 시간 */
@@ -138,35 +137,6 @@ export function Count({ params: p, onDone, onMiss }: WidgetProps<CountParams>) {
 type Part = { p: CountParams; s: CState; settle(n: CState): void };
 type Drag = Part & { say(m: Msg): void; onMiss(): void; toast: ReactNode };
 
-/** 이 요소들의 지금 화면 자리. 상태가 바뀐 뒤 옛 자리에서 새 자리로 미끄러져 가게(FLIP) 잰다 */
-function rectsOf(host: ParentNode | null | undefined, sel: string, attr: string) {
-  const m = new Map<string, DOMRect>();
-  for (const el of host?.querySelectorAll<HTMLElement>(sel) ?? [])
-    m.set(el.getAttribute(attr) as string, el.getBoundingClientRect());
-  return m;
-}
-
-/** 옮긴 뒤 한 번: 옛 자리에서 날려 보낸다 */
-function useSettleFx(host: RefObject<HTMLElement | null>, sel: string, attr: string) {
-  const fly = useRef<Map<string, DOMRect> | null>(null);
-  useLayoutEffect(() => {
-    const old = fly.current;
-    fly.current = null;
-    if (!old || !host.current) return;
-    for (const el of host.current.querySelectorAll<HTMLElement>(sel)) {
-      const r = old.get(el.getAttribute(attr) as string);
-      if (r) flyFrom(el, r, { duration: FLY_MS });
-    }
-  });
-  return {
-    /** 상태를 바꾸기 직전에 부른다. dropped = 끌어 놓은 요소의 놓인 자리(손 뗀 자리에서 날아가게) */
-    mark(dropped?: [string, DOMRect]) {
-      fly.current = rectsOf(host.current, sel, attr);
-      if (dropped) fly.current.set(dropped[0], dropped[1]);
-    },
-  };
-}
-
 /** 이 요소를 잠깐 깜빡인다(이미 찾은 경우·짝). 상태가 아니라 속성만 — 다시 그리지 않는다 */
 function flash(host: ParentNode | null | undefined, key: string) {
   for (const el of host?.querySelectorAll<Element>(`[data-k="${key}"]`) ?? []) {
@@ -182,8 +152,7 @@ function flash(host: ParentNode | null | undefined, key: string) {
 function boardPoint(board: HTMLElement, r: DOMRect, w: number, scaleY: boolean) {
   const b = board.getBoundingClientRect();
   const k = w / b.width;
-  const cx = r.left + r.width / 2;
-  const cy = r.top + r.height / 2;
+  const [cx, cy] = centerOf(r);
   return [(cx - b.left) * k, (cy - b.top) * (scaleY ? k : 1)] as const;
 }
 
@@ -198,38 +167,15 @@ type DragBtnProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onDrop'> & {
   onActivate(): void;
 };
 
-/** 끌 수 있는 단추 하나(줄 세우기 칩·벤 카드). 단추마다 useDrag 를 붙이려고 컴포넌트로 뺐다 */
+/** 끌 수 있는 단추 하나(줄 세우기 칩·벤 카드). 단추마다 useDropDrag 를 붙이려고 컴포넌트로 뺐다 */
 function DragBtn({ busy, locked, onDrop, onActivate, ...rest }: DragBtnProps) {
   const ref = useRef<HTMLButtonElement>(null);
-  /** 끌기를 잡은 요소. 끄는 도중 단추가 사라져도(ref 가 비어도) 정리할 수 있게 쥐어 둔다 */
-  const held = useRef<HTMLElement | null>(null);
-  useDrag(ref, {
-    pick: () => !busy.current && !locked,
-    onStart() {
-      const el = ref.current;
-      if (!el) return;
-      busy.current = true;
-      held.current = el;
-      for (const a of el.getAnimations()) a.cancel();
-      // 속성은 data- 로 — className 을 직접 고치면 React 가 다시 그릴 때 지워진다
-      el.dataset.lift = '';
-    },
-    onMove(dx, dy) {
-      const el = held.current;
-      if (el) el.style.transform = `translate(${dx}px,${dy}px) scale(1.06)`;
-    },
-    onEnd(dx, dy, cancelled) {
-      const el = held.current;
-      held.current = null;
-      busy.current = false;
-      if (!el) return;
-      delete el.dataset.lift;
-      if (cancelled || !el.isConnected) {
-        el.style.transform = '';
-        return;
-      }
-      onDrop(el, dx, dy);
-    },
+  // 들어 올린 칩은 살짝 커져 손가락 밑에서도 '들었다'가 보인다(표시는 기본 data-lift)
+  useDropDrag(ref, {
+    busy,
+    locked,
+    follow: (dx, dy) => `translate(${dx}px,${dy}px) scale(1.06)`,
+    onDrop,
   });
   return (
     <button
@@ -279,7 +225,7 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
   const finished = cDone(p, s);
   const board = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
-  const fx = useSettleFx(board, '[data-chip]', 'data-chip');
+  const fx = useSettleFx(board, 'data-chip', FLY_MS);
   const [live, setLive] = useState('');
   const taps = useTaps(say, '하나를 누르고, 갈 자리를 누르세요.');
   const pick = taps.pick;
@@ -294,7 +240,7 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
   const commit = (i: number, to: number | 'wait', dropped?: DOMRect): boolean => {
     const r = lMove(p, s, i, to);
     if (r.res === 'none') return false;
-    fx.mark(dropped ? [String(i), dropped] : undefined);
+    fx.mark(dropped && [[String(i), dropped]]);
     settle(r.s);
     setLive(`지금 자리: ${lineText(r.s)}`);
     // 다 찾은 뒤에는 안내를 더 띄우지 않는다 — 결론은 읽는 값 줄에 남아 있다
@@ -329,10 +275,8 @@ function Line({ p, s, settle, say, onMiss, toast }: Drag) {
   };
 
   const onDrop = (i: number) => (el: HTMLElement, dx: number, dy: number) => {
-    const rect = el.getBoundingClientRect();
-    el.style.transform = '';
-    const back = () => flyFrom(el, rect, { duration: FLY_MS });
-    if (Math.hypot(dx, dy) < TAP_PX) {
+    const { rect, back } = landAt(el, FLY_MS);
+    if (isTap(dx, dy)) {
       back();
       choose(taps.tap(i, finished, '누른 채 아래 자리까지 끌어 보세요.'), i);
       return;
@@ -682,7 +626,7 @@ function PairNode({ i, name, g, svg, rubber, busy, picked, deg, label, ...h }: P
       const cur = d.current;
       const r = rubber.current;
       if (!cur || !r) return;
-      if (Math.hypot(dx, dy) < TAP_PX) return hide();
+      if (isTap(dx, dy)) return hide();
       const [px, py] = toSvg(cur.x + dx, cur.y + dy);
       r.setAttribute('x1', String(x));
       r.setAttribute('y1', String(y));
@@ -694,7 +638,7 @@ function PairNode({ i, name, g, svg, rubber, busy, picked, deg, label, ...h }: P
     },
     onEnd(dx, dy, cancelled) {
       const cur = d.current;
-      const moved = Math.hypot(dx, dy) >= TAP_PX;
+      const moved = !isTap(dx, dy);
       const [px, py] = cur ? toSvg(cur.x + dx, cur.y + dy) : [x, y];
       hide();
       d.current = null;
@@ -751,7 +695,7 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
   const board = useRef<HTMLDivElement>(null);
   const read = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
-  const fx = useSettleFx(board, '[data-card]', 'data-card');
+  const fx = useSettleFx(board, 'data-card', FLY_MS);
   const [live, setLive] = useState('');
   /** 키보드로 넣은 뒤 다시 잡을 카드, 다 맞힌 뒤 결론 줄로 초점 */
   const focusCard = useRef<number | null>(null);
@@ -786,7 +730,7 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
       return false;
     }
     if (r.res === 'none') return false;
-    fx.mark(dropped ? [String(e), dropped] : undefined);
+    fx.mark(dropped && [[String(e), dropped]]);
     settle(r.s);
     setLive(`${el[e]}, ${to ? NAME[to] : '더미'}에 놓음.`);
     // 틀린 카드를 옮기면 남은 틀린 수로 안내를 고친다(다시 '확인하기'로만 판정)
@@ -828,10 +772,8 @@ function VennSort({ p, s, settle, say, onMiss, toast }: Drag) {
   };
 
   const onDrop = (e: number) => (node: HTMLElement, dx: number, dy: number) => {
-    const rect = node.getBoundingClientRect();
-    node.style.transform = '';
-    const back = () => flyFrom(node, rect, { duration: FLY_MS });
-    if (Math.hypot(dx, dy) < TAP_PX) {
+    const { rect, back } = landAt(node, FLY_MS);
+    if (isTap(dx, dy)) {
       back();
       const r = taps.tap(e, false, '카드를 누른 채 넣을 곳까지 끌어 보세요.');
       // 처음 두 번은 안내 글이 '어디에 넣을까요'를 덮지 않게 안내만 보인다(넣을 곳 단추는 열린다)
