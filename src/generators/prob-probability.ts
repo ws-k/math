@@ -1,6 +1,5 @@
-import { jo } from './h1-poly-ops.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd, lcm } from './util.ts';
+import { fracAns, fracTex, gcd, jo, lcm } from './util.ts';
 
 const UNIT = 'prob-probability';
 
@@ -132,7 +131,7 @@ export const generators: Generator[] = [
               },
               {
                 title: '계산',
-                body: `분모를 $${d}$ ${jo(String(d), '으로')} 맞춰 분자끼리 계산해요.\n$$\\frac{${a}+${b}-${c}}{${d}}=${P(u, d)}$$`,
+                body: `분모를 $${d}$ ${jo(String(d), '으로/로')} 맞춰 분자끼리 계산해요.\n$$\\frac{${a}+${b}-${c}}{${d}}=${P(u, d)}$$`,
               },
             ],
             tip: '$P(A)$ 와 $P(B)$ 에 $A\\cap B$ 가 한 번씩 들어 있어서 한 번 빼요.',

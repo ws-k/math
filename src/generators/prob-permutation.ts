@@ -1,5 +1,5 @@
-import { jo } from './h1-poly-ops.ts';
 import type { Generator } from './types.ts';
+import { jo } from './util.ts';
 
 const UNIT = 'prob-permutation';
 
@@ -48,7 +48,7 @@ export const generators: Generator[] = [
               body: `기준에서 시계 방향으로 남은 $${n - 1}$ 명을 줄 세워요.\n$$${n - 1}!=${factTex(n - 1)}=${ans}$$`,
             },
           ],
-          tip: `한 줄로 세운 $${n}!=${fact(n)}$ 에는 같은 원 배열이 회전한 $${n}$ 가지씩 들어 있어요. $${fact(n)}\\div${n}=${ans}$ ${jo(String(ans), '으로')} 검산할 수 있어요.`,
+          tip: `한 줄로 세운 $${n}!=${fact(n)}$ 에는 같은 원 배열이 회전한 $${n}$ 가지씩 들어 있어요. $${fact(n)}\\div${n}=${ans}$ ${jo(String(ans), '으로/로')} 검산할 수 있어요.`,
         };
       }
       const n = rng.int(5, 7);
@@ -66,11 +66,11 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '전체',
-              body: `$${n}$ 명의 원순열은 $(${n}-1)!=${fact(n - 1)}$ ${jo(String(fact(n - 1)), '이에요')}.`,
+              body: `$${n}$ 명의 원순열은 $(${n}-1)!=${fact(n - 1)}$ ${jo(String(fact(n - 1)), '이에요/예요')}.`,
             },
             {
               title: '이웃하는 경우',
-              body: `A, B 를 묶으면 $${n - 1}$ 덩어리라 $(${n - 1}-1)!\\times2=${adj}$ ${jo(String(adj), '이에요')}.`,
+              body: `A, B 를 묶으면 $${n - 1}$ 덩어리라 $(${n - 1}-1)!\\times2=${adj}$ ${jo(String(adj), '이에요/예요')}.`,
             },
             { title: '빼기', body: `$$${fact(n - 1)}-${adj}=${ans}$$` },
           ],
@@ -95,7 +95,7 @@ export const generators: Generator[] = [
           },
           {
             title: '원순열',
-            body: `$${n - 1}$ 명이 원탁에 앉는 수는 $(${n - 1}-1)!=${n - 2}!=${fact(n - 2)}$ ${jo(String(fact(n - 2)), '이에요')}.`,
+            body: `$${n - 1}$ 명이 원탁에 앉는 수는 $(${n - 1}-1)!=${n - 2}!=${fact(n - 2)}$ ${jo(String(fact(n - 2)), '이에요/예요')}.`,
           },
           {
             title: '묶음 안 자리 바꾸기',
@@ -161,7 +161,7 @@ export const generators: Generator[] = [
             body: `$$${n}^${r}=${ans}$$`,
           },
         ],
-        tip: `고르는 쪽(편지 $${r}$ 통)이 지수, 골라지는 쪽(우체통 $${n}$ 개)이 밑이에요. $${r}^${n}=${r ** n}$ ${jo(String(r ** n), '으로')} 바꿔 쓰지 않게 조심해요.`,
+        tip: `고르는 쪽(편지 $${r}$ 통)이 지수, 골라지는 쪽(우체통 $${n}$ 개)이 밑이에요. $${r}^${n}=${r ** n}$ ${jo(String(r ** n), '으로/로')} 바꿔 쓰지 않게 조심해요.`,
       };
     },
   },
@@ -235,7 +235,7 @@ export const generators: Generator[] = [
             body: `$$\\frac{${m + k}!}{${m}!\\,${k}!}=${ans}$$`,
           },
         ],
-        tip: `왼쪽(←)이나 아래(↓)로 한 번이라도 가면 최단이 아니에요. ↑ 가 들어갈 자리 $${k}$ 개만 고르면 나머지는 → 라서 $_{${m + k}}\\mathrm{C}_{${k}}=${ans}$ ${jo(String(ans), '으로')}도 셀 수 있어요.`,
+        tip: `왼쪽(←)이나 아래(↓)로 한 번이라도 가면 최단이 아니에요. ↑ 가 들어갈 자리 $${k}$ 개만 고르면 나머지는 → 라서 $_{${m + k}}\\mathrm{C}_{${k}}=${ans}$ ${jo(String(ans), '으로/로')}도 셀 수 있어요.`,
       };
     },
   },
@@ -273,7 +273,7 @@ export const generators: Generator[] = [
           },
           { title: '중복순열', body: `$$_${n}\\Pi_${free}=${n}^${free}=${ans}$$` },
         ],
-        tip: `고르는 쪽은 정의역 $X$ 의 원소예요. 그래서 밑이 $${n}$, 지수가 $${free}$ ${jo(String(free), '이에요')}.`,
+        tip: `고르는 쪽은 정의역 $X$ 의 원소예요. 그래서 밑이 $${n}$, 지수가 $${free}$ ${jo(String(free), '이에요/예요')}.`,
       };
     },
   },

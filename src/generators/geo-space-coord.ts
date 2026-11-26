@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { ieyo, paren } from './util.ts';
+import { ieyo, paren, ro } from './util.ts';
 
 const UNIT = 'geo-space-coord';
 
@@ -308,9 +308,7 @@ export const generators: Generator[] = [
       const B = [0, 1, 2].map((i) => (A[i] as number) + t * (step[i] as number)) as V3;
       const P = [0, 1, 2].map((i) => (A[i] as number) + m * (step[i] as number)) as V3;
       const s = P[0] + P[1] + P[2];
-      // '로/으로'는 끝 숫자의 받침으로(일·칠·팔은 ㄹ 받침이라 '로')
-      const ro = [0, 3, 6].includes(n) ? '으로' : '로';
-      const ratio = m === n ? '선분 AB 의 중점' : `선분 AB 를 ${m}:${n} ${ro} 내분하는 점`;
+      const ratio = m === n ? '선분 AB 의 중점' : `선분 AB 를 ${m}:${n} ${ro(n)} 내분하는 점`;
       const frac = (i: number) =>
         `\\frac{${m}\\cdot${paren(B[i] as number)}+${n}\\cdot${paren(A[i] as number)}}{${t}}=${P[i]}`;
       return {

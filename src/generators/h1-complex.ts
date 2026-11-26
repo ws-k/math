@@ -1,6 +1,5 @@
-import { jo } from './h1-poly-ops.ts';
 import type { Generator } from './types.ts';
-import { paren } from './util.ts';
+import { jo, paren } from './util.ts';
 
 const UNIT = 'h1-complex';
 
@@ -53,7 +52,7 @@ export const generators: Generator[] = [
             },
             {
               title: '$i^2=-1$ 로 바꾸기',
-              body: `$${si(b * d, 'i^2').replace(/^\+/, '')}=${-b * d}$ ${jo(String(-b * d), '이에요')}.\n$$${a * c}${signed(-b * d)}${si(im, 'i')}=${cTex(re, im)}$$`,
+              body: `$${si(b * d, 'i^2').replace(/^\+/, '')}=${-b * d}$ ${jo(String(-b * d), '이에요/예요')}.\n$$${a * c}${signed(-b * d)}${si(im, 'i')}=${cTex(re, im)}$$`,
             },
             { title: '더하기', body: `$p=${re}$, $q=${im}$\n$$p+q=${re + im}$$` },
           ],
@@ -93,7 +92,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '분모의 켤레 곱하기',
-              body: `분자·분모에 $${cTex(c, -d)}$ ${jo(cTex(c, -d), '을')} 곱해요.`,
+              body: `분자·분모에 $${cTex(c, -d)}$ ${jo(cTex(c, -d), '을/를')} 곱해요.`,
             },
             {
               title: '분모',

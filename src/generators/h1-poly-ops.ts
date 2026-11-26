@@ -1,28 +1,10 @@
 import type { Generator } from './types.ts';
-import { paren, polyMul, polySym, polyTex } from './util.ts';
+import { jo, paren, polyMul, polySym, polyTex } from './util.ts';
 
 const UNIT = 'h1-poly-ops';
 
 // 다항식은 계수 배열(높은 차수부터)로만 들고 다닌다. 문제 글(polyTex)과 검산식(polySym)을 같은 배열에서
 // 만들어, 화면의 식과 sympy 가 계산하는 식이 어긋나지 않게 한다.
-
-/**
- * 식 뒤에 붙는 조사. 숫자로 끝나면 읽는 소리의 받침(영·일·삼·육·칠·팔)으로 고르고, 문자(x, i)로 끝나면
- * 받침이 없다고 본다 — 생성기 숫자가 바뀔 때마다 "81 예요", "3 로" 같은 어색한 조사가 나오지 않게.
- * f(3) 처럼 괄호로 끝나면 괄호 안 마지막 글자로 읽는다.
- */
-export function jo(tex: string, kind: '을' | '이' | '이에요' | '으로' | '이라'): string {
-  const last = tex.replace(/[\s$})]+$/, '').slice(-1);
-  const digit = /\d/.test(last);
-  const batchim = digit && '013678'.includes(last);
-  // 받침이 ㄹ(일·칠·팔)이면 '으로' 대신 '로'
-  const rieul = digit && '178'.includes(last);
-  if (kind === '을') return batchim ? '을' : '를';
-  if (kind === '이') return batchim ? '이' : '가';
-  if (kind === '이에요') return batchim ? '이에요' : '예요';
-  if (kind === '이라') return batchim ? '이라' : '라';
-  return batchim && !rieul ? '으로' : '로';
-}
 
 /** x-a 의 TeX. a 가 음수면 x+|a| */
 export const linTex = (a: number) => `x${a < 0 ? '+' : '-'}${Math.abs(a)}`;
@@ -57,7 +39,7 @@ export const generators: Generator[] = [
         steps: [
           {
             title: '공식의 $a$, $b$ 정하기',
-            body: `$(a+b)^3$ 에서 $a=${ax}$, $b=${b}$ ${jo(String(b), '으로')} 놓아요.`,
+            body: `$(a+b)^3$ 에서 $a=${ax}$, $b=${b}$ ${jo(String(b), '으로/로')} 놓아요.`,
           },
           {
             title: `$${k === 2 ? 'x^2' : 'x'}$이 나오는 항 고르기`,
@@ -65,7 +47,7 @@ export const generators: Generator[] = [
           },
           {
             title: '계수 읽기',
-            body: `$${k === 2 ? 'x^2' : 'x'}$ 앞의 수는 $${coef}$ ${jo(String(coef), '이에요')}.`,
+            body: `$${k === 2 ? 'x^2' : 'x'}$ 앞의 수는 $${coef}$ ${jo(String(coef), '이에요/예요')}.`,
           },
         ],
         tip: `$(a+b)^3$ 을 $a^3+b^3$ 으로 쓰면 가운데 두 항이 빠져요. 가운데 계수 $3$ 과 ${b < 0 ? '$b$ 의 부호' : '$b$ 의 거듭제곱'}도 빠뜨리지 않아요.`,
@@ -137,7 +119,7 @@ export const generators: Generator[] = [
         const r1 = [p, A[2] as number, A[3] as number];
         const r2 = [q, A[3] as number];
         return {
-          q: `$${polyTex(A)}$ ${jo(polyTex(A), '을')} $${linTex(a)}$ ${jo(linTex(a), '으로')} 나눈 몫을 $x^2+px+q$, 나머지를 $r$ 라 할 때 $p+q+r$ 의 값을 구하세요.`,
+          q: `$${polyTex(A)}$ ${jo(polyTex(A), '을/를')} $${linTex(a)}$ ${jo(linTex(a), '으로/로')} 나눈 몫을 $x^2+px+q$, 나머지를 $r$ 라 할 때 $p+q+r$ 의 값을 구하세요.`,
           choices: null,
           answer: String(sum),
           answerType: 'int',
@@ -149,22 +131,22 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '첫째 몫 $x^2$',
-              body: `$x^3\\div x=x^2$. $x^2(${linTex(a)})$ ${jo(linTex(a), '을')} 빼면\n$$${polyTex([...r1])}$$`,
+              body: `$x^3\\div x=x^2$. $x^2(${linTex(a)})$ ${jo(linTex(a), '을/를')} 빼면\n$$${polyTex([...r1])}$$`,
             },
             {
               title: `둘째 몫 $${polyTex([p, 0])}$`,
-              body: `$${polyTex([p, 0, 0])}\\div x=${polyTex([p, 0])}$. $${polyTex([p, 0])}(${linTex(a)})$ ${jo(linTex(a), '을')} 빼면\n$$${polyTex(r2)}$$`,
+              body: `$${polyTex([p, 0, 0])}\\div x=${polyTex([p, 0])}$. $${polyTex([p, 0])}(${linTex(a)})$ ${jo(linTex(a), '을/를')} 빼면\n$$${polyTex(r2)}$$`,
             },
             {
               title: `셋째 몫 $${q}$`,
-              body: `$${paren(q)}\\times(${linTex(a)})$ ${jo(linTex(a), '을')} 빼면 남는 수가 나머지예요.\n$$r=${r}$$`,
+              body: `$${paren(q)}\\times(${linTex(a)})$ ${jo(linTex(a), '을/를')} 빼면 남는 수가 나머지예요.\n$$r=${r}$$`,
             },
             {
               title: '더하기',
               body: `몫 $${polyTex([1, p, q])}$ 에서 $p=${p}$, $q=${q}$\n$$p+q+r=${p}+${paren(q)}+${paren(r)}=${sum}$$`,
             },
           ],
-          tip: `검산: $(${linTex(a)})(${polyTex([1, p, q])})${r < 0 ? '' : '+'}${r}$ ${jo(String(r), '을')} 전개하면 처음 식이 돼요.`,
+          tip: `검산: $(${linTex(a)})(${polyTex([1, p, q])})${r < 0 ? '' : '+'}${r}$ ${jo(String(r), '을/를')} 전개하면 처음 식이 돼요.`,
         };
       }
     },
