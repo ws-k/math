@@ -13,7 +13,7 @@ import { curveDerivExact, curveOf, curveVars, dfAt, plainOf, wholeCurve } from '
 import { fillEnds, fillOf, fillSums, fillSumsAt } from './fill.ts';
 import { fmtNum } from './frame.ts';
 import { distSliders, probAt, probChecks, probText, shadeMovers, shadeOf } from './normal.ts';
-import { coincide, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
+import { coincide, lookOf, pointDeps, pointOf, pointQ, pointXY, xSym, ySym } from './point.ts';
 import { polyOf, rootCount } from './poly.ts';
 import { rectsOf, sumSym, sums } from './rects.ts';
 import { sliderQ, sliderText, sliderValues } from './slider.ts';
@@ -470,10 +470,11 @@ export function readoutMovers(
   const curve = (id: string) => {
     for (const v of curveVars(curveOf(p, id))) if (ids.has(v)) sl.add(v);
   };
+  // 따라오는 점은 가리키는 점·슬라이더까지 거슬러 올라간다(목표가 그것들을 늘어놓아야 읽는 값이 바뀐다)
   const point = (id: string) => {
-    const o = pointOf(p, id);
-    if (o.drag !== 'none') pts.add(id);
-    if (o.on) curve(o.on);
+    const d = pointDeps(lookOf(p), id);
+    for (const q of d.pts) pts.add(q);
+    for (const v of d.sliders) sl.add(v);
   };
   switch (e.f) {
     case 'x':

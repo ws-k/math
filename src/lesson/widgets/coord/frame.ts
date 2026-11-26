@@ -20,9 +20,17 @@ export function axisLabel(a: Axis): string | null {
   return a.name ?? null;
 }
 
-/** 축 끝 글자(11px 굵게)의 어림 폭: 한글 11px, 그 밖 6.5px */
-export const labelWidth = (t: string) =>
-  [...t].reduce((w, ch) => w + (ch.charCodeAt(0) >= 0x1100 ? 11 : 6.5), 0);
+/**
+ * 좁은 글자로 아는 것: ASCII·라틴 문자·그리스 문자·프라임(′″)·위아래 첨자·빼기 기호(−). 글자 폭을 어림하는 곳
+ * (축 끝 글자·슬라이더 줄·점 이름표)이 모두 이 판별 하나를 쓴다 — 곳마다 따로 두면 같은 글자를 한쪽은 좁게,
+ * 한쪽은 넓게 센다(빼기 기호는 코드 값이 커도 숫자 폭이라 예전에 슬라이더 쪽만 따로 좁게 셌다)
+ */
+const NARROW = /[ -ɏͰ-Ͽ′″⁰-₟−]/;
+/** 넓은 글자(한글·한자·모르는 글자). 모르는 글자를 좁게 세면 폭 상한이 실제보다 느슨해지므로 넓은 쪽으로 */
+export const isWide = (ch: string) => !NARROW.test(ch);
+
+/** 축 끝 글자(11px 굵게)의 어림 폭: 넓은 글자 11px, 그 밖 6.5px */
+export const labelWidth = (t: string) => [...t].reduce((w, ch) => w + (isWide(ch) ? 11 : 6.5), 0);
 
 /** 가로축 끝 글자와 마지막 눈금 글자 사이 틈 */
 export const AXIS_LABEL_GAP = 12;

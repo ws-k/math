@@ -12,7 +12,7 @@ import { add, cmp, mul, neg, qi, sub } from '../q.ts';
 import { ID, numExpr } from './common.ts';
 import { fAt, wholeCurve } from './curve.ts';
 import { clampY, r1, toPx } from './frame.ts';
-import { pointOf, pointQ, pointXY, xCells } from './point.ts';
+import { noFollow, pointOf, pointQ, pointXY, xCells } from './point.ts';
 import { polyIntegral, polyOf, rationalRoots, rootsBetween } from './poly.ts';
 import type {
   Axis,
@@ -257,7 +257,7 @@ export const fillKind: KindDef<FillObj> = {
     let hi: number;
     let bMax: Rational | null;
     if (isName(rb)) {
-      pt = cx.pointRef(rb.trim(), `${at} fill.x`);
+      pt = noFollow(cx.pointRef(rb.trim(), `${at} fill.x`), `${at} fill.x`, '칠하기 끝');
       const { i0, i1, step, stepN } = endCells(pt, cx.x);
       if (i0 * stepN < a.n - 1e-9)
         fail(

@@ -140,6 +140,53 @@ export const WIDGET_SCENES: Scene[] = [
     seed: 9,
   }),
   explore('ft-72', 'factorTree', { n: 72 }),
+  // 좌표평면 2-나 새 옵션(단원 적용은 3-아): 따라오는 점·세로선(점선)·여러 글자·프라임 이름
+  explore('co-follow', 'coord', {
+    mode: 'explore',
+    x: { min: -2, max: 2, step: '1/2' },
+    y: { min: -4, max: 7, step: 1 },
+    sliders: [{ id: 'c', min: -3, max: 3, step: 1, value: 0, label: '적분상수 $C$' }],
+    objects: [
+      { id: 'g', curve: 'x**2', tone: 'soft' },
+      { id: 'F', curve: 'x**2+c' },
+      { id: 'P', point: { on: 'F', x: -1, drag: 'x', snap: '1/2' }, name: 'P' },
+      { id: 'R', point: { on: 'g', x: 'x(P)' }, name: 'R′' },
+      { vline: 'x(P)', dash: true, tone: 'soft' },
+      { tangent: { on: 'F', at: 'P' } },
+      { tangent: { on: 'g', at: 'R' } },
+      { readout: 'deriv(F,P)', label: 'P 의 기울기' },
+      { readout: 'deriv(g,R)', label: 'R′ 의 기울기' },
+    ],
+  }),
+  // 수선의 발(따라오는 점)·직각 표시·한글 이름 — 축척 같게
+  explore('co-foot', 'coord', {
+    mode: 'explore',
+    equal: true,
+    x: { min: -1, max: 6, step: 1 },
+    y: { min: -1, max: 5, step: 1 },
+    objects: [
+      { id: 'O', point: { x: 0, y: 0 }, name: 'O' },
+      { id: 'P', point: { x: 4, y: 3, drag: 'xy' }, name: '출발' },
+      { id: 'H', point: { x: 'x(P)', y: 0 }, name: '발' },
+      { segment: ['O', 'P'], tone: 'soft' },
+      { segment: ['P', 'H'] },
+      { segment: ['O', 'H'] },
+      { right: ['P', 'H', 'O'] },
+      { readout: 'x(H)', label: '발의 자리', digits: 0 },
+    ],
+  }),
+  // 점근선 세로선(슬라이더를 따라감)과 꼭짓점처럼 슬라이더를 따라오는 점
+  explore('co-asym', 'coord', {
+    mode: 'explore',
+    x: { min: -5, max: 5, step: 1 },
+    y: { min: -4, max: 4, step: 1 },
+    sliders: [{ id: 'a', min: -2, max: 2, step: 1, value: 1, label: '$a$' }],
+    objects: [
+      { id: 'f', curve: '1/(x-a)+1', label: '$y=\\frac{1}{x-a}+1$' },
+      { vline: 'a', dash: true, tone: 'soft', label: '점근선 $x=a$' },
+      { id: 'C', point: { x: 'a', y: 1 }, name: '중심' },
+    ],
+  }),
 ];
 
 /**

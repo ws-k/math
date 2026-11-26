@@ -5,6 +5,7 @@ import { ciKind } from './ci.ts';
 import { curveKind } from './curve.ts';
 import { fillKind } from './fill.ts';
 import { secantKind, tangentKind } from './line.ts';
+import { rightKind, vlineKind } from './mark.ts';
 import { shadeKind } from './normal.ts';
 import { pointKind } from './point.ts';
 import { readoutKind } from './readout.ts';
@@ -29,6 +30,8 @@ export const KINDS: { [K in CoordObj['kind']]: KindDef<Extract<CoordObj, { kind:
   bars: barsKind,
   shade: shadeKind,
   ci: ciKind,
+  vline: vlineKind,
+  right: rightKind,
 };
 
 /** 객체의 종류 정의. 종류별 정의를 공통 모양으로 다루려고 한 번 넓혀 준다(KindDef 는 메서드 꼴이라 안전) */
