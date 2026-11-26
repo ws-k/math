@@ -451,7 +451,16 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
         ]
       : o.kind === 'bars' && o.label
         ? [{ key: `bars ${o.id}`, tone: 'base', label: o.label }]
-        : [],
+        : // 세로선(점근선)은 점선이면 견본도 점선 — 같은 색 곡선과 구분되게
+          o.kind === 'vline' && o.label
+          ? [
+              {
+                key: `vline ${o.at.src}`,
+                tone: `${o.tone}${o.dash ? ' dash' : ''}`,
+                label: o.label,
+              },
+            ]
+          : [],
   );
 
   const touch = p.mode === 'sketch' && sketching ? 'none' : 'manipulation';

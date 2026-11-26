@@ -4,8 +4,9 @@ import type { GridPt } from '../../grade.ts';
 import { arr, fail, type Obj, obj, oneOf, str } from '../../parse.ts';
 import { axis, ID, MAX_CELLS, numExpr, toIndex } from './common.ts';
 import { MIN_PLOT, narrowFrame } from './frame.ts';
-import { goalPoints, parseGoal } from './goal.ts';
+import { goalMovers, goalPoints, parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
+import { checkRightGoal, rightKey, vlineKey } from './mark.ts';
 import { segKey } from './segment.ts';
 import { parseSliders } from './slider.ts';
 import { parseTask } from './task.ts';
@@ -134,6 +135,22 @@ export function parseCoord(raw: unknown): CoordParams {
       fail('좌표 objects', `같은 ${ob.kind === 'arrow' ? '화살표가' : '선분이'} 두 번 (${ob.ref})`);
     seenSeg.add(key);
   }
+  // 같은 세로선 두 번도 한 줄 위에 겹치고 검산 항목 이름이 겹친다(mark.ts vlineKey — 수는 값으로 견줌)
+  const seenV = new Set<string>();
+  for (const ob of objects) {
+    if (ob.kind !== 'vline') continue;
+    const key = vlineKey(ob);
+    if (seenV.has(key)) fail('좌표 objects', `같은 세로선이 두 번 (${ob.at.src})`);
+    seenV.add(key);
+  }
+  // 같은 직각 표시 두 번(두 끝 차례만 바꾼 것 포함)도 한 자리에 겹치고 검산 항목 이름이 겹친다(mark.ts rightKey)
+  const seenR = new Set<string>();
+  for (const ob of objects) {
+    if (ob.kind !== 'right') continue;
+    const key = rightKey(ob);
+    if (seenR.has(key)) fail('좌표 objects', `같은 직각 표시가 두 번 (${ob.ref})`);
+    seenR.add(key);
+  }
 
   const p: CoordParams = {
     mode,
@@ -149,6 +166,7 @@ export function parseCoord(raw: unknown): CoordParams {
   if (o.goal !== undefined) {
     p.goal = parseGoal(o.goal, p, goalCtx);
     p.goalPts = goalPoints(p);
+    checkRightGoal(p, goalMovers(p));
   }
 
   if (o.task !== undefined) p.task = parseTask(o.task, p, curves);

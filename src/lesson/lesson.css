@@ -1256,6 +1256,17 @@
   background: var(--primary-soft);
   border: 2px solid var(--primary);
 }
+/* 점선 세로선(점근선)의 견본: 그림의 점선과 같은 꼴 — 같은 색 곡선 견본(실선)과 구분 */
+.lesson .legend .lg.dash i {
+  --lg-c: var(--primary);
+  background: repeating-linear-gradient(90deg, var(--lg-c) 0 5px, transparent 5px 8px);
+}
+.lesson .legend .lg.dash.soft i {
+  --lg-c: var(--faint);
+}
+.lesson .legend .lg.dash.accent i {
+  --lg-c: var(--good);
+}
 .lesson .readouts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1385,6 +1396,29 @@
   stroke: var(--sub);
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
+}
+/* 세로선(점근선·구간 끝): 곡선보다 가늘게(곡선을 가리지 않게), 색은 선분과 같은 짝. 점근선은 점선 */
+.lesson .coord .vline {
+  stroke-width: 1.8;
+}
+.lesson .coord .vline.main {
+  stroke: var(--primary);
+}
+.lesson .coord .vline.soft {
+  stroke: var(--faint);
+}
+.lesson .coord .vline.accent {
+  stroke: var(--good);
+}
+.lesson .coord .vline.dash {
+  stroke-dasharray: 5 4;
+}
+/* 직각 표시: 꼭짓점의 작은 꺾쇠. 채우지 않고 글자색 가는 선 — 교과서의 직각 기호 꼴 */
+.lesson .coord .rmark {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-linejoin: miter;
 }
 
 /* 넓이 모형 */

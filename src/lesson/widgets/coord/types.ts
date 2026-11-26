@@ -105,6 +105,23 @@ export interface PointObj {
   name?: string;
   /** 목표 점: 목표·과제를 이루기 전에는 그리지 않는다(맞힌 뒤 공개). 끄는 점은 숨기지 못한다 */
   hide?: true;
+  /**
+   * 따라오는 점(요청 50·129·137): 좌표를 식으로 계산한다(drag 는 늘 none, i·j 는 쓰지 않음). 곡선 위 점이면 x 만
+   * (y 는 곡선에서), 칸 위 점이면 x·y 둘 다(한쪽은 수일 수 있다). 칸 위가 아니어도 된다 — 다른 점·슬라이더의 값이라
+   */
+  follow?: { x: FollowExpr; y?: FollowExpr };
+}
+/**
+ * 따라오는 좌표 식: 수·슬라이더 이름·앞에 나온 점의 x(P)·y(P) 로 계산(세로선 자리도 같은 꼴).
+ * 식 글자(sym.ts)는 x(P) 를 읽지 못하므로 점 좌표마다 한 글자 자리표 변수(u·v·w·y·z — 슬라이더 이름과 x 가 아닌 것)로
+ * 바꿔 쥐고, refs 가 그 자리표가 가리키는 점과 축을 적는다 — 그리기는 그 점의 지금 좌표를 자리표에 넣는다. 검산은
+ * 이 식 구조를 거치지 않고 원문의 x(P) 를 그 점의 sympy 글자(xSym·ySym)로 바로 바꿔 sympy 가 따로 읽는다
+ */
+export interface FollowExpr {
+  /** 원문(검산 글자·항목 이름·오류 글) */
+  src: string;
+  node: Node;
+  refs: { v: string; pt: string; ax: 'x' | 'y' }[];
 }
 export interface SecantObj {
   kind: 'secant';
@@ -281,6 +298,29 @@ export interface SegmentObj extends SegBase {
 export interface ArrowObj extends SegBase {
   kind: 'arrow';
 }
+/**
+ * 세로선 {vline: 자리, tone?, dash?, label?}(요청 77·131): x = 자리 인 세로선을 그림 위 끝에서 아래 끝까지. 자리는 수·
+ * 슬라이더 식·앞에 나온 점의 x(P)(따라오는 좌표 식과 같은 꼴). 점근선은 dash. 곡선으로는 그릴 수 없던 것(x 가 하나)
+ */
+export interface VlineObj {
+  kind: 'vline';
+  at: FollowExpr;
+  tone: Tone;
+  dash?: true;
+  label?: string;
+}
+/**
+ * 직각 표시 {right:[끝, 꼭짓점, 끝]}(요청 56): 꼭짓점에서 두 끝 쪽 변을 따라 작은 꺾쇠. 끝은 선분 끝과 같은 꼴(점 이름 또는
+ * 좌표 식). 정말 직각일 때만 보인다 — 끄는 점이면 직각이 된 순간에만 나타난다
+ */
+export interface RightObj {
+  kind: 'right';
+  a: SegEnd;
+  o: SegEnd;
+  b: SegEnd;
+  /** 검산 항목 이름(A-H-B) */
+  ref: string;
+}
 export type CoordObj =
   | CurveObj
   | PointObj
@@ -293,7 +333,9 @@ export type CoordObj =
   | ArrowObj
   | BarsObj
   | ShadeObj
-  | CiObj;
+  | CiObj
+  | VlineObj
+  | RightObj;
 
 export interface Slider {
   id: string;
@@ -378,6 +420,16 @@ export interface CoordState {
   user: GridPt[];
   /** 그은 선(세계 좌표). sketch */
   stroke: [number, number][];
+}
+
+/**
+ * 닿는 상태 하나로 바꾸는 법: 상태 고치기와 그 상태의 검산 글자(sympy 기호 → 값). 슬라이더 하나·끄는 점 하나의
+ * 닿는 칸마다 하나씩(slider.ts sliderOpts·point.ts pointOpts) — 목표 판정(goal.ts)과 따라오는 것의 검산(point.ts
+ * depStates)이 같은 목록을 써서 '닿는 자리'가 어긋나지 않게
+ */
+export interface StateOpt {
+  patch: (s: CoordState) => CoordState;
+  sym: Record<string, string>;
 }
 
 // ---- 화면 좌표 ----

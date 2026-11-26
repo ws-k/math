@@ -8,7 +8,7 @@ import type { Rational } from '../../sym.ts';
 import { mul, qi, ratStr } from '../q.ts';
 import { ID } from './common.ts';
 import { initial } from './model.ts';
-import { pointOf, pointQ, pointXY, xCells } from './point.ts';
+import { noFollow, pointOf, pointQ, pointXY, xCells } from './point.ts';
 import { sliderQ, sliderSym, sliderValues } from './slider.ts';
 import type {
   CoordParams,
@@ -87,7 +87,7 @@ export const nosSliders = (v: NumOrSlider): string[] => ('slider' in v ? [v.slid
 export function selEnd(v: unknown, at: string, cx: ParseCtx): SelEnd {
   if (v === null) return null;
   if (typeof v === 'string' && ID.test(v.trim()) && !/^(pi|E)$/.test(v.trim())) {
-    const pt = cx.pointRef(v.trim(), at);
+    const pt = noFollow(cx.pointRef(v.trim(), at), at, '고르는 구간의 끝');
     if (!xCells(cx.x, pt).step) fail(at, `점 ${pt.id} 의 x 칸이 유리수가 아님`);
     return { pt: pt.id };
   }
