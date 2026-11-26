@@ -1125,10 +1125,17 @@
   stroke: var(--bg);
   stroke-width: 2;
 }
+/* 점 이름표: 맨 위 층(draw.ts)이라 선이 지나가도 바탕색 테두리로 글자가 읽힌다. 누르기는 아래로 통과 —
+   손잡이(HTML)는 그림 위에 따로 있지만, 글자가 빈 칸 누르기(점 찍기)를 가로채지 않게 */
 .lesson .coord .pname {
   font-size: 13px;
   font-weight: 700;
   fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 /* 칠하기(곡선과 축 사이 영역): 무늬 재질은 pattern(Coord.tsx), 단색 재질은 여기서 */
 .lesson .coord .fillr.plain {
@@ -1184,6 +1191,7 @@
   stroke: var(--bg);
   stroke-width: 3px;
   stroke-linejoin: round;
+  pointer-events: none;
 }
 .lesson .coord .axname {
   font-size: 11px;

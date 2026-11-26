@@ -83,10 +83,18 @@ function drawWith(p: CoordParams, s: CoordState, box: Box) {
     q.it.x = r1(r.l);
     q.it.y = r1(r.t + LABEL_ASCENT);
   });
-  // 층: 칠하기(격자 아래, 따로) · 조각 · 곡선·점·직선 · 영역 이름표 — 객체 순서와 상관없이 곡선이 조각에, 이름표가 조각에 가리지 않게
+  // 층: 칠하기(격자 아래, 따로) · 조각 · 곡선·점·직선 · 글자(점 이름표 → 영역 이름표) — 객체 순서와 상관없이 곡선이
+  // 조각에, 글자가 선에 가리지 않게. 점 이름표는 점과 같은 자리(items)에서 만들어지므로 여기서 글자만 맨 뒤로 뺀다 —
+  // 뒤에 적은 선분이 앞 점의 이름표 위를 지나가던 것(co-foot 의 OP 가 'O' 를 가림). 나누는 기준이 항목 종류뿐이라
+  // 끄는 동안에도 key 순서가 그대로다(직접 적용 apply 는 key 로 찾지만, React 가 다시 그릴 때 순서가 흔들리지 않게)
+  const drawn = [...cx.shapes, ...cx.items];
   const d: Drawing = {
     fills: cx.fills,
-    items: [...cx.shapes, ...cx.items, ...cx.tags],
+    items: [
+      ...drawn.filter((it) => it.t !== 'label'),
+      ...drawn.filter((it) => it.t === 'label'),
+      ...cx.tags,
+    ],
     handles: cx.handles,
     readouts: cx.readouts,
   };
