@@ -1108,10 +1108,12 @@
   width: 100%;
   max-width: 480px;
 }
+/* −·+ 는 글꼴의 수식 축(숫자 가운데 높이)에 앉아 줄 상자 가운데보다 약 0.055em 아래에 그려진다(실측 1.1~1.8px).
+   글자 하나가 곧 아이콘인 단추라 아래 여백 0.11em 으로 그 절반만큼 올린다 — em 이라 글자 크기가 바뀌어도 같은 비율 */
 .lesson .fcut-row .lbtn {
   width: 52px;
   flex: none;
-  padding: 0;
+  padding: 0 0 0.11em;
   font-size: 1.4rem;
 }
 /* 슬라이더: touch-action:none 은 이 입력에만(페이지 스크롤은 산다), 누르는 높이 56px */
