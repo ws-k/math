@@ -1,7 +1,7 @@
 // 레슨 화면 글자를 데이터에서 만들어 내는 순수 함수들. 검사기와 화면이 같은 함수를 써야
 // "검산한 값 = 보이는 값"이 보장된다.
 import { isLogicSpot, reduce, spotContinuationTex, spotTex } from './sym.ts';
-import type { Choice, Lesson, NumFormat, Rel, SpotToken } from './types.ts';
+import type { Choice, Lesson, NumFormat, Rel, SolveItem, SpotToken } from './types.ts';
 
 const MINUS = '−';
 
@@ -67,6 +67,37 @@ export function numSplit(text: string): [string, string] | null {
   const m = /^([−-]?\d[\d,]*(?:[./]\d+)?π?)(.*)$/s.exec(text);
   return m ? [m[1] as string, m[2] as string] : null;
 }
+
+/**
+ * 수 하나만 적은 TeX 글자($−3$ · $2.5$ · $\frac{3}{4}$ · $1\frac{1}{2}$)의 값을 기약분수 글자("3/2")로. 다른 꼴이면 null.
+ * 직접 풀기의 객관식 보기·정답 표기(answerTex)는 손으로 적는 글자라, 이것으로 검산한 수와 같은 수인지 대조한다
+ */
+export function texNumber(s: string): string | null {
+  const m = /^\$(-?)(?:(\d+(?:\.\d+)?)|(\d+)?\\d?frac\{(\d+)\}\{(\d+)\})\$$/.exec(s.trim());
+  if (!m) return null;
+  const [, sign, dec, whole, num, den] = m;
+  let n: bigint;
+  let d: bigint;
+  if (dec !== undefined) [n, d] = rational(dec);
+  else {
+    d = BigInt(den as string);
+    if (d === 0n) return null;
+    n = BigInt(whole ?? '0') * d + BigInt(num as string);
+    [n, d] = reduce(n, d);
+  }
+  if (sign) n = -n;
+  return d === 1n ? `${n}` : `${n}/${d}`;
+}
+
+export const CIRCLED = '①②③④⑤';
+
+/**
+ * 직접 풀기 글의 {{answer}} 에 들어갈 답 글자: 정답 표기(answerTex)가 있으면 그것, 객관식이면 보기 번호 ①~⑤,
+ * 아니면 검산한 답 그대로. 형식 검사와 화면이 같은 함수를 써야 검사한 글자가 화면 글자다
+ */
+export const solveAnswerText = (it: Pick<SolveItem, 'answer' | 'answerType' | 'answerTex'>) =>
+  it.answerTex ??
+  (it.answerType === 'choice' ? (CIRCLED[Number(it.answer) - 1] ?? it.answer) : it.answer);
 
 /** 글 속 {{이름}} 을 값으로. 모르는 이름은 오류(검사 단계에서 잡히게) */
 export function fill(text: string, vars: Record<string, string>): string {

@@ -215,6 +215,11 @@ export type SolveItem = Example & {
   hint?: string;
   /** 답 칸이 비었을 때 보이는 글자(단위 등) */
   placeholder?: string;
+  /**
+   * 글의 {{answer}} 에 보일 답 표기(0.8185 — 답 1637/2000 대신). 수 하나만 적은 TeX 이고 답과 같은 수여야 한다(형식 검사).
+   * 객관식(answerType: choice)은 보기 5개(choices, 수 하나씩 — 보기 검산값과 대조) + choiceChecks 이고 정답 표기는 없다
+   */
+  answerTex?: string;
 };
 
 export interface SolveScene extends Base {

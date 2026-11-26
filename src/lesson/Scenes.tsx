@@ -16,10 +16,12 @@ import { store } from '../app/store.ts';
 import type { Background, Tool } from '../ink/types.ts';
 import { compareAnswer } from '../lib/answer.ts';
 import {
+  CIRCLED,
   choiceLabel,
   handsOnCount,
   relSignTex,
   relTex,
+  solveAnswerText,
   spotEqSign,
   spotEquation,
   spotFixed,
@@ -388,7 +390,7 @@ function SolveCard(p: {
 }) {
   const { it } = p;
   /** 이 문제 글에서만 쓰는 값: 검산된 답 */
-  const own = { answer: it.answer };
+  const own = { answer: solveAnswerText(it) };
   const [input, setInput] = useState('');
   const [pad, setPad] = useState(false);
   const [fb, setFb] = useState<{ text: string; cls: '' | 'ok' | 'bad' } | null>(null);
@@ -403,8 +405,11 @@ function SolveCard(p: {
   const cardRef = useRef<HTMLDivElement>(null);
   const ansRef = useRef<HTMLButtonElement>(null);
 
-  const check = () => {
-    const v = compareAnswer(input, it.answer, it.answerType);
+  const optsRef = useRef<HTMLDivElement>(null);
+  const cols = useOptColumns(optsRef, it.choices?.length ?? 0);
+  /** 객관식 보기는 누른 보기 번호를 바로 넘긴다(setInput 이 반영되기 전에 채점하므로) */
+  const check = (value = input) => {
+    const v = compareAnswer(value, it.answer, it.answerType);
     if (v === 'invalid') {
       setFb({ text: '숫자로 적어 주세요.', cls: '' });
       return;
@@ -456,22 +461,46 @@ function SolveCard(p: {
   return (
     <div className="card burst" ref={cardRef}>
       <LRich src={it.q} vars={own} className="prob" />
-      <div className="ansrow">
-        <button
-          type="button"
-          ref={ansRef}
-          className={`ans${fb?.cls === 'ok' ? ' ok' : fb?.cls === 'bad' ? ' bad' : ''}`}
-          aria-label={`문제 ${p.n} 답`}
-          aria-expanded={pad}
-          disabled={ok}
-          onClick={() => setPad(!pad)}
-        >
-          {shownInput || <span className="ph">{it.placeholder ?? '답'}</span>}
-        </button>
-        <button type="button" className="lbtn blue" disabled={ok} onClick={check}>
-          확인
-        </button>
-      </div>
+      {it.answerType === 'choice' ? (
+        // 객관식: 보기를 누르면 바로 채점(문제 화면 Pages 와 같은 방식). 점이 퍼지는 자리는 정답 보기
+        <div className="opts" ref={optsRef} style={{ '--n': cols } as CSSProperties}>
+          {(it.choices ?? []).map((c, i) => (
+            <button
+              type="button"
+              // biome-ignore lint/suspicious/noArrayIndexKey: 보기 번호가 곧 자리
+              key={i}
+              ref={String(i + 1) === it.answer ? ansRef : undefined}
+              className={`opt num${ok && String(i + 1) === it.answer ? ' right' : ''}${
+                fb?.cls === 'bad' && input === String(i + 1) ? ' wrong' : ''
+              }`}
+              disabled={ok}
+              onClick={() => {
+                setInput(String(i + 1));
+                check(String(i + 1));
+              }}
+            >
+              {CIRCLED[i]} <LRich inline src={c} />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="ansrow">
+          <button
+            type="button"
+            ref={ansRef}
+            className={`ans${fb?.cls === 'ok' ? ' ok' : fb?.cls === 'bad' ? ' bad' : ''}`}
+            aria-label={`문제 ${p.n} 답`}
+            aria-expanded={pad}
+            disabled={ok}
+            onClick={() => setPad(!pad)}
+          >
+            {shownInput || <span className="ph">{it.placeholder ?? '답'}</span>}
+          </button>
+          <button type="button" className="lbtn blue" disabled={ok} onClick={() => check()}>
+            확인
+          </button>
+        </div>
+      )}
       {pad && !ok && (
         <NumPad
           value={input}

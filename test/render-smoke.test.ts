@@ -132,6 +132,33 @@ test('질문 보기 꼴(3-바): π 보기·식 보기·글자 보기가 단추 �
   assert.match(text, /katex/);
 });
 
+test('직접 풀기 꼴(3-바): 객관식은 보기 단추로, 정답 표기는 {{answer}} 자리에 그려진다', async () => {
+  const { renderLesson } = await entry;
+  const l = goodLesson();
+  const solve = l.scenes.find((s) => s.kind === 'solve');
+  assert.ok(solve?.kind === 'solve');
+  Object.assign(solve.items[0] as object, {
+    answerType: 'choice',
+    answer: '4',
+    choices: ['$-3$', '$-\\frac{1}{2}$', '$0$', '$2.5$', '$1\\frac{1}{2}$'],
+    choiceChecks: ['-3', 'Rational(-1,2)', 'Integer(0)', 'Rational(5,2)', '1+Rational(1,2)'],
+    q: '가장 큰 수는 몇 번? 답은 {{answer}}',
+  });
+  Object.assign(solve.items[1] as object, {
+    answer: '1637/2000',
+    answerType: 'fraction',
+    answerTex: '$0.8185$',
+    q: '넓이는? {{answer}}',
+  });
+  // 전 장면을 펼쳐 둔 채(shown) 그린다
+  const html = renderLesson(withLesson(l));
+  const card = html.slice(html.indexOf('data-scene="try"'));
+  assert.equal(card.match(/class="opt num/g)?.length, 5);
+  assert.match(card, /④/);
+  assert.match(card, /0\.8185/);
+  assert.doesNotMatch(card, /1637\/2000/);
+});
+
 test('모르는 부품이면 실패한다', async () => {
   const { renderLesson } = await entry;
   const l = goodLesson();

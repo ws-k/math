@@ -16,10 +16,12 @@ import {
   formatValue,
   RELS,
   relTex,
+  solveAnswerText,
   splitRel,
   spotEquation,
   spotFixed,
   symToTex,
+  texNumber,
   tokenTex,
 } from './format.ts';
 import {
@@ -36,7 +38,7 @@ import {
   str,
 } from './parse.ts';
 import { hasImag, isLogicSpot, parseSpot, spotFreeVars, texToSym } from './sym.ts';
-import type { NumFormat, Rel, SpotToken } from './types.ts';
+import type { NumFormat, Rel, SolveItem, SpotToken } from './types.ts';
 import { widgetDefs } from './widgets/specs.ts';
 
 export interface LessonCtx {
@@ -86,7 +88,15 @@ function* strings(v: unknown): Generator<string> {
   else if (Array.isArray(v)) for (const x of v) yield* strings(x);
   else if (typeof v === 'object' && v !== null) for (const x of Object.values(v)) yield* strings(x);
 }
-const SOLVE_OPT = ['concepts', 'tip', 'hint', 'placeholder'];
+const SOLVE_OPT = [
+  'concepts',
+  'tip',
+  'hint',
+  'placeholder',
+  'answerTex',
+  'choices',
+  'choiceChecks',
+];
 
 /** 등식 "왼쪽=오른쪽" 을 검사하고 그대로 돌려준다(양쪽 다 symToTex 로 그릴 수 있어야 함) */
 function equation(v: unknown, at: string): string {
@@ -611,10 +621,46 @@ export function validateLesson(
             if (!ID_OK.test(iid)) fail(`${ia} id`, `영문 소문자·숫자·- 만 (${iid})`);
             if (itemIds.has(iid)) fail(`${ia} id`, `중복 (${iid})`);
             itemIds.add(iid);
-            oneOf(e.answerType, `${ia} answerType`, ['int', 'fraction'] as const);
+            const type = oneOf(e.answerType, `${ia} answerType`, [
+              'int',
+              'fraction',
+              'choice',
+            ] as const);
             checkAnswerShape(ia, e, errors);
+            const ex = e as Example & { answerTex?: unknown };
+            /** 객관식 보기 글자 = 보기 검산값 항목(정답 검산 항목 뒤에 둔다) */
+            const choiceItems: CheckItem[] = [];
+            if (type !== 'choice' && (e.choices != null || e.choiceChecks !== undefined))
+              fail(ia, '보기(choices)는 객관식(answerType: choice)에만');
+            if (type === 'choice') {
+              // 보기 글자는 손으로 적는 TeX 라, 수 하나만 받아 그 보기 검산값과 같은 수인지 항목으로 대조한다
+              // (글자 보기가 필요하면 질문 장면의 글자 보기로). 정답은 보기 번호라 정답 표기는 두지 않는다
+              if (ex.answerTex !== undefined)
+                fail(`${ia} answerTex`, '객관식은 정답 표기 없이 보기 번호로');
+              (e.choices ?? []).forEach((c, k) => {
+                const v = texNumber(String(c));
+                if (v === null)
+                  fail(`${ia} 보기${k + 1}`, `수 하나($…$)만 적은 보기가 아님 (${String(c)})`);
+                const check = e.choiceChecks?.[k];
+                if (check !== undefined)
+                  choiceItems.push({
+                    ref: ref(id, `${iid}:보기${k + 1}`),
+                    unit: unitId,
+                    answer: v as string,
+                    answerType: 'fraction',
+                    check,
+                  });
+              });
+            } else if (ex.answerTex !== undefined) {
+              // 0.8185 를 1637/2000 대신 보이는 표기 — 검산한 답과 같은 수여야 한다(보이는 값 = 검산한 값)
+              const tex = str(ex.answerTex, `${ia} answerTex`);
+              // 답은 정수·기약분수 글자(checkAnswerShape·검산기가 본다)라 texNumber 의 기약분수 글자와 그대로 견준다
+              if (texNumber(tex) !== e.answer)
+                fail(`${ia} answerTex`, `답 ${e.answer} 과 같은 수를 적은 표기가 아님 (${tex})`);
+            }
             // 레슨은 문제·힌트·풀이 단계 모두 강조 표기(**)를 살려 그린다. {{answer}} 는 이 문제의 검산된 답
-            const own = { answer: e.answer };
+            // (정답 표기가 있으면 그 표기, 객관식이면 보기 번호 ①~⑤ — 화면 SolveCard 와 같은 함수)
+            const own = { answer: solveAnswerText(e as SolveItem) };
             text(`${ia} 문제`, e.q, own);
             text(`${ia} hint`, optStr(e.hint, `${ia} hint`), own);
             e.steps.forEach((st, si) => {
@@ -624,7 +670,7 @@ export function validateLesson(
             text(`${ia} 팁`, e.tip, own);
             for (const c of e.concepts ?? []) text(`${ia} 개념`, c, own);
             optStr(e.placeholder, `${ia} placeholder`);
-            items.push(answerItem(ref(id, iid), unitId, e));
+            items.push(answerItem(ref(id, iid), unitId, e), ...choiceItems);
             solveCount++;
           });
           break;
