@@ -1,11 +1,9 @@
-// 확률 실험의 '직접 던지기'(조각 ④ · 1-나): 기록·되감기·누르고 있기 박자·그릴 목록, 그리고 난수가 고르게 나오는지.
-// 화면은 누르는 동안 React 를 거치지 않고 그릴 목록(simDraw)을 직접 적용하므로, 여기서 목록과 박자를 순수하게 확인한다.
+// 확률 실험의 '직접 던지기'(조각 ④ · 1-나): 기록·되감기·그릴 목록, 그리고 난수가 고르게 나오는지.
+// 화면은 되감는 동안 React 를 거치지 않고 그릴 목록(simDraw)을 직접 적용하므로, 여기서 목록을 순수하게 확인한다.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { makeRng } from '../src/generators/rng.ts';
 import {
-  holdPace,
-  makeHold,
   SIM_MAX,
   type SimParams,
   simAppend,
@@ -23,7 +21,7 @@ const coin2 = parse({ device: 'coin', n: 2, seed: 7 });
 
 // ---- 기록과 되감기 ----
 
-test('기록: 한 번씩 던지든 몰아 던지든 같은 시드면 같은 기록(누르고 있기의 묶음 크기와 무관)', () => {
+test('기록: 한 번씩 던지든 몰아 던지든 같은 시드면 같은 기록(1번·10번·100번 단추를 어떻게 섞어 눌렀는지와 무관)', () => {
   const a = simHistory(coin2);
   for (const k of [1, 1, 2, 5, 5, 1, 2]) simAppend(coin2, a, k);
   const b = simHistory(coin2);
@@ -58,124 +56,6 @@ test(`기록은 ${SIM_MAX}번까지: 넘게 던지려 하면 거기서 멈추고
   assert.equal(simAppend(coin2, h, 5), 2);
   assert.equal(simAppend(coin2, h, 1), 0);
   assert.equal(h.cats.length, SIM_MAX);
-});
-
-// ---- 누르고 있기 ----
-
-test('누르고 있기 박자: 처음은 한 번, 오래 누를수록 1초에 던지는 수가 늘어난다', () => {
-  let prev = 0;
-  for (const ms of [0, 500, 1399, 1400, 2000, 2600, 5000, 20000]) {
-    const { k, wait } = holdPace(ms);
-    assert.ok(k >= 1 && wait > 0);
-    const rate = (k / wait) * 1000;
-    assert.ok(rate >= prev, `${ms}ms: ${rate}/초 < ${prev}/초`);
-    prev = rate;
-  }
-  assert.equal(holdPace(0).k, 1);
-  // 끝 속도는 손으로 세기 어렵지만 막대가 다가가는 모습이 보이는 정도(초당 100번 이하)
-  assert.ok(prev <= 100, String(prev));
-});
-
-/** 가짜 시계: later 에 걸린 일을 시각 순서로 돌린다 */
-function fakeClock() {
-  let now = 0;
-  let jobs: { at: number; fn: () => void; id: number }[] = [];
-  let id = 0;
-  return {
-    now: () => now,
-    later(ms: number, fn: () => void) {
-      const j = { at: now + ms, fn, id: ++id };
-      jobs.push(j);
-      return () => {
-        jobs = jobs.filter((x) => x !== j);
-      };
-    },
-    run(ms: number) {
-      const end = now + ms;
-      for (;;) {
-        jobs.sort((a, b) => a.at - b.at || a.id - b.id);
-        const j = jobs[0];
-        if (!j || j.at > end) break;
-        jobs.shift();
-        now = j.at;
-        j.fn();
-      }
-      now = end;
-    },
-  };
-}
-
-test('누르는 동안은 그림만 고치고(settle 0번), 손을 떼면 한 번만 상태로 정한다', () => {
-  const clock = fakeClock();
-  const ticks: [number, boolean][] = [];
-  let settles = 0;
-  const hold = makeHold(
-    clock,
-    (k, first) => {
-      ticks.push([k, first]);
-      return true;
-    },
-    () => {
-      settles += 1;
-    },
-  );
-  hold.start();
-  assert.deepEqual(ticks, [[1, true]]);
-  clock.run(3000);
-  assert.equal(settles, 0);
-  assert.ok(ticks.length > 10, String(ticks.length));
-  assert.ok(ticks.slice(1).every(([, f]) => f === false));
-  hold.start(); // 이미 누르는 중이면 새로 시작하지 않는다(두 손가락)
-  assert.equal(ticks.filter(([, f]) => f).length, 1);
-  hold.stop();
-  hold.stop();
-  assert.equal(settles, 1);
-  const n = ticks.length;
-  clock.run(1000);
-  assert.equal(ticks.length, n, '뗀 뒤에는 더 던지지 않는다');
-});
-
-test('짧게 한 번 누르면 정확히 한 번 던진다', () => {
-  const clock = fakeClock();
-  let tossed = 0;
-  let settles = 0;
-  const hold = makeHold(
-    clock,
-    (k) => {
-      tossed += k;
-      return true;
-    },
-    () => {
-      settles += 1;
-    },
-  );
-  hold.start();
-  clock.run(150);
-  hold.stop();
-  assert.equal(tossed, 1);
-  assert.equal(settles, 1);
-});
-
-test('기록이 가득 차면(tick 이 false) 누르고 있어도 멈추고 한 번 정한다', () => {
-  const clock = fakeClock();
-  let left = 4;
-  let settles = 0;
-  const hold = makeHold(
-    clock,
-    (k) => {
-      left -= k;
-      return left > 0;
-    },
-    () => {
-      settles += 1;
-    },
-  );
-  hold.start();
-  clock.run(5000);
-  assert.equal(settles, 1);
-  assert.equal(hold.on, false);
-  hold.stop();
-  assert.equal(settles, 1);
 });
 
 // ---- 그릴 목록 ----
@@ -249,7 +129,7 @@ test('표본평균: 표본이 커져 막대가 많으면(21개) 결과 이름은
   );
 });
 
-test('손을 뗀 뒤 낭독기 요약: 마지막 결과, 횟수, 결과마다 "이름: 횟수"(이름 끝의 "번"과 횟수가 붙어 읽히지 않게)', () => {
+test('누른 뒤 낭독기 요약: 마지막 결과, 횟수, 결과마다 "이름: 횟수"(이름 끝의 "번"과 횟수가 붙어 읽히지 않게)', () => {
   const h = simHistory(coin2);
   simAppend(coin2, h, 3);
   assert.match(

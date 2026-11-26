@@ -768,6 +768,7 @@
   fill: var(--sub);
   font-size: 11px;
 }
+/* 100번을 한 번에 붙여도 막대가 순간이동하지 않게 높이를 짧게 옮긴다 — CSS 전환이라 그동안 React 렌더 0(P8) */
 .lesson .sim-bar {
   fill: var(--primary);
   transition:
@@ -801,11 +802,11 @@
 .lesson .sim-table th {
   text-align: left;
 }
-/* 직접 던지기(시안 prob/toss.html): 마지막 결과 그림 · '계속' 켜고 끄기 · '던지기'(꾹 누르면 계속) 한 줄 */
+/* 직접 던지기(시안 prob/toss.html): 마지막 결과 그림 · '던지기'·'10번'·'100번' 한 줄(접은 화면 382 폭에도 한 줄) */
 .lesson .sim-toss {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-height: 56px;
 }
 .lesson .sim-last {
@@ -820,7 +821,7 @@
   display: block;
   overflow: visible;
 }
-/* 한 번씩 던질 때만 뒤집히며 튀어 오른다. 누르고 있는 동안은 결과만 바뀐다(움직임이 쌓이지 않게 — Simulate.tsx paint) */
+/* 누를 때마다 마지막 결과가 한 번 뒤집히며 튀어 오른다(10번·100번도 한 번 — 그 묶음의 마지막 결과) */
 .lesson .sim-last-svg.flip {
   animation: sim-flip 0.36s ease-out;
 }
@@ -905,38 +906,15 @@
   color: var(--sub);
   white-space: nowrap;
 }
-/* 누르고 있는 동안 iOS 가 글자 고르기·확대경·문맥 메뉴를 띄우지 않게, 끌어도 화면이 밀리지 않게 */
+/* 빨리 거듭 누를 때 글자가 골라지지 않게, 두 번 누름이 확대로 읽히지 않게(manipulation — 스크롤은 산다).
+   셋이 382 폭 한 줄에 들게 옆 여백을 줄인다(높이는 .lbtn 52px 그대로) */
 .lesson .sim-go {
   flex: none;
-  min-width: 108px;
-  min-height: 52px;
-  line-height: 1.15;
-  padding: 0 12px;
-  touch-action: none;
+  min-width: 56px;
+  padding: 0 10px;
+  touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
-  -webkit-touch-callout: none;
-}
-.lesson .sim-go small {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  opacity: 0.85;
-}
-.lesson .sim-go.holding {
-  transform: scale(0.96);
-}
-.lesson .sim-auto {
-  flex: none;
-  min-width: 56px;
-  min-height: 52px;
-  padding: 0 10px;
-  font-size: 0.92rem;
-}
-/* 켜져 있으면 진하게 — 손을 대지 않아도 던지는 중이라는 표시 */
-.lesson .sim-auto[aria-pressed="true"] {
-  background: var(--primary);
-  color: var(--primary-ink);
 }
 .lesson .sim-rew {
   display: flex;
