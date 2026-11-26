@@ -297,6 +297,29 @@ export interface SegmentObj extends SegBase {
 export interface ArrowObj extends SegBase {
   kind: 'arrow';
 }
+/**
+ * 세로선 {vline: 자리, tone?, dash?, label?}(요청 77·131): x = 자리 인 세로선을 그림 위 끝에서 아래 끝까지. 자리는 수·
+ * 슬라이더 식·앞에 나온 점의 x(P)(따라오는 좌표 식과 같은 꼴). 점근선은 dash. 곡선으로는 그릴 수 없던 것(x 가 하나)
+ */
+export interface VlineObj {
+  kind: 'vline';
+  at: FollowExpr;
+  tone: Tone;
+  dash?: true;
+  label?: string;
+}
+/**
+ * 직각 표시 {right:[끝, 꼭짓점, 끝]}(요청 56): 꼭짓점에서 두 끝 쪽 변을 따라 작은 꺾쇠. 끝은 선분 끝과 같은 꼴(점 이름 또는
+ * 좌표 식). 정말 직각일 때만 보인다 — 끄는 점이면 직각이 된 순간에만 나타난다
+ */
+export interface RightObj {
+  kind: 'right';
+  a: SegEnd;
+  o: SegEnd;
+  b: SegEnd;
+  /** 검산 항목 이름(A-H-B) */
+  ref: string;
+}
 export type CoordObj =
   | CurveObj
   | PointObj
@@ -309,7 +332,9 @@ export type CoordObj =
   | ArrowObj
   | BarsObj
   | ShadeObj
-  | CiObj;
+  | CiObj
+  | VlineObj
+  | RightObj;
 
 export interface Slider {
   id: string;

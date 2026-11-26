@@ -45,9 +45,9 @@ const PULL_HANDLE = 11.5;
 const PULL_DOT = 6;
 const pullOf = (o: PointObj | undefined) => (!o ? 0 : o.drag === 'none' ? PULL_DOT : PULL_HANDLE);
 
-const endText = (e: SegEnd) => ('pt' in e ? e.pt : `(${e.x},${e.y})`);
+export const endText = (e: SegEnd) => ('pt' in e ? e.pt : `(${e.x},${e.y})`);
 
-function parseEnd(v: unknown, at: string, cx: ParseCtx): SegEnd {
+export function parseEnd(v: unknown, at: string, cx: ParseCtx): SegEnd {
   if (typeof v === 'string') return { pt: cx.pointRef(v, at).id };
   const [rx, ry] = arr(v, at, 2, 2);
   const one = (r: unknown, w: string) => {
@@ -71,7 +71,7 @@ function parseEnd(v: unknown, at: string, cx: ParseCtx): SegEnd {
 }
 
 /** 식에 쓰인 슬라이더 id(식 구조에서 — 글자 검색은 'k' 가 다른 이름 속에 든 것도 센다) */
-const slidersIn = (n: Node, cx: Pick<ParseCtx, 'sliders'>) => {
+export const slidersIn = (n: Node, cx: Pick<ParseCtx, 'sliders'>) => {
   const vs = varsOf(n);
   return cx.sliders.map((sl) => sl.id).filter((id) => vs.has(id));
 };
@@ -194,7 +194,7 @@ function checkEnds(o: SegObj, at: string, cx: ParseCtx): void {
   if (known && !moved) fail(at, `두 끝이 같음 (${o.ref}) — 그릴 것이 없음`);
 }
 
-function endXY(p: CoordParams, s: CoordState, e: SegEnd): [number, number] {
+export function endXY(p: CoordParams, s: CoordState, e: SegEnd): [number, number] {
   if ('pt' in e) return pointXY(p, s, e.pt);
   return [evalNum(e.nx, s.vars), evalNum(e.ny, s.vars)];
 }

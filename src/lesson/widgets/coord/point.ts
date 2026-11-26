@@ -96,17 +96,22 @@ const sliderVals = (p: CoordParams, s: CoordState): Record<string, number> => ({
   ...s.vars,
 });
 
+/** 따라오는 좌표 식의 지금 값(그리기). 세로선 자리도 이것으로 */
+export const followNow = (p: CoordParams, s: CoordState, e: FollowExpr): number =>
+  followNum(e, sliderVals(p, s), (pt, ax) => pointXY(p, s, pt)[ax === 'x' ? 0 : 1]);
+
+/** 따라오는 좌표 식의 sympy 글자(가리키는 점은 그 점의 검산 글자로) */
+export const followSymOf = (p: CoordParams, e: FollowExpr): string => followSym(e, refSym(p));
+
 function followXY(
   p: CoordParams,
   s: CoordState,
   o: PointObj,
   f: NonNullable<PointObj['follow']>,
 ): [number, number] {
-  const vars = sliderVals(p, s);
-  const ref = (pt: string, ax: 'x' | 'y') => pointXY(p, s, pt)[ax === 'x' ? 0 : 1];
-  const x = followNum(f.x, vars, ref);
+  const x = followNow(p, s, f.x);
   if (o.on) return [x, Number.isFinite(x) ? fAt(p, s, o.on, x) : Number.NaN];
-  return [x, f.y ? followNum(f.y, vars, ref) : Number.NaN];
+  return [x, f.y ? followNow(p, s, f.y) : Number.NaN];
 }
 
 /** 점 자리를 움직이는 것: 끄는 점 id 와 슬라이더 id. 따라오는 점은 가리키는 점을 거슬러 올라가 모은다 */
@@ -140,13 +145,36 @@ export function pointDeps(
     if (c) for (const v of curveVars(c)) if (ids.has(v)) out.sliders.add(v);
   }
   if (o.follow) {
-    for (const e of [o.follow.x, o.follow.y]) {
-      if (!e) continue;
-      for (const v of followSliders(e)) out.sliders.add(v);
-      for (const r of e.refs) pointDeps(lk, r.pt, out);
-    }
+    exprDeps(lk, o.follow.x, out);
+    if (o.follow.y) exprDeps(lk, o.follow.y, out);
   } else if (o.drag !== 'none') out.pts.add(id);
   return out;
+}
+
+/** 따라오는 좌표 식을 움직이는 것(식의 슬라이더 + 가리키는 점을 움직이는 것) */
+export function exprDeps(
+  lk: PointLook,
+  e: FollowExpr,
+  out: Deps = { pts: new Set(), sliders: new Set() },
+): Deps {
+  for (const v of followSliders(e)) out.sliders.add(v);
+  for (const r of e.refs) pointDeps(lk, r.pt, out);
+  return out;
+}
+
+/**
+ * 형식 검사 중 따라오는 좌표 식의 값(수). 끄는 점에 기대면 자리가 손에 달려 null. vars 는 슬라이더 값
+ */
+export function exprNum(
+  lk: PointLook & Pick<ParseCtx, 'x' | 'y'>,
+  e: FollowExpr,
+  vars: Record<string, number>,
+): number | null {
+  if (exprDeps(lk, e).pts.size > 0) return null;
+  return followNum(e, vars, (pt, ax) => {
+    const q = pointNum(lk, pt, vars);
+    return q ? q[ax === 'x' ? 0 : 1] : Number.NaN;
+  });
 }
 
 /**
@@ -162,12 +190,8 @@ export function pointNum(
   if (!o) return null;
   if (o.follow) {
     if (pointDeps(lk, id).pts.size > 0) return null;
-    const ref = (pt: string, ax: 'x' | 'y') => {
-      const q = pointNum(lk, pt, vars);
-      return q ? q[ax === 'x' ? 0 : 1] : Number.NaN;
-    };
-    const x = followNum(o.follow.x, vars, ref);
-    if (!o.on) return [x, o.follow.y ? followNum(o.follow.y, vars, ref) : Number.NaN];
+    const x = exprNum(lk, o.follow.x, vars) ?? Number.NaN;
+    if (!o.on) return [x, o.follow.y ? (exprNum(lk, o.follow.y, vars) ?? Number.NaN) : Number.NaN];
     const c = lk.curve(o.on);
     return c ? [x, curveNum(c, { ...vars, x })] : null;
   }
@@ -514,7 +538,10 @@ const MAX_FOLLOW_STATES = 400;
  * 따라오는 점을 움직이는 것(끄는 점 칸 × 슬라이더 칸)의 상태들. 다 세면 상한을 넘을 수 있어 처음·끝을 품고 고르게
  * 덜어 낸다(목표 판정과 달리 '닿는 자리 전부'가 아니라 '계산이 맞는가'를 보는 표본이라)
  */
-function depStates(p: CoordParams, deps: Deps): { s: CoordState; sym: Record<string, string> }[] {
+export function depStates(
+  p: CoordParams,
+  deps: Deps,
+): { s: CoordState; sym: Record<string, string> }[] {
   type Opt = { patch: (s: CoordState) => CoordState; sym: Record<string, string> };
   const dims: Opt[][] = [];
   for (const id of deps.sliders) {

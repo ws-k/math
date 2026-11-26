@@ -6,6 +6,7 @@ import { axis, ID, MAX_CELLS, numExpr, toIndex } from './common.ts';
 import { MIN_PLOT, narrowFrame } from './frame.ts';
 import { goalPoints, parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
+import { vlineKey } from './mark.ts';
 import { segKey } from './segment.ts';
 import { parseSliders } from './slider.ts';
 import { parseTask } from './task.ts';
@@ -133,6 +134,14 @@ export function parseCoord(raw: unknown): CoordParams {
     if (seenSeg.has(key))
       fail('좌표 objects', `같은 ${ob.kind === 'arrow' ? '화살표가' : '선분이'} 두 번 (${ob.ref})`);
     seenSeg.add(key);
+  }
+  // 같은 세로선 두 번도 한 줄 위에 겹치고 검산 항목 이름이 겹친다(mark.ts vlineKey — 수는 값으로 견줌)
+  const seenV = new Set<string>();
+  for (const ob of objects) {
+    if (ob.kind !== 'vline') continue;
+    const key = vlineKey(ob);
+    if (seenV.has(key)) fail('좌표 objects', `같은 세로선이 두 번 (${ob.at.src})`);
+    seenV.add(key);
   }
 
   const p: CoordParams = {
