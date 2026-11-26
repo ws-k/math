@@ -139,6 +139,7 @@ export const WIDGET_SCENES: Scene[] = [
     ],
     seed: 9,
   }),
+  explore('ft-72', 'factorTree', { n: 72 }),
 ];
 
 /**
