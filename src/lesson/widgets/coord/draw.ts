@@ -1,9 +1,12 @@
 // 그릴 목록 draw: 객체를 순서대로 종류 표(kinds.ts)에 나눠 주고, 그 뒤에 과제 모드의 그릴 것을 쌓는다.
 // 끄는 동안의 갱신은 draw(매개변수, 상태, 크기) → 그릴 목록 하나로 한다. 화면은 이 목록을 React 로 처음 그리고,
 // 끄는 동안에는 같은 목록을 DOM 에 직접 적용한다(React 렌더 없음) — 두 갈래로 그리면 어긋난다.
-import { placeLabels } from '../labels.ts';
-import { frame, r1 } from './frame.ts';
+import { fail } from '../../parse.ts';
+import { placeLabels, type Rect } from '../labels.ts';
+import { frame, MIN_BOX_H, NARROW_BOX_W, r1 } from './frame.ts';
 import { kindOf } from './kinds.ts';
+import { initial } from './model.ts';
+import { nameWidth } from './point.ts';
 import { drawTask } from './task.ts';
 import type { Box, CoordParams, CoordState, DrawCtx, Drawing } from './types.ts';
 
@@ -17,6 +20,33 @@ const LABEL_ASCENT = 10;
  * 끄는 동안 항목이 생기거나 사라지면 직접 적용이 못 따라가므로, 항목은 늘 같은 key 로 두고 hidden 으로 숨긴다.
  */
 export function draw(p: CoordParams, s: CoordState, box: Box): Drawing {
+  return drawWith(p, s, box).d;
+}
+
+/**
+ * 형식 검사(무거운 쪽): 가장 좁은 화면, 처음 자리에서 점 이름표가 그림 밖으로 나가거나 서로 겹치면 오류.
+ * labels.ts 는 자리가 모자라면 겹치는 자리라도 고르므로(이름표를 아예 안 그리는 것보다 낫게) 그 경우를 여기서 잡는다 —
+ * 여러 글자 이름(요청 19)이 생기면서 이웃 점끼리 자리를 못 나누는 장면을 만들 수 있게 되었다
+ */
+export function checkLabels(p: CoordParams): void {
+  const { rects, f } = drawWith(p, initial(p), { w: NARROW_BOX_W, h: MIN_BOX_H });
+  const hit = (a: Rect, b: Rect) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+  for (const [i, { r, text }] of rects.entries()) {
+    if (r.l < f.l - 0.5 || r.r > f.r + 0.5 || r.t < f.t - 0.5 || r.b > f.b + 0.5)
+      fail(
+        '좌표',
+        `가장 좁은 화면에서 이름표 '${text}' 이 그림 밖 — 이름을 짧게 하거나 점을 안쪽으로`,
+      );
+    const other = rects.slice(0, i).find((q) => hit(q.r, r));
+    if (other)
+      fail(
+        '좌표',
+        `가장 좁은 화면에서 이름표 '${other.text}'·'${text}' 이 겹침 — 이름을 짧게 하거나 점 사이를 넓게`,
+      );
+  }
+}
+
+function drawWith(p: CoordParams, s: CoordState, box: Box) {
   const f = frame(box, p);
   const cx: DrawCtx = {
     p,
@@ -34,8 +64,9 @@ export function draw(p: CoordParams, s: CoordState, box: Box): Drawing {
   for (const [k, o] of p.objects.entries()) kindOf(o).draw?.(o, k, cx);
   drawTask(cx);
   // 이름표: 겹치지 않고 그림(잘라 내는 영역) 안에 드는 자리. 아무것도 겹치지 않으면 예전처럼 점의 오른쪽 위
+  // 폭은 글자 수가 아니라 실제 폭 어림(한글은 영문보다 넓다) — labels.ts 는 '한 자 폭 × n' 으로 세므로 n 을 폭/한 자로 넘긴다
   const rects = placeLabels(
-    cx.pins.map((q) => ({ x: q.x, y: q.y, n: [...q.it.text].length })),
+    cx.pins.map((q) => ({ x: q.x, y: q.y, n: nameWidth(q.it.text) / LABEL.charW })),
     cx.spots,
     f,
     LABEL,
@@ -47,10 +78,11 @@ export function draw(p: CoordParams, s: CoordState, box: Box): Drawing {
     q.it.y = r1(r.t + LABEL_ASCENT);
   });
   // 층: 칠하기(격자 아래, 따로) · 조각 · 곡선·점·직선 · 영역 이름표 — 객체 순서와 상관없이 곡선이 조각에, 이름표가 조각에 가리지 않게
-  return {
+  const d: Drawing = {
     fills: cx.fills,
     items: [...cx.shapes, ...cx.items, ...cx.tags],
     handles: cx.handles,
     readouts: cx.readouts,
   };
+  return { d, f, rects: rects.map((r, i) => ({ r, text: cx.pins[i]?.it.text ?? '' })) };
 }

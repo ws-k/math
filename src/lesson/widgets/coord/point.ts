@@ -1,7 +1,7 @@
 // 점 객체 {id, point:{x, y | on, drag, snap}, name}: 형식 검사·점·이름·끄는 손잡이 그리기와 점 좌표 계산.
 // 점 좌표는 칸 번호(정수)로 쥔다 — 세계 좌표 = 칸 번호 × 칸 간격. 부동소수 찌꺼기 없이 "같은 점"을 판정하려고.
 import { exactOf } from '../../expr.ts';
-import { arr, fail, obj, oneOf, optStr } from '../../parse.ts';
+import { arr, fail, obj, oneOf, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { mul, qi, ratStr } from '../q.ts';
 import { MAX_SNAPS, near, numExpr, toIndex } from './common.ts';
@@ -128,6 +128,40 @@ function withRange(
   po.cells = [ia, ib];
 }
 
+// ---- 점 이름 ----
+
+/**
+ * 점 이름표(.pname 13px 굵게)의 글자 폭 어림(px): 한글 13·그 밖 9. 이름표 자리 고르기(draw.ts)와 폭 상한이 같은 셈을
+ * 써야 '형식 검사를 통과한 이름은 그림 안에 놓인다'가 맞는다. 한글을 영문과 같은 9px 로 세면 '그저께'가 실제보다
+ * 12px 좁게 잡혀 오른쪽 끝 점의 이름표가 그림 밖으로 나간다
+ */
+export const nameWidth = (t: string) => [...t].reduce((w, ch) => w + (HANGUL.test(ch) ? 13 : 9), 0);
+/** 한글(자모·호환 자모·음절). 프라임 ′(U+2032)·아래 첨자 ₁ 은 코드 값이 커도 좁은 글자라 범위로 가린다 */
+const HANGUL = /[ᄀ-ᇿ㄰-㆏가-힣]/;
+/**
+ * 이름표 폭 상한(px) — 한글 4자·영문 6자. 가장 좁은 화면(382px) 그림 폭 250px 의 1/5 남짓: 더 길면 점 둘레를 넓게
+ * 덮어 곡선·다른 점을 가리고, 이웃 점과 자리를 나눌 수 없게 된다
+ */
+export const NAME_MAX_PX = 54;
+
+/**
+ * 점 이름: 여러 글자('출발'·'그저께')·프라임(A′, 옛 단원의 ASCII A' 도 그대로)·아래 첨자(P₁). 그림 글자(SVG text)라
+ * 수식($…$)이 그려지지 않으므로 받지 않는다 — 그대로 두면 '$P$' 가 글자째 보인다
+ */
+function pointName(v: unknown, at: string): string {
+  const name = str(v, at);
+  if (name.trim() !== name) fail(at, `이름 앞뒤 빈칸 ('${name}')`);
+  if (/[$\\{}]/.test(name))
+    fail(at, `그림 글자라 수식 글자($ \\ { })를 못 씀 — A′·P₁ 처럼 글자 그대로 (${name})`);
+  const w = nameWidth(name);
+  if (w > NAME_MAX_PX)
+    fail(
+      at,
+      `이름표 '${name}' 이 ${w}px — ${NAME_MAX_PX}px 이하로(한글 4자·영문 6자 — 가장 좁은 화면에서 그림을 가림)`,
+    );
+  return name;
+}
+
 /** 두 점이 같은 곡선 위 같은 자리인가 — 할선이 접선이 되는 순간 */
 export function coincide(p: CoordParams, s: CoordState, a: string, b: string): string | null {
   const pa = pointOf(p, a);
@@ -144,8 +178,7 @@ export const pointKind: KindDef<PointObj> = {
     if (c.hide !== undefined && c.hide !== true) fail(`${at} hide`, 'true 만');
     const hide = c.hide === true ? { hide: true as const } : {};
     const pp = obj(c.point, `${at} point`, ['x'], ['on', 'y', 'drag', 'snap', 'range']);
-    const name = optStr(c.name, `${at} name`);
-    if (name !== undefined && !/^[A-Za-z][']?$/.test(name)) fail(`${at} name`, '한 글자(P, Q, A′)');
+    const name = c.name === undefined ? undefined : pointName(c.name, `${at} name`);
     const xv = numExpr(pp.x, `${at} x`);
     if (pp.on !== undefined) {
       const cv = cx.curveRef(pp.on, `${at} on`);

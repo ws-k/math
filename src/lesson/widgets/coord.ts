@@ -22,6 +22,7 @@ import { compareAnswer } from '../../lib/answer.ts';
 import { parseSym } from '../sym.ts';
 import { checkBarsFit } from './coord/bars.ts';
 import { coordChecks } from './coord/checks.ts';
+import { checkLabels } from './coord/draw.ts';
 import { checkReachable, goalTexts } from './coord/goal.ts';
 import { kindOf } from './coord/kinds.ts';
 import { parseCoord } from './coord/parse.ts';
@@ -34,7 +35,7 @@ export { BINOM_N_MAX, barsAt, binomPmf, MIN_BAR_PX } from './coord/bars.ts';
 export { coordChecks } from './coord/checks.ts';
 export { MAX_CELLS, MAX_SNAPS } from './coord/common.ts';
 export { dfAt, fAt } from './coord/curve.ts';
-export { draw } from './coord/draw.ts';
+export { checkLabels, draw } from './coord/draw.ts';
 export {
   AXIS_LABEL_GAP,
   axisLabel,
@@ -65,7 +66,7 @@ export {
 } from './coord/model.ts';
 export { erf, normCdf } from './coord/normal.ts';
 export { parseCoord } from './coord/parse.ts';
-export { pointXY } from './coord/point.ts';
+export { NAME_MAX_PX, nameWidth, pointXY } from './coord/point.ts';
 export { polyOf, rationalRoots, rootCount, rootsBetween } from './coord/poly.ts';
 export { absCheckSym, readout, readoutVal, unitOf } from './coord/readout.ts';
 export { MIN_RECT_PX, sumsAt } from './coord/rects.ts';
@@ -115,6 +116,7 @@ export const coordDef: WidgetDef<CoordParams> = {
     checkReachable(p);
     checkSmooth(p);
     checkBarsFit(p);
+    checkLabels(p);
   },
   checks: coordChecks,
   texts(p) {
