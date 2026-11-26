@@ -1,6 +1,5 @@
-import { jo } from './h1-poly-ops.ts';
 import type { Generator } from './types.ts';
-import { paren, polySym, polyTex } from './util.ts';
+import { jo, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'prob-combination-binomial';
 
@@ -40,7 +39,7 @@ export const generators: Generator[] = [
       const steps = [
         {
           title: '중복조합으로 보기',
-          body: `$${n}$ 가지에서 같은 것을 여러 번 골라도 되고 순서가 없으니 $${hTex(n, r)}$ ${jo(String(r), '이에요')}.`,
+          body: `$${n}$ 가지에서 같은 것을 여러 번 골라도 되고 순서가 없으니 $${hTex(n, r)}$ ${jo(String(r), '이에요/예요')}.`,
         },
         {
           title: '조합으로 바꾸기',
@@ -92,7 +91,7 @@ export const generators: Generator[] = [
       const ans = C(v + rest - 1, rest);
       const lo = natural ? 1 : 0;
       return {
-        q: `방정식 $${lhs}=${k}$ ${jo(String(k), '을')} 만족시키는 ${natural ? '자연수' : '음이 아닌 정수'} $${VARS.slice(0, v).join(',\\,')}$ 의 순서쌍의 개수를 구하세요.`,
+        q: `방정식 $${lhs}=${k}$ ${jo(String(k), '을/를')} 만족시키는 ${natural ? '자연수' : '음이 아닌 정수'} $${VARS.slice(0, v).join(',\\,')}$ 의 순서쌍의 개수를 구하세요.`,
         choices: null,
         answer: String(ans),
         answerType: 'int',
@@ -102,11 +101,11 @@ export const generators: Generator[] = [
           ? [
               {
                 title: '1 씩 먼저 주기',
-                body: `자연수라 각 문자가 $1$ 이상이에요. $${v}$ 개에 $1$ 씩 먼저 주면 남는 것은 $${k}-${v}=${rest}$ ${jo(String(rest), '이에요')}.`,
+                body: `자연수라 각 문자가 $1$ 이상이에요. $${v}$ 개에 $1$ 씩 먼저 주면 남는 것은 $${k}-${v}=${rest}$ ${jo(String(rest), '이에요/예요')}.`,
               },
               {
                 title: '남은 것 나누기',
-                body: `남은 $${rest}$ ${jo(String(rest), '을')} $${v}$ 개 문자에 $0$ 이상씩 나누는 수예요.\n$$${hTex(v, rest)}=${cTex(v + rest - 1, rest)}=${ans}$$`,
+                body: `남은 $${rest}$ ${jo(String(rest), '을/를')} $${v}$ 개 문자에 $0$ 이상씩 나누는 수예요.\n$$${hTex(v, rest)}=${cTex(v + rest - 1, rest)}=${ans}$$`,
               },
             ]
           : [
@@ -120,7 +119,7 @@ export const generators: Generator[] = [
               },
             ],
         tip: natural
-          ? `1 씩 먼저 주지 않고 $${hTex(v, k)}$ ${jo(String(k), '으로')} 세면 $0$ 이 들어간 해까지 세어져요.`
+          ? `1 씩 먼저 주지 않고 $${hTex(v, k)}$ ${jo(String(k), '으로/로')} 세면 $0$ 이 들어간 해까지 세어져요.`
           : `문자 $${v}$ 개를 가르는 칸막이 $${v - 1}$ 개와 $1$ 을 $${k}$ 개 늘어놓는 수로 세어도 같아요. $\\dfrac{${v + k - 1}!}{${k}!\\,${v - 1}!}=${ans}$`,
       };
     },
@@ -154,7 +153,7 @@ export const generators: Generator[] = [
             },
             {
               title: `$x^${k}$ 이 되는 $r$`,
-              body: `$x$ 의 지수가 $${k}$ 이려면 $r=${k}$ ${jo(String(k), '이에요')}.`,
+              body: `$x$ 의 지수가 $${k}$ 이려면 $r=${k}$ ${jo(String(k), '이에요/예요')}.`,
             },
             {
               title: '계수 계산',
@@ -167,7 +166,7 @@ export const generators: Generator[] = [
           ],
           tip:
             a === 1 && b > 0
-              ? `$${cTex(n, k)}$ 만 쓰고 $${b}^${n - k}$ ${jo(String(n - k), '을')} 빠뜨리기 쉬워요. 괄호 속 상수도 거듭제곱해서 곱해요.`
+              ? `$${cTex(n, k)}$ 만 쓰고 $${b}^${n - k}$ ${jo(String(n - k), '을/를')} 빠뜨리기 쉬워요. 괄호 속 상수도 거듭제곱해서 곱해요.`
               : `$x$ 앞의 계수와 상수도 함께 거듭제곱해요. $${cTex(n, k)}$ 만 쓰면 틀려요${b < 0 ? `. 음수 $${b}$ 의 거듭제곱이라 부호도 봐요` : ''}.`,
         };
       }
@@ -211,7 +210,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '전체 합',
-              body: `$${cTex(n, 0)}$ 부터 모두 더하면 $2^{${n}}=${2 ** n}$ ${jo(String(2 ** n), '이에요')}.`,
+              body: `$${cTex(n, 0)}$ 부터 모두 더하면 $2^{${n}}=${2 ** n}$ ${jo(String(2 ** n), '이에요/예요')}.`,
             },
             {
               title: `$${cTex(n, 0)}$ 빼기`,

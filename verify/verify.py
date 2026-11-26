@@ -303,13 +303,18 @@ def _limit(f, v, a, d="+-"):
     return sympy.Limit(f, v, a, d)
 
 
-SPOT_NS = dict(NS, C=_CONST, Limit=_limit)
+def _multichoose(n, r):
+    """중복조합 ₙHᵣ = ₙ₊ᵣ₋₁Cᵣ. sympy 에 없는 이름이라 여기서만 둔다(화면 글자 ₙHᵣ 는 sym.ts)"""
+    return sympy.binomial(n + r - 1, r)
+
+
+SPOT_NS = dict(NS, C=_CONST, Limit=_limit, H=_multichoose)
 _BIG = (sympy.Sum, sympy.Integral, sympy.Limit)
 # 문자가 든 채로 부등식에 오면 판정하지 않는 것 — 자연수라는 조건을 검산기가 다루지 않아 n=1/2 같은 반례로
 # '틀렸다'고 하거나 풀지 못해 소리 없이 넘어간다(types.ts 에 적어 둠)
 _COMB = (sympy.factorial, sympy.binomial, sympy.FallingFactorial, sympy.Sum)
 # ff(n,2) 는 읽자마자 n(n−1) 로 풀려 식 구조로는 못 알아본다 — 글자로 본다
-_COMB_RE = re.compile(r"\b(factorial|binomial|ff|Sum)\(")
+_COMB_RE = re.compile(r"\b(factorial|binomial|ff|Sum|H)\(")
 
 
 def _guard_comb(s):
@@ -535,9 +540,27 @@ def _indef_holds(left, right, ints):
     return _refute_eq(d, sympy.Integer(0))
 
 
+def _logic_holds(left, op, right):
+    """명제(Implies·Not 으로 엮은 논리식) 두 개가 늘 같은 참·거짓인가(역·대우). 다른 참·거짓이 되는 글자 값(반례)이 있으면
+    False — sympy 의 satisfiable 이 Xor 를 참으로 만드는 값을 찾아 준다. 명제와 수를 견주거나 부등호로 견주면
+    뜻이 없는 식이라 오류로 올린다(형식 검사 schema.ts 도 같은 규칙)"""
+    if op != "=":
+        raise ValueError("명제(논리식)는 부등호로 견주지 않음")
+    for e in (left, right):
+        if not isinstance(e, sympy.logic.boolalg.Boolean) or e.is_number:
+            raise ValueError(f"명제와 수를 견줄 수 없음: {left} = {right}")
+    return sympy.satisfiable(sympy.Xor(left, right)) is False
+
+
+def _is_logic(*es):
+    return any(isinstance(e, sympy.logic.boolalg.BooleanFunction) for e in es)
+
+
 def spot_holds(left, op, right):
     """식이 늘 성립하는가. True 는 증명, False 는 반례(또는 C 빠뜨림·정의 안 되는 값)가 있을 때만 — 둘 다 아니면
     Undecided 로 검산 실패. 등식은 항등식인가, 부등식은 미지수가 없으면 참인가·하나면 모든 실수에서 참인가."""
+    if _is_logic(left, right):
+        return _logic_holds(left, op, right)
     ints = _indefinite(left) + _indefinite(right)
     if ints:
         if op != "=":
@@ -553,6 +576,9 @@ def spot_holds(left, op, right):
         if equal(lv, rv):
             return True
         return _refute_eq(lv, rv)
+    if lv.has(sympy.I) or rv.has(sympy.I):
+        # 복소수에는 크기가 없다 — sympy 는 I > 0 을 계산하지 못하거나 오류를 내 '거짓'으로 넘어갈 수 있다
+        raise Undecided(f"허수가 든 부등식은 판정하지 않음: {lv} {op} {rv}")
     syms = lv.free_symbols | rv.free_symbols
     rel = _REL[op](lv, rv)
     if not syms:
@@ -576,6 +602,9 @@ def spot_solutions(left, op, right):
     if _indefinite(left) or _indefinite(right):
         raise Undecided("부정적분이 든 방정식·부등식의 해는 판정하지 않음")
     lv, rv = _calc(left), _calc(right)
+    if lv.has(sympy.I) or rv.has(sympy.I) or _is_logic(lv, rv):
+        # 해 집합은 실수에서 구한다 — 허수 해(x=i)·명제는 이 비교로 다룰 수 없다
+        raise Undecided(f"허수·명제가 든 식의 해는 판정하지 않음: {lv} {op} {rv}")
     syms = lv.free_symbols | rv.free_symbols
     if len(syms) != 1:
         raise ValueError(f"미지수가 하나인 식이 아님: {lv} {op} {rv}")
@@ -644,6 +673,62 @@ def check_spot(it):
         _sets_differ(want, bad)
         return None
     return f"알 수 없는 mode {mode}"
+
+
+# ---- 질문 보기: 식·구간 보기 · 글자 보기 ----
+
+
+def _choice_set(s):
+    """식·구간 보기 하나 → (미지수, 실수 해 집합). 관계 하나, 또는 같은 방향 부등호 둘로 이어 쓴 부등식(−1<x≤3 은
+    −1<x 와 x≤3 의 해 집합이 겹치는 곳). 방향은 형식 검사(format.ts splitChain)가 이미 본다"""
+    ops, parts = _REL_RE.findall(s), _REL_RE.split(s)
+    if len(ops) == 1:
+        return spot_solutions(_spot_read(parts[0]), ops[0], _spot_read(parts[1]))
+    if len(ops) == 2:
+        a, b, c = (_spot_read(x) for x in parts)
+        (v1, s1), (v2, s2) = spot_solutions(a, ops[0], b), spot_solutions(b, ops[1], c)
+        if v1 != v2:
+            raise ValueError(f"이어 쓴 부등식의 미지수가 다름: {s}")
+        return v1, s1.intersect(s2)
+    raise ValueError(f"관계 기호가 없는 보기는 해 집합과 견줄 수 없음: {s}")
+
+
+def check_choicesym(it):
+    """식·구간 보기: check(문제 조건으로 계산한 해 집합이나 식)와 같은 보기가 정답 번호 하나뿐인가.
+    해 집합은 모양이 달라도 같은 집합이면 같고, 다르다고 하려면 한쪽에만 드는 점이 있어야 한다(_sets_differ).
+    식 보기는 틀린 곳 찾기와 같은 항등식 판정(spot_holds) — 다르다는 반례가 없으면 검산 실패"""
+    want = evaluate(it["check"])
+    hits = []
+    for i, s in enumerate(it["choices"]):
+        if isinstance(want, sympy.Set):
+            _, got = _choice_set(s)
+            same = got == want or not _sets_differ(got, want)
+        else:
+            if _REL_RE.search(s):
+                raise ValueError(f"관계가 있는 보기 {s} 를 식 {want} 와 견줄 수 없음")
+            same = spot_holds(_spot_read(s), "=", want)
+        if same:
+            hits.append(i + 1)
+    if hits != [int(it["answer"])]:
+        return f"검산값 {want} 과 같은 보기 {hits} (답 {it['answer']})"
+    return None
+
+
+def check_choicewhen(it):
+    """글자 보기: check 의 값을 v 로 넣었을 때 참인 조건(when)이 정답 번호 하나뿐인가.
+    참·거짓이 정해지지 않는 조건(v 가 글자라 x>0 이 남는 등)은 판정 보류 — 어느 보기도 아니라고 넘기지 않는다"""
+    v = evaluate(it["check"])
+    hits = []
+    for i, w in enumerate(it["whens"]):
+        env = dict(NS, v=v, _div=_div)
+        t = sympify(eval(_compile(w, "eval"), env))
+        if t not in (sympy.true, sympy.false):
+            raise Undecided(f"조건 {w} 의 참·거짓을 정하지 못함(v = {v}): {t}")
+        if t == sympy.true:
+            hits.append(i + 1)
+    if hits != [int(it["answer"])]:
+        return f"v = {v} 일 때 참인 보기 {hits} (답 {it['answer']})"
+    return None
 
 
 def check_equiv(it):
@@ -946,6 +1031,8 @@ KINDS = {
     "goal": check_goal,
     "root": check_root,
     "spot": check_spot,
+    "choicesym": check_choicesym,
+    "choicewhen": check_choicewhen,
     "equiv": check_equiv,
     "sameeq": check_sameeq,
     "approx": check_approx,

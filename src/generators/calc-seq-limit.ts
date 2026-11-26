@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polySym, polyTex, reduce } from './util.ts';
+import { eul, fracAns, fracTex, ieyo, paren, polySym, polyTex, reduce, ro } from './util.ts';
 
 const UNIT = 'calc-seq-limit';
 
@@ -11,14 +11,6 @@ const UNIT = 'calc-seq-limit';
 
 const LIM = '\\displaystyle\\lim_{n\\to\\infty}';
 const ZERO = '$n\\to\\infty$ 일 때 $\\frac{1}{n}\\to0$, $\\frac{1}{n^2}\\to0$';
-
-// '이에요/예요' 는 끝소리 받침으로 갈린다. 분수는 "b분의 a" 라서 분자가 끝 소리,
-// 숫자 끝자리 영·일·삼·육·칠·팔(0·1·3·6·7·8)에 받침이 있다.
-const ieyo = (n: number, d = 1) =>
-  /[013678]$/.test(String(Math.abs(reduce(n, d).n))) ? '이에요' : '예요';
-const eul = (n: number) => (/[013678]$/.test(String(Math.abs(n))) ? '을' : '를');
-/** '으로/로' — ㄹ 받침(일·칠·팔)과 받침 없음은 '로' */
-const ro = (n: number) => (/[036]$/.test(String(Math.abs(n))) ? '으로' : '로');
 
 /** n^k 꼴 TeX (k=1 이면 n) */
 const nPow = (k: number) => (k === 1 ? 'n' : `n^${k}`);

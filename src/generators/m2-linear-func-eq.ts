@@ -1,12 +1,8 @@
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex, paren, polyTex } from './util.ts';
+import { eul, fracAns, fracTex, ieyo, paren, polyTex } from './util.ts';
 
 const UNIT = 'm2-linear-func-eq';
-
-// 숫자 뒤 조사. 읽었을 때 끝 글자 받침은 마지막 자리로 정해진다(일·삼·육·칠·팔·영/십 → 받침)
-const eul = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '을' : '를');
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 const CONCEPT_GRAPH =
   '일차방정식 $ax+by+c=0\\ (b\\neq0)$의 그래프는 일차함수 $y=-\\frac{a}{b}x-\\frac{c}{b}$의 그래프와 같아요.';

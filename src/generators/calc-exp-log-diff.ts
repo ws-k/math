@@ -1,5 +1,15 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polyDiff, polyEval, polySym, polyTex, reduce } from './util.ts';
+import {
+  fracAns,
+  fracTex,
+  ieyo,
+  paren,
+  polyDiff,
+  polyEval,
+  polySym,
+  polyTex,
+  reduce,
+} from './util.ts';
 
 const UNIT = 'calc-exp-log-diff';
 
@@ -9,10 +19,6 @@ const UNIT = 'calc-exp-log-diff';
 // 검산은 sympy limit·diff 에 화면의 식을 그대로 넣어, 맞춰 주는 과정을 거치지 않은 값과 대조한다.
 // 합성함수의 미분은 아직 배우지 않았으므로(다음 단원들) 미분 문제는 e^x, ln x 와 곱의 미분법까지만 쓴다.
 // 생성기 id 는 다른 단원과 겹치지 않도록 모두 단원 id 'calc-exp-log-diff-' 로 시작한다.
-
-// '이에요/예요'는 읽었을 때 끝소리 받침으로 갈린다(분수 b분의 a 는 분자 a 로 끝난다).
-const ieyoN = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
-const ieyoF = (n: number, d: number) => ieyoN(reduce(n, d).n);
 
 /** 계수: 1 은 생략, -1 은 부호만 */
 const coef = (a: number) => (a === 1 ? '' : a === -1 ? '-' : String(a));
@@ -54,7 +60,7 @@ export const generators: Generator[] = [
           },
           {
             title: '극한 구하기',
-            body: `$x\\to0$ 이면 $${ax}\\to0$ 이라 중괄호 안은 $e$ 로 가요. 그래서 극한값은 $e^{${k}}$, $k=${k}$ ${ieyoN(k)}.`,
+            body: `$x\\to0$ 이면 $${ax}\\to0$ 이라 중괄호 안은 $e$ 로 가요. 그래서 극한값은 $e^{${k}}$, $k=${k}$ ${ieyo(k)}.`,
           },
         ],
         tip: `지수의 분자만 보고 답을 $e^{${b}}$ 처럼 쓰는 실수가 많아요. 괄호 안의 $${ax}$ 와 지수의 분모가 같아지도록 맞춰야 해요.`,
@@ -101,7 +107,7 @@ export const generators: Generator[] = [
           },
           {
             title: '남은 수 계산',
-            body: `$\\frac{${ax}}{${bx}}=${fracTex(a, b)}$ 이므로 극한값은 $1\\times${paren(fracTex(a, b))}=${fracTex(a, b)}$ ${ieyoF(ans.n, ans.d)}.`,
+            body: `$\\frac{${ax}}{${bx}}=${fracTex(a, b)}$ 이므로 극한값은 $1\\times${paren(fracTex(a, b))}=${fracTex(a, b)}$ ${ieyo(ans.n, ans.d)}.`,
           },
         ],
         tip: isExp
@@ -139,7 +145,7 @@ export const generators: Generator[] = [
             },
             {
               title: '$x=0$ 대입',
-              body: `$e^0=1$ 이므로 $f'(0)=${paren(dfk)}+${paren(fk)}=${ans}$ ${ieyoN(ans)}.`,
+              body: `$e^0=1$ 이므로 $f'(0)=${paren(dfk)}+${paren(fk)}=${ans}$ ${ieyo(ans)}.`,
             },
           ],
           tip: "$e^x$ 는 미분해도 그대로라서 $f'(x)=\\{P'(x)+P(x)\\}e^x$ 처럼 묶을 수 있어요. 다항식과 그 도함수를 더하기만 하면 돼요.",

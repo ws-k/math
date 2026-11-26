@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex } from './util.ts';
+import { fracAns, fracTex, ieyo } from './util.ts';
 
 const UNIT = 'math1-sine-cosine-law';
 
@@ -8,8 +8,6 @@ const UNIT = 'math1-sine-cosine-law';
 // 쓰나"이고, 삼각비 근삿값 계산은 수능에도 나오지 않기 때문이다. 각은 검산식에서 A*pi/180 으로 넘겨
 // sympy 가 정확한 값(sqrt(3)/2 등)으로 계산하게 한다.
 
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝자리로 고른다(일·삼·육·칠·팔·영/십 → 받침).
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 const signed = (n: number) => (n < 0 ? `-${Math.abs(n)}` : `+${n}`);
 
 /** 특수각의 사인 값: 화면 글자, 그리고 "a=2R·sinA 에서 R 에 곱해지는 몫"을 √ 꼴로 적기 위한 정보 */

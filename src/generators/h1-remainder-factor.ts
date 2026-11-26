@@ -1,6 +1,6 @@
-import { jo, linTex } from './h1-poly-ops.ts';
+import { linTex } from './h1-poly-ops.ts';
 import type { Generator } from './types.ts';
-import { paren, polyEval, polySym, polyTex } from './util.ts';
+import { jo, paren, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'h1-remainder-factor';
 
@@ -46,7 +46,7 @@ export const generators: Generator[] = [
         const R = polyEval(f, a);
         if (Math.abs(R) > 60) continue;
         return {
-          q: `$f(x)=${polyTex(f)}$ ${jo(polyTex(f), '을')} $${linTex(a)}$ ${jo(linTex(a), '으로')} 나눈 나머지를 구하세요.`,
+          q: `$f(x)=${polyTex(f)}$ ${jo(polyTex(f), '을/를')} $${linTex(a)}$ ${jo(linTex(a), '으로/로')} 나눈 나머지를 구하세요.`,
           choices: null,
           answer: String(R),
           answerType: 'int',
@@ -55,12 +55,12 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '넣을 수 정하기',
-              body: `$${linTex(a)}=0$ 이 되는 $x=${a}$ ${jo(String(a), '을')} 넣어요. 나머지는 $f(${a})$ ${jo(String(a), '이에요')}.`,
+              body: `$${linTex(a)}=0$ 이 되는 $x=${a}$ ${jo(String(a), '을/를')} 넣어요. 나머지는 $f(${a})$ ${jo(String(a), '이에요/예요')}.`,
             },
             { title: '대입하기', body: `$$f(${a})=${subTex(f, a)}$$` },
             { title: '계산하기', body: `$$${valTex(f, a)}=${R}$$` },
           ],
-          tip: `$${linTex(a)}$ ${jo(linTex(a), '으로')} 나눌 때 $f(${-a})$ ${jo(String(-a), '을')} 넣는 실수가 잦아요. 나누는 식을 $0$ 으로 만드는 수를 넣어요.`,
+          tip: `$${linTex(a)}$ ${jo(linTex(a), '으로/로')} 나눌 때 $f(${-a})$ ${jo(String(-a), '을/를')} 넣는 실수가 잦아요. 나누는 식을 $0$ 으로 만드는 수를 넣어요.`,
         };
       }
     },
@@ -80,7 +80,7 @@ export const generators: Generator[] = [
         const restT = rest.startsWith('-') ? rest : `+${rest}`;
         const known = a ** 3 + c * a + d;
         return {
-          q: `다항식 $x^3+kx^2${restT}$ ${jo(restT, '이')} $${linTex(a)}$ ${jo(linTex(a), '으로')} 나누어떨어질 때 상수 $k$ 의 값을 구하세요.`,
+          q: `다항식 $x^3+kx^2${restT}$ ${jo(restT, '이/가')} $${linTex(a)}$ ${jo(linTex(a), '으로/로')} 나누어떨어질 때 상수 $k$ 의 값을 구하세요.`,
           choices: null,
           answer: String(k),
           answerType: 'int',
@@ -89,7 +89,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '나누어떨어지면 나머지가 $0$',
-              body: `$f(x)=x^3+kx^2${restT}$ ${jo(restT, '이라')} 하면 $f(${a})=0$ 이에요.`,
+              body: `$f(x)=x^3+kx^2${restT}$ ${jo(restT, '이라/라')} 하면 $f(${a})=0$ 이에요.`,
             },
             {
               title: '대입하기',
@@ -124,7 +124,7 @@ export const generators: Generator[] = [
         const ans = q1 + q2 + q3 + R;
         const table = `\\begin{array}{r|rrrr} ${a} & ${L} & ${b} & ${c} & ${d} \\\\ & & ${a * q1} & ${a * q2} & ${a * q3} \\\\ \\hline & ${q1} & ${q2} & ${q3} & ${R} \\end{array}`;
         return {
-          q: `$${polyTex(f)}$ ${jo(polyTex(f), '을')} $${linTex(a)}$ ${jo(linTex(a), '으로')} 나눈 몫을 $Q(x)$, 나머지를 $R$ 이라 할 때 $Q(1)+R$ 의 값을 구하세요.`,
+          q: `$${polyTex(f)}$ ${jo(polyTex(f), '을/를')} $${linTex(a)}$ ${jo(linTex(a), '으로/로')} 나눈 몫을 $Q(x)$, 나머지를 $R$ 이라 할 때 $Q(1)+R$ 의 값을 구하세요.`,
           choices: null,
           answer: String(ans),
           answerType: 'int',
@@ -136,7 +136,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '계수 늘어놓기',
-              body: `왼쪽에 $x=${a}$, 오른쪽에 계수 $${L},\\ ${b},\\ ${c},\\ ${d}$ ${jo(String(d), '을')} 적어요.`,
+              body: `왼쪽에 $x=${a}$, 오른쪽에 계수 $${L},\\ ${b},\\ ${c},\\ ${d}$ ${jo(String(d), '을/를')} 적어요.`,
             },
             {
               title: '내리고, 곱하고, 더하기',

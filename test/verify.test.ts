@@ -291,6 +291,228 @@ test('틀린 곳 찾기 기호 1차: 판정이 뒤집힌 짝은 하나하나 실
   assert.match(r.stdout, new RegExp(`실패 ${SPOT_BAD.length}건`));
 });
 
+// ---- 틀린 곳 찾기 기호 2차(3-바): 허수 i · H · 논리(역·대우) · 도(°) · t 로 미분 ----
+// 1차와 같은 규칙 — 틀린 식은 반례가 있어야 '성립 안 함', 고친 식은 성립해야 통과
+const SPOT2_OK: [string, object][] = [
+  [
+    '허수: 켤레복소수의 곱',
+    { mode: 'identity', wrong: '(3+2*I)*(3-2*I)=9-4', fixed: '(3+2*I)*(3-2*I)=9+4' },
+  ],
+  ['허수: i²', { mode: 'identity', wrong: 'I**2=1', fixed: 'I**2=-1' }],
+  [
+    '허수: 음수의 제곱근끼리 곱',
+    { mode: 'identity', wrong: 'sqrt(-2)*sqrt(-3)=sqrt(6)', fixed: 'sqrt(-2)*sqrt(-3)=-sqrt(6)' },
+  ],
+  ['허수(등식 아닌 식)', { mode: 'value', from: '(1+I)**2', wrong: '1+1', fixed: '2*I' }],
+  [
+    '중복조합 H',
+    { mode: 'identity', wrong: 'H(3,4)=binomial(3,4)', fixed: 'H(3,4)=binomial(6,4)' },
+  ],
+  ['중복조합 H(문자)', { mode: 'identity', wrong: 'H(n,2)=n**2', fixed: 'H(n,2)=n*(n+1)/2' }],
+  [
+    '논리: 대우',
+    {
+      mode: 'identity',
+      wrong: 'Implies(p,q)=Implies(Not(p),Not(q))',
+      fixed: 'Implies(p,q)=Implies(Not(q),Not(p))',
+    },
+  ],
+  [
+    '논리: 역은 같은 명제가 아님',
+    {
+      mode: 'identity',
+      wrong: 'Implies(p,q)=Implies(q,p)',
+      fixed: 'Implies(p,q)=Implies(Not(q),Not(p))',
+    },
+  ],
+  [
+    '논리: 역과 이는 서로 대우',
+    {
+      mode: 'identity',
+      wrong: 'Implies(q,p)=Implies(Not(q),Not(p))',
+      fixed: 'Implies(q,p)=Implies(Not(p),Not(q))',
+    },
+  ],
+  ['도(°)', { mode: 'identity', wrong: 'sin(rad(30))=sqrt(3)/2', fixed: 'sin(rad(30))=1/2' }],
+  [
+    '도(°): 더해도 각이 더해지지 않음',
+    {
+      mode: 'identity',
+      wrong: 'sin(rad(30))+sin(rad(60))=sin(rad(90))',
+      fixed: 'sin(rad(30))+sin(rad(60))=(1+sqrt(3))/2',
+    },
+  ],
+  [
+    '도(°) 부등식',
+    { mode: 'identity', wrong: 'sin(rad(30))>sin(rad(60))', fixed: 'sin(rad(30))<sin(rad(60))' },
+  ],
+  ['t 로 미분', { mode: 'identity', wrong: 'diff(t**3,t)=3*t', fixed: 'diff(t**3,t)=3*t**2' }],
+  [
+    't 로 미분(연쇄)',
+    { mode: 'identity', wrong: 'diff(sin(2*t),t)=cos(2*t)', fixed: 'diff(sin(2*t),t)=2*cos(2*t)' },
+  ],
+];
+
+test('틀린 곳 찾기 기호 2차: 틀린 식은 성립 안 함(반례) · 고친 식은 성립', () => {
+  const r = runVerify(SPOT2_OK.map(([n, it]) => ({ ...spot, ref: `u/lesson:ok2:${n}`, ...it })));
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+const SPOT2_BAD: [string, object][] = [
+  ['허수: 틀린 식이 사실은 맞음', { mode: 'identity', wrong: 'I**2=-1', fixed: 'I**2=-1' }],
+  ['허수: 고친 식이 틀림', { mode: 'identity', wrong: '(1+I)**2=2', fixed: '(1+I)**2=2+2*I' }],
+  // 복소수에는 크기 비교가 없다 — 참·거짓으로 넘기지 않는다
+  ['허수가 든 부등식', { mode: 'identity', wrong: 'I>0', fixed: 'I**2<0' }],
+  [
+    '허수가 든 방정식 변형(실수 해 집합으로는 판정 안 함)',
+    {
+      mode: 'equivalent',
+      from: 'x**2=-1',
+      wrong: 'x=I',
+      fixed: 'x**2+1=0',
+    },
+  ],
+  ['H: 고친 식이 틀림', { mode: 'identity', wrong: 'H(3,4)=12', fixed: 'H(3,4)=binomial(6,3)+1' }],
+  ['H: 문자가 든 부등식', { mode: 'identity', wrong: 'H(n,2)<n', fixed: 'H(n,2)>=n' }],
+  [
+    '논리: 틀린 식이 사실은 같은 명제(대우)',
+    {
+      mode: 'identity',
+      wrong: 'Implies(p,q)=Implies(Not(q),Not(p))',
+      fixed: 'Implies(p,q)=Implies(Not(q),Not(p))',
+    },
+  ],
+  [
+    '논리: 고친 식이 이(裏)',
+    {
+      mode: 'identity',
+      wrong: 'Implies(p,q)=Implies(q,p)',
+      fixed: 'Implies(p,q)=Implies(Not(p),Not(q))',
+    },
+  ],
+  [
+    '논리: 명제와 수를 견줌',
+    { mode: 'identity', wrong: 'Implies(p,q)=1', fixed: 'Implies(p,q)=0' },
+  ],
+  ['논리: 부등식', { mode: 'identity', wrong: 'Implies(p,q)<Implies(q,p)', fixed: 'Not(p)>p' }],
+  [
+    '도(°): 고친 식이 틀림',
+    { mode: 'identity', wrong: 'sin(rad(30))=1', fixed: 'sin(rad(30))=sqrt(3)/2' },
+  ],
+  [
+    't 로 미분: 고친 식이 틀림',
+    { mode: 'identity', wrong: 'diff(t**2,t)=t', fixed: 'diff(t**2,t)=2' },
+  ],
+];
+
+test('틀린 곳 찾기 기호 2차: 판정이 뒤집힌 짝·판정할 수 없는 식은 하나하나 실패', () => {
+  const r = runVerify(SPOT2_BAD.map(([n, it]) => ({ ...spot, ref: `u/lesson:bad2:${n}`, ...it })));
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  for (const [n] of SPOT2_BAD) assert.match(r.stdout, new RegExp(`lesson:bad2:${reEscape(n)}:`), n);
+  assert.match(r.stdout, new RegExp(`실패 ${SPOT2_BAD.length}건`));
+});
+
+// ---- 질문 보기 꼴(3-바): 식·구간 보기(choicesym) · 글자 보기(choicewhen) ----
+const choice = { unit: 'u', ref: 'u/lesson:q' };
+
+test('식·구간 보기: answerCheck 와 같은 보기가 정답 하나뿐이면 통과', () => {
+  const r = runVerify([
+    {
+      ...choice,
+      kind: 'choicesym',
+      answer: '1',
+      check: 'solveset(-2*x<6, x, S.Reals)',
+      choices: ['x>-3', 'x<-3', '-3<x<3', 'x>=-3'],
+    },
+    {
+      ...choice,
+      kind: 'choicesym',
+      answer: '2',
+      check: 'solveset(x**2<9, x, S.Reals)',
+      choices: ['x<3', '-3<x<3', '-3<=x<=3'],
+    },
+    // 관계 없는 식 보기는 값(항등식)으로 견준다
+    {
+      ...choice,
+      kind: 'choicesym',
+      answer: '2',
+      check: 'expand((x+1)**2)',
+      choices: ['x**2+1', 'x**2+2*x+1'],
+    },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+test('글자 보기: 조건 when 이 참인 보기가 정답 하나뿐이면 통과', () => {
+  const r = runVerify([
+    {
+      ...choice,
+      kind: 'choicewhen',
+      answer: '1',
+      check: 'Rational(8,10)',
+      whens: ['v>0', 'v<0', 'Eq(v,0)'],
+    },
+    { ...choice, kind: 'choicewhen', answer: '2', check: 'Integer(3) > 5', whens: ['v', 'Not(v)'] },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+for (const [name, it] of [
+  [
+    '식 보기: 정답 보기가 answerCheck 와 다름',
+    {
+      kind: 'choicesym',
+      answer: '2',
+      check: 'solveset(-2*x<6, x, S.Reals)',
+      choices: ['x>-3', 'x<-3'],
+    },
+  ],
+  [
+    '식 보기: 같은 해 집합 보기가 둘',
+    {
+      kind: 'choicesym',
+      answer: '1',
+      check: 'solveset(-2*x<6, x, S.Reals)',
+      choices: ['x>-3', '-x<3'],
+    },
+  ],
+  [
+    '식 보기: 관계 없는 식 보기를 해 집합과 견줌',
+    {
+      kind: 'choicesym',
+      answer: '1',
+      check: 'solveset(-2*x<6, x, S.Reals)',
+      choices: ['x+3', 'x<-3'],
+    },
+  ],
+  [
+    '식 보기: 이어 쓴 부등식의 미지수가 다름',
+    {
+      kind: 'choicesym',
+      answer: '1',
+      check: 'solveset(x**2<9, x, S.Reals)',
+      choices: ['-3<x<y', 'x<3'],
+    },
+  ],
+  [
+    '글자 보기: 참인 조건이 둘',
+    { kind: 'choicewhen', answer: '1', check: 'Rational(8,10)', whens: ['v>0', 'v>=0'] },
+  ],
+  [
+    '글자 보기: 정답 보기 조건이 거짓',
+    { kind: 'choicewhen', answer: '2', check: 'Rational(8,10)', whens: ['v>0', 'v<0'] },
+  ],
+  [
+    '글자 보기: 참·거짓이 정해지지 않는 조건',
+    { kind: 'choicewhen', answer: '1', check: 'x', whens: ['v>0', 'v<0'] },
+  ],
+] as const) {
+  test(`실패해야 함(질문 보기 꼴): ${name}`, () => {
+    const r = runVerify([{ ...choice, ...it }]);
+    assert.equal(r.status, 1, r.stdout + r.stderr);
+  });
+}
+
 const equiv = { unit: 'u', ref: 'u/lesson:scale:연산1', kind: 'equiv' };
 
 test('식 변형(equiv): 같은 해면 expect=true, 다른 해면 expect=false 가 통과', () => {

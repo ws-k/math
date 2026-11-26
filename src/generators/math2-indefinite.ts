@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
+import { eul, ieyo, iga, paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math2-indefinite';
 
@@ -11,27 +11,6 @@ const okAns = (n: number) => n !== 0 && Math.abs(n) <= MAX;
 
 /** "+3" / "-3" — 식 뒤에 상수를 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
-
-// 조사(이에요/예요, 을/를 …)는 앞 소리의 받침으로 갈리는데 값이 무작위라 TeX 끝 글자로 고른다.
-// 숫자는 영·일·삼·육·칠·팔(0·1·3·6·7·8)이 받침, 거듭제곱은 '제곱'이라 받침, 분수는 분자를 끝에 읽는다
-// ("3분의 4"), x·t·C·a 는 '엑스·티·씨·에이'라 받침 없음. 적분 세 단원(부정적분·정적분·넓이)이 같이 쓴다.
-function lastSound(tex: string | number): { batchim: boolean; rieul: boolean } {
-  const s = String(tex).trim();
-  const frac = /\\[dt]?frac\{-?(\d+)\}\{\d+\}$/.exec(s);
-  if (!frac && /\^\{?\d+\}?$/.test(s)) return { batchim: true, rieul: false };
-  const last = frac ? (frac[1] as string).slice(-1) : s.slice(-1);
-  if (/\d/.test(last)) return { batchim: /[013678]/.test(last), rieul: /[178]/.test(last) };
-  return { batchim: false, rieul: false };
-}
-export const ieyo = (tex: string | number) => (lastSound(tex).batchim ? '이에요' : '예요');
-export const eul = (tex: string | number) => (lastSound(tex).batchim ? '을' : '를');
-export const iga = (tex: string | number) => (lastSound(tex).batchim ? '이' : '가');
-export const wa = (tex: string | number) => (lastSound(tex).batchim ? '과' : '와');
-/** 으로/로 — ㄹ 받침(일·칠·팔)은 '로' */
-export const ro = (tex: string | number) => {
-  const l = lastSound(tex);
-  return l.batchim && !l.rieul ? '으로' : '로';
-};
 
 const POWER = '$\\int x^n\\,dx=\\dfrac{x^{n+1}}{n+1}+C$';
 const CONST = '조건 하나($f(a)$ 의 값)로 적분상수 $C$ 를 정해요.';
@@ -49,8 +28,18 @@ export function evalSteps(F: number[], k: number): string {
     const e = deg - i;
     if (c === 0) return;
     const pow = e === 0 ? '' : e === 1 ? paren(k) : `${paren(k)}^${e}`;
+    // 맨 앞 항의 계수가 −1 인 거듭제곱에 양수를 넣으면 "-1^3" 이 (−1)³ 로도 읽혀 흐리다(요청 80) — 거듭제곱을
+    // 괄호로 묶어 −(1³) 로 보인다. 가운데 항(27−3²)은 빼기로 읽혀 흐리지 않고, 음수를 넣으면 이미 (−2)² 로
+    // 묶여 있고, 일차 항(−1)은 흐릴 것이 없다
+    const neg1Pow = c === -1 && e >= 2 && k > 0 && parts.length === 0;
     const body =
-      e === 0 ? String(Math.abs(c)) : Math.abs(c) === 1 ? pow : `${Math.abs(c)}\\cdot ${pow}`;
+      e === 0
+        ? String(Math.abs(c))
+        : Math.abs(c) === 1
+          ? neg1Pow
+            ? `(${pow})`
+            : pow
+          : `${Math.abs(c)}\\cdot ${pow}`;
     parts.push(`${c < 0 ? '-' : parts.length ? '+' : ''}${body}`);
   });
   return parts.length ? parts.join('') : '0';

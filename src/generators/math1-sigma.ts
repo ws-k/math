@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polySym, polyTex, reduce } from './util.ts';
+import { fracAns, fracTex, ieyo, paren, polySym, polyTex, reduce } from './util.ts';
 
 const UNIT = 'math1-sigma';
 
@@ -7,9 +7,6 @@ const UNIT = 'math1-sigma';
 // 쪼개기 → 공식 → 더하기 순서로 쓴다. 검산식은 sympy summation 에 화면의 식을 그대로 넣어,
 // 공식을 거치지 않고 실제로 더한 값과 대조한다(공식을 잘못 옮겨 적어도 잡히게).
 // 생성기 id 는 다른 단원과 겹치지 않도록 모두 'math1-sig-' 로 시작한다.
-
-// '이에요/예요'는 앞 소리 받침으로 갈린다(숫자는 끝자리: 일·삼·육·칠·팔·영/십 → 받침).
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 /** "+3" / "-3" — 식 뒤에 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);

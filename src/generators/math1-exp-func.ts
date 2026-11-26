@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex } from './util.ts';
+import { fracAns, fracTex, ieyo } from './util.ts';
 
 const UNIT = 'math1-exp-func';
 
@@ -7,11 +7,6 @@ const UNIT = 'math1-exp-func';
 // 부등호가 뒤집히는 것이 가장 흔한 실수라 두 경우를 같은 생성기에서 섞어 낸다.
 // 해는 sympy solveset 으로 다시 구한다. solveset 이 log(2)/log(4)+2 처럼 정리하지 않은 꼴로 돌려줄 때가
 // 있어 simplify 로 감싼다.
-
-const ieyo = (v: string | number) => {
-  const s = String(v).replace(/^-?\\frac\{(\d+)\}\{\d+\}$/, '$1');
-  return /[013678]$/.test(s) ? '이에요' : '예요';
-};
 
 /** x+c 의 TeX: "x+2", "x-1" */
 const xPlus = (c: number) => (c === 0 ? 'x' : c > 0 ? `x+${c}` : `x-${-c}`);

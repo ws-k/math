@@ -1,5 +1,5 @@
-import { jo } from './h1-poly-ops.ts';
 import type { Generator } from './types.ts';
+import { jo } from './util.ts';
 
 const UNIT = 'h1-counting';
 
@@ -90,7 +90,7 @@ export const generators: Generator[] = [
         steps: [
           {
             title: '순서가 있어요',
-            body: `등수가 다르면 다른 경우라 순열 $_{${n}}\\mathrm{P}_{${r}}$ ${jo(String(r), '이에요')}.`,
+            body: `등수가 다르면 다른 경우라 순열 $_{${n}}\\mathrm{P}_{${r}}$ ${jo(String(r), '이에요/예요')}.`,
           },
           {
             title: '자리마다 고르기',
@@ -120,7 +120,7 @@ export const generators: Generator[] = [
         steps: [
           {
             title: '순서가 없어요',
-            body: `대표끼리는 자리가 없으니 조합 $_{${n}}\\mathrm{C}_{${r}}$ ${jo(String(r), '이에요')}.`,
+            body: `대표끼리는 자리가 없으니 조합 $_{${n}}\\mathrm{C}_{${r}}$ ${jo(String(r), '이에요/예요')}.`,
           },
           {
             title: '줄 세우는 수',
@@ -187,7 +187,7 @@ export const generators: Generator[] = [
             },
             {
               title: '같은 자리 맞추기',
-              body: `$${r}\\neq${s}$ 이므로 $n-${r}=${s}$ ${jo(String(s), '이에요')}.`,
+              body: `$${r}\\neq${s}$ 이므로 $n-${r}=${s}$ ${jo(String(s), '이에요/예요')}.`,
             },
             { title: 'n 구하기', body: `$$n=${s}+${r}=${n}$$` },
           ],

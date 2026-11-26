@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, reduce } from './util.ts';
+import { fracAns, fracTex, ieyo, iga, paren, reduce } from './util.ts';
 
 const UNIT = 'prob-binomial';
 
@@ -18,12 +18,6 @@ function nCr(n: number, r: number): number {
   for (let i = 1; i <= r; i++) v = (v * (n - r + i)) / i;
   return v;
 }
-
-// '이에요/예요'는 앞 소리의 받침으로 갈린다. 분수는 "b분의 a"로 읽어 분자가 끝 소리이고,
-// 숫자 끝자리 영·일·삼·육·칠·팔(0·1·3·6·7·8)에 받침이 있다.
-const batchim = (n: number, d = 1) => /[013678]$/.test(String(Math.abs(reduce(n, d).n)));
-const ieyo = (n: number, d = 1) => (batchim(n, d) ? '이에요' : '예요');
-const iga = (n: number) => (batchim(n) ? '이' : '가');
 
 /** 확률 p = a/b (기약) */
 type P = { a: number; b: number };

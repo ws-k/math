@@ -1,15 +1,9 @@
 import type { Step } from '../content/types.ts';
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex, lcm, paren, polySym, polyTex } from './util.ts';
+import { eul, fracAns, fracTex, ieyo, lcm, paren, polySym, polyTex, ro } from './util.ts';
 
 const UNIT = 'm1-linear-eq';
-
-// 숫자 뒤 조사. 읽었을 때 끝 글자에 받침이 있는지는 마지막 자리로 정해진다
-// (일·삼·육·칠·팔·영/십 → 받침, 이·사·오·구 → 없음). ㄹ 받침(1·7·8)은 '로'를 쓴다.
-const eul = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '을' : '를');
-const ro = (n: number) => ([0, 3, 6].includes(Math.abs(n) % 10) ? '으로' : '로');
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 const CONCEPT_ADD = '등식의 성질: 양변에 같은 수(또는 같은 식)를 더하거나 빼도 등식은 그대로예요.';
 const CONCEPT_DIV = '등식의 성질: 양변을 0이 아닌 같은 수로 나누어도 등식은 그대로예요.';

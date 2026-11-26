@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { paren } from './util.ts';
+import { ieyo, iga, ira, paren } from './util.ts';
 
 const UNIT = 'geo-parabola';
 
@@ -21,12 +21,6 @@ const signed = (n: number) => (n < 0 ? `${n}` : `+${n}`);
 const shift = (v: string, n: number) => (n === 0 ? v : `(${v}${signed(-n)})`);
 /** 계수 붙은 항: 1·x → x, −1·x → −x */
 const lead = (k: number, v: string) => (k === 1 ? v : k === -1 ? `-${v}` : `${k}${v}`);
-
-// 숫자 뒤 조사. 읽었을 때 끝 글자 받침으로 정한다(영·일·삼·육·칠·팔·십 → 받침)
-const hasB = (n: number) => [0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10);
-const ieyo = (n: number) => (hasB(n) ? '이에요' : '예요');
-const ira = (n: number) => (hasB(n) ? '이라' : '라');
-const iga = (n: number) => (hasB(n) ? '이' : '가');
 
 /** 0 이 아닌 p 를 고르되 부호는 반반 */
 const pickP = (rng: Rng, lo: number, hi: number) => {

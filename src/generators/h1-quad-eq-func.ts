@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { paren, polyEval, polySym, polyTex } from './util.ts';
+import { ieyo, paren, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'h1-quad-eq-func';
 
@@ -7,9 +7,6 @@ const UNIT = 'h1-quad-eq-func';
 // ① x축(또는 직선)과 연립해 이차방정식 하나로 만들고 ② 판별식의 부호를 본다는 같은 틀로 쓴다.
 // 검산식은 그 틀을 따르지 않고 sympy 로 실근을 직접 세거나(solveset) 구간 최대·최소(maximum)를
 // 구하게 해서, 풀이 쪽에서 부호를 잘못 읽으면 검산이 다른 값을 낸다.
-
-// '이에요/예요'는 앞 소리 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-const ieyo = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이에요' : '예요');
 
 const D_RULE = '$ax^2+bx+c=0$ 의 판별식 $D=b^2-4ac$';
 const D_POS = '$D>0$ 이면 두 점, $D=0$ 이면 한 점(접함), $D<0$ 이면 만나지 않아요.';

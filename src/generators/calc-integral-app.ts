@@ -1,6 +1,5 @@
-import { eul, ieyo, iga } from './math2-indefinite.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, reduce } from './util.ts';
+import { eul, fracAns, fracTex, ieyo, iga, reduce } from './util.ts';
 
 const UNIT = 'calc-integral-app';
 

@@ -1,6 +1,5 @@
-import { jo } from './h1-poly-ops.ts';
 import type { Generator } from './types.ts';
-import { paren, polyEval, polySym, polyTex } from './util.ts';
+import { jo, paren, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'h1-function';
 
@@ -100,7 +99,7 @@ export const generators: Generator[] = [
         steps: [
           {
             title: '뜻 바꾸기',
-            body: `$f^{-1}(${k})=t$ 라 하면 $f(t)=${k}$ ${jo(String(k), '이에요')}.`,
+            body: `$f^{-1}(${k})=t$ 라 하면 $f(t)=${k}$ ${jo(String(k), '이에요/예요')}.`,
           },
           { title: '방정식 세우기', body: `$$${polyTex(f, 't')}=${k}$$` },
           { title: '풀기', body: `$$${a}t=${k - b},\\quad t=${t}$$` },
@@ -133,7 +132,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '역함수 조건 바꾸기',
-              body: `$f^{-1}(${w})=${z}$ 이면 $f(${z})=${w}$ ${jo(String(w), '이에요')}.`,
+              body: `$f^{-1}(${w})=${z}$ 이면 $f(${z})=${w}$ ${jo(String(w), '이에요/예요')}.`,
             },
             {
               title: '두 식 세우기',

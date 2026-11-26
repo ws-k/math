@@ -1,14 +1,8 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd, reduce } from './util.ts';
+import { eul, fracAns, fracTex, gcd, ieyo, reduce, ro } from './util.ts';
 
 const UNIT = 'm3-radical-ops';
-
-// 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다(m1-linear-eq 와 같은 규칙). 숫자가 무작위라 마지막 자리로 고른다.
-// (일·삼·육·칠·팔·영/십 → 받침, 이·사·오·구 → 없음). ㄹ 받침(1·7·8)은 '로'를 쓴다.
-const eul = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '을' : '를');
-const ro = (n: number) => ([0, 3, 6].includes(Math.abs(n) % 10) ? '으로' : '로');
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 const CONCEPT_MUL =
   '$a>0$, $b>0$ 이면 $\\sqrt{a}\\sqrt{b}=\\sqrt{ab}$, $\\frac{\\sqrt{a}}{\\sqrt{b}}=\\sqrt{\\frac{a}{b}}$ 예요.';

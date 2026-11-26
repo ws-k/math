@@ -10,15 +10,19 @@ import {
   texOk,
 } from '../content/check.ts';
 import type { Example } from '../content/types.ts';
+import { answerText } from '../lib/answer.ts';
 import {
+  chainTex,
   fill,
   formatValue,
   RELS,
   relTex,
+  splitChain,
   splitRel,
   spotEquation,
   spotFixed,
   symToTex,
+  texNumber,
   tokenTex,
 } from './format.ts';
 import {
@@ -34,8 +38,8 @@ import {
   rationalStr,
   str,
 } from './parse.ts';
-import { parseSpot, spotFreeVars, texToSym } from './sym.ts';
-import type { NumFormat, Rel, SpotToken } from './types.ts';
+import { hasImag, isLogicSpot, parseSpot, spotFreeVars, texToSym } from './sym.ts';
+import type { NumFormat, Rel, SolveItem, SpotToken } from './types.ts';
 import { widgetDefs } from './widgets/specs.ts';
 
 export interface LessonCtx {
@@ -66,16 +70,20 @@ const NAME_OK = /^[a-z][a-zA-Z0-9]*$/;
 /**
  * 글 속 숫자 가운데 {{…}} 로 넣지 않은 것 — 검산 밖이라 경고로 알린다. 수식($…$)은 덩어리째,
  * 일반 글은 숫자 하나씩(쉼표·소수점 포함) 알린다. 수식 밖 "12,000원" 도 답과 어긋날 수 있는 숫자다.
+ * 셈한 값이 아닌 수는 빼서 경고가 볼 것만 남게 한다(요청 91). 낱말에 붙은 수라도 '사과5개'처럼 셈한 값일 수 있어
+ * 허용 목록만 뺀다(검토 m1): 학년(초1·중2·고1), 물건 이름(빨1·파2), 대문자 이름(P1·A12), 제N사분면, 함정 카드 꼬리표 "함정 N"
  */
+const NOT_COUNTED =
+  /(?<![가-힣A-Za-z])(?:초|중|고|빨|파)\d+|(?<![A-Za-z])[A-Z]+\d+|제\d+사분면|함정 \d+/g;
 function textNumbers(s: string): string[] {
   const out: string[] = [];
-  const src = s.replace(/\{\{\w+\}\}/g, '');
+  const src = s.replace(/\{\{\w+\}\}/g, '').replace(NOT_COUNTED, '');
   const math = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
   for (const m of src.matchAll(math)) {
     const seg = m[1] ?? m[2] ?? '';
     if (/\d/.test(seg)) out.push((m[0] as string).trim());
   }
-  for (const m of src.replace(math, ' ').matchAll(/\d[\d,.]*/g)) out.push(m[0]);
+  for (const m of src.replace(math, ' ').matchAll(/(?<![\d.,])\d[\d,.]*/g)) out.push(m[0]);
   return out;
 }
 
@@ -85,7 +93,15 @@ function* strings(v: unknown): Generator<string> {
   else if (Array.isArray(v)) for (const x of v) yield* strings(x);
   else if (typeof v === 'object' && v !== null) for (const x of Object.values(v)) yield* strings(x);
 }
-const SOLVE_OPT = ['concepts', 'tip', 'hint', 'placeholder'];
+const SOLVE_OPT = [
+  'concepts',
+  'tip',
+  'hint',
+  'placeholder',
+  'answerTex',
+  'choices',
+  'choiceChecks',
+];
 
 /** 등식 "왼쪽=오른쪽" 을 검사하고 그대로 돌려준다(양쪽 다 symToTex 로 그릴 수 있어야 함) */
 function equation(v: unknown, at: string): string {
@@ -128,7 +144,63 @@ function spotRel(v: unknown, at: string, rel: boolean): string {
   return s;
 }
 
-const COMB_RE = /\b(factorial|binomial|ff|Sum)\(/;
+const COMB_RE = /\b(factorial|binomial|ff|Sum|H)\(/;
+
+/**
+ * 식·구간 보기 질문의 형식 규칙(검토 M2·m4). answerCheck 는 문제 조건에서 해 집합·식을 계산하는 식이어야 한다 —
+ * 정답 보기 식을 그대로 베끼거나 집합을 숫자로 적은 것(Interval.open(-3, oo))은 검산이 아무것도 보지 않는다.
+ * 보기들의 미지수 글자가 다르면(x>−3 · y<−3) 해 집합끼리 견주는 뜻이 없다
+ */
+function symChoiceRules(at: string, check: string, syms: string[]) {
+  const c = check.replace(/\s+/g, '');
+  if (syms.includes(c)) fail(`${at} answerCheck`, `정답 보기 식을 그대로 적음 (${check})`);
+  const rest = c.replace(
+    /Interval(\.(open|Lopen|Ropen))?|FiniteSet|Union|Rational|Integer|S\.Reals|oo/g,
+    '',
+  );
+  if (!/[A-Za-z]/.test(rest))
+    fail(
+      `${at} answerCheck`,
+      `해 집합을 그대로 적음 — 문제 조건에서 계산하는 식이어야 함 (${check})`,
+    );
+  const vars = syms.map((s) =>
+    [
+      ...new Set(
+        splitChain(s)
+          .filter((_, k) => k % 2 === 0)
+          .flatMap((x) => [...spotFreeVars(parseSpot(x))]),
+      ),
+    ]
+      .sort()
+      .join(','),
+  );
+  const named = [...new Set(vars.filter(Boolean))];
+  if (named.length > 1) fail(`${at} choices`, `보기마다 미지수 글자가 다름 (${named.join(' / ')})`);
+}
+
+/**
+ * 허수·명제가 든 식의 쓰임 제한(검산기 verify.py 와 같은 규칙). 복소수에는 크기가 없어 부등식이 뜻이 없고, equivalent 는
+ * 실수 해 집합을 견주므로 허수 해(x=i)를 다룰 수 없다. 명제(→·~)는 identity 의 = 로만 견준다(화면은 ⇔, 참·거짓이 늘
+ * 같은가) — 수와 견주거나 해 집합을 구할 수 없어서. 명제 쪽 맞은편은 명제나 글자 하나(~ 를 두 번 붙인 것을 고친 p)
+ */
+function spotKindRules(at: string, mode: string, exprs: string[]) {
+  for (const e of exprs) {
+    const parts = splitRel(e);
+    const sides = parts.length === 3 ? [parts[0], parts[2]] : [parts[0]];
+    if (sides.some(hasImag)) {
+      if (parts.length === 3 && parts[1] !== '=')
+        fail(at, `허수가 든 부등식은 검산하지 않음 (${e})`);
+      if (mode === 'equivalent')
+        fail(at, `허수가 든 식은 해 집합을 견주지 않음(identity·value 로) (${e})`);
+    }
+    const logic = sides.map(isLogicSpot);
+    if (!logic.some(Boolean)) continue;
+    if (mode !== 'identity' || parts[1] !== '=')
+      fail(at, `명제(→·~)는 identity 의 = 로만 견줌 (${e})`);
+    if (sides.some((x, k) => !logic[k] && parseSpot(x).t !== 'var'))
+      fail(at, `명제와 수를 견줄 수 없음 (${e})`);
+  }
+}
 /** ∑ 의 k 처럼 묶인 글자를 뺀, 식에 남는 글자가 있는가 */
 const sideHasVars = (...sides: string[]) => sides.some((x) => spotFreeVars(parseSpot(x)).size > 0);
 
@@ -212,8 +284,12 @@ export function validateLesson(
         const at = `${W} values.${k}`;
         if (!NAME_OK.test(k) || k === 'problems' || k === 'answer') fail(at, '쓸 수 없는 이름');
         const v = obj(rv, at, ['value'], ['check', 'eq']);
-        const value = rationalStr(v.value, `${at} value`);
-        vars[k] = value;
+        // 소수(1.4 · 1.96)는 글에 소수 그대로 넣고, 검산 항목에는 같은 수의 기약분수로 — 검산기의 fraction 답은
+        // a/b 꼴만 읽고, 소수를 그대로 넘기면 부동소수로 읽힐 틈이 생긴다
+        const dec = typeof v.value === 'string' && /^-?\d+\.\d+$/.test(v.value);
+        const shown = dec ? (v.value as string) : rationalStr(v.value, `${at} value`);
+        const value = dec ? (texNumber(`$${shown}$`) as string) : shown;
+        vars[k] = shown;
         const vref = `${unitId}/lesson:값:${k}`;
         if ((v.check === undefined) === (v.eq === undefined)) fail(at, 'check 와 eq 중 하나만');
         if (v.eq !== undefined) {
@@ -320,15 +396,34 @@ export function validateLesson(
           const choices = arr(s.choices, `${at} choices`, 2, 5);
           const answer = int(s.answer, `${at} answer`, 0, choices.length - 1);
           checkExpr(`${at} answerCheck`, s.answerCheck, errors);
+          // 보기 꼴(수·식·글자)은 첫 보기의 칸으로 정하고 모두 같아야 한다 — 섞이면 정답 검산을 한 가지로 못 한다
+          const kindOf = (c: unknown) =>
+            typeof c === 'object' && c !== null && 'sym' in c
+              ? 'sym'
+              : typeof c === 'object' && c !== null && 'text' in c
+                ? 'text'
+                : 'num';
+          const kind = kindOf(choices[0]);
+          if (choices.some((c) => kindOf(c) !== kind))
+            fail(`${at} choices`, '보기 꼴이 섞임(수·식·글자 중 한 가지로)');
+          if (kind !== 'num' && s.format !== undefined)
+            fail(`${at} format`, '표기 규칙은 수 보기에만');
+          if (kind !== 'num' && s.eq !== undefined) fail(`${at} eq`, '식의 해(eq)는 수 보기에만');
           let format: NumFormat = {};
           if (s.format !== undefined) {
-            const f = obj(s.format, `${at} format`, [], ['digits', 'unit', 'approx']);
+            const f = obj(s.format, `${at} format`, [], ['digits', 'unit', 'approx', 'pi']);
             if (f.approx !== undefined && f.approx !== true) fail(`${at} approx`, 'true 만');
             if (f.approx && f.digits === undefined) fail(`${at} approx`, '근삿값은 digits 필요');
+            if (f.pi !== undefined && f.pi !== true) fail(`${at} pi`, 'true 만');
+            // π 보기의 value 는 계수라 근삿값 보기(값 자체를 반올림)·식의 해(값이 해인가)와 뜻이 맞지 않는다
+            if (f.pi && f.approx) fail(`${at} pi`, 'π 보기는 근삿값(approx)과 함께 쓰지 않음');
+            if (f.pi && s.eq !== undefined)
+              fail(`${at} pi`, 'π 보기는 식의 해(eq)와 함께 쓰지 않음');
             format = {
               ...(f.digits !== undefined ? { digits: int(f.digits, `${at} digits`, 0, 6) } : {}),
               ...(f.unit !== undefined ? { unit: str(f.unit, `${at} unit`) } : {}),
               ...(f.approx ? { approx: true as const } : {}),
+              ...(f.pi ? { pi: true as const } : {}),
             };
           }
           const digits = format.digits ?? 0;
@@ -343,19 +438,46 @@ export function validateLesson(
           const labels = new Set<string>();
           const checks: string[] = [];
           const values: string[] = [];
+          /** 식 보기의 식 · 글자 보기의 조건 */
+          const syms: string[] = [];
+          const whens: string[] = [];
           choices.forEach((rc, ci) => {
             const ca = `${at} 보기${ci + 1}`;
-            const c = obj(rc, ca, ['value', 'check'], ['feedback']);
-            const value = choiceValue(c.value, `${ca} value`);
-            values.push(value);
-            checkExpr(`${ca} check`, c.check, errors);
-            const fb = optStr(c.feedback, `${ca} feedback`);
+            let label = '';
+            if (kind === 'sym') {
+              const c = obj(rc, ca, ['sym'], ['feedback']);
+              const sym = str(c.sym, `${ca} sym`).replace(/\s+/g, '');
+              try {
+                label = chainTex(sym);
+              } catch (e) {
+                fail(`${ca} sym`, (e as Error).message);
+              }
+              syms.push(sym);
+            } else if (kind === 'text') {
+              const c = obj(rc, ca, ['text', 'when'], ['feedback']);
+              label = str(c.text, `${ca} text`);
+              text(`${ca} 글자`, label);
+              const when = str(c.when, `${ca} when`);
+              // v 가 없는 조건(1>0)은 answerCheck 와 상관없이 늘 같은 참·거짓 — 정답을 손으로 박은 셈이다(검토 M2)
+              if (!/(?<![\w.])v(?!\w)/.test(when))
+                fail(`${ca} when`, `answerCheck 의 값 v 를 쓰는 조건이어야 함 (${when})`);
+              whens.push(when);
+            } else {
+              const c = obj(rc, ca, ['value', 'check'], ['feedback']);
+              const value = choiceValue(c.value, `${ca} value`);
+              values.push(value);
+              checkExpr(`${ca} check`, c.check, errors);
+              // π 보기는 검산식을 (식)/pi 로 감싸 견주는데, 여러 줄(ans = …)이면 감쌀 수 없다(검토 m5)
+              if (format.pi && String(c.check).includes('\n'))
+                fail(`${ca} check`, 'π 보기의 검산식은 한 줄로(π 로 나눠 견주려고 식째 감싼다)');
+              label = formatValue(value, format);
+              checks.push(String(c.check));
+            }
+            const fb = optStr((rc as Obj).feedback, `${ca} feedback`);
             if (ci !== answer && fb === undefined) fail(ca, '오답 보기에는 feedback 필수');
             text(`${ca} feedback`, fb);
-            const label = formatValue(value, format);
             if (labels.has(label)) fail(ca, `다른 보기와 글자가 같음 (${label})`);
             labels.add(label);
-            checks.push(String(c.check));
           });
           text(`${at} reveal`, str(s.reveal, `${at} reveal`));
           if (s.thoughts !== undefined)
@@ -363,6 +485,18 @@ export function validateLesson(
               text(`${at} 생각${i + 1}`, str(t, `${at} thoughts${i + 1}`));
             });
           text(`${at} conclude`, optStr(s.conclude, `${at} conclude`));
+          if (kind !== 'num') {
+            // 식·글자 보기는 보기마다 값 항목이 없다 — 보기 식(조건) 전체를 정답 검산 한 항목이 본다
+            const base = { ref: ref(id), unit: unitId, answer: String(answer + 1) };
+            const check = String(s.answerCheck);
+            if (kind === 'sym') symChoiceRules(at, check, syms);
+            items.push(
+              kind === 'sym'
+                ? { ...base, kind: 'choicesym', check, choices: syms }
+                : { ...base, kind: 'choicewhen', check, whens },
+            );
+            break;
+          }
           const main: AnswerCheck = {
             ref: ref(id),
             unit: unitId,
@@ -374,7 +508,9 @@ export function validateLesson(
           items.push(main);
           values.forEach((value, ci) => {
             const r = ref(id, `보기${ci + 1}`);
-            const check = checks[ci] as string;
+            const c0 = checks[ci] as string;
+            // π 보기의 value 는 π 의 계수 — 검산식 값을 π 로 나눠 견준다(36π 를 보이면 검산값도 36π)
+            const check = format.pi ? `(${c0})/pi` : c0;
             items.push(
               format.approx
                 ? { ref: r, unit: unitId, kind: 'approx', expr: check, value, digits }
@@ -501,6 +637,7 @@ export function validateLesson(
             // 고친 식 = bad 토큰만 바꿔 끼운 식. 고친 식을 따로 받으면 bad 표시를 엉뚱한 토큰에 달아도 통과한다
             const fixed = spotRel(spotEquation(spotFixed(tokens, fixSym)), `${ia} 고친 식`, !value);
             tokensFaithful(spotFixed(tokens, fixSym), `${ia} 고친 토큰`);
+            spotKindRules(ia, mode, [...(from !== undefined ? [from] : []), wrong, fixed]);
             if (check !== undefined && check.replace(/\s+/g, '') === fixed)
               fail(
                 `${ia} check`,
@@ -533,10 +670,55 @@ export function validateLesson(
             if (!ID_OK.test(iid)) fail(`${ia} id`, `영문 소문자·숫자·- 만 (${iid})`);
             if (itemIds.has(iid)) fail(`${ia} id`, `중복 (${iid})`);
             itemIds.add(iid);
-            oneOf(e.answerType, `${ia} answerType`, ['int', 'fraction'] as const);
+            const type = oneOf(e.answerType, `${ia} answerType`, [
+              'int',
+              'fraction',
+              'choice',
+            ] as const);
             checkAnswerShape(ia, e, errors);
+            const ex = e as Example & { answerTex?: unknown };
+            /** 객관식 보기 글자 = 보기 검산값 항목(정답 검산 항목 뒤에 둔다) */
+            const choiceItems: CheckItem[] = [];
+            if (type !== 'choice' && (e.choices != null || e.choiceChecks !== undefined))
+              fail(ia, '보기(choices)는 객관식(answerType: choice)에만');
+            if (type === 'choice') {
+              // 보기 글자는 손으로 적는 TeX 라, 수 하나만 받아 그 보기 검산값과 같은 수인지 항목으로 대조한다
+              // (글자 보기가 필요하면 질문 장면의 글자 보기로). 정답은 보기 번호라 정답 표기는 두지 않는다
+              if (ex.answerTex !== undefined)
+                fail(`${ia} answerTex`, '객관식은 정답 표기 없이 보기 번호로');
+              (e.choices ?? []).forEach((c, k) => {
+                const v = texNumber(String(c));
+                if (v === null)
+                  fail(`${ia} 보기${k + 1}`, `수 하나($…$)만 적은 보기가 아님 (${String(c)})`);
+                const check = e.choiceChecks?.[k];
+                if (check !== undefined)
+                  choiceItems.push({
+                    ref: ref(id, `${iid}:보기${k + 1}`),
+                    unit: unitId,
+                    answer: v as string,
+                    answerType: 'fraction',
+                    check,
+                  });
+              });
+            } else if (ex.answerTex !== undefined) {
+              // 0.8185 를 1637/2000 대신 보이는 표기 — 검산한 답과 같은 수여야 한다(보이는 값 = 검산한 값)
+              const tex = str(ex.answerTex, `${ia} answerTex`);
+              // 답은 정수·기약분수 글자(checkAnswerShape·검산기가 본다)라 texNumber 의 기약분수 글자와 그대로 견준다
+              if (texNumber(tex) !== e.answer)
+                fail(`${ia} answerTex`, `답 ${e.answer} 과 같은 수를 적은 표기가 아님 (${tex})`);
+            }
             // 레슨은 문제·힌트·풀이 단계 모두 강조 표기(**)를 살려 그린다. {{answer}} 는 이 문제의 검산된 답
-            const own = { answer: e.answer };
+            // (정답 표기가 있으면 그 표기, 객관식이면 보기 번호 ①~⑤ — 화면 SolveCard 와 같은 함수)
+            const own = { answer: answerText(e as SolveItem) };
+            // 정답 표기($0.8185$)·보기 번호(④)는 수식 글자가 아니라 수식 안에 들어가면 깨진다 — KaTeX 오류로
+            // 흐리게 나오기 전에 까닭을 밝힌다(검토 m6)
+            if (own.answer !== e.answer)
+              for (const t of [e.q, e.hint, e.tip, ...e.steps.flatMap((st) => [st.title, st.body])])
+                if (typeof t === 'string' && /\$[^$]*\{\{answer\}\}[^$]*\$/.test(t))
+                  fail(
+                    ia,
+                    '정답 표기·객관식은 {{answer}} 를 수식 밖에 써야 함($…$ 안에 넣으면 깨짐)',
+                  );
             text(`${ia} 문제`, e.q, own);
             text(`${ia} hint`, optStr(e.hint, `${ia} hint`), own);
             e.steps.forEach((st, si) => {
@@ -546,7 +728,7 @@ export function validateLesson(
             text(`${ia} 팁`, e.tip, own);
             for (const c of e.concepts ?? []) text(`${ia} 개념`, c, own);
             optStr(e.placeholder, `${ia} placeholder`);
-            items.push(answerItem(ref(id, iid), unitId, e));
+            items.push(answerItem(ref(id, iid), unitId, e), ...choiceItems);
             solveCount++;
           });
           break;

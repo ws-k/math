@@ -54,16 +54,23 @@ export interface RichOptions {
 }
 
 /**
- * 글 조각 하나 안의 강조 표기를 바꾼다. 짝은 같은 글 조각 안에서만 찾는다 — 수식($…$)을 사이에 두고
+ * 글 조각 하나 안의 강조 표기를 바꾼다. 굵게(**)의 짝은 같은 글 조각 안에서만 찾는다 — 수식($…$)을 사이에 두고
  * 열고 닫으면 KaTeX 결과 HTML 을 태그가 가로질러 깨지므로 거부한다(strict). 남은 기호가 있으면 짝이 안 맞은 것.
+ * 강조(==)는 문장 속 수식을 사이에 두고 열고 닫을 수 있다(요청 23): 여는 칸·닫는 칸이 수식 덩어리 바깥 글 조각에
+ * 있어 KaTeX HTML 을 통째로 감쌀 뿐 가로지르지 않는다. 그래서 짝을 글 조각 너머까지 센다(hl 이 열린 채 넘어감)
  */
-function emphasize(html: string, strict: boolean): string {
-  const out = html
-    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-    .replace(/==(.+?)==/g, '<span class="hl">$1</span>');
-  if (strict && (out.includes('**') || out.includes('==')))
+function emphasize(html: string, strict: boolean, state: { hl: boolean }): string {
+  const out = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  if (strict && out.includes('**'))
     throw new Error(`강조 표기 짝이 안 맞거나 수식 경계를 넘음: ${html.slice(0, 40)}`);
-  return out;
+  return out
+    .split('==')
+    .map((p, k) => {
+      if (k === 0) return p;
+      state.hl = !state.hl;
+      return `${state.hl ? '<span class="hl">' : '</span>'}${p}`;
+    })
+    .join('');
 }
 
 /** 글+수식 문자열을 HTML 로. strict 이면 수식 오류에서 예외를 던진다(검산 단계용). */
@@ -71,11 +78,15 @@ export function renderRich(src: string, strict = false, opt: RichOptions = {}): 
   const key = `${strict ? '!' : ''}${opt.emph ? '*' : ''}|${src}`;
   const hit = cache.get(key);
   if (hit !== undefined) return hit;
+  const state = { hl: false };
   const parts = splitMath(src).map((s) => {
     if (s.type === 'text') {
       const t = escapeHtml(s.value).replace(/\n/g, '<br>');
-      return { inline: false, html: opt.emph ? emphasize(t, strict) : t };
+      return { inline: false, html: opt.emph ? emphasize(t, strict, state) : t };
     }
+    // 가운데 수식($$…$$)은 줄 하나를 차지하는 덩어리라 문장 속 강조 칸 안에 둘 수 없다
+    if (strict && state.hl && s.type === 'display')
+      throw new Error(`강조 표기 안에 가운데 수식: ${src.slice(0, 40)}`);
     const html = katex.renderToString(s.value, {
       displayMode: s.type === 'display',
       throwOnError: strict,
@@ -99,7 +110,10 @@ export function renderRich(src: string, strict = false, opt: RichOptions = {}): 
     if (next && r) next.html = next.html.slice(r.length);
     p.html = `<span class="mglue">${l}${p.html}${r}</span>`;
   });
-  const html = parts.map((p) => p.html).join('');
+  if (state.hl && strict)
+    throw new Error(`강조 표기 짝이 안 맞거나 수식 경계를 넘음: ${src.slice(0, 40)}`);
+  // 검사를 거친 글은 짝이 맞는다. 혹시 열린 채 끝나면 닫아 뒤 화면까지 강조가 번지지 않게
+  const html = parts.map((p) => p.html).join('') + (state.hl ? '</span>' : '');
   if (cache.size > 2000) cache.clear();
   cache.set(key, html);
   return html;

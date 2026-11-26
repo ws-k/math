@@ -1,7 +1,7 @@
 // 레슨 화면 글자를 데이터에서 만들어 내는 순수 함수들. 검사기와 화면이 같은 함수를 써야
 // "검산한 값 = 보이는 값"이 보장된다.
-import { reduce, spotContinuationTex, spotTex } from './sym.ts';
-import type { Lesson, NumFormat, Rel, SpotToken } from './types.ts';
+import { isLogicSpot, reduce, spotContinuationTex, spotTex } from './sym.ts';
+import type { Choice, Lesson, NumFormat, Rel, SpotToken } from './types.ts';
 
 const MINUS = '−';
 
@@ -39,7 +39,27 @@ export function formatValue(value: string, f: NumFormat): string {
   }
   // 반올림해서 0 이 되면(−0.3 → 0) 부호를 붙이지 않는다 — "−0" 은 다른 수처럼 보인다
   const zero = !/[1-9]/.test(body);
+  // π 의 계수 1 은 적지 않는다(1π 가 아니라 π). 0 은 π 를 붙이면 다른 수처럼 보여 0 그대로.
+  // 분수 계수는 π 를 분자에 둔다(4π/3 · π/3 — 4/3π 는 4/(3π) 로도 읽혀서. 검토 M4, PM 기본값)
+  if (f.pi && !zero) {
+    const [num, den] = body.split('/') as [string, string | undefined];
+    const top = num === '1' ? 'π' : `${num}π`;
+    body = den === undefined ? top : `${top}/${den}`;
+  }
   return (neg && !zero ? MINUS : '') + body + (f.unit ?? '');
+}
+
+/**
+ * 보기 하나의 화면 글자. 수는 formatValue 글자(NumLabel 로 그림), 식은 KaTeX, 글자는 그대로(LRich 로 그림).
+ * 형식 검사(schema.ts)와 화면(Scenes.tsx)이 같은 함수를 써서 '다른 보기와 글자가 같음' 검사가 화면 글자 그대로 본다
+ */
+export function choiceLabel(
+  c: Choice,
+  f: NumFormat,
+): { num: string } | { tex: string } | { text: string } {
+  if ('value' in c) return { num: formatValue(c.value, f) };
+  if ('sym' in c) return { tex: chainTex(c.sym.replace(/\s+/g, '')) };
+  return { text: c.text };
 }
 
 /**
@@ -48,8 +68,37 @@ export function formatValue(value: string, f: NumFormat): string {
  * 크롬은 수와 단위를 한 낱말로 봐 칸 밖으로 넘쳤다. 수로 시작하지 않으면 null
  */
 export function numSplit(text: string): [string, string] | null {
-  const m = /^([−-]?\d[\d,]*(?:[./]\d+)?)(.*)$/s.exec(text);
+  // π 보기의 π 는 수에 붙은 덩어리 — 36 과 π, 4π 와 /3 사이에서 줄이 바뀌면 다른 수처럼 보인다
+  const m = /^([−-]?\d[\d,]*(?:\.\d+)?(?:\/\d+|π\/\d+|π)?)(.*)$/s.exec(text);
   return m ? [m[1] as string, m[2] as string] : null;
+}
+
+/**
+ * 수 하나만 적은 TeX 글자($−3$ · $2.5$ · $\frac{3}{4}$ · $1\frac{1}{2}$)의 값을 기약분수 글자("3/2")로. 다른 꼴이면 null.
+ * 직접 풀기의 객관식 보기·정답 표기(answerTex)는 손으로 적는 글자라, 이것으로 검산한 수와 같은 수인지 대조한다
+ */
+export function texNumber(s: string): string | null {
+  // 정수 자리: 0 이거나 0 이 아닌 수로 시작(03 같은 꼴은 손으로 적다 틀린 것), 천 단위 {,} 는 세 자리씩(검토 m7)
+  const int = String.raw`(?:0|[1-9]\d{0,2}(?:\{,\}\d{3})+|[1-9]\d*)`;
+  const re = new RegExp(
+    String.raw`^\$(-?)(?:(${int}(?:\.\d+)?)|([1-9]\d*)?\\d?frac\{(\d+)\}\{(\d+)\})\$$`,
+  );
+  const m = re.exec(s.trim());
+  if (!m) return null;
+  const [, sign, dec, whole, num, den] = m;
+  let n: bigint;
+  let d: bigint;
+  if (dec !== undefined) [n, d] = rational(dec.replace(/\{,\}/g, ''));
+  else {
+    d = BigInt(den as string);
+    if (d === 0n) return null;
+    // 대분수의 분수 부분은 진분수여야 한다(1⁵⁄₂ 는 대분수가 아님)
+    if (whole !== undefined && BigInt(num as string) >= d) return null;
+    n = BigInt(whole ?? '0') * d + BigInt(num as string);
+    [n, d] = reduce(n, d);
+  }
+  if (sign) n = -n;
+  return d === 1n ? `${n}` : `${n}/${d}`;
 }
 
 /** 글 속 {{이름}} 을 값으로. 모르는 이름은 오류(검사 단계에서 잡히게) */
@@ -114,12 +163,49 @@ export function splitRel(s: string): [string, Rel, string] | [string] {
   return [l, ops[0] as Rel, r];
 }
 
-/** spot 식("왼쪽 관계 오른쪽", 또는 관계 없는 식) → KaTeX. 등식은 예전 화면과 같은 글자(양쪽을 따로 그려 = 로 잇기) */
+/**
+ * spot 식("왼쪽 관계 오른쪽", 또는 관계 없는 식) → KaTeX. 등식은 예전 화면과 같은 글자(양쪽을 따로 그려 = 로 잇기).
+ * 명제끼리의 = 는 ⇔ 로 그린다 — 검산기는 '참·거짓이 늘 같은가'를 보는데 p→q = ~q→~p 는 수의 등식처럼 읽힌다
+ */
 export function relTex(s: string): string {
   const parts = splitRel(s);
   if (parts.length === 1) return spotTex(parts[0]);
   const [l, op, r] = parts;
-  return `${spotTex(l)}${REL_TEX[op]}${spotTex(r)}`;
+  const sign = op === '=' && (isLogicSpot(l) || isLogicSpot(r)) ? '\\Leftrightarrow ' : REL_TEX[op];
+  return `${spotTex(l)}${sign}${spotTex(r)}`;
+}
+
+const ineqDir = (r: string) => (r[0] === '<' ? '<' : r[0] === '>' ? '>' : '=');
+
+/**
+ * 식·구간 보기용: splitRel 에 더해 같은 방향 부등호 둘로 이어 쓴 부등식(−1<x≤3)도 [식, 관계, 식, 관계, 식] 으로.
+ * 방향이 엇갈리면(1<x>3) 구간 하나로 읽을 수 없어 예외. 틀린 곳 찾기 식은 이어 쓴 꼴을 아직 검산하지 않아 splitRel 그대로
+ */
+export function splitChain(s: string): string[] {
+  const ops = s.match(new RegExp(REL_RE.source, 'g')) ?? [];
+  if (ops.length < 2) return splitRel(s);
+  const [a, b] = ops as [string, string];
+  if (ops.length > 2 || ineqDir(a) === '=' || ineqDir(a) !== ineqDir(b))
+    throw new Error(`이어 쓴 부등식은 같은 방향 부등호 둘까지: ${s}`);
+  const [l, m, r] = s.split(REL_RE) as [string, string, string];
+  return [l, a, m, b, r];
+}
+
+/** 이어 쓴 부등식까지 그리는 relTex(식·구간 보기 글자) */
+export function chainTex(s: string): string {
+  const parts = splitChain(s);
+  if (parts.length < 5) return relTex(s);
+  return parts.map((x, k) => (k % 2 ? REL_TEX[x as Rel] : spotTex(x))).join('');
+}
+
+/** 틀린 곳 찾기 토큰 사이 등호 자리의 글자(누를 수 없는 칸). 명제끼리면 relTex 와 같게 ⇔ */
+// 토큰 하나씩이 아니라 이어 붙인 쪽 전체로 본다 — '*3'·'÷2' 처럼 앞 토큰에 이어지는 조각은 혼자 식이 아니라
+// 토큰마다 읽으면 화면이 예외로 죽는다(검토 C1). 명제는 식 전체로만 쓰여(sym.ts logicOnly) 쪽 단위로 판정해도 같다
+export function spotEqSign(tokens: SpotToken[]): '=' | '⇔' {
+  const parts = splitRel(spotEquation(tokens));
+  return parts.length === 3 && parts[1] === '=' && (isLogicSpot(parts[0]) || isLogicSpot(parts[2]))
+    ? '⇔'
+    : '=';
 }
 
 /** 레슨 글의 {{이름}} 값: 연습문제 수 + 레슨 values(검산된 값). 화면과 검사기가 같이 쓴다 */

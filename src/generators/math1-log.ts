@@ -1,17 +1,11 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex } from './util.ts';
+import { fracAns, fracTex, ieyo } from './util.ts';
 
 const UNIT = 'math1-log';
 
 // 로그 계산은 "지수로 바꾸면 몇 번 곱했나"가 뿌리라, 풀이 첫 단계는 늘 진수를 밑의 거듭제곱으로
 // 적는 것이다. 검산식은 sympy log(진수, 밑) 에 화면 숫자를 그대로 넣고, sympy 가 log(8)/log(4) 처럼
 // 정리하지 않고 남기는 경우가 있어 simplify 로 감싼다(답이 유리수인지 판정하려면 정리된 값이 필요).
-
-// '이에요/예요'는 앞 소리 받침으로 갈린다. 분수는 분자가 마지막에 읽혀서 분자 끝 숫자로 고른다.
-const ieyo = (v: string | number) => {
-  const s = String(v).replace(/^-?\\frac\{(\d+)\}\{\d+\}$/, '$1');
-  return /[013678]$/.test(s) ? '이에요' : '예요';
-};
 
 const DEF = '$a^x=N \\Leftrightarrow x=\\log_a N$ (밑 $a$ 를 몇 번 곱해야 $N$ 인가)';
 const SUM = '$\\log_a M+\\log_a N=\\log_a MN$';

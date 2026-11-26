@@ -23,12 +23,14 @@ type Scene =
  | Base & { kind:'intro'; meta?: string[] }
  | Base & { kind:'question'; widget?: WidgetSpec; choices:{label:string; check:string; feedback?:string}[];
             answer:number; answerCheck:string; reveal:string; thoughts?:string[] }
+// 보기의 실제 형식은 types.ts 의 Choice(3-바): 수 {value,check}(format.pi 면 π 의 계수) · 식·구간 {sym}(정답 보기만
+// answerCheck 의 해 집합·식과 같아야 함, 검산 kind choicesym) · 글자 {text,when}(answerCheck 값 v 에 대한 조건, kind choicewhen)
  | Base & { kind:'explore'; widget: WidgetSpec; gate?: boolean }      // 손으로 해 보기, 지름길
  | Base & { kind:'terms'; terms:{term:string; body:string}[]; aside?:string }
  | Base & { kind:'spot'; items: SpotItem[] }                          // 틀린 곳 찾기
  | Base & { kind:'solve'; items: (Example & { placeholder?:string })[] } // 기존 Example 재사용
  | Base & { kind:'summary'; points:string[]; next?:string }
-// 실제 형식은 src/lesson/types.ts 의 SpotItem(2-마 에서 넓힘). 토큰은 TeX 가 아니라 sympy 식(sym)이고,
+// 실제 형식은 src/lesson/types.ts 의 SpotItem(2-마 에서 넓힘, 3-바 에서 기호 2차: 허수 I · H · rad(°) · d/dt · →·~). 토큰은 TeX 가 아니라 sympy 식(sym)이고,
 // 검산 식은 따로 적지 않고 토큰을 이어 붙여 만든다(고친 식 = bad 토큰 자리에 fix.sym)
 interface SpotItem { prompt:string; mode:'identity'|'equivalent'|'value'; from?:string; check?:string;
   tokens:({sym:string; bad?:true} | {sep:'='|'<'|'>'|'<='|'>='; bad?:true})[]; fix:{sym:string; body:string} }

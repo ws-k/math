@@ -1,15 +1,11 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polySym, polyTex } from './util.ts';
+import { fracAns, fracTex, ieyo, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'h1-quadratic-eq';
 
 // 이 단원은 "근을 직접 구하지 않고 계수만 보고 안다"가 핵심이라, 풀이는 늘 판별식·근과 계수의 관계로 쓴다.
 // 반대로 검산식은 근을 sympy 로 실제로 구해(허근 포함) 계산한다 — 풀이와 다른 길로 같은 답이 나와야
 // 부호(α+β=−b/a)나 2αβ 를 빠뜨린 생성 코드가 검산에서 걸린다.
-
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (숫자는 일·삼·육·칠·팔·영/십이 받침이 있다).
-const ieyo = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이에요' : '예요');
 
 const DISC =
   '판별식 $D=b^2-4ac$: $D>0$ 이면 서로 다른 두 실근, $D=0$ 이면 중근, $D<0$ 이면 서로 다른 두 허근';

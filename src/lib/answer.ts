@@ -2,7 +2,16 @@ import type { AnswerType } from '../content/types.ts';
 
 export type Verdict = 'correct' | 'wrong' | 'invalid' | 'unknown';
 
-const CIRCLED = '①②③④⑤';
+/** 객관식 보기 번호 글자. 문제 화면·레슨·채점이 같은 글자를 쓴다 */
+export const CIRCLED = '①②③④⑤';
+
+/**
+ * 보여 줄 답 글자: 정답 표기(answerTex)가 있으면 그것, 객관식이면 보기 번호 ①~⑤, 아니면 답 그대로.
+ * 문제 화면의 '정답 보기'·레슨 글의 {{answer}}·형식 검사가 이 한 함수를 써야 검사한 글자가 화면 글자다(검토 M5)
+ */
+export const answerText = (p: { answer: string; answerType: AnswerType; answerTex?: string }) =>
+  p.answerTex ??
+  (p.answerType === 'choice' ? (CIRCLED[Number(p.answer) - 1] ?? p.answer) : p.answer);
 
 function normalize(s: string): string {
   return s.trim().replace(/[−–—]/g, '-').replace(/\s+/g, ' ');

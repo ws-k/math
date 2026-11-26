@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { paren } from './util.ts';
+import { eul, eun, ieyo, paren } from './util.ts';
 
 const UNIT = 'math1-induction';
 
@@ -10,20 +10,12 @@ const UNIT = 'math1-induction';
 /** "+3" / "-3" — 식 뒤에 상수를 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
 
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (일·삼·육·칠·팔·영/십·백은 받침, 이·사·오·구는 받침 없음).
-const batchim = (n: number | string) => /[013678]$/.test(String(n));
-const ieyo = (n: number | string) => (batchim(n) ? '이에요' : '예요');
-const eun = (n: number | string) => (batchim(n) ? '은' : '는');
-const eul = (n: number | string) => (batchim(n) ? '을' : '를');
-
 const REC = '귀납적 정의: 첫째항과 $a_{n+1}$ 을 $a_n$ 으로 나타낸 식(점화식)으로 수열을 정해요.';
 const ARITH = '$a_{n+1}=a_n+d$ 꼴이면 공차가 $d$ 인 등차수열: $a_n=a_1+(n-1)d$';
 const GEO = '$a_{n+1}=ra_n$ 꼴이면 공비가 $r$ 인 등비수열: $a_n=a_1r^{n-1}$';
 
-// 점화식 뒤 조사: 끝이 a_n('엔')이면 받침이 있어 '을'
 const head = (a1: number, rule: string) =>
-  `수열 $\\{a_n\\}$ 이 $a_1=${a1}$ 이고, 모든 자연수 $n$ 에 대하여 $${rule}$ ${/n$/.test(rule) ? '을' : eul(rule)} 만족시켜요.`;
+  `수열 $\\{a_n\\}$ 이 $a_1=${a1}$ 이고, 모든 자연수 $n$ 에 대하여 $${rule}$ ${eul(rule)} 만족시켜요.`;
 
 /** 검산식: 첫째항에서 점화식을 (k-1)번 그대로 돌린다. 일반항 공식을 쓰지 않아 풀이와 독립이다 */
 const loopCheck = (a1: number, step: string, k: number) =>

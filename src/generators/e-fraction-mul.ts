@@ -1,22 +1,9 @@
 import type { Step } from '../content/types.ts';
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex, gcd, reduce } from './util.ts';
+import { fracAns, fracTex, gcd, jo, reduce } from './util.ts';
 
 const UNIT = 'e-fraction-mul';
-
-// 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다(3 '삼'→으로, 2 '이'→로). 숫자가 무작위라 마지막 자리로 고른다.
-// e-fraction-addsub 에도 같은 함수가 있지만 그 파일은 내보내지 않고, 공용 util.ts 는 단원 작성 범위 밖이라
-// 여기서 내보내 분수의 나눗셈·소수 단원이 함께 쓴다(셋째 복사본을 만들지 않으려고).
-const BATCHIM = new Set(['0', '1', '3', '6', '7', '8']);
-const RIEUL = new Set(['1', '7', '8']);
-export type Pair = '은는' | '이가' | '을를' | '과와' | '으로로' | '이에요예요';
-export function j(n: number | string, pair: Pair): string {
-  const last = String(n).slice(-1);
-  if (pair === '으로로') return BATCHIM.has(last) && !RIEUL.has(last) ? '으로' : '로';
-  if (pair === '이에요예요') return BATCHIM.has(last) ? '이에요' : '예요';
-  return BATCHIM.has(last) ? pair.slice(0, 1) : pair.slice(1);
-}
 
 export const f = (n: number | string, d: number | string) => `\\frac{${n}}{${d}}`;
 export const mixedTex = (w: number, n: number, d: number) => (w === 0 ? f(n, d) : `${w}${f(n, d)}`);
@@ -51,9 +38,9 @@ export function mulSteps(
   if (g1 > 1 || g2 > 1) {
     const parts: string[] = [];
     if (g1 > 1)
-      parts.push(`$${p1}$${j(p1, '과와')} $${q2}$${j(q2, '을를')} $${g1}$${j(g1, '으로로')}`);
+      parts.push(`$${p1}$${jo(p1, '과/와')} $${q2}$${jo(q2, '을/를')} $${g1}$${jo(g1, '으로/로')}`);
     if (g2 > 1)
-      parts.push(`$${p2}$${j(p2, '과와')} $${q1}$${j(q1, '을를')} $${g2}$${j(g2, '으로로')}`);
+      parts.push(`$${p2}$${jo(p2, '과/와')} $${q1}$${jo(q1, '을/를')} $${g2}$${jo(g2, '으로/로')}`);
     a = p1 / g1;
     d = q2 / g1;
     c = p2 / g2;
@@ -80,7 +67,7 @@ export function finish(n: number, d: number, steps: Step[]): { answer: string; a
   if (g > 1) {
     steps.push({
       title: '약분하기',
-      body: `분자와 분모를 둘의 최대공약수 $${g}$${j(g, '으로로')} 나눠요.\n$$${f(n, d)}=${fracTex(r.n, r.d)}$$`,
+      body: `분자와 분모를 둘의 최대공약수 $${g}$${jo(g, '으로/로')} 나눠요.\n$$${f(n, d)}=${fracTex(r.n, r.d)}$$`,
     });
   }
   if (r.d > 1 && r.n > r.d) {
@@ -98,7 +85,7 @@ export function finish(n: number, d: number, steps: Step[]): { answer: string; a
 export function toImproper(w: number, a: number, d: number): Step {
   return {
     title: '대분수를 가분수로 바꾸기',
-    body: `자연수 $${w}$${j(w, '은는')} $${f(w * d, d)}$${j(w * d, '이에요예요')}. 분수 부분과 합쳐요.\n$$${mixedTex(w, a, d)}=${f(`${w}\\times${d}+${a}`, d)}=${f(w * d + a, d)}$$`,
+    body: `자연수 $${w}$${jo(w, '은/는')} $${f(w * d, d)}$${jo(w * d, '이에요/예요')}. 분수 부분과 합쳐요.\n$$${mixedTex(w, a, d)}=${f(`${w}\\times${d}+${a}`, d)}=${f(w * d + a, d)}$$`,
   };
 }
 
@@ -114,7 +101,7 @@ function mulWhole(rng: Rng): GenProblem {
     const steps: Step[] = [
       {
         title: '자연수는 분자에만 곱하기',
-        body: `자연수 $${n}$${j(n, '은는')} 분모가 1인 분수 $${f(n, 1)}$${j(n, '이에요예요')}. 분모 1은 곱해도 그대로라 분자에만 곱해요.\n$$${expr}=${f(`${a}\\times${n}`, d)}=${f(a * n, d)}$$`,
+        body: `자연수 $${n}$${jo(n, '은/는')} 분모가 1인 분수 $${f(n, 1)}$${jo(n, '이에요/예요')}. 분모 1은 곱해도 그대로라 분자에만 곱해요.\n$$${expr}=${f(`${a}\\times${n}`, d)}=${f(a * n, d)}$$`,
       },
     ];
     const { answer, answerTex } = finish(a * n, d, steps);
@@ -199,7 +186,7 @@ function mulMixed(rng: Rng): GenProblem {
         '자연수끼리, 분수끼리 따로 곱하면 안 돼요. 대분수는 자연수와 분수의 덧셈이라서요.',
       ],
       steps,
-      tip: `자연수끼리 곱하고 분수끼리 곱하면 틀려요. $${left}$${j(a1, '은는')} $${w1}+${f(a1, d1)}$이라서 곱할 조각이 더 있어요.`,
+      tip: `자연수끼리 곱하고 분수끼리 곱하면 틀려요. $${left}$${jo(a1, '은/는')} $${w1}+${f(a1, d1)}$이라서 곱할 조각이 더 있어요.`,
     };
   }
 }

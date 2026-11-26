@@ -1,22 +1,9 @@
 import type { Step } from '../content/types.ts';
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex, gcd, lcm, reduce } from './util.ts';
+import { fracAns, fracTex, gcd, jo, lcm, reduce } from './util.ts';
 
 const UNIT = 'e-fraction-addsub';
-
-// 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다(3 '삼'→으로, 2 '이'→로).
-// 숫자가 무작위라 조사를 박아 두면 "3로", "2은" 같은 글이 나오므로 마지막 자리로 고른다.
-// 분수는 "4분의 3"처럼 분자를 마지막에 읽으므로 분자를 넘긴다.
-const BATCHIM = new Set(['0', '1', '3', '6', '7', '8']);
-const RIEUL = new Set(['1', '7', '8']);
-type Pair = '은는' | '이가' | '을를' | '과와' | '으로로' | '이에요예요';
-function j(n: number, pair: Pair): string {
-  const last = String(n).slice(-1);
-  if (pair === '으로로') return BATCHIM.has(last) && !RIEUL.has(last) ? '으로' : '로';
-  if (pair === '이에요예요') return BATCHIM.has(last) ? '이에요' : '예요';
-  return BATCHIM.has(last) ? pair.slice(0, 1) : pair.slice(1);
-}
 
 const f = (n: number | string, d: number | string) => `\\frac{${n}}{${d}}`;
 const mixedTex = (w: number, n: number, d: number) => (w === 0 ? f(n, d) : `${w}${f(n, d)}`);
@@ -41,7 +28,7 @@ function finish(n: number, d: number, steps: Step[]): { answer: string; answerTe
   if (g > 1) {
     steps.push({
       title: '약분하기',
-      body: `분자와 분모를 둘의 최대공약수 $${g}$${j(g, '으로로')} 나눠요.\n$$${f(n, d)}=${fracTex(r.n, r.d)}$$`,
+      body: `분자와 분모를 둘의 최대공약수 $${g}$${jo(g, '으로/로')} 나눠요.\n$$${f(n, d)}=${fracTex(r.n, r.d)}$$`,
     });
   }
   if (r.d > 1 && r.n > r.d) {
@@ -74,7 +61,7 @@ function sameDenom(rng: Rng, op: Op): GenProblem {
   const steps: Step[] = [
     {
       title: '분모는 그대로 두기',
-      body: `두 분수의 분모가 $${d}$${j(d, '으로로')} 같아요. 조각의 크기가 같으니 분모는 그대로 $${d}$${j(d, '이에요예요')}.`,
+      body: `두 분수의 분모가 $${d}$${jo(d, '으로/로')} 같아요. 조각의 크기가 같으니 분모는 그대로 $${d}$${jo(d, '이에요/예요')}.`,
     },
     {
       title: op === '+' ? '분자끼리 더하기' : '분자끼리 빼기',
@@ -114,11 +101,11 @@ function diffDenomSteps(
   const conv = (side: string, a: number, d: number): Step => {
     const k = L / d;
     return {
-      title: `${side} 분수를 분모 ${L}${j(L, '으로로')} 바꾸기`,
+      title: `${side} 분수를 분모 ${L}${jo(L, '으로/로')} 바꾸기`,
       body:
         k === 1
-          ? `${side} 분수는 분모가 이미 $${L}$${j(L, '이에요예요')}. 그대로 $${f(a, d)}$${j(a, '이에요예요')}.`
-          : `분모와 분자에 똑같이 $${k}$${j(k, '을를')} 곱해요.\n$$${f(a, d)}=${f(`${a}\\times${k}`, `${d}\\times${k}`)}=${f(a * k, L)}$$`,
+          ? `${side} 분수는 분모가 이미 $${L}$${jo(L, '이에요/예요')}. 그대로 $${f(a, d)}$${jo(a, '이에요/예요')}.`
+          : `분모와 분자에 똑같이 $${k}$${jo(k, '을/를')} 곱해요.\n$$${f(a, d)}=${f(`${a}\\times${k}`, `${d}\\times${k}`)}=${f(a * k, L)}$$`,
     };
   };
   const A = a1 * (L / d1);
@@ -151,7 +138,7 @@ function multipleDenom(rng: Rng): GenProblem {
     const small = Math.min(pd, qd);
     const first: Step = {
       title: '공통분모 정하기',
-      body: `$${small}\\times${big / small}=${big}$이므로 $${big}$${j(big, '은는')} $${small}$의 배수예요. 그래서 큰 분모 $${big}$에 맞추면 돼요.`,
+      body: `$${small}\\times${big / small}=${big}$이므로 $${big}$${jo(big, '은/는')} $${small}$의 배수예요. 그래서 큰 분모 $${big}$에 맞추면 돼요.`,
     };
     const { steps, n, L } = diffDenomSteps(p, pd, q, qd, op, first);
     const { answer, answerTex } = finish(n, L, steps);
@@ -189,8 +176,8 @@ function lcmDenom(rng: Rng): GenProblem {
       title: '최소공배수 찾기',
       body:
         g === 1
-          ? `$${d1}$${j(d1, '과와')} $${d2}$${j(d2, '은는')} 1 말고 공통으로 나누어지는 수가 없어요. 그래서 최소공배수는 두 수의 곱이에요.\n$$${d1}\\times${d2}=${L}$$`
-          : `두 분모의 최대공약수는 $${g}$${j(g, '이에요예요')}. 두 수의 곱을 최대공약수로 나누면 최소공배수예요.\n$$${d1}\\times${d2}\\div${g}=${L}$$`,
+          ? `$${d1}$${jo(d1, '과/와')} $${d2}$${jo(d2, '은/는')} 1 말고 공통으로 나누어지는 수가 없어요. 그래서 최소공배수는 두 수의 곱이에요.\n$$${d1}\\times${d2}=${L}$$`
+          : `두 분모의 최대공약수는 $${g}$${jo(g, '이에요/예요')}. 두 수의 곱을 최대공약수로 나누면 최소공배수예요.\n$$${d1}\\times${d2}\\div${g}=${L}$$`,
     };
     const { steps, n } = diffDenomSteps(a1, d1, a2, d2, op, first);
     const { answer, answerTex } = finish(n, L, steps);
@@ -229,8 +216,8 @@ function mixedAddSub(rng: Rng): GenProblem {
     const steps: Step[] = [];
     if (d1 !== d2) {
       steps.push({
-        title: `분수 부분을 분모 ${L}${j(L, '으로로')} 통분하기`,
-        body: `$${d1}$, $${d2}$의 최소공배수는 $${L}$${j(L, '이에요예요')}. 자연수 부분은 그대로 두고 분수 부분만 바꿔요.\n$$${mixedTex(w1, a1, d1)}${op}${mixedTex(w2, a2, d2)}=${mixedTex(w1, A, L)}${op}${mixedTex(w2, B, L)}$$`,
+        title: `분수 부분을 분모 ${L}${jo(L, '으로/로')} 통분하기`,
+        body: `$${d1}$, $${d2}$의 최소공배수는 $${L}$${jo(L, '이에요/예요')}. 자연수 부분은 그대로 두고 분수 부분만 바꿔요.\n$$${mixedTex(w1, a1, d1)}${op}${mixedTex(w2, a2, d2)}=${mixedTex(w1, A, L)}${op}${mixedTex(w2, B, L)}$$`,
       });
     }
     let W: number;
@@ -242,12 +229,12 @@ function mixedAddSub(rng: Rng): GenProblem {
       W = w1 + w2 + 1;
       steps.push({
         title: '받아올림',
-        body: `분자 $${A + B}$${j(A + B, '이가')} 분모 $${L}$보다 크므로 1을 넘어요. $${f(L, L)}=1$만큼 떼어 자연수 쪽으로 올려요.\n$$${w1 + w2}+${f(A + B, L)}=${w1 + w2}+1+${f(N, L)}=${W}${f(N, L)}$$`,
+        body: `분자 $${A + B}$${jo(A + B, '이/가')} 분모 $${L}$보다 크므로 1을 넘어요. $${f(L, L)}=1$만큼 떼어 자연수 쪽으로 올려요.\n$$${w1 + w2}+${f(A + B, L)}=${w1 + w2}+1+${f(N, L)}=${W}${f(N, L)}$$`,
       });
     } else {
       steps.push({
         title: '받아내림',
-        body: `분자 $${A}$에서 $${B}$${j(B, '을를')} 뺄 수 없어요. 자연수 $${w1}$에서 1을 빌려 $${f(L, L)}$${j(L, '으로로')} 바꿔 분수 부분에 더해요.\n$$${mixedTex(w1, A, L)}=${w1 - 1}+${f(L, L)}+${f(A, L)}=${mixedTex(w1 - 1, A + L, L)}$$`,
+        body: `분자 $${A}$에서 $${B}$${jo(B, '을/를')} 뺄 수 없어요. 자연수 $${w1}$에서 1을 빌려 $${f(L, L)}$${jo(L, '으로/로')} 바꿔 분수 부분에 더해요.\n$$${mixedTex(w1, A, L)}=${w1 - 1}+${f(L, L)}+${f(A, L)}=${mixedTex(w1 - 1, A + L, L)}$$`,
       });
       W = w1 - 1 - w2;
       N = A + L - B;
@@ -259,7 +246,7 @@ function mixedAddSub(rng: Rng): GenProblem {
     const whole = W === 0 ? '' : String(W);
     let body: string;
     if (g > 1) {
-      body = `분수 부분 $${f(N, L)}$${j(N, '은는')} 최대공약수 $${g}$${j(g, '으로로')} 약분하면 $${f(r.n, r.d)}$${j(r.n, '이에요예요')}.\n$$${whole}${f(N, L)}=${whole}${f(r.n, r.d)}$$`;
+      body = `분수 부분 $${f(N, L)}$${jo(N, '은/는')} 최대공약수 $${g}$${jo(g, '으로/로')} 약분하면 $${f(r.n, r.d)}$${jo(r.n, '이에요/예요')}.\n$$${whole}${f(N, L)}=${whole}${f(r.n, r.d)}$$`;
     } else if (W === 0) {
       body = `자연수 부분이 0이므로 분수 부분만 남아요.\n$$${f(N, L)}$$`;
     } else {
@@ -285,7 +272,7 @@ function mixedAddSub(rng: Rng): GenProblem {
       tip:
         op === '+'
           ? '가분수로 바꿔 한 번에 계산해도 돼요. 두 방법의 답이 같으면 맞게 푼 거예요.'
-          : `빌려 온 1은 $${f(L, L)}$${j(L, '이에요예요')}. 자연수 뺄셈 습관대로 분자에 10을 더하는 실수를 조심해요.`,
+          : `빌려 온 1은 $${f(L, L)}$${jo(L, '이에요/예요')}. 자연수 뺄셈 습관대로 분자에 10을 더하는 실수를 조심해요.`,
     };
   }
 }

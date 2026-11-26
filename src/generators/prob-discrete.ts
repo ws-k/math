@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd, lcm, paren } from './util.ts';
+import { fracAns, fracTex, gcd, ieyo, lcm, paren } from './util.ts';
 
 const UNIT = 'prob-discrete';
 
@@ -22,13 +22,6 @@ const fr = (n: number, d: number): Fr => {
 const tex = (f: Fr) => fracTex(f.n, f.d);
 const ans = (f: Fr) => fracAns(f.n, f.d);
 const sym = (f: Fr) => (f.d === 1 ? String(f.n) : `Rational(${f.n}, ${f.d})`);
-
-// '이에요/예요'는 앞 소리의 받침으로 갈린다. 분수 \frac{a}{b} 는 "b분의 a"라 분자 끝 글자로 읽는다
-// (숫자는 영·일·삼·육·칠·팔·십·백이 받침, 이·사·오·구는 받침 없음).
-function ieyo(f: Fr | number): string {
-  const n = typeof f === 'number' ? f : f.n;
-  return /[013678]$/.test(String(Math.abs(n))) ? '이에요' : '예요';
-}
 
 const P_SUM = '확률분포표의 확률을 모두 더하면 $1$';
 const MEAN = '$E(X)=x_1p_1+x_2p_2+\\cdots+x_np_n$';

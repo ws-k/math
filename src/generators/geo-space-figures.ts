@@ -1,16 +1,12 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd } from './util.ts';
+import { fracAns, fracTex, gcd, ieyo } from './util.ts';
 
 const UNIT = 'geo-space-figures';
 
 // 기초 문제는 답이 정수·분수로 떨어지게만 만든다. 정사영은 cos 60° 이거나 cos 값을 분수로 주고,
 // 삼수선·정사영 길이는 피타고라스 수(3·4·5 등)로 고른다 — 이 단원에서 익힐 것은 "어느 직각삼각형을
 // 보느냐"이지 √ 계산이 아니기 때문이다(수능 기하 27·28번도 그 직각삼각형을 찾는 것이 핵심).
-
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝자리로 고른다(일·삼·육·칠·팔·영/십 → 받침).
-// 분수 \frac{a}{b} 는 "b분의 a"로 읽으니 분자의 끝자리로 고른다.
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 /** 피타고라스 수 (빗변이 마지막) */
 const TRIPLES: [number, number, number][] = [

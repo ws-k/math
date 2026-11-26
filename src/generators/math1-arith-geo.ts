@@ -1,14 +1,10 @@
 import type { Generator } from './types.ts';
-import { paren } from './util.ts';
+import { ieyo, paren } from './util.ts';
 
 const UNIT = 'math1-arith-geo';
 
 // 생성기 id 는 모두 'math1-ag-' 로 시작한다 — 예전에 다른 단원과 id 가 겹쳐 기초 문제가
 // 엉뚱한 생성기로 찍힌 일이 있어서, 단원 접두어로 이름 공간을 나눈다.
-
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (숫자는 일·삼·육·칠·팔·영/십이 받침).
-const ieyo = (n: number | string) => (/[013678]$/.test(String(n)) ? '이에요' : '예요');
 
 /** "+3" / "-3" — 식 뒤에 수를 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);

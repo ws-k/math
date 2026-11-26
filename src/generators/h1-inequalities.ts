@@ -1,7 +1,6 @@
 import type { Step } from '../content/types.ts';
-import { j } from './e-fraction-mul.ts';
 import type { Generator } from './types.ts';
-import { fracTex, polySym, polyTex } from './util.ts';
+import { fracTex, jo, polySym, polyTex } from './util.ts';
 
 const UNIT = 'h1-inequalities';
 
@@ -68,7 +67,7 @@ export const generators: Generator[] = [
           },
           {
             title: '경계 찾기',
-            body: `좌변을 $0$ 으로 만드는 경계는 $x=${a}$, $x=${b}$ ${j(b, '이에요예요')}.`,
+            body: `좌변을 $0$ 으로 만드는 경계는 $x=${a}$, $x=${b}$ ${jo(b, '이에요/예요')}.`,
           },
           {
             title: '부호 보기',
@@ -111,7 +110,7 @@ export const generators: Generator[] = [
         ];
         if (k !== 1)
           steps.push({
-            title: `세 쪽을 $${k}$${j(k, '으로로')} 나누기`,
+            title: `세 쪽을 $${k}$${jo(k, '으로/로')} 나누기`,
             body: `양수로 나누니 방향은 그대로예요.\n$$${lo}${TEX[rel]}x${TEX[rel]}${hi}$$`,
           });
         steps.push(countStep(v));
@@ -154,7 +153,7 @@ export const generators: Generator[] = [
       };
       const solve2: Step = {
         title: k2 < 0 ? '둘째 부등식 풀기 — 방향 바꾸기' : '둘째 부등식 풀기',
-        body: `$$${polyTex([k2, 0])}${TEX[q2]}${d2 - c2}\\quad\\Rightarrow\\quad x${TEX[r2]}${U}$$${k2 < 0 ? `\n$${k2}$${j(k2, '으로로')} 나눌 때 부등호를 뒤집었어요.` : ''}`,
+        body: `$$${polyTex([k2, 0])}${TEX[q2]}${d2 - c2}\\quad\\Rightarrow\\quad x${TEX[r2]}${U}$$${k2 < 0 ? `\n$${k2}$${jo(k2, '으로/로')} 나눌 때 부등호를 뒤집었어요.` : ''}`,
       };
       return {
         q: `다음 연립부등식을 만족하는 정수 $x$ 의 개수를 구하세요.\n$$\\begin{cases} ${e1}${TEX[r1]}${d1} \\\\ ${e2}${TEX[q2]}${d2} \\end{cases}$$`,

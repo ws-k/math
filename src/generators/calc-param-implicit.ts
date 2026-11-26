@@ -1,5 +1,16 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polyDiff, polyEval, polySym, polyTex, reduce } from './util.ts';
+import {
+  fracAns,
+  fracTex,
+  ieyo,
+  jo,
+  paren,
+  polyDiff,
+  polyEval,
+  polySym,
+  polyTex,
+  reduce,
+} from './util.ts';
 
 const UNIT = 'calc-param-implicit';
 
@@ -7,23 +18,6 @@ const UNIT = 'calc-param-implicit';
 // 역함수는 f(x)=c 를 sympy solve 로 풀어 그 점의 f' 를 쓴다. 풀이 공식을 그대로 다시 적으면
 // 공식을 잘못 옮겼을 때 함께 틀려 검산이 무력해지기 때문이다.
 // 다항 매개변수는 t 를 지울 수 없어 공식(dy/dt ÷ dx/dt)으로 검산하되, 미분은 sympy 가 한다.
-
-/** '이에요/예요': 정수는 끝자리 소리, 분수는 '○분의 △'라 분자 끝자리 소리로 고른다 */
-const ieyo = (n: number, d = 1) => {
-  const r = reduce(n, d);
-  return '013678'.includes(String(Math.abs(r.n)).slice(-1)) ? '이에요' : '예요';
-};
-
-/**
- * 식 글자를 소리 내어 읽을 때 끝 글자에 받침이 있나. 값이 무작위라 조사(이/가, 을/를)를 글자로 고정할 수 없다.
- * 분수는 '○분의 △'라 분자, 괄호는 안쪽 끝 글자로 본다(x 는 '엑스'라 받침 없음).
- */
-function batchim(tex: string | number): boolean {
-  const s = String(tex);
-  const fr = /\\frac\{(-?\d+)\}\{\d+\}\)?$/.exec(s);
-  return /[013678]$/.test(fr ? (fr[1] as string) : s.replace(/[)}\s]+$/, ''));
-}
-const josa = (tex: string | number, yes: string, no: string) => (batchim(tex) ? yes : no);
 
 /** 계산 끝의 분수: 분모 1 이면 정수, 약분되거나 음수면 기약분수까지 한 번 더 이어 쓴다 */
 function fracChain(n: number, d: number): string {
@@ -98,7 +92,7 @@ export const generators: Generator[] = [
                 body: `$$\\frac{dy}{dx}=\\frac{dy/dt}{dx/dt}=${fracChain(yd, xd)}$$`,
               },
             ],
-            tip: `분자와 분모를 바꿔 $\\frac{dx/dt}{dy/dt}$ 로 쓰면 역수인 $${fracTex(xd, yd)}$ ${josa(fracTex(xd, yd), '이', '가')} 나와요. 구하는 것이 $\\frac{dy}{dx}$ 이니 $y$ 쪽이 위예요.`,
+            tip: `분자와 분모를 바꿔 $\\frac{dx/dt}{dy/dt}$ 로 쓰면 역수인 $${fracTex(xd, yd)}$ ${jo(fracTex(xd, yd), '이/가')} 나와요. 구하는 것이 $\\frac{dy}{dx}$ 이니 $y$ 쪽이 위예요.`,
           };
         }
         // 타원 x=a cos t, y=b sin t: π/4 의 홀수 배에서 cos t / sin t = ±1 이라 답이 유리수
@@ -243,7 +237,7 @@ export const generators: Generator[] = [
               body: `$$g'(${c})=\\frac{1}{f'(${k})}=${fracTex(1, fd)}$$`,
             },
           ],
-          tip: `$g'(${c})=\\frac{1}{f'(${c})}$ 로 쓰면 틀려요. $${c}$ ${josa(c, '은', '는')} $f$ 의 출력값이라, $f$ 에 넣을 입력값 $${k}$ ${josa(k, '을', '를')} 먼저 찾아야 해요.`,
+          tip: `$g'(${c})=\\frac{1}{f'(${c})}$ 로 쓰면 틀려요. $${c}$ ${jo(c, '은/는')} $f$ 의 출력값이라, $f$ 에 넣을 입력값 $${k}$ ${jo(k, '을/를')} 먼저 찾아야 해요.`,
         };
       }
     },
@@ -279,14 +273,14 @@ export const generators: Generator[] = [
               },
               {
                 title: '한 번 더 미분하기',
-                body: `안쪽 미분 $${a}$ ${josa(a, '이', '가')} 또 곱해져요.\n$$f''(x)=${n * a}\\cdot${n - 1}(${G})${n - 2 === 1 ? '' : `^${n - 2}`}\\cdot ${paren(a)}=${n * (n - 1) * a * a}(${G})${n - 2 === 1 ? '' : `^${n - 2}`}$$`,
+                body: `안쪽 미분 $${a}$ ${jo(a, '이/가')} 또 곱해져요.\n$$f''(x)=${n * a}\\cdot${n - 1}(${G})${n - 2 === 1 ? '' : `^${n - 2}`}\\cdot ${paren(a)}=${n * (n - 1) * a * a}(${G})${n - 2 === 1 ? '' : `^${n - 2}`}$$`,
               },
               {
                 title: `$x=${k}$ 대입`,
                 body: `$${G}$ 의 값은 $${v}$ 이므로\n$$f''(${k})=${n * (n - 1) * a * a}\\cdot${paren(v)}${n - 2 === 1 ? '' : `^${n - 2}`}=${ans}$$`,
               },
             ],
-            tip: `두 번 미분하면 안쪽 미분 $${a}$ 도 두 번 곱해져 $${a * a}$ ${josa(a * a, '이', '가')} 돼요. 한 번만 곱하면 답이 달라져요.`,
+            tip: `두 번 미분하면 안쪽 미분 $${a}$ 도 두 번 곱해져 $${a * a}$ ${jo(a * a, '이/가')} 돼요. 한 번만 곱하면 답이 달라져요.`,
           };
         }
         if (kind === 1) {

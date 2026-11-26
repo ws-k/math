@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd } from './util.ts';
+import { eun, fracAns, fracTex, gcd, ieyo } from './util.ts';
 
 const UNIT = 'math1-trig-graph';
 
@@ -9,12 +9,8 @@ const UNIT = 'math1-trig-graph';
 
 type Fn = 'sin' | 'cos' | 'tan';
 
-/** '이에요/예요' — 값이 무작위라 끝 글자로 고른다(숫자 일·삼·육·칠·팔·영/십은 받침, π·x 는 받침 없음) */
-const ieyo = (s: string) => (/[013678]$/.test(s) ? '이에요' : '예요');
-/** 목록 끝 항목의 끝소리로 '은/는'. "$-1$" 처럼 숫자로 끝나면 숫자 받침, π 분수($…}$)는 '파이'라 받침 없음 */
-const eun = (items: string[]) => (/[013678]\$$/.test(items[items.length - 1] ?? '') ? '은' : '는');
-/** 분수 a/b 는 "b분의 a" 로 읽어 분자가 끝소리다 */
-const ieyoFrac = (n: number, d: number) => ieyo(String(Math.abs(n / gcd(n, d))));
+/** 목록 끝 항목("$-1$" · "$\frac{\pi}{2}$")의 끝소리로 '은/는' */
+const eunLast = (items: string[]) => eun(items[items.length - 1] ?? '');
 
 /** 도 → π 의 분수 TeX (150 → \frac{5\pi}{6}). 부호는 앞에 */
 function angTex(deg: number): string {
@@ -187,7 +183,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '$x$ 의 계수 찾기',
-              body: `$x$ 앞에 곱해진 수는 $${fracTex(bn, bd)}$ ${ieyoFrac(bn, bd)}.`,
+              body: `$x$ 앞에 곱해진 수는 $${fracTex(bn, bd)}$ ${ieyo(bn, bd)}.`,
             },
             {
               title: '주기 공식',
@@ -195,10 +191,10 @@ export const generators: Generator[] = [
             },
             {
               title: '$p$ 의 값',
-              body: `$p=${fracTex(pn, pd)}$ ${ieyoFrac(pn, pd)}.`,
+              body: `$p=${fracTex(pn, pd)}$ ${ieyo(pn, pd)}.`,
             },
           ],
-          tip: `주기는 $x$ 의 계수만 봐요.${others.length ? ` ${others.join(', ')}${eun(others)} 주기와 상관없어요.` : ''}`,
+          tip: `주기는 $x$ 의 계수만 봐요.${others.length ? ` ${others.join(', ')}${eunLast(others)} 주기와 상관없어요.` : ''}`,
         };
       }
       const max = kind === 0;
@@ -317,7 +313,7 @@ export const generators: Generator[] = [
           },
           {
             title: sum ? '합' : '차',
-            body: `$$${sum ? `${angTex(s1)}+${angTex(s2)}` : `${angTex(s2)}-${angTex(s1)}`}=${ansTex === '1' ? '' : ansTex}\\pi$$\n그래서 $p=${ansTex}$ ${ieyoFrac(pn, pd)}.`,
+            body: `$$${sum ? `${angTex(s1)}+${angTex(s2)}` : `${angTex(s2)}-${angTex(s1)}`}=${ansTex === '1' ? '' : ansTex}\\pi$$\n그래서 $p=${ansTex}$ ${ieyo(pn, pd)}.`,
           },
         ],
         tip:

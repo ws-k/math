@@ -1,8 +1,7 @@
 import type { Step } from '../content/types.ts';
-import { j } from './e-fraction-mul.ts';
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns } from './util.ts';
+import { fracAns, jo } from './util.ts';
 
 const UNIT = 'e-decimal';
 
@@ -61,7 +60,7 @@ function addSub(rng: Rng): GenProblem {
       },
       {
         title: `${unit}이 몇 개인지로 계산하기`,
-        body: `$${decPad(A, K)}$${j(A, '은는')} $${unit}$이 $${A}$개, $${decPad(B, K)}$${j(B, '은는')} $${B}$개예요. 자연수처럼 계산해요.\n$$${A}${op}${B}=${S}$$`,
+        body: `$${decPad(A, K)}$${jo(A, '은/는')} $${unit}$이 $${A}$개, $${decPad(B, K)}$${jo(B, '은/는')} $${B}$개예요. 자연수처럼 계산해요.\n$$${A}${op}${B}=${S}$$`,
       },
       {
         title: '소수점 찍기',
@@ -102,8 +101,8 @@ function mul(rng: Rng): GenProblem {
         title: '소수점 아래 자리 수 세기',
         body:
           k2 === 0
-            ? `$${dec(a, k1)}$${j(dec(a, k1), '은는')} 소수 ${k1}자리, $${b}$${j(b, '은는')} 자연수예요. 답도 소수 ${K}자리예요.`
-            : `$${dec(a, k1)}$${j(dec(a, k1), '은는')} 소수 ${k1}자리, $${dec(b, k2)}$${j(dec(b, k2), '은는')} 소수 ${k2}자리예요. 답은 둘을 더한 소수 ${K}자리예요.`,
+            ? `$${dec(a, k1)}$${jo(dec(a, k1), '은/는')} 소수 ${k1}자리, $${b}$${jo(b, '은/는')} 자연수예요. 답도 소수 ${K}자리예요.`
+            : `$${dec(a, k1)}$${jo(dec(a, k1), '은/는')} 소수 ${k1}자리, $${dec(b, k2)}$${jo(dec(b, k2), '은/는')} 소수 ${k2}자리예요. 답은 둘을 더한 소수 ${K}자리예요.`,
       },
       {
         title: '소수점 찍기',
@@ -154,7 +153,7 @@ function divide(rng: Rng): GenProblem {
             ? `$$${a10}\\div${b10}=${q}$$`
             : a10.includes('.')
               ? `몫의 소수점은 나누어지는 수 $${a10}$의 소수점 바로 위에 찍어요.\n$$${a10}\\div${b10}=${q}$$`
-              : `나누어떨어지지 않으면 $${a10}$${j(a10, '을를')} $${a10}.0$${j(0, '으로로')} 보고 소수 첫째 자리까지 계속 나눠요.\n$$${a10}\\div${b10}=${q}$$`,
+              : `나누어떨어지지 않으면 $${a10}$${jo(a10, '을/를')} $${a10}.0$${jo(0, '으로/로')} 보고 소수 첫째 자리까지 계속 나눠요.\n$$${a10}\\div${b10}=${q}$$`,
       },
     ];
     return {

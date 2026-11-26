@@ -22,7 +22,10 @@ export interface Lesson {
 }
 
 export interface LessonValue {
-  /** 정수·"a/b". 글에는 그대로(쉼표 없이) 들어간다 — 수식 안에도 쓰도록 */
+  /**
+   * 정수·"a/b"·소수("1.96"). 글에는 그대로(쉼표 없이) 들어간다 — 수식 안에도 쓰도록. 소수는 같은 수의 기약분수로
+   * 검산한다(check 도 Rational 로 — 파이썬이 1.96 을 부동소수로 계산하지 않게)
+   */
   value: string;
   /** 이 값을 문제 조건으로 계산하는 sympy 식. eq 와 둘 중 하나만 */
   check?: string;
@@ -62,13 +65,39 @@ export interface IntroScene extends Base {
   meta?: string[];
 }
 
-/** 보기 하나. 화면 글자는 value 를 format 규칙으로 바꿔 만든다 */
-export interface Choice {
-  /** 기약분수 "a/b" 또는 정수. check 를 sympy 로 계산한 값과 같아야 한다 */
+/**
+ * 보기 하나. 한 질문의 보기는 모두 같은 꼴이다(수 · 식 · 글자). 어느 꼴이든 화면 글자는 검산하는 데이터에서 나온다:
+ * 수는 value 를 format 규칙으로, 식은 sym 을 틀린 곳 찾기 식처럼 그리고, 글자는 손으로 쓰되 정답 여부를 when 으로 검산
+ */
+export type Choice = NumChoice | SymChoice | TextChoice;
+
+/** 수 보기. 화면 글자는 value 를 format 규칙으로 바꿔 만든다 */
+export interface NumChoice {
+  /** 기약분수 "a/b" 또는 정수. check 를 sympy 로 계산한 값과 같아야 한다(π 보기면 π 의 계수) */
   value: string;
   /** 이 보기 값이 나오는 계산(정답 보기는 문제 조건으로, 오답 보기는 흔한 실수로) */
   check: string;
   /** 오답 보기를 골랐을 때 왜 틀렸는지. 오답 보기에는 필수 */
+  feedback?: string;
+}
+
+/**
+ * 식·구간 보기("x>−3", "−1<x≤3", "2x+1"). sym 은 틀린 곳 찾기 식 문법이고 관계 기호는 없거나 하나, 또는 같은
+ * 방향 부등호 둘(이어 쓴 부등식). 검산은 보기 식 자체로 한다 — 정답 보기만 answerCheck 와 같아야 한다(해 집합이면
+ * 해 집합끼리, 식이면 값끼리. 다른 보기는 다르다는 반례가 있어야 함). 그래서 보기마다 check 를 따로 두지 않는다
+ */
+export interface SymChoice {
+  sym: string;
+  feedback?: string;
+}
+
+/**
+ * 글자 보기("양의 상관", "참"). 글자는 수식($…$)을 섞어 쓸 수 있고, when 은 answerCheck 의 값 v 에 대한
+ * sympy 참·거짓 식(v>0 · Eq(v,0) · Not(v)) — 정답 보기의 when 만 참이어야 한다
+ */
+export interface TextChoice {
+  text: string;
+  when: string;
   feedback?: string;
 }
 
@@ -81,6 +110,11 @@ export interface NumFormat {
    * 검산기가 check 를 그 자리에서 반올림한 값이 value 와 같은지 본다.
    */
   approx?: true;
+  /**
+   * 숫자 뒤에 π 를 붙인다(36π cm³). 보기 value 는 π 의 계수이고, 검산기는 check 를 π 로 나눈 값이 value 인지 본다 —
+   * 화면에 보이는 36π 와 검산한 값이 같은 수가 되게. 근삿값(approx)·식의 해(eq)와는 함께 쓰지 않는다
+   */
+  pi?: true;
 }
 
 export interface QuestionScene extends Base {
@@ -127,7 +161,8 @@ export type Rel = '=' | '<' | '>' | '<=' | '>=';
 
 /**
  * 틀린 곳 찾기의 토큰: 누를 수 있는 식 조각, 또는 관계 기호.
- * 식 조각은 sym.ts 의 parseSpot 이 읽는 식(÷·factorial·binomial·ff·Sum·Integral·Limit·oo·적분상수 C 포함)이고,
+ * 식 조각은 sym.ts 의 parseSpot 이 읽는 식(÷·factorial·binomial·ff·Sum·Integral·Limit·oo·적분상수 C 포함,
+ * 2차: 허수 I → i · H(n,r) → ₙHᵣ · rad(30) → 30° · diff(식,t) → d/dt(식) · Implies(p,q) → p→q · Not(p) → ~p)이고,
  * 앞 토큰에 +·−·×(*)·÷ 로 이어지는 조각(+4 · *(2/5) · ÷2)도 된다. 토큰을 하나씩 그려 이어 붙인 글자가 검산하는 식과
  * 다르게 읽히면 형식 오류다((x+1) 뒤 *2 는 x+1×2 로, ∑k 뒤 *2 는 ∑(k×2) 로 보인다 — 합치거나 괄호로 묶기).
  * 토큰 경계에서 숫자·글자가 맞붙어도(2 | 3 → 23) 오류. 적분에는 글자 d 를 쓰지 않는다(dx 와 헷갈림).
@@ -145,6 +180,9 @@ export interface SpotItem {
    *   **지원하지 않음**: 문자가 든 계승·조합·순열·∑ 의 부등식(n! ≥ n 처럼 자연수 조건이 필요한 것 — 형식 오류),
    *   부정적분이 든 부등식, 미분해도 부정적분이 남는 식(x·∫1dx). lim 은 양쪽 극한이 기본이고 한쪽에서 식이 실수가
    *   아니면(√x 의 x→0) 한쪽 극한('+'·'-')으로 적어야 한다.
+   *   허수 i 가 든 부등식(복소수에는 크기가 없다)과 equivalent(해는 실수에서 구한다)도 지원하지 않는다(형식 오류).
+   *   명제(→·~)는 identity 의 = 로만 견주고(화면은 ⇔ — 글자마다 참·거짓을 넣어 늘 같은지, 다르면 그 값이 반례),
+   *   맞은편은 명제나 글자 하나다.
    * equivalent: from 과 고친 식의 해 집합이 같고, 토큰 식의 해 집합은 달라야 한다(방정식·부등식 변형 실수).
    * value: 등식이 아닌 식. 관계 토큰 없이, 고친 식의 값은 기준(from 또는 check)과 같고 토큰 식의 값은 달라야 한다.
    */
@@ -180,6 +218,11 @@ export type SolveItem = Example & {
   hint?: string;
   /** 답 칸이 비었을 때 보이는 글자(단위 등) */
   placeholder?: string;
+  /**
+   * 글의 {{answer}} 에 보일 답 표기(0.8185 — 답 1637/2000 대신). 수 하나만 적은 TeX 이고 답과 같은 수여야 한다(형식 검사).
+   * 객관식(answerType: choice)은 보기 5개(choices, 수 하나씩 — 보기 검산값과 대조) + choiceChecks 이고 정답 표기는 없다
+   */
+  answerTex?: string;
 };
 
 export interface SolveScene extends Base {

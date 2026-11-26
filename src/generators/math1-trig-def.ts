@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd, reduce } from './util.ts';
+import { fracAns, fracTex, gcd, ieyo, reduce } from './util.ts';
 
 const UNIT = 'math1-trig-def';
 
@@ -8,10 +8,6 @@ const UNIT = 'math1-trig-def';
 // sympy 가 계산한 실제 값과 어긋나 검산에서 잡힌다.
 
 /** '이에요/예요': 정수는 끝자리 소리, 분수는 '○분의 △'라 분자 끝자리 소리로 고른다 */
-const ieyo = (n: number, d = 1) => {
-  const r = reduce(n, d);
-  return '013678'.includes(String(Math.abs(r.n)).slice(-1)) ? '이에요' : '예요';
-};
 
 /** 분수 × π 의 TeX: 1 → \pi, 2/3 → \frac{2}{3}\pi, -1 → -\pi */
 function piTex(n: number, d: number): string {

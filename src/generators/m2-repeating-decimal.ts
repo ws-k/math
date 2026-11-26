@@ -1,8 +1,7 @@
 import type { Step } from '../content/types.ts';
-import { j } from './e-fraction-mul.ts';
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd } from './util.ts';
+import { fracAns, fracTex, gcd, jo } from './util.ts';
 
 const UNIT = 'm2-repeating-decimal';
 
@@ -70,14 +69,14 @@ export const generators: Generator[] = [
         },
         {
           title: `양변에 $${M}$ 곱하기`,
-          body: `순환마디가 ${L}자리라서 $${M}$${j(M, '을를')} 곱하면 소수점 아래가 처음과 똑같아져요.\n$$${M}x=${unrolled(`${c}.`, cyc)}$$`,
+          body: `순환마디가 ${L}자리라서 $${M}$${jo(M, '을/를')} 곱하면 소수점 아래가 처음과 똑같아져요.\n$$${M}x=${unrolled(`${c}.`, cyc)}$$`,
         },
         {
           title: '두 식 빼기',
           body: `소수점 아래가 똑같으니 빼면 끝없는 부분이 모두 사라져요.\n$$${M}x-x=${c}$$\n$$${nines}x=${c}$$`,
         },
         {
-          title: g > 1 ? '나누고 약분하기' : `양변을 $${nines}$${j(nines, '으로로')} 나누기`,
+          title: g > 1 ? '나누고 약분하기' : `양변을 $${nines}$${jo(nines, '으로/로')} 나누기`,
           body: `$$x=\\frac{${c}}{${nines}}${g > 1 ? `=${fracTex(c, nines)}` : ''}$$`,
         },
       ];
@@ -121,7 +120,7 @@ export const generators: Generator[] = [
           {
             title: `$10x$와 $${big}x$ 만들기`,
             body:
-              `순환하지 않는 $${a}$${j(a, '을를')} 소수점 앞으로 보내려면 $10$, 한 마디를 더 넘기려면 $${big}$${j(big, '을를')} 곱해요. 두 수의 소수점 아래가 똑같아져요.\n` +
+              `순환하지 않는 $${a}$${jo(a, '을/를')} 소수점 앞으로 보내려면 $10$, 한 마디를 더 넘기려면 $${big}$${jo(big, '을/를')} 곱해요. 두 수의 소수점 아래가 똑같아져요.\n` +
               `$$${big}x=${N1}.${tail}\\cdots$$\n$$10x=${N2}.${tail}\\cdots$$`,
           },
           {
@@ -129,7 +128,7 @@ export const generators: Generator[] = [
             body: `$$${big}x-10x=${N1}-${N2}$$\n$$${D}x=${num}$$`,
           },
           {
-            title: g > 1 ? '나누고 약분하기' : `양변을 $${D}$${j(D, '으로로')} 나누기`,
+            title: g > 1 ? '나누고 약분하기' : `양변을 $${D}$${jo(D, '으로/로')} 나누기`,
             body: `$$x=\\frac{${num}}{${D}}${g > 1 ? `=${fracTex(num, D)}` : ''}$$`,
           },
         ];
@@ -183,7 +182,7 @@ export const generators: Generator[] = [
         if (g > 1)
           steps.push({
             title: '기약분수로 만들기',
-            body: `분자와 분모를 $${g}$${j(g, '으로로')} 나눠요. 약분한 뒤에 분모를 봐야 해요.\n$$\\frac{${n}}{${d}}=\\frac{${n / g}}{${dd}}$$`,
+            body: `분자와 분모를 $${g}$${jo(g, '으로/로')} 나눠요. 약분한 뒤에 분모를 봐야 해요.\n$$\\frac{${n}}{${d}}=\\frac{${n / g}}{${dd}}$$`,
           });
         steps.push(
           {
@@ -192,11 +191,11 @@ export const generators: Generator[] = [
           },
           {
             title: '$2$, $5$가 아닌 소인수 찾기',
-            body: `분모에 $2$와 $5$만 남아야 유한소수예요. 남은 $${fac(r) === String(r) ? r : `${fac(r)}=${r}`}$${j(r, '을를')} 없애야 해요.`,
+            body: `분모에 $2$와 $5$만 남아야 유한소수예요. 남은 $${fac(r) === String(r) ? r : `${fac(r)}=${r}`}$${jo(r, '을/를')} 없애야 해요.`,
           },
           {
             title: '가장 작은 수 고르기',
-            body: `곱하는 수가 $${r}$의 배수면 $${r}$${j(r, '이가')} 약분되어 사라져요. 그중 가장 작은 자연수는 $${r}$${j(r, '이에요예요')}.`,
+            body: `곱하는 수가 $${r}$의 배수면 $${r}$${jo(r, '이/가')} 약분되어 사라져요. 그중 가장 작은 자연수는 $${r}$${jo(r, '이에요/예요')}.`,
           },
         );
         return {
@@ -213,7 +212,7 @@ export const generators: Generator[] = [
           tip:
             g > 1
               ? '약분하지 않은 분모를 보면 이미 사라질 소인수까지 세게 돼요. 항상 기약분수로 만든 뒤 분모를 봐요.'
-              : `확인: $\\frac{${n}}{${d}}\\times${r}$${j(r, '을를')} 약분하면 분모에 $2$와 $5$만 남아요.`,
+              : `확인: $\\frac{${n}}{${d}}\\times${r}$${jo(r, '을/를')} 약분하면 분모에 $2$와 $5$만 남아요.`,
         };
       }
     },
@@ -238,14 +237,14 @@ export const generators: Generator[] = [
         const steps: Step[] = [
           {
             title: '순환소수로 나타내기',
-            body: `$${n}\\div${d}$${j(d, '을를')} 계산하면 나머지가 처음으로 돌아오면서 같은 숫자가 되풀이돼요.\n$$\\frac{${n}}{${d}}=0.${dotted(cyc)}$$`,
+            body: `$${n}\\div${d}$${jo(d, '을/를')} 계산하면 나머지가 처음으로 돌아오면서 같은 숫자가 되풀이돼요.\n$$\\frac{${n}}{${d}}=0.${dotted(cyc)}$$`,
           },
           {
             title: '순환마디의 자리 수',
-            body: `순환마디 $${cyc}$${j(cyc, '은는')} ${p}자리예요. 숫자가 ${p}개씩 한 묶음으로 되풀이돼요.`,
+            body: `순환마디 $${cyc}$${jo(cyc, '은/는')} ${p}자리예요. 숫자가 ${p}개씩 한 묶음으로 되풀이돼요.`,
           },
           {
-            title: `$${k}$${j(k, '을를')} $${p}$${j(p, '으로로')} 나누기`,
+            title: `$${k}$${jo(k, '을/를')} $${p}$${jo(p, '으로/로')} 나누기`,
             body: `$$${k}=${p}\\times${Math.floor(k / p)}+${rem}$$\n${
               rem === 0
                 ? `나머지가 $0$이면 묶음이 꼭 끝나는 자리, 곧 마디의 마지막(${p}번째) 숫자예요.`
@@ -254,7 +253,7 @@ export const generators: Generator[] = [
           },
           {
             title: '숫자 읽기',
-            body: `순환마디 $${cyc}$의 ${pos}번째 숫자는 $${digit}$${j(digit, '이에요예요')}.`,
+            body: `순환마디 $${cyc}$의 ${pos}번째 숫자는 $${digit}$${jo(digit, '이에요/예요')}.`,
           },
         ];
         return {

@@ -1,19 +1,11 @@
 import type { Generator } from './types.ts';
-import { paren, polyMul, polySym, polyTex } from './util.ts';
+import { eul, ieyo, iga, paren, polyMul, polySym, polyTex, ro } from './util.ts';
 
 const UNIT = 'h1-higher-eq';
 
 // 고차방정식은 근이 여러 개라 답 칸에 바로 적을 수 없다. 그래서 "가장 큰 근", "두 허근의 곱"처럼
 // 수 하나로 묻는다. 검산식은 풀이(인수정리·치환)를 따라 하지 않고 sympy solve 로 근을 모두 구해
 // 고르는 방식이라, 풀이에서 인수를 잘못 찾으면 검산이 바로 다른 답을 낸다.
-
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (숫자는 일·삼·육·칠·팔·영/십이 받침).
-const ieyo = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이에요' : '예요');
-const eul = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '을' : '를');
-const iga = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이' : '가');
-// '로/으로'는 받침이 없거나 ㄹ 받침(일·칠·팔)이면 '로'
-const ro = (tex: string | number) => (/[036]$/.test(String(tex)) ? '으로' : '로');
 
 /** x-a 꼴 인수 글자: a=-2 → "x+2" */
 const lin = (a: number) => polyTex([1, -a]);

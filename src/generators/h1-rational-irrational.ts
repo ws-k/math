@@ -1,7 +1,6 @@
-import { jo } from './h1-poly-ops.ts';
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { paren, polySym, polyTex } from './util.ts';
+import { jo, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'h1-rational-irrational';
 
@@ -58,7 +57,7 @@ export const generators: Generator[] = [
             },
             {
               title: '점근선 읽기',
-              body: `$x=${p}$, $y=${q}$ ${jo(String(q), '이라')}서 $m+n=${p}+${paren(q)}=${p + q}$`,
+              body: `$x=${p}$, $y=${q}$ ${jo(String(q), '이라/라')}서 $m+n=${p}+${paren(q)}=${p + q}$`,
             },
           ],
           tip: `세로 점근선은 분모가 $0$ 이 되는 $x$ 예요. $${polyTex(den)}=0$ 에서 $x=${p}$.`,
@@ -134,14 +133,14 @@ export const generators: Generator[] = [
             },
             {
               title: '근호의 가장 작은 값',
-              body: `$\\sqrt{\\ }$ 는 $0$ 이상이고 $x=${p}$ 에서 $0$ 이라 $y\\ge${c}$ ${jo(String(c), '이에요')}.`,
+              body: `$\\sqrt{\\ }$ 는 $0$ 이상이고 $x=${p}$ 에서 $0$ 이라 $y\\ge${c}$ ${jo(String(c), '이에요/예요')}.`,
             },
             { title: '더하기', body: `$$m+n=${p}+${paren(c)}=${p + c}$$` },
           ],
           tip:
             a > 0
               ? '$x$ 의 계수가 양수면 시작점에서 오른쪽으로 그려져요.'
-              : `$x$ 의 계수가 음수면 시작점에서 왼쪽으로 그려져서 정의역이 $x\\le${p}$ ${jo(String(p), '이에요')}.`,
+              : `$x$ 의 계수가 음수면 시작점에서 왼쪽으로 그려져서 정의역이 $x\\le${p}$ ${jo(String(p), '이에요/예요')}.`,
         };
       }
     },

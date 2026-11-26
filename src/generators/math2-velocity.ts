@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { polyDiff, polyEval, polySym, polyTex } from './util.ts';
+import { ieyo, polyDiff, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math2-velocity';
 
@@ -8,8 +8,6 @@ const UNIT = 'math2-velocity';
 // 속도가 0 이 되는 두 시각(0<α<β)에서 위치 식을 거꾸로 만든다: v(t)=3A(t-α)(t-β).
 // 검산식은 sympy 로 위치 식을 직접 미분하고, 방향이 바뀌는 시각은 "v=0 이고 앞뒤 부호가 다른 t"로
 // 골라 풀이의 인수분해를 거치지 않는다. 생성기 id 는 모두 'math2-velocity-' 로 시작한다.
-
-const ieyo = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이에요' : '예요');
 
 /** t-α 를 글로 */
 const lin = (r: number) => (r === 0 ? 't' : r > 0 ? `t-${r}` : `t+${-r}`);
