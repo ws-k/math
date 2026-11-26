@@ -5,10 +5,6 @@ import { fracAns, fracTex, gcd, jo, lcm, reduce } from './util.ts';
 
 const UNIT = 'e-fraction-addsub';
 
-// 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다(3 '삼'→으로, 2 '이'→로).
-// 숫자가 무작위라 조사를 박아 두면 "3로", "2은" 같은 글이 나오므로 마지막 자리로 고른다.
-// 분수는 "4분의 3"처럼 분자를 마지막에 읽으므로 분자를 넘긴다.
-
 const f = (n: number | string, d: number | string) => `\\frac{${n}}{${d}}`;
 const mixedTex = (w: number, n: number, d: number) => (w === 0 ? f(n, d) : `${w}${f(n, d)}`);
 const R = (n: number, d: number) => `Rational(${n},${d})`;

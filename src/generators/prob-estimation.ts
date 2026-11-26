@@ -34,8 +34,6 @@ const PY_TABLE = `T = {${Object.entries(TABLE)
 def F(z):
     return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))`;
 
-/** '으로/로' — ㄹ 받침(일·칠·팔)과 받침 없음은 '로' */
-
 const MEAN_VAR =
   '$E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$';
 const CI =

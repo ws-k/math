@@ -5,10 +5,6 @@ import { fracAns, fracTex, gcd, jo, reduce } from './util.ts';
 
 const UNIT = 'e-fraction-mul';
 
-// 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다(3 '삼'→으로, 2 '이'→로). 숫자가 무작위라 마지막 자리로 고른다.
-// e-fraction-addsub 에도 같은 함수가 있지만 그 파일은 내보내지 않고, 공용 util.ts 는 단원 작성 범위 밖이라
-// 여기서 내보내 분수의 나눗셈·소수 단원이 함께 쓴다(셋째 복사본을 만들지 않으려고).
-
 export const f = (n: number | string, d: number | string) => `\\frac{${n}}{${d}}`;
 export const mixedTex = (w: number, n: number, d: number) => (w === 0 ? f(n, d) : `${w}${f(n, d)}`);
 export const R = (n: number, d: number) => `Rational(${n},${d})`;

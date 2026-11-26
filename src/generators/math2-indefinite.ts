@@ -12,8 +12,6 @@ const okAns = (n: number) => n !== 0 && Math.abs(n) <= MAX;
 /** "+3" / "-3" — 식 뒤에 상수를 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
 
-/** 으로/로 — ㄹ 받침(일·칠·팔)은 '로' */
-
 const POWER = '$\\int x^n\\,dx=\\dfrac{x^{n+1}}{n+1}+C$';
 const CONST = '조건 하나($f(a)$ 의 값)로 적분상수 $C$ 를 정해요.';
 

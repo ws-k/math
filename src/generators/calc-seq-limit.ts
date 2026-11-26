@@ -12,8 +12,6 @@ const UNIT = 'calc-seq-limit';
 const LIM = '\\displaystyle\\lim_{n\\to\\infty}';
 const ZERO = '$n\\to\\infty$ 일 때 $\\frac{1}{n}\\to0$, $\\frac{1}{n^2}\\to0$';
 
-/** '으로/로' — ㄹ 받침(일·칠·팔)과 받침 없음은 '로' */
-
 /** n^k 꼴 TeX (k=1 이면 n) */
 const nPow = (k: number) => (k === 1 ? 'n' : `n^${k}`);
 

@@ -4,9 +4,6 @@ import { fracAns, gcd, jo, lcm } from './util.ts';
 
 const UNIT = 'e-fraction-basics';
 
-// 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다. e-fraction-addsub 생성기와 같은 규칙(보고서에 공용화 제안).
-// 분수는 "4분의 3"처럼 분자를 마지막에 읽으므로 분자를 넘긴다.
-
 const f = (n: number | string, d: number | string) => `\\frac{${n}}{${d}}`;
 
 /** 0 < n < d 이고 d 와 서로소인 분자 — 처음부터 기약분수를 내려고 */

@@ -4,9 +4,6 @@ import { fracAns, fracTex, ieyo, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'm2-linear-func';
 
-// 숫자 뒤 조사. 읽었을 때 끝 글자의 받침은 마지막 자리로 정해진다(일·삼·육·칠·팔·영/십 → 받침).
-// 분수·음수도 마지막 자리 숫자로 읽으므로 절댓값의 끝자리만 본다.
-
 const CONCEPT_SLOPE = '기울기 = ($y$의 증가량) ÷ ($x$의 증가량)';
 const CONCEPT_FORM = '일차함수 $y=ax+b$에서 $a$는 기울기, $b$는 $y$절편이에요.';
 const CONCEPT_XINT = '$x$절편은 그래프가 $x$축과 만나는 점의 $x$좌표, 곧 $y=0$일 때의 $x$값이에요.';
