@@ -70,19 +70,20 @@ const NAME_OK = /^[a-z][a-zA-Z0-9]*$/;
 /**
  * 글 속 숫자 가운데 {{…}} 로 넣지 않은 것 — 검산 밖이라 경고로 알린다. 수식($…$)은 덩어리째,
  * 일반 글은 숫자 하나씩(쉼표·소수점 포함) 알린다. 수식 밖 "12,000원" 도 답과 어긋날 수 있는 숫자다.
- * 셈한 값이 아닌 수는 빼서 경고가 볼 것만 남게 한다(요청 91): 낱말에 붙은 이름(고1·중2·빨1·P1 — 수 앞이 글자)과
- * 함정 카드 꼬리표 "함정 N"
+ * 셈한 값이 아닌 수는 빼서 경고가 볼 것만 남게 한다(요청 91). 낱말에 붙은 수라도 '사과5개'처럼 셈한 값일 수 있어
+ * 허용 목록만 뺀다(검토 m1): 학년(초1·중2·고1), 물건 이름(빨1·파2), 대문자 이름(P1·A12), 제N사분면, 함정 카드 꼬리표 "함정 N"
  */
+const NOT_COUNTED =
+  /(?<![가-힣A-Za-z])(?:초|중|고|빨|파)\d+|(?<![A-Za-z])[A-Z]+\d+|제\d+사분면|함정 \d+/g;
 function textNumbers(s: string): string[] {
   const out: string[] = [];
-  const src = s.replace(/\{\{\w+\}\}/g, '').replace(/함정 \d+/g, '');
+  const src = s.replace(/\{\{\w+\}\}/g, '').replace(NOT_COUNTED, '');
   const math = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
   for (const m of src.matchAll(math)) {
     const seg = m[1] ?? m[2] ?? '';
     if (/\d/.test(seg)) out.push((m[0] as string).trim());
   }
-  for (const m of src.replace(math, ' ').matchAll(/(?<![가-힣A-Za-z\d.,])\d[\d,.]*/g))
-    out.push(m[0]);
+  for (const m of src.replace(math, ' ').matchAll(/(?<![\d.,])\d[\d,.]*/g)) out.push(m[0]);
   return out;
 }
 
