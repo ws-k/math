@@ -105,6 +105,22 @@ export interface PointObj {
   name?: string;
   /** 목표 점: 목표·과제를 이루기 전에는 그리지 않는다(맞힌 뒤 공개). 끄는 점은 숨기지 못한다 */
   hide?: true;
+  /**
+   * 따라오는 점(요청 50·129·137): 좌표를 식으로 계산한다(drag 는 늘 none, i·j 는 쓰지 않음). 곡선 위 점이면 x 만
+   * (y 는 곡선에서), 칸 위 점이면 x·y 둘 다(한쪽은 수일 수 있다). 칸 위가 아니어도 된다 — 다른 점·슬라이더의 값이라
+   */
+  follow?: { x: FollowExpr; y?: FollowExpr };
+}
+/**
+ * 따라오는 좌표 식: 수·슬라이더 이름·앞에 나온 점의 x(P)·y(P) 로 계산(세로선 자리도 같은 꼴).
+ * 식 글자(sym.ts)는 x(P) 를 읽지 못하므로 점 좌표마다 자리표 변수(zqa…)로 바꿔 쥐고, refs 가 그 자리표가 가리키는
+ * 점과 축을 적는다 — 그리기는 그 점의 지금 좌표를, 검산은 그 점의 sympy 글자(xSym·ySym)를 자리표에 넣는다
+ */
+export interface FollowExpr {
+  /** 원문(검산 항목 이름·오류 글) */
+  src: string;
+  node: Node;
+  refs: { v: string; pt: string; ax: 'x' | 'y' }[];
 }
 export interface SecantObj {
   kind: 'secant';

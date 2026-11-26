@@ -22,7 +22,7 @@ import type { WidgetCheck } from '../specs.ts';
 import { near, numExpr, target, toIndex } from './common.ts';
 import { iRange, MIN_SNAP_PX, narrowFrame } from './frame.ts';
 import { initial } from './model.ts';
-import { pointOf, pointState, pointXY, worldX, xCells, xSym, ySym } from './point.ts';
+import { noFollow, pointOf, pointState, pointXY, worldX, xCells, xSym, ySym } from './point.ts';
 import { parseReadoutExpr, readoutMovers, readoutSym, readoutVal } from './readout.ts';
 import { MIN_SLIDER_STEP_PX, sliderStepPx, sliderSym, sliderValues } from './slider.ts';
 import type {
@@ -154,7 +154,7 @@ function approachGoal(
   if (!Array.isArray(g.approach) || g.approach.length !== 2) fail(`${at}.approach`, '점 두 개');
   const [a, b] = g.approach as unknown[];
   const pa = gx.pointRef(a, at);
-  const pb = gx.pointRef(b, at);
+  const pb = noFollow(gx.pointRef(b, at), at, '목표 점');
   if (pa.drag === 'none') fail(at, `${pa.id} 는 끌 수 없는 점`);
   const within = g.within === undefined ? 0 : numExpr(g.within, `${at}.within`).n;
   // 끌어서 닿을 수 있는 목표인가: a 가 닿는 칸(끄는 간격·끄는 범위 — xCells) 중 b 와 x 거리가 within 안인 칸이 있어야.

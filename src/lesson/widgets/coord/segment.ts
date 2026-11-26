@@ -9,9 +9,8 @@ import { compile, evalNum, exactStr, varsOf } from '../../expr.ts';
 import { arr, fail, obj, oneOf, str } from '../../parse.ts';
 import type { Node } from '../../sym.ts';
 import { near } from './common.ts';
-import { curveNum, curveVars } from './curve.ts';
 import { hidden0, narrowFrame, r1, toPx } from './frame.ts';
-import { pointOf, pointXY } from './point.ts';
+import { pointDeps, pointNum, pointOf, pointXY } from './point.ts';
 import { sliderCombos } from './slider.ts';
 import {
   type ArrowObj,
@@ -76,33 +75,39 @@ const slidersIn = (n: Node, cx: Pick<ParseCtx, 'sliders'>) => {
   const vs = varsOf(n);
   return cx.sliders.map((sl) => sl.id).filter((id) => vs.has(id));
 };
-/** 끝 자리를 움직이는 슬라이더: 좌표 식의 슬라이더, 끌 수 없는 곡선 위 점이면 그 곡선의 슬라이더 */
-function endSliders(e: SegEnd, cx: Pick<ParseCtx, 'sliders' | 'points' | 'curves'>): string[] {
+/** 형식 검사 중의 점·곡선 찾기(point.ts pointDeps·pointNum 이 받는 꼴) */
+const lookIn = (cx: Pick<ParseCtx, 'sliders' | 'points' | 'curves' | 'x' | 'y'>) => ({
+  point: (id: string) => cx.points.get(id),
+  curve: (id: string) => cx.curves.get(id),
+  sliders: cx.sliders,
+  x: cx.x,
+  y: cx.y,
+});
+
+/**
+ * 끝 자리를 움직이는 슬라이더: 좌표 식의 슬라이더, 끌 수 없는 곡선 위 점이면 그 곡선의 슬라이더, 슬라이더를 따라오는
+ * 점이면 그 식의 슬라이더. 끄는 점(에 기대는 점)은 자리가 손에 달려 늘어놓지 않는다
+ */
+export function endSliders(
+  e: SegEnd,
+  cx: Pick<ParseCtx, 'sliders' | 'points' | 'curves' | 'x' | 'y'>,
+): string[] {
   if (!('pt' in e)) return [...new Set([...slidersIn(e.nx, cx), ...slidersIn(e.ny, cx)])];
-  const o = cx.points.get(e.pt);
-  const c = o?.on ? cx.curves.get(o.on) : undefined;
-  if (o?.drag !== 'none' || !c) return [];
-  const used = curveVars(c);
-  return cx.sliders.map((sl) => sl.id).filter((id) => used.has(id));
+  const d = pointDeps(lookIn(cx), e.pt);
+  if (d.pts.size > 0) return [];
+  return cx.sliders.map((sl) => sl.id).filter((id) => d.sliders.has(id));
 }
 
 /**
- * 형식 검사 중 끝 좌표(수). 좌표 식·끌 수 없는 칸 위 점·끌 수 없는 곡선 위 점(그 곡선 값)은 셀 수 있다.
- * 끄는 점은 자리가 손에 달려 null(화면 밖·길이 검사를 건너뜀 — 칸 안에서만 움직인다)
+ * 형식 검사 중 끝 좌표(수). 좌표 식·끌 수 없는 칸 위 점·끌 수 없는 곡선 위 점(그 곡선 값)·슬라이더를 따라오는 점은
+ * 셀 수 있다. 끄는 점(에 기대는 점)은 자리가 손에 달려 null(화면 밖·길이 검사를 건너뜀 — 칸 안에서만 움직인다)
  */
-function endAt(
+export function endAt(
   e: SegEnd,
-  cx: Pick<ParseCtx, 'points' | 'curves' | 'x' | 'y'>,
+  cx: Pick<ParseCtx, 'sliders' | 'points' | 'curves' | 'x' | 'y'>,
   env: Record<string, number>,
 ): [number, number] | null {
-  if ('pt' in e) {
-    const o = cx.points.get(e.pt);
-    if (o?.drag !== 'none') return null;
-    if (!o.on) return [o.i * cx.x.st, o.j * cx.y.st];
-    const c = cx.curves.get(o.on);
-    const x = o.i * o.snapN;
-    return c ? [x, curveNum(c, { ...env, x })] : null;
-  }
+  if ('pt' in e) return pointNum(lookIn(cx), e.pt, env);
   return [evalNum(e.nx, env), evalNum(e.ny, env)];
 }
 
