@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { validateLesson } from '../src/lesson/schema.ts';
-import type { Lesson, Scene } from '../src/lesson/types.ts';
+import type { Lesson, NumChoice, Scene } from '../src/lesson/types.ts';
 import { goodLesson as good } from './lesson-fixture.ts';
 
 const ctx = { problems: 30 };
@@ -378,7 +378,7 @@ for (const [name, f] of [
     (l: Lesson) => {
       const q = scene(l, 'question');
       q.format = { digits: 2, approx: true };
-      for (const c of q.choices) c.value = '1.5';
+      for (const c of q.choices) (c as NumChoice).value = '1.5';
     },
   ],
   [

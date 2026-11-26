@@ -62,13 +62,39 @@ export interface IntroScene extends Base {
   meta?: string[];
 }
 
-/** 보기 하나. 화면 글자는 value 를 format 규칙으로 바꿔 만든다 */
-export interface Choice {
-  /** 기약분수 "a/b" 또는 정수. check 를 sympy 로 계산한 값과 같아야 한다 */
+/**
+ * 보기 하나. 한 질문의 보기는 모두 같은 꼴이다(수 · 식 · 글자). 어느 꼴이든 화면 글자는 검산하는 데이터에서 나온다:
+ * 수는 value 를 format 규칙으로, 식은 sym 을 틀린 곳 찾기 식처럼 그리고, 글자는 손으로 쓰되 정답 여부를 when 으로 검산
+ */
+export type Choice = NumChoice | SymChoice | TextChoice;
+
+/** 수 보기. 화면 글자는 value 를 format 규칙으로 바꿔 만든다 */
+export interface NumChoice {
+  /** 기약분수 "a/b" 또는 정수. check 를 sympy 로 계산한 값과 같아야 한다(π 보기면 π 의 계수) */
   value: string;
   /** 이 보기 값이 나오는 계산(정답 보기는 문제 조건으로, 오답 보기는 흔한 실수로) */
   check: string;
   /** 오답 보기를 골랐을 때 왜 틀렸는지. 오답 보기에는 필수 */
+  feedback?: string;
+}
+
+/**
+ * 식·구간 보기("x>−3", "−1<x≤3", "2x+1"). sym 은 틀린 곳 찾기 식 문법이고 관계 기호는 없거나 하나, 또는 같은
+ * 방향 부등호 둘(이어 쓴 부등식). 검산은 보기 식 자체로 한다 — 정답 보기만 answerCheck 와 같아야 한다(해 집합이면
+ * 해 집합끼리, 식이면 값끼리. 다른 보기는 다르다는 반례가 있어야 함). 그래서 보기마다 check 를 따로 두지 않는다
+ */
+export interface SymChoice {
+  sym: string;
+  feedback?: string;
+}
+
+/**
+ * 글자 보기("양의 상관", "참"). 글자는 수식($…$)을 섞어 쓸 수 있고, when 은 answerCheck 의 값 v 에 대한
+ * sympy 참·거짓 식(v>0 · Eq(v,0) · Not(v)) — 정답 보기의 when 만 참이어야 한다
+ */
+export interface TextChoice {
+  text: string;
+  when: string;
   feedback?: string;
 }
 
@@ -81,6 +107,11 @@ export interface NumFormat {
    * 검산기가 check 를 그 자리에서 반올림한 값이 value 와 같은지 본다.
    */
   approx?: true;
+  /**
+   * 숫자 뒤에 π 를 붙인다(36π cm³). 보기 value 는 π 의 계수이고, 검산기는 check 를 π 로 나눈 값이 value 인지 본다 —
+   * 화면에 보이는 36π 와 검산한 값이 같은 수가 되게. 근삿값(approx)·식의 해(eq)와는 함께 쓰지 않는다
+   */
+  pi?: true;
 }
 
 export interface QuestionScene extends Base {

@@ -16,7 +16,7 @@ import { store } from '../app/store.ts';
 import type { Background, Tool } from '../ink/types.ts';
 import { compareAnswer } from '../lib/answer.ts';
 import {
-  formatValue,
+  choiceLabel,
   handsOnCount,
   relSignTex,
   relTex,
@@ -150,6 +150,14 @@ function useOptColumns(ref: RefObject<HTMLDivElement | null>, n: number): number
   return cols;
 }
 
+/** 보기 단추 안 글자: 수는 끊기지 않는 덩어리(NumLabel), 식은 KaTeX, 글자는 수식 섞인 글 */
+function ChoiceText({ label }: { label: ReturnType<typeof choiceLabel> | undefined }) {
+  if (!label) return null;
+  if ('num' in label) return <NumLabel text={label.num} />;
+  if ('tex' in label) return <Tex tex={label.tex} />;
+  return <LRich inline src={label.text} />;
+}
+
 function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
   const [picked, setPicked] = useState(false);
   const optsRef = useRef<HTMLDivElement>(null);
@@ -157,7 +165,7 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
   const [wrong, setWrong] = useState<{ i: number; n: number } | null>(null);
   // 이어 보기에서 이미 끝낸 장면도 답과 풀이를 펼쳐 둔다
   const right = picked || env.done.includes(s.id);
-  const labels = s.choices.map((c) => formatValue(c.value, s.format ?? {}));
+  const labels = s.choices.map((c) => choiceLabel(c, s.format ?? {}));
   const pick = (i: number) => {
     if (right) return;
     if (i === s.answer) {
@@ -189,7 +197,7 @@ function Question({ s, env }: { s: QuestionScene; env: SceneEnv }) {
               disabled={right}
               onClick={() => pick(i)}
             >
-              <NumLabel text={labels[i] ?? ''} />
+              <ChoiceText label={labels[i]} />
             </button>
           ))}
         </div>

@@ -412,6 +412,107 @@ test('틀린 곳 찾기 기호 2차: 판정이 뒤집힌 짝·판정할 수 없�
   assert.match(r.stdout, new RegExp(`실패 ${SPOT2_BAD.length}건`));
 });
 
+// ---- 질문 보기 꼴(3-바): 식·구간 보기(choicesym) · 글자 보기(choicewhen) ----
+const choice = { unit: 'u', ref: 'u/lesson:q' };
+
+test('식·구간 보기: answerCheck 와 같은 보기가 정답 하나뿐이면 통과', () => {
+  const r = runVerify([
+    {
+      ...choice,
+      kind: 'choicesym',
+      answer: '1',
+      check: 'solveset(-2*x<6, x, S.Reals)',
+      choices: ['x>-3', 'x<-3', '-3<x<3', 'x>=-3'],
+    },
+    {
+      ...choice,
+      kind: 'choicesym',
+      answer: '2',
+      check: 'solveset(x**2<9, x, S.Reals)',
+      choices: ['x<3', '-3<x<3', '-3<=x<=3'],
+    },
+    // 관계 없는 식 보기는 값(항등식)으로 견준다
+    {
+      ...choice,
+      kind: 'choicesym',
+      answer: '2',
+      check: 'expand((x+1)**2)',
+      choices: ['x**2+1', 'x**2+2*x+1'],
+    },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+test('글자 보기: 조건 when 이 참인 보기가 정답 하나뿐이면 통과', () => {
+  const r = runVerify([
+    {
+      ...choice,
+      kind: 'choicewhen',
+      answer: '1',
+      check: 'Rational(8,10)',
+      whens: ['v>0', 'v<0', 'Eq(v,0)'],
+    },
+    { ...choice, kind: 'choicewhen', answer: '2', check: 'Integer(3) > 5', whens: ['v', 'Not(v)'] },
+  ]);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+for (const [name, it] of [
+  [
+    '식 보기: 정답 보기가 answerCheck 와 다름',
+    {
+      kind: 'choicesym',
+      answer: '2',
+      check: 'solveset(-2*x<6, x, S.Reals)',
+      choices: ['x>-3', 'x<-3'],
+    },
+  ],
+  [
+    '식 보기: 같은 해 집합 보기가 둘',
+    {
+      kind: 'choicesym',
+      answer: '1',
+      check: 'solveset(-2*x<6, x, S.Reals)',
+      choices: ['x>-3', '-x<3'],
+    },
+  ],
+  [
+    '식 보기: 관계 없는 식 보기를 해 집합과 견줌',
+    {
+      kind: 'choicesym',
+      answer: '1',
+      check: 'solveset(-2*x<6, x, S.Reals)',
+      choices: ['x+3', 'x<-3'],
+    },
+  ],
+  [
+    '식 보기: 이어 쓴 부등식의 미지수가 다름',
+    {
+      kind: 'choicesym',
+      answer: '1',
+      check: 'solveset(x**2<9, x, S.Reals)',
+      choices: ['-3<x<y', 'x<3'],
+    },
+  ],
+  [
+    '글자 보기: 참인 조건이 둘',
+    { kind: 'choicewhen', answer: '1', check: 'Rational(8,10)', whens: ['v>0', 'v>=0'] },
+  ],
+  [
+    '글자 보기: 정답 보기 조건이 거짓',
+    { kind: 'choicewhen', answer: '2', check: 'Rational(8,10)', whens: ['v>0', 'v<0'] },
+  ],
+  [
+    '글자 보기: 참·거짓이 정해지지 않는 조건',
+    { kind: 'choicewhen', answer: '1', check: 'x', whens: ['v>0', 'v<0'] },
+  ],
+] as const) {
+  test(`실패해야 함(질문 보기 꼴): ${name}`, () => {
+    const r = runVerify([{ ...choice, ...it }]);
+    assert.equal(r.status, 1, r.stdout + r.stderr);
+  });
+}
+
 const equiv = { unit: 'u', ref: 'u/lesson:scale:연산1', kind: 'equiv' };
 
 test('식 변형(equiv): 같은 해면 expect=true, 다른 해면 expect=false 가 통과', () => {

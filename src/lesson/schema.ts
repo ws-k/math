@@ -11,6 +11,7 @@ import {
 } from '../content/check.ts';
 import type { Example } from '../content/types.ts';
 import {
+  chainTex,
   fill,
   formatValue,
   RELS,
@@ -344,15 +345,34 @@ export function validateLesson(
           const choices = arr(s.choices, `${at} choices`, 2, 5);
           const answer = int(s.answer, `${at} answer`, 0, choices.length - 1);
           checkExpr(`${at} answerCheck`, s.answerCheck, errors);
+          // 보기 꼴(수·식·글자)은 첫 보기의 칸으로 정하고 모두 같아야 한다 — 섞이면 정답 검산을 한 가지로 못 한다
+          const kindOf = (c: unknown) =>
+            typeof c === 'object' && c !== null && 'sym' in c
+              ? 'sym'
+              : typeof c === 'object' && c !== null && 'text' in c
+                ? 'text'
+                : 'num';
+          const kind = kindOf(choices[0]);
+          if (choices.some((c) => kindOf(c) !== kind))
+            fail(`${at} choices`, '보기 꼴이 섞임(수·식·글자 중 한 가지로)');
+          if (kind !== 'num' && s.format !== undefined)
+            fail(`${at} format`, '표기 규칙은 수 보기에만');
+          if (kind !== 'num' && s.eq !== undefined) fail(`${at} eq`, '식의 해(eq)는 수 보기에만');
           let format: NumFormat = {};
           if (s.format !== undefined) {
-            const f = obj(s.format, `${at} format`, [], ['digits', 'unit', 'approx']);
+            const f = obj(s.format, `${at} format`, [], ['digits', 'unit', 'approx', 'pi']);
             if (f.approx !== undefined && f.approx !== true) fail(`${at} approx`, 'true 만');
             if (f.approx && f.digits === undefined) fail(`${at} approx`, '근삿값은 digits 필요');
+            if (f.pi !== undefined && f.pi !== true) fail(`${at} pi`, 'true 만');
+            // π 보기의 value 는 계수라 근삿값 보기(값 자체를 반올림)·식의 해(값이 해인가)와 뜻이 맞지 않는다
+            if (f.pi && f.approx) fail(`${at} pi`, 'π 보기는 근삿값(approx)과 함께 쓰지 않음');
+            if (f.pi && s.eq !== undefined)
+              fail(`${at} pi`, 'π 보기는 식의 해(eq)와 함께 쓰지 않음');
             format = {
               ...(f.digits !== undefined ? { digits: int(f.digits, `${at} digits`, 0, 6) } : {}),
               ...(f.unit !== undefined ? { unit: str(f.unit, `${at} unit`) } : {}),
               ...(f.approx ? { approx: true as const } : {}),
+              ...(f.pi ? { pi: true as const } : {}),
             };
           }
           const digits = format.digits ?? 0;
@@ -367,19 +387,39 @@ export function validateLesson(
           const labels = new Set<string>();
           const checks: string[] = [];
           const values: string[] = [];
+          /** 식 보기의 식 · 글자 보기의 조건 */
+          const syms: string[] = [];
+          const whens: string[] = [];
           choices.forEach((rc, ci) => {
             const ca = `${at} 보기${ci + 1}`;
-            const c = obj(rc, ca, ['value', 'check'], ['feedback']);
-            const value = choiceValue(c.value, `${ca} value`);
-            values.push(value);
-            checkExpr(`${ca} check`, c.check, errors);
-            const fb = optStr(c.feedback, `${ca} feedback`);
+            let label = '';
+            if (kind === 'sym') {
+              const c = obj(rc, ca, ['sym'], ['feedback']);
+              const sym = str(c.sym, `${ca} sym`).replace(/\s+/g, '');
+              try {
+                label = chainTex(sym);
+              } catch (e) {
+                fail(`${ca} sym`, (e as Error).message);
+              }
+              syms.push(sym);
+            } else if (kind === 'text') {
+              const c = obj(rc, ca, ['text', 'when'], ['feedback']);
+              label = str(c.text, `${ca} text`);
+              text(`${ca} 글자`, label);
+              whens.push(str(c.when, `${ca} when`));
+            } else {
+              const c = obj(rc, ca, ['value', 'check'], ['feedback']);
+              const value = choiceValue(c.value, `${ca} value`);
+              values.push(value);
+              checkExpr(`${ca} check`, c.check, errors);
+              label = formatValue(value, format);
+              checks.push(String(c.check));
+            }
+            const fb = optStr((rc as Obj).feedback, `${ca} feedback`);
             if (ci !== answer && fb === undefined) fail(ca, '오답 보기에는 feedback 필수');
             text(`${ca} feedback`, fb);
-            const label = formatValue(value, format);
             if (labels.has(label)) fail(ca, `다른 보기와 글자가 같음 (${label})`);
             labels.add(label);
-            checks.push(String(c.check));
           });
           text(`${at} reveal`, str(s.reveal, `${at} reveal`));
           if (s.thoughts !== undefined)
@@ -387,6 +427,17 @@ export function validateLesson(
               text(`${at} 생각${i + 1}`, str(t, `${at} thoughts${i + 1}`));
             });
           text(`${at} conclude`, optStr(s.conclude, `${at} conclude`));
+          if (kind !== 'num') {
+            // 식·글자 보기는 보기마다 값 항목이 없다 — 보기 식(조건) 전체를 정답 검산 한 항목이 본다
+            const base = { ref: ref(id), unit: unitId, answer: String(answer + 1) };
+            const check = String(s.answerCheck);
+            items.push(
+              kind === 'sym'
+                ? { ...base, kind: 'choicesym', check, choices: syms }
+                : { ...base, kind: 'choicewhen', check, whens },
+            );
+            break;
+          }
           const main: AnswerCheck = {
             ref: ref(id),
             unit: unitId,
@@ -398,7 +449,9 @@ export function validateLesson(
           items.push(main);
           values.forEach((value, ci) => {
             const r = ref(id, `보기${ci + 1}`);
-            const check = checks[ci] as string;
+            const c0 = checks[ci] as string;
+            // π 보기의 value 는 π 의 계수 — 검산식 값을 π 로 나눠 견준다(36π 를 보이면 검산값도 36π)
+            const check = format.pi ? `(${c0})/pi` : c0;
             items.push(
               format.approx
                 ? { ref: r, unit: unitId, kind: 'approx', expr: check, value, digits }

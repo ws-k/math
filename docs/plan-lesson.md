@@ -23,6 +23,8 @@ type Scene =
  | Base & { kind:'intro'; meta?: string[] }
  | Base & { kind:'question'; widget?: WidgetSpec; choices:{label:string; check:string; feedback?:string}[];
             answer:number; answerCheck:string; reveal:string; thoughts?:string[] }
+// 보기의 실제 형식은 types.ts 의 Choice(3-바): 수 {value,check}(format.pi 면 π 의 계수) · 식·구간 {sym}(정답 보기만
+// answerCheck 의 해 집합·식과 같아야 함, 검산 kind choicesym) · 글자 {text,when}(answerCheck 값 v 에 대한 조건, kind choicewhen)
  | Base & { kind:'explore'; widget: WidgetSpec; gate?: boolean }      // 손으로 해 보기, 지름길
  | Base & { kind:'terms'; terms:{term:string; body:string}[]; aside?:string }
  | Base & { kind:'spot'; items: SpotItem[] }                          // 틀린 곳 찾기

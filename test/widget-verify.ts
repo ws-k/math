@@ -22,7 +22,7 @@ export function tamper(cs: WidgetCheck[]): WidgetCheck[] {
   return cs.map((c, j) => {
     if (j !== i) return c;
     if ('kind' in c && c.kind === 'approx') return { ...c, value: `${Number(c.value) + 1}` };
-    if (!('answer' in c)) return c;
+    if (!('answerType' in c)) return c;
     const a = c.answer;
     const bad = /^-?\d+$/.test(a) ? String(Number(a) + 1) : `${a}1`;
     return { ...c, answer: c.answerType === 'fraction' && bad.includes('/') ? '12345/7' : bad };

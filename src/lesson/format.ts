@@ -1,7 +1,7 @@
 // 레슨 화면 글자를 데이터에서 만들어 내는 순수 함수들. 검사기와 화면이 같은 함수를 써야
 // "검산한 값 = 보이는 값"이 보장된다.
 import { isLogicSpot, reduce, spotContinuationTex, spotTex } from './sym.ts';
-import type { Lesson, NumFormat, Rel, SpotToken } from './types.ts';
+import type { Choice, Lesson, NumFormat, Rel, SpotToken } from './types.ts';
 
 const MINUS = '−';
 
@@ -39,7 +39,22 @@ export function formatValue(value: string, f: NumFormat): string {
   }
   // 반올림해서 0 이 되면(−0.3 → 0) 부호를 붙이지 않는다 — "−0" 은 다른 수처럼 보인다
   const zero = !/[1-9]/.test(body);
+  // π 의 계수 1 은 적지 않는다(1π 가 아니라 π). 0 은 π 를 붙이면 다른 수처럼 보여 0 그대로
+  if (f.pi && !zero) body = body === '1' ? 'π' : `${body}π`;
   return (neg && !zero ? MINUS : '') + body + (f.unit ?? '');
+}
+
+/**
+ * 보기 하나의 화면 글자. 수는 formatValue 글자(NumLabel 로 그림), 식은 KaTeX, 글자는 그대로(LRich 로 그림).
+ * 형식 검사(schema.ts)와 화면(Scenes.tsx)이 같은 함수를 써서 '다른 보기와 글자가 같음' 검사가 화면 글자 그대로 본다
+ */
+export function choiceLabel(
+  c: Choice,
+  f: NumFormat,
+): { num: string } | { tex: string } | { text: string } {
+  if ('value' in c) return { num: formatValue(c.value, f) };
+  if ('sym' in c) return { tex: chainTex(c.sym.replace(/\s+/g, '')) };
+  return { text: c.text };
 }
 
 /**
@@ -48,7 +63,8 @@ export function formatValue(value: string, f: NumFormat): string {
  * 크롬은 수와 단위를 한 낱말로 봐 칸 밖으로 넘쳤다. 수로 시작하지 않으면 null
  */
 export function numSplit(text: string): [string, string] | null {
-  const m = /^([−-]?\d[\d,]*(?:[./]\d+)?)(.*)$/s.exec(text);
+  // π 보기의 π 는 수에 붙은 덩어리 — 36 과 π 사이에서 줄이 바뀌면 다른 두 수처럼 보인다
+  const m = /^([−-]?\d[\d,]*(?:[./]\d+)?π?)(.*)$/s.exec(text);
   return m ? [m[1] as string, m[2] as string] : null;
 }
 
@@ -124,6 +140,29 @@ export function relTex(s: string): string {
   const [l, op, r] = parts;
   const sign = op === '=' && (isLogicSpot(l) || isLogicSpot(r)) ? '\\Leftrightarrow ' : REL_TEX[op];
   return `${spotTex(l)}${sign}${spotTex(r)}`;
+}
+
+const ineqDir = (r: string) => (r[0] === '<' ? '<' : r[0] === '>' ? '>' : '=');
+
+/**
+ * 식·구간 보기용: splitRel 에 더해 같은 방향 부등호 둘로 이어 쓴 부등식(−1<x≤3)도 [식, 관계, 식, 관계, 식] 으로.
+ * 방향이 엇갈리면(1<x>3) 구간 하나로 읽을 수 없어 예외. 틀린 곳 찾기 식은 이어 쓴 꼴을 아직 검산하지 않아 splitRel 그대로
+ */
+export function splitChain(s: string): string[] {
+  const ops = s.match(new RegExp(REL_RE.source, 'g')) ?? [];
+  if (ops.length < 2) return splitRel(s);
+  const [a, b] = ops as [string, string];
+  if (ops.length > 2 || ineqDir(a) === '=' || ineqDir(a) !== ineqDir(b))
+    throw new Error(`이어 쓴 부등식은 같은 방향 부등호 둘까지: ${s}`);
+  const [l, m, r] = s.split(REL_RE) as [string, string, string];
+  return [l, a, m, b, r];
+}
+
+/** 이어 쓴 부등식까지 그리는 relTex(식·구간 보기 글자) */
+export function chainTex(s: string): string {
+  const parts = splitChain(s);
+  if (parts.length < 5) return relTex(s);
+  return parts.map((x, k) => (k % 2 ? REL_TEX[x as Rel] : spotTex(x))).join('');
 }
 
 /** 틀린 곳 찾기 토큰 사이 등호 자리의 글자(누를 수 없는 칸). 명제끼리면 relTex 와 같게 ⇔ */

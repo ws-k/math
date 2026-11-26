@@ -99,6 +99,39 @@ test('틀린 곳 찾기 기호 1차: 부등호 토큰은 버튼, 등식 아닌 �
   assert.match(card, /×/);
 });
 
+test('질문 보기 꼴(3-바): π 보기·식 보기·글자 보기가 단추 안에 그려진다', async () => {
+  const { renderLesson } = await entry;
+  const shown = (choices: unknown, format?: object) => {
+    const l = goodLesson();
+    const q = l.scenes.find((s) => s.kind === 'question');
+    assert.ok(q?.kind === 'question');
+    q.choices = choices as never;
+    q.format = format as never;
+    q.answer = 0;
+    const html = renderLesson(withLesson(l));
+    const at = html.indexOf('data-scene="hook"');
+    return html.slice(at, html.indexOf('data-scene="terms"', at));
+  };
+  const pi = shown(
+    [
+      { value: '36', check: '36*pi' },
+      { value: '1', check: 'pi', feedback: 'f' },
+    ],
+    { pi: true, unit: ' cm³' },
+  );
+  assert.match(pi, /<span class="mglue">36π<\/span><wbr\/> cm³/);
+  assert.match(pi, />π cm³</);
+  const sym = shown([{ sym: '-1<x<=3' }, { sym: 'x>-3', feedback: 'f' }]);
+  assert.match(sym, /class="opt num[^"]*"[^>]*><span><span class="katex/);
+  assert.match(sym, /≤/);
+  const text = shown([
+    { text: '양의 상관', when: 'v>0' },
+    { text: '$r=0$ 이라 상관없음', when: 'Eq(v,0)', feedback: 'f' },
+  ]);
+  assert.match(text, />양의 상관</);
+  assert.match(text, /katex/);
+});
+
 test('모르는 부품이면 실패한다', async () => {
   const { renderLesson } = await entry;
   const l = goodLesson();

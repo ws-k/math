@@ -28,6 +28,29 @@ export interface SpotCheck {
   fixed: string;
 }
 
+/**
+ * 식·구간 보기 질문: check(문제 조건으로 계산한 값 — 해 집합이나 식)와 같은 보기가 answer 번 하나뿐인가.
+ * 보기는 틀린 곳 찾기 식 문법(관계 없음 · 관계 하나 · 같은 방향 부등호 둘). 다른 보기는 다르다는 반례가 있어야 한다
+ */
+export interface SymChoiceCheck {
+  ref: string;
+  unit: string;
+  kind: 'choicesym';
+  answer: string;
+  check: string;
+  choices: string[];
+}
+
+/** 글자 보기 질문: check 의 값 v 를 넣었을 때 참인 조건(when)이 answer 번 하나뿐인가 */
+export interface WhenChoiceCheck {
+  ref: string;
+  unit: string;
+  kind: 'choicewhen';
+  answer: string;
+  check: string;
+  whens: string[];
+}
+
 /** 식 변형 전후가 같은 해를 갖는가(expect=true) 또는 달라지는가(expect=false) */
 export interface EquivCheck {
   ref: string;
@@ -128,6 +151,8 @@ export type CheckItem =
   | RootCheck
   | AnswerCheck
   | SpotCheck
+  | SymChoiceCheck
+  | WhenChoiceCheck
   | EquivCheck
   | SameEqCheck
   | ApproxCheck

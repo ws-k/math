@@ -675,6 +675,62 @@ def check_spot(it):
     return f"알 수 없는 mode {mode}"
 
 
+# ---- 질문 보기: 식·구간 보기 · 글자 보기 ----
+
+
+def _choice_set(s):
+    """식·구간 보기 하나 → (미지수, 실수 해 집합). 관계 하나, 또는 같은 방향 부등호 둘로 이어 쓴 부등식(−1<x≤3 은
+    −1<x 와 x≤3 의 해 집합이 겹치는 곳). 방향은 형식 검사(format.ts splitChain)가 이미 본다"""
+    ops, parts = _REL_RE.findall(s), _REL_RE.split(s)
+    if len(ops) == 1:
+        return spot_solutions(_spot_read(parts[0]), ops[0], _spot_read(parts[1]))
+    if len(ops) == 2:
+        a, b, c = (_spot_read(x) for x in parts)
+        (v1, s1), (v2, s2) = spot_solutions(a, ops[0], b), spot_solutions(b, ops[1], c)
+        if v1 != v2:
+            raise ValueError(f"이어 쓴 부등식의 미지수가 다름: {s}")
+        return v1, s1.intersect(s2)
+    raise ValueError(f"관계 기호가 없는 보기는 해 집합과 견줄 수 없음: {s}")
+
+
+def check_choicesym(it):
+    """식·구간 보기: check(문제 조건으로 계산한 해 집합이나 식)와 같은 보기가 정답 번호 하나뿐인가.
+    해 집합은 모양이 달라도 같은 집합이면 같고, 다르다고 하려면 한쪽에만 드는 점이 있어야 한다(_sets_differ).
+    식 보기는 틀린 곳 찾기와 같은 항등식 판정(spot_holds) — 다르다는 반례가 없으면 검산 실패"""
+    want = evaluate(it["check"])
+    hits = []
+    for i, s in enumerate(it["choices"]):
+        if isinstance(want, sympy.Set):
+            _, got = _choice_set(s)
+            same = got == want or not _sets_differ(got, want)
+        else:
+            if _REL_RE.search(s):
+                raise ValueError(f"관계가 있는 보기 {s} 를 식 {want} 와 견줄 수 없음")
+            same = spot_holds(_spot_read(s), "=", want)
+        if same:
+            hits.append(i + 1)
+    if hits != [int(it["answer"])]:
+        return f"검산값 {want} 과 같은 보기 {hits} (답 {it['answer']})"
+    return None
+
+
+def check_choicewhen(it):
+    """글자 보기: check 의 값을 v 로 넣었을 때 참인 조건(when)이 정답 번호 하나뿐인가.
+    참·거짓이 정해지지 않는 조건(v 가 글자라 x>0 이 남는 등)은 판정 보류 — 어느 보기도 아니라고 넘기지 않는다"""
+    v = evaluate(it["check"])
+    hits = []
+    for i, w in enumerate(it["whens"]):
+        env = dict(NS, v=v, _div=_div)
+        t = sympify(eval(_compile(w, "eval"), env))
+        if t not in (sympy.true, sympy.false):
+            raise Undecided(f"조건 {w} 의 참·거짓을 정하지 못함(v = {v}): {t}")
+        if t == sympy.true:
+            hits.append(i + 1)
+    if hits != [int(it["answer"])]:
+        return f"v = {v} 일 때 참인 보기 {hits} (답 {it['answer']})"
+    return None
+
+
 def check_equiv(it):
     """식 변형 전후의 해가 같은가. 저울 버튼·항 끌기 부품이 앱과 같은 TS 모델로 만든 전후 식을 넘긴다.
     양쪽에 같은 일을 하면 해가 같아야(expect=True), 한쪽만 하면 해가 달라져야(expect=False) 한다."""
@@ -975,6 +1031,8 @@ KINDS = {
     "goal": check_goal,
     "root": check_root,
     "spot": check_spot,
+    "choicesym": check_choicesym,
+    "choicewhen": check_choicewhen,
     "equiv": check_equiv,
     "sameeq": check_sameeq,
     "approx": check_approx,
