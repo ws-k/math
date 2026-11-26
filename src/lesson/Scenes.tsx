@@ -36,6 +36,7 @@ import type {
   SolveScene,
   SpotItem,
   SpotScene,
+  SpotToken,
   SummaryScene,
   TermsScene,
 } from './types.ts';
@@ -315,7 +316,14 @@ function SpotCard({ it, onFound }: { it: SpotItem; onFound(): void }) {
               aria-pressed={found && t.bad ? true : undefined}
               onClick={() => press(i, !!t.bad)}
             >
-              <Tex tex={'sep' in t ? relSignTex(t.sep) : tokenTex(t.sym)} />
+              <Tex
+                tex={
+                  'sep' in t
+                    ? relSignTex(t.sep)
+                    : // 같은 쪽 앞 토큰 뒤에 이어지면 이어 붙인 식처럼 그린다(형식 검사가 같은 글자로 확인)
+                      tokenTex(t.sym, i > 0 && !('sep' in (it.tokens[i - 1] as SpotToken)))
+                }
+              />
             </button>
           ),
         )}

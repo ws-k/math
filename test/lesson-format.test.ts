@@ -6,6 +6,7 @@ import {
   handsOnCount,
   numSplit,
   relTex,
+  splitRel,
   spotEquation,
   spotFixed,
   symToTex,
@@ -82,14 +83,34 @@ test('spotEquation·spotFixed: 부등호 토큰이 틀린 곳이면 고친 조�
 test('tokenTex: 토큰 하나의 글자 — 곱셈·÷ 로 이어지는 조각(×2/5)도 그린다', () => {
   assert.equal(tokenTex('-(x-3)'), '-(x-3)');
   assert.equal(tokenTex('+3'), '+3');
-  assert.equal(tokenTex('*(2/5)'), '\\times\\frac{2}{5}');
-  assert.equal(tokenTex('*3'), '\\times 3');
-  assert.equal(tokenTex('÷2'), '\\div 2');
-  assert.equal(tokenTex('÷(2/5)'), '\\div\\frac{2}{5}');
+  assert.equal(tokenTex('*(2/5)', true), '\\times\\frac{2}{5}');
+  assert.equal(tokenTex('*3', true), '\\times 3');
+  assert.equal(tokenTex('÷2', true), '\\div 2');
+  assert.equal(tokenTex('÷(2/5)', true), '\\div\\frac{2}{5}');
   // / 로 이어지는 조각은 분수 칸을 나눠 그릴 수 없다
-  assert.throws(() => tokenTex('/2'));
-  assert.throws(() => tokenTex('**2'));
-  assert.throws(() => tokenTex('*'));
+  assert.throws(() => tokenTex('/2', true));
+  assert.throws(() => tokenTex('**2', true));
+  assert.throws(() => tokenTex('*', true));
+  // 이어지는 조각의 괄호는 곱셈 오른쪽 자리 규칙 그대로(괄호가 사라지면 3×x+2 처럼 다른 식으로 보인다)
+  assert.equal(tokenTex('*(x+2)', true), '\\times(x+2)');
+  // 쪽의 첫 토큰은 ×·÷ 로 시작할 수 없고, +·− 는 부호다
+  assert.throws(() => tokenTex('*3'));
+  assert.equal(tokenTex('-1/2'), '\\frac{-1}{2}');
+  // 이어지는 +·− 조각은 이어 붙인 식처럼(부호가 분자 안에 들어가지 않게)
+  assert.equal(tokenTex('+7*4/2'), '\\frac{+7\\times 4}{2}');
+  assert.equal(tokenTex('+7*4/2', true), '+\\frac{7\\times 4}{2}');
+  assert.equal(tokenTex('-(1/12)', true), '-\\frac{1}{12}');
+  assert.equal(tokenTex('+-3', true), '+(-3)');
+  assert.equal(tokenTex('÷(2*3)', true), '\\div(2\\times 3)');
+  assert.equal(tokenTex('*-2', true), '\\times(-2)');
+});
+
+test('splitRel: 관계 기호 하나로 나누기(없으면 식 하나, 둘 이상이면 예외)', () => {
+  assert.deepEqual(splitRel('x<=-3'), ['x', '<=', '-3']);
+  assert.deepEqual(splitRel('-(x-3)=-x+3'), ['-(x-3)', '=', '-x+3']);
+  assert.deepEqual(splitRel('2*x'), ['2*x']);
+  assert.deepEqual(splitRel("Limit(1/x,x,0,'+')>=1"), ["Limit(1/x,x,0,'+')", '>=', '1']);
+  assert.throws(() => splitRel('1<x<3'));
 });
 
 test('relTex: 등식은 예전과 같은 글자, 부등식·관계 없는 식·새 기호도 그린다', () => {

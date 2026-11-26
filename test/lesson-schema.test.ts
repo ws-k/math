@@ -148,6 +148,36 @@ test('틀린 곳 찾기 기호 1차: 부등호 토큰·등식 아닌 식·새 �
   for (const [w, f] of pairs) assert.deepEqual(spotWith([sym(w, f)]).errors, [], w);
 });
 
+/** identity 항목: 왼쪽 토큰들 = 오른쪽 토큰들, 오른쪽 마지막 토큰이 틀린 곳 */
+const idTok = (left: string[], right: string[], fix: string) => ({
+  prompt: 'p',
+  mode: 'identity',
+  tokens: [
+    ...left.map((sym) => ({ sym })),
+    { sep: '=' },
+    ...right.map((sym, i) => (i === right.length - 1 ? { sym, bad: true } : { sym })),
+  ],
+  fix: { sym: fix, body: 'b' },
+});
+
+test('토큰을 따로 그린 글자가 검산하는 식과 같으면 통과(괄호 있는 × · ÷ 조각, 음수 조각)', () => {
+  const ok = [
+    idTok(['3', '*(x+2)'], ['3*x', '+2'], '+6'),
+    idTok(['3', '*-2'], ['6'], '-6'),
+    idTok(['12', '÷(2*3)'], ['6'], '2'),
+    idTok(['6÷2*x'], ['3/x'], '3*x'),
+    // × 조각 뒤 덧셈은 이어 붙인 식처럼 곱셈 밖(3×x+2 = 3x+2)
+    idTok(['3', '*x+2'], ['3*x', '+6'], '+2'),
+    // 곱셈이 이어지는 조각은 괄호 없이(2×2 ×3×2×3)
+    {
+      ...idTok(['2*2', '*3'], ['72'], '0'),
+      tokens: [{ sym: '2*2' }, { sym: '*3', bad: true }, { sep: '=' }, { sym: '72' }],
+      fix: { sym: '*3*2*3', body: 'b' },
+    },
+  ];
+  for (const it of ok) assert.deepEqual(spotWith([it]).errors, [], JSON.stringify(it.tokens));
+});
+
 for (const [name, item] of [
   [
     '등호를 틀린 곳으로',
@@ -180,6 +210,33 @@ for (const [name, item] of [
   ['equivalent 의 from 이 관계 없는 식', { ...ineqItem(), from: '-2*x' }],
   ['모르는 mode', { ...valueItem(), mode: 'approx' }],
   ['계산기에 없는 이름', { ...valueItem(), from: 'lcm(24,36)' }],
+  // ---- 검토 반영: 토큰을 따로 그린 글자 = 검산하는 식(C1·m4·m5·M5·M3·m3) ----
+  ['괄호 묶음 뒤 × 조각((x+1) ×2 가 x+1×2 로 보임)', idTok(['(x+1)', '*2'], ['2*x', '+1'], '+2')],
+  ['∑ 뒤 × 조각(∑k×2 로 몸통에 붙어 보임)', idTok(['Sum(k,(k,1,3))', '*2'], ['6'], '12')],
+  ['토큰 경계에서 숫자가 붙음(2 3 → 23)', idTok(['2', '3'], ['6'], '23')],
+  ['고친 조각이 연산자로 시작하지 않음(+2 → 2)', idTok(['3'], ['1', '+2'], '2')],
+  [
+    '숨은 검산식이 고친 식을 그대로 적음',
+    {
+      ...(({ from: _, ...it }) => it)(valueItem()),
+      check: '3/4 * (5/2)',
+    },
+  ],
+  [
+    '숨은 검산식에 소수',
+    { ...(({ from: _, ...it }) => it)(valueItem()), check: 'Rational(3,4)/0.4' },
+  ],
+  [
+    '문자가 든 계승의 부등식',
+    {
+      ...ineqItem(),
+      mode: 'identity',
+      from: undefined,
+      tokens: [{ sym: 'factorial(n)' }, { sep: '<', bad: true }, { sym: 'n' }],
+      fix: { sym: '>=', body: 'b' },
+    },
+  ],
+  ['적분에 글자 d', idTok(['Integral(d*x,x)'], ['d*x**2'], 'd*x**2/2')],
 ] as const) {
   test(`오류여야 함(틀린 곳 찾기 기호 1차): ${name}`, () => {
     assert.ok(spotWith([item]).errors.length > 0, '오류가 없음');

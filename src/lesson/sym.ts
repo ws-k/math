@@ -180,6 +180,9 @@ function parse(src: string, spot: boolean): SpotNode {
       if (!SPOT_FNS[name].includes(args.length)) fail(src, `${name} 인자 수`);
     }
     eat(')');
+    // 화면의 \,dx 와 글자 d 가 섞이면 ∫d x dx 처럼 어디까지가 몸통인지 흐려진다
+    if (name === 'Integral' && args.some((a) => hasVar(a, 'd')))
+      fail(src, '적분에는 글자 d 를 쓰지 않음(dx 와 헷갈림)');
     return dir ? { t: 'call', f: name, args, dir } : { t: 'call', f: name, args };
   };
   const atom = (): SpotNode => {
@@ -280,6 +283,72 @@ function spotCallTex(n: Extract<SpotNode, { t: 'call' }>): string {
   return fail(n.f, '모르는 함수');
 }
 
+/**
+ * 곱셈·÷ 오른쪽 자리의 글자: 덧셈·뺄셈·곱셈·÷·부호로 시작하는 식은 괄호로 묶는다(2×(x+1), 6÷(2×3), 3×(−2)).
+ * 분수는 칸이 묶어 주어 그대로. 틀린 곳 찾기의 ×·÷ 조각 토큰(*(x+2))도 같은 규칙으로 그린다(format.ts tokenTex)
+ */
+function operandTex(n: SpotNode): string {
+  const s = tex(n);
+  return ['add', 'sub', 'mul'].includes(n.t) || isObelus(n) || signed(s) ? paren(s) : s;
+}
+
+/** 이 곱셈·÷ 는 숨기지 않고 기호를 보인다(앞 토큰에 이어지는 조각을 그릴 때) */
+const showOp = new WeakSet<SpotNode>();
+const HOLE = '\\square';
+
+/**
+ * 앞 식에 +·−·×·÷ 로 이어지는 토큰 조각(+7*4/2 · *(x+2) · ÷2 · *3*2*3)의 글자. 앞 식 자리에 빈칸을 둔 식(□×조각)을 식 전체와
+ * 같은 규칙으로 그린 뒤 빈칸을 뗀다 — 바로 뒤 인수는 곱셈·÷ 오른쪽 자리 괄호 규칙을 받고, 그 뒤 연산은 이어 붙인
+ * 식에서처럼 왼쪽부터 이어진다. 조각만 따로 그려 괄호를 떼거나(3 ×x+2 로 보이던 *(x+2)) 통째로 묶으면(×(3×2×3))
+ * 이어 붙인 식과 다르게 보인다. 빈칸 뒤가 이 꼴로 시작하지 않으면(앞 식째 괄호로 묶여야 하는 ∑ 등) 예외
+ */
+export function spotContinuationTex(op: '+' | '-' | '*' | '÷', sym: string): string {
+  const root = parseSpot(`q${op}${sym}`);
+  // 빈칸 q 와 바로 붙은 마디를 찾는다(왼쪽 가지를 따라 내려감). 곱셈이면 기호를 보이게 한다
+  let n: SpotNode = root;
+  while ((n.t === 'add' || n.t === 'sub' || n.t === 'mul' || n.t === 'div') && n.a.t !== 'var')
+    n = n.a;
+  if (
+    !(n.t === 'add' || n.t === 'sub' || n.t === 'mul' || n.t === 'div') ||
+    n.a.t !== 'var' ||
+    n.a.v !== 'q'
+  )
+    return fail(sym, '이어지는 조각 꼴');
+  n.a = { t: 'var', v: HOLE };
+  showOp.add(n);
+  const t = tex(root);
+  const head = `${HOLE}${op === '*' ? '\\times' : op === '÷' ? '\\div' : op}`;
+  if (!t.startsWith(head)) return fail(sym, '앞 토큰과 이어 그릴 수 없는 조각 — 앞 토큰과 합치기');
+  return t.slice(HOLE.length);
+}
+
+/** 식에 남는 글자들. ∑·∫·lim 이 묶은 글자(∑ 의 k, ∫ 의 x)는 그 안에서만 쓰이므로 뺀다 */
+export function spotFreeVars(n: SpotNode, out = new Set<string>()): Set<string> {
+  if (n.t === 'var') out.add(n.v);
+  else if (n.t === 'call') {
+    const bound = n.f === 'Sum' || n.f === 'Integral' || n.f === 'Limit';
+    if (!bound) for (const a of n.args) spotFreeVars(a, out);
+    else {
+      const [body, v, ...rest] = n.args as [SpotNode, SpotNode, ...SpotNode[]];
+      const inner = spotFreeVars(body);
+      if (v.t === 'var') inner.delete(v.v);
+      for (const x of inner) out.add(x);
+      for (const r of rest) spotFreeVars(r, out);
+    }
+  } else if ('a' in n) {
+    spotFreeVars(n.a, out);
+    if ('b' in n) spotFreeVars(n.b, out);
+  }
+  return out;
+}
+
+const hasVar = (n: SpotNode, v: string): boolean =>
+  n.t === 'var'
+    ? n.v === v
+    : n.t === 'call'
+      ? n.args.some((a) => hasVar(a, v))
+      : 'a' in n && (hasVar(n.a, v) || ('b' in n && hasVar(n.b, v)));
+
 function tex(n: SpotNode): string {
   switch (n.t) {
     case 'num':
@@ -312,12 +381,19 @@ function tex(n: SpotNode): string {
     case 'mul': {
       const l0 = tex(n.a);
       const l = n.a.t === 'add' || n.a.t === 'sub' || openTail(n.a) ? paren(l0) : l0;
-      const r0 = tex(n.b);
-      const r =
-        ['add', 'sub', 'mul'].includes(n.b.t) || isObelus(n.b) || signed(r0) ? paren(r0) : r0;
+      const r = operandTex(n.b);
       // 숫자가 뒤따르면(2×3, x×2) 붙여 쓰면 다른 수가 되고, 분수가 뒤따르면(2⅓) 대분수로 읽혀 ×를 보인다.
-      // ₙCᵣ 가 뒤따르면 앞 수와 아래 첨자가 붙어 26C3 처럼 보여 × 를 보인다
-      const times = /^[\d.]/.test(r) || r.startsWith('\\frac') || r.startsWith('{}_') || signed(r0);
+      // ₙCᵣ 가 뒤따르면 앞 수와 아래 첨자가 붙어 26C3 처럼 보여 × 를 보인다.
+      // ÷ 뒤에 붙여 쓰면 6÷2x 가 6÷(2x) 로 읽히고, ∫…dx 뒤에 붙여 쓰면 dx x 로 이어져 × 를 보인다
+      const times =
+        /^[\d.]/.test(r) ||
+        r.startsWith('\\frac') ||
+        r.startsWith('{}_') ||
+        // 음수가 뒤따르면(−2×(−3)) 괄호만으로는 곱셈이 잘 안 보인다
+        /^\([-+]/.test(r) ||
+        isObelus(n.a) ||
+        showOp.has(n) ||
+        /\\,d[a-zA-Z]$/.test(l);
       const sep = times ? '\\times ' : /\\[a-z]+$/.test(l) ? ' ' : '';
       return times && /^[\\({]/.test(r) ? `${l}\\times${r}` : l + sep + r;
     }
@@ -326,9 +402,7 @@ function tex(n: SpotNode): string {
       // 왼쪽부터 계산하므로 왼쪽은 곱셈·÷ 를 그대로 두고, 오른쪽은 곱셈·÷ 도 괄호(6÷(2×3) ≠ 6÷2×3). 분수는 칸이 묶어 준다
       const l0 = tex(n.a);
       const l = n.a.t === 'add' || n.a.t === 'sub' || openTail(n.a) ? paren(l0) : l0;
-      const r0 = tex(n.b);
-      const r =
-        ['add', 'sub', 'mul'].includes(n.b.t) || isObelus(n.b) || signed(r0) ? paren(r0) : r0;
+      const r = operandTex(n.b);
       return /^[\\(]/.test(r) ? `${l}\\div${r}` : `${l}\\div ${r}`;
     }
     case 'pow': {

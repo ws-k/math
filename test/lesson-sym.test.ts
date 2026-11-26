@@ -4,6 +4,7 @@ import {
   evalRational,
   parseSpot,
   parseSym,
+  spotContinuationTex,
   spotTex,
   symToTex,
   texToSym,
@@ -152,6 +153,31 @@ test('÷: 우선순위·결합은 / 와 같고(파이썬), 분수 칸은 그대�
   assert.equal(spotTex('(6÷3)/2'), '\\frac{6\\div 3}{2}');
 });
 
+test('÷ 뒤 곱셈은 × 를 보인다(6÷2x 는 6÷(2x) 로 읽힌다)', () => {
+  assert.equal(spotTex('6÷2*x'), '6\\div 2\\times x');
+  assert.equal(spotTex('x÷y*z'), 'x\\div y\\times z');
+  assert.equal(spotTex('6÷2*(x+1)'), '6\\div 2\\times(x+1)');
+});
+
+test('∫ 뒤 곱셈은 × 를 보이고, 적분에는 글자 d 를 쓰지 않는다(dx 와 헷갈림)', () => {
+  assert.equal(spotTex('Integral(x,x)*x'), '\\int x\\,dx\\times x');
+  for (const s of ['Integral(x,d)', 'Integral(d*x,x)', 'Integral(x,(x,0,d))'])
+    assert.throws(() => spotTex(s), s);
+  assert.equal(spotTex('d*x'), 'dx');
+});
+
+test('spotContinuationTex: 앞 식에 ×·÷ 로 이어지는 조각을 식 전체를 그릴 때와 같은 규칙으로', () => {
+  // 바로 뒤 인수는 곱셈·÷ 오른쪽 자리 규칙(괄호·부호), 그 뒤는 왼쪽부터 이어지는 그대로
+  assert.equal(spotContinuationTex('*', '(x+2)'), '\\times(x+2)');
+  assert.equal(spotContinuationTex('*', 'x+2'), '\\times x+2');
+  assert.equal(spotContinuationTex('*', '3*2*3'), '\\times 3\\times 2\\times 3');
+  assert.equal(spotContinuationTex('*', '-2'), '\\times(-2)');
+  assert.equal(spotContinuationTex('*', '(2/5)'), '\\times\\frac{2}{5}');
+  assert.equal(spotContinuationTex('÷', '(2*3)'), '\\div(2\\times 3)');
+  assert.equal(spotContinuationTex('÷', '2*3'), '\\div 2\\times 3');
+  assert.equal(spotContinuationTex('*', 'x**2'), '\\times x^{2}');
+});
+
 test('계승 ! · 조합 C · 순열 P', () => {
   assert.equal(spotTex('factorial(5)'), '5!');
   assert.equal(spotTex('factorial(n+1)'), '(n+1)!');
@@ -215,6 +241,9 @@ const SPOT_SAMPLES = [
   'Integral(x**2,(x,0,3))',
   'Integral(x**3,x)+C',
   'Integral(x+1,x)*2',
+  'Integral(x,x)*x',
+  '6÷2*x',
+  '6÷2*(x+1)',
   'Integral(Integral(x*y,x),y)',
   'Limit(sin(x)/x,x,0)',
   "Limit(Abs(x)/x,x,0,'+')",
