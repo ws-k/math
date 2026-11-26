@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { gcd, paren } from './util.ts';
+import { eul, eun, gcd, ieyo, paren } from './util.ts';
 
 const UNIT = 'h1-set-logic';
 
@@ -19,12 +19,6 @@ const signed = (n: number) => (n < 0 ? `${n}` : `+${n}`);
 /** 계수 붙은 항: 1·x → +x, −1·x → −x, 0 → 빈 글자 */
 const term = (k: number, v: string) =>
   k === 0 ? '' : `${k < 0 ? '-' : '+'}${Math.abs(k) === 1 ? '' : Math.abs(k)}${v}`;
-// "이에요/예요": 숫자를 읽었을 때 끝 글자 받침으로 정한다(일·삼·육·칠·팔·십·영 → 받침)
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
-
-const hasBatchim = (n: number) => [0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10);
-const eunNeun = (n: number) => (hasBatchim(n) ? '은' : '는');
-const eulReul = (n: number) => (hasBatchim(n) ? '을' : '를');
 
 export const generators: Generator[] = [
   {
@@ -186,8 +180,8 @@ export const generators: Generator[] = [
       const last = (xs: number[]) => xs[xs.length - 1] as number;
       const cond =
         kout === 0
-          ? `${inn.join(', ')}${eulReul(last(inn))} 반드시 원소로 갖는`
-          : `${inn.join(', ')}${eunNeun(last(inn))} 반드시 원소로 갖고 ${out.join(', ')}${eunNeun(last(out))} 원소로 갖지 않는`;
+          ? `${inn.join(', ')}${eul(last(inn))} 반드시 원소로 갖는`
+          : `${inn.join(', ')}${eun(last(inn))} 반드시 원소로 갖고 ${out.join(', ')}${eun(last(out))} 원소로 갖지 않는`;
       return {
         q: `집합 $${setTex(all)}$ 의 부분집합 중에서 ${cond} 집합의 개수를 구하세요.`,
         choices: null,

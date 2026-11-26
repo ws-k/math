@@ -1,6 +1,5 @@
-import { ieyo, iga } from './math2-indefinite.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polySym, polyTex, reduce } from './util.ts';
+import { fracAns, fracTex, ieyo, iga, paren, polySym, polyTex, reduce } from './util.ts';
 
 const UNIT = 'calc-integration-tech';
 

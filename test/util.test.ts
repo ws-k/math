@@ -2,15 +2,77 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { makeRng } from '../src/generators/rng.ts';
 import {
+  eul,
   fracAns,
   fracTex,
   gcd,
+  ieyo,
+  jo,
+  lastSound,
   lcm,
   paren,
   polySym,
   polyTex,
   reduce,
+  ro,
 } from '../src/generators/util.ts';
+
+// ---- 조사 도우미(3-바, 요청 18): 생성기마다 복제돼 규칙이 갈리던 것을 한곳으로 ----
+test('끝소리: 수는 끝자리(영·일·삼·육·칠·팔 받침, 일·칠·팔은 ㄹ), 0 으로 끝나면 십·백·천·만이라 받침', () => {
+  for (const [v, b, r] of [
+    [3, true, false],
+    [2, false, false],
+    [7, true, true],
+    [10, true, false],
+    [-8, true, true],
+    [1000, true, false],
+    [0.5, false, false],
+    [0.1, true, true],
+    ['1,000', true, false],
+  ] as const)
+    assert.deepEqual(lastSound(v), { batchim: b, rieul: r }, String(v));
+});
+
+test('끝소리: TeX 는 읽는 소리대로 — 분수는 분자(b분의 a), 거듭제곱은 "제곱", 괄호·근호는 안쪽 끝, ° 는 도', () => {
+  for (const [v, b] of [
+    ['\\frac{3}{4}', true],
+    ['-\\frac{2}{3}', false],
+    ['\\dfrac{7}{2}', true],
+    ['(\\frac{1}{2})', true],
+    ['x^2', true],
+    ['2^{10}', true],
+    ['\\sqrt{3}', true],
+    ['\\sqrt{2}', false],
+    ['(-3)', true],
+    ['\\{1,2,3\\}', true],
+    ['30^\\circ', false],
+    ['x', false],
+    ['\\pi', false],
+    ['3개', false],
+    ['3명', true],
+  ] as const)
+    assert.equal(lastSound(v).batchim, b, v);
+  // 분수 값은 (분자, 분모) 로도 — 약분한 분자의 소리
+  assert.equal(ieyo(6, 4), '이에요');
+  assert.equal(ieyo(4, 6), '예요');
+});
+
+test('jo: 짝 조사 고르기(으로/로 는 ㄹ 받침이면 로)', () => {
+  assert.equal(jo(3, '을/를'), '을');
+  assert.equal(jo(2, '을/를'), '를');
+  assert.equal(jo(3, '이에요/예요'), '이에요');
+  assert.equal(jo(4, '이에요/예요'), '예요');
+  assert.equal(jo(3, '으로/로'), '으로');
+  assert.equal(jo(7, '으로/로'), '로');
+  assert.equal(jo(2, '으로/로'), '로');
+  assert.equal(jo(6, '과/와'), '과');
+  assert.equal(jo(9, '은/는'), '는');
+  assert.equal(jo(1, '이/가'), '이');
+  assert.equal(jo(5, '이라/라'), '라');
+  assert.equal(jo(0, '이었어요/였어요'), '이었어요');
+  assert.equal(eul('x^2'), '을');
+  assert.equal(ro('\\frac{1}{8}'), '로');
+});
 
 test('같은 시드면 같은 수열', () => {
   const a = makeRng(42);

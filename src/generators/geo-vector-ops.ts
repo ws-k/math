@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex, gcd, paren } from './util.ts';
+import { eul, fracAns, fracTex, gcd, ieyo, paren, ro } from './util.ts';
 
 const UNIT = 'geo-vector-ops';
 
@@ -19,12 +19,6 @@ function coefVec(c: number, v: string, first: boolean): string {
 }
 
 const vec = (x: number, y: number) => `(${x},${y})`;
-// 숫자 뒤 조사는 읽었을 때 끝 글자 받침으로 고른다(영·일·삼·육·칠·팔·십 → 받침 있음)
-const hasB = (n: number) => [0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10);
-const eul = (n: number) => (hasB(n) ? '을' : '를');
-const ieyo = (n: number) => (hasB(n) ? '이에요' : '예요');
-// '으로/로'는 ㄹ 받침(일·칠·팔)이면 '로'
-const ro = (n: number) => ([0, 3, 6].includes(Math.abs(n) % 10) ? '으로' : '로');
 /** 계수 1·−1 은 숫자를 빼고 적는다: 1t → t, −1t → −t */
 const coefT = (c: number, v: string) => (c === 1 ? v : c === -1 ? `-${v}` : `${c}${v}`);
 /** 식 중간에 붙는 수: +3 / −3 */

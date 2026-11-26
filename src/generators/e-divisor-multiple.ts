@@ -1,20 +1,9 @@
 import type { Step } from '../content/types.ts';
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { gcd, lcm } from './util.ts';
+import { gcd, jo, lcm } from './util.ts';
 
 const UNIT = 'e-divisor-multiple';
-
-// 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다. e-fraction-addsub 생성기와 같은 규칙(보고서에 공용화 제안).
-const BATCHIM = new Set(['0', '1', '3', '6', '7', '8']);
-const RIEUL = new Set(['1', '7', '8']);
-type Pair = '은는' | '이가' | '을를' | '과와' | '으로로' | '이에요예요';
-function j(n: number, pair: Pair): string {
-  const last = String(n).slice(-1);
-  if (pair === '으로로') return BATCHIM.has(last) && !RIEUL.has(last) ? '으로' : '로';
-  if (pair === '이에요예요') return BATCHIM.has(last) ? '이에요' : '예요';
-  return BATCHIM.has(last) ? pair.slice(0, 1) : pair.slice(1);
-}
 
 /** 곱해서 n 이 되는 짝(작은 수가 앞) */
 function pairs(n: number): [number, number][] {
@@ -82,7 +71,7 @@ function divisorCount(rng: Rng): GenProblem {
     steps: [
       {
         title: '곱셈 짝 찾기',
-        body: `1부터 차례로 나눠 보며 곱해서 $${n}$${j(n, '이가')} 되는 짝을 적어요.\n$$${ps.map(([a, b]) => `${a}\\times ${b}`).join(',\\quad ')}$$`,
+        body: `1부터 차례로 나눠 보며 곱해서 $${n}$${jo(n, '이/가')} 되는 짝을 적어요.\n$$${ps.map(([a, b]) => `${a}\\times ${b}`).join(',\\quad ')}$$`,
       },
       {
         title: '약수 늘어놓기',
@@ -119,16 +108,16 @@ function gcdTwo(rng: Rng): GenProblem {
     },
     {
       title: '멈추기',
-      body: `$${ra}$${j(ra, '과와')} $${rb}$${j(rb, '은는')} 1 말고는 함께 나누어떨어지게 하는 수가 없어요.`,
+      body: `$${ra}$${jo(ra, '과/와')} $${rb}$${jo(rb, '은/는')} 1 말고는 함께 나누어떨어지게 하는 수가 없어요.`,
     },
   ];
   steps.push(
     divs.length > 1
       ? { title: '나눈 수 곱하기', body: `$$${divs.join('\\times ')}=${g}$$` }
-      : { title: '최대공약수', body: `나눈 수 $${g}$${j(g, '이가')} 최대공약수예요.` },
+      : { title: '최대공약수', body: `나눈 수 $${g}$${jo(g, '이/가')} 최대공약수예요.` },
   );
   return {
-    q: `$${a}$${j(a, '과와')} $${b}$의 최대공약수를 구하세요.`,
+    q: `$${a}$${jo(a, '과/와')} $${b}$의 최대공약수를 구하세요.`,
     choices: null,
     answer: String(g),
     answerType: 'int',
@@ -152,7 +141,7 @@ function lcmTwo(rng: Rng): GenProblem {
   const l = lcm(a, b);
   const factors = [...divs, ra, rb];
   return {
-    q: `$${a}$${j(a, '과와')} $${b}$의 최소공배수를 구하세요.`,
+    q: `$${a}$${jo(a, '과/와')} $${b}$의 최소공배수를 구하세요.`,
     choices: null,
     answer: String(l),
     answerType: 'int',
@@ -168,10 +157,10 @@ function lcmTwo(rng: Rng): GenProblem {
       },
       {
         title: '나눈 수와 남은 몫 모두 곱하기',
-        body: `나눈 수 ${divs.map((d) => `$${d}$`).join(', ')}${j(divs[divs.length - 1] ?? 0, '과와')} 마지막 몫 $${ra}$, $${rb}$${j(rb, '을를')} 모두 곱해요.\n$$${factors.join('\\times ')}=${l}$$`,
+        body: `나눈 수 ${divs.map((d) => `$${d}$`).join(', ')}${jo(divs[divs.length - 1] ?? 0, '과/와')} 마지막 몫 $${ra}$, $${rb}$${jo(rb, '을/를')} 모두 곱해요.\n$$${factors.join('\\times ')}=${l}$$`,
       },
     ],
-    tip: `확인: $${l}\\div ${a}=${l / a}$, $${l}\\div ${b}=${l / b}$로 둘 다 나누어떨어져요. 두 수를 그냥 곱한 $${a * b}$${j(a * b, '은는')} 공배수이긴 하지만 가장 작은 것은 아니에요.`,
+    tip: `확인: $${l}\\div ${a}=${l / a}$, $${l}\\div ${b}=${l / b}$로 둘 다 나누어떨어져요. 두 수를 그냥 곱한 $${a * b}$${jo(a * b, '은/는')} 공배수이긴 하지만 가장 작은 것은 아니에요.`,
   };
 }
 
@@ -193,11 +182,11 @@ function gcdLcmStory(rng: Rng): GenProblem {
       steps: [
         {
           title: '무엇을 구하는지 정하기',
-          body: `봉투 수는 $${a}$${j(a, '과와')} $${b}$${j(b, '을를')} 모두 나누어떨어지게 해야 해요. 그런 수 중 가장 큰 수, 곧 최대공약수를 구해요.`,
+          body: `봉투 수는 $${a}$${jo(a, '과/와')} $${b}$${jo(b, '을/를')} 모두 나누어떨어지게 해야 해요. 그런 수 중 가장 큰 수, 곧 최대공약수를 구해요.`,
         },
         {
           title: '최대공약수 구하기',
-          body: `${ladderBody(a, b, ladder(a, b).divs)}\n최대공약수는 $${g}$${j(g, '이에요예요')}.`,
+          body: `${ladderBody(a, b, ladder(a, b).divs)}\n최대공약수는 $${g}$${jo(g, '이에요/예요')}.`,
         },
         {
           title: '확인',
@@ -229,7 +218,7 @@ function gcdLcmStory(rng: Rng): GenProblem {
     steps: [
       {
         title: '무엇을 구하는지 정하기',
-        body: `두 버스가 함께 출발하는 때는 $${a}$${j(a, '과와')} $${b}$의 공배수예요. 처음으로 같이 출발하니 최소공배수를 구해요.`,
+        body: `두 버스가 함께 출발하는 때는 $${a}$${jo(a, '과/와')} $${b}$의 공배수예요. 처음으로 같이 출발하니 최소공배수를 구해요.`,
       },
       {
         title: '최소공배수 구하기',

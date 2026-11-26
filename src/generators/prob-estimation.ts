@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, reduce } from './util.ts';
+import { fracAns, fracTex, ieyo, jo, reduce, ro } from './util.ts';
 
 const UNIT = 'prob-estimation';
 
@@ -34,14 +34,7 @@ const PY_TABLE = `T = {${Object.entries(TABLE)
 def F(z):
     return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))`;
 
-// '이에요/예요'·'은/는' 은 끝소리 받침으로 갈린다. 숫자는 마지막 숫자를 읽고(영·일·삼·육·칠·팔에 받침),
-// 분수는 "b분의 a" 라서 분자가 끝 소리다.
-const hasB = (s: string) => /[013678]$/.test(s);
-const ieyoStr = (s: string) => (hasB(s) ? '이에요' : '예요');
-const ieyo = (n: number, d = 1) => ieyoStr(String(Math.abs(reduce(n, d).n)));
-const ieotta = (s: string) => (hasB(s) ? '이었어요' : '였어요');
 /** '으로/로' — ㄹ 받침(일·칠·팔)과 받침 없음은 '로' */
-const ro = (s: string | number) => (/[036]$/.test(String(s)) ? '으로' : '로');
 
 const MEAN_VAR =
   '$E(\\bar X)=m$, $V(\\bar X)=\\frac{\\sigma^2}{n}$, $\\sigma(\\bar X)=\\frac{\\sigma}{\\sqrt n}$';
@@ -286,7 +279,7 @@ export const generators: Generator[] = [
           const lo = xb * 100 - half;
           const hi = xb * 100 + half;
           return {
-            q: `모표준편차가 $\\sigma$ 인 정규분포를 따르는 모집단에서 크기가 ${n} 인 표본을 임의추출해 얻은 표본평균으로 모평균 $m$ 을 추정했더니, 신뢰도 ${c}% 의 신뢰구간이 $${dec(lo, 2)}\\le m\\le ${dec(hi, 2)}$ ${ieotta(dec(hi, 2))}. $\\sigma$ 의 값을 구하세요. ${zNote(c)}`,
+            q: `모표준편차가 $\\sigma$ 인 정규분포를 따르는 모집단에서 크기가 ${n} 인 표본을 임의추출해 얻은 표본평균으로 모평균 $m$ 을 추정했더니, 신뢰도 ${c}% 의 신뢰구간이 $${dec(lo, 2)}\\le m\\le ${dec(hi, 2)}$ ${jo(dec(hi, 2), '이었어요/였어요')}. $\\sigma$ 의 값을 구하세요. ${zNote(c)}`,
             choices: null,
             answer: String(s),
             answerType: 'int',
@@ -315,7 +308,7 @@ export const generators: Generator[] = [
               ? { title: '위 끝', body: `$$b=${xb}+${dec(half, 2)}=${dec(v, 2)}$$` }
               : { title: '길이', body: `$$b-a=2\\times${dec(half, 2)}=${dec(v, 2)}$$` };
         return {
-          q: `모표준편차가 ${s} 인 정규분포를 따르는 모집단에서 크기가 ${n} 인 표본을 임의추출했더니 표본평균이 ${xb} ${ieotta(String(xb))}. 이 결과로 모평균 $m$ 에 대한 신뢰도 ${c}% 의 신뢰구간 $a\\le m\\le b$ 를 구할 때, ${what} 의 값을 구하세요. ${zNote(c)}`,
+          q: `모표준편차가 ${s} 인 정규분포를 따르는 모집단에서 크기가 ${n} 인 표본을 임의추출했더니 표본평균이 ${xb} ${jo(String(xb), '이었어요/였어요')}. 이 결과로 모평균 $m$ 에 대한 신뢰도 ${c}% 의 신뢰구간 $a\\le m\\le b$ 를 구할 때, ${what} 의 값을 구하세요. ${zNote(c)}`,
           choices: null,
           answer: fracAns(v, 100),
           answerTex: `$${dec(v, 2)}$`,

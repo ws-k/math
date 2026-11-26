@@ -1,29 +1,22 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polyDiff, polyEval, polySym, polyTex, reduce } from './util.ts';
+import {
+  fracAns,
+  fracTex,
+  ieyo,
+  jo,
+  paren,
+  polyDiff,
+  polyEval,
+  polySym,
+  polyTex,
+  reduce,
+} from './util.ts';
 
 const UNIT = 'calc-quotient-chain';
 
 // 검산식은 모두 원래 함수를 sympy diff 로 미분한 뒤 대입한다. 풀이는 공식(몫·합성)에 값을 넣는 경로로 쓰므로,
 // 풀이에서 부호(몫의 미분 분자 순서)나 안쪽 미분을 빠뜨리면 sympy 의 실제 미분값과 어긋나 검산에서 잡힌다.
 // 손계산이 지루해지지 않게 답의 크기를 묶고, 0 이 나오면 다시 뽑는다.
-
-/** '이에요/예요': 정수는 끝자리 소리, 분수는 '○분의 △'라 분자 끝자리 소리로 고른다 */
-const ieyo = (n: number, d = 1) => {
-  const r = reduce(n, d);
-  return '013678'.includes(String(Math.abs(r.n)).slice(-1)) ? '이에요' : '예요';
-};
-
-/**
- * 식 글자를 소리 내어 읽을 때 끝 글자에 받침이 있나. 값이 무작위라 조사(이/가, 을/를)를 글자로 고정할 수 없다.
- * 분수는 '○분의 △'라 분자, 괄호는 안쪽 끝 글자로 본다(x 는 '엑스'라 받침 없음).
- */
-function batchim(tex: string | number): boolean {
-  const s = String(tex);
-  const fr = /\\frac\{(-?\d+)\}\{\d+\}\)?$/.exec(s);
-  return /[013678]$/.test(fr ? (fr[1] as string) : s.replace(/[)}\s]+$/, ''));
-}
-const josa = (tex: string | number, yes: string, no: string) => (batchim(tex) ? yes : no);
-const ieyoTex = (tex: string) => josa(tex, '이에요', '예요');
 
 /** 계산 끝의 분수: 분모 1 이면 정수, 약분되거나 음수면 기약분수까지 한 번 더 이어 쓴다 */
 function fracChain(n: number, d: number): string {
@@ -166,7 +159,7 @@ export const generators: Generator[] = [
               body: `전개하지 않고 바로 넣어요.\n$$f'(${k})=\\frac{${2 * k}\\cdot${paren(v)}-${paren(u)}}{${paren(v)}^2}=${fracChain(num, v * v)}$$`,
             },
           ],
-          tip: `분자에서 빼는 순서를 바꿔 $(${N})\\cdot1-2x(${D})$ 로 쓰면 부호만 반대인 $${fracTex(-num, v * v)}$ ${josa(fracTex(-num, v * v), '이', '가')} 나와요. "분자 미분이 먼저"를 기억해요.`,
+          tip: `분자에서 빼는 순서를 바꿔 $(${N})\\cdot1-2x(${D})$ 로 쓰면 부호만 반대인 $${fracTex(-num, v * v)}$ ${jo(fracTex(-num, v * v), '이/가')} 나와요. "분자 미분이 먼저"를 기억해요.`,
         };
       }
     },
@@ -202,7 +195,7 @@ export const generators: Generator[] = [
             steps: [
               {
                 title: '안쪽과 바깥 나누기',
-                body: `안쪽 $u=${G}$, 바깥 $u^${n}$ 이에요. $u'=${Gd}$ ${ieyoTex(Gd)}.`,
+                body: `안쪽 $u=${G}$, 바깥 $u^${n}$ 이에요. $u'=${Gd}$ ${ieyo(Gd)}.`,
               },
               {
                 title: '합성함수의 미분법',
@@ -217,7 +210,7 @@ export const generators: Generator[] = [
                 body: `$$f'(${k})=${n}\\cdot${paren(gk)}^${n - 1}\\cdot${paren(gdk)}=${ans}$$`,
               },
             ],
-            tip: `끝의 $(${Gd})$ ${josa(Gd, '을', '를')} 빠뜨리면 $${n * gk ** (n - 1)}$ ${josa(n * gk ** (n - 1), '이', '가')} 나와요. 안쪽 미분을 곱하는 것이 합성함수 미분의 핵심이에요.`,
+            tip: `끝의 $(${Gd})$ ${jo(Gd, '을/를')} 빠뜨리면 $${n * gk ** (n - 1)}$ ${jo(n * gk ** (n - 1), '이/가')} 나와요. 안쪽 미분을 곱하는 것이 합성함수 미분의 핵심이에요.`,
           };
         }
         // 음의 거듭제곱: 1/(ax+b)^n = (ax+b)^(-n)
@@ -305,7 +298,7 @@ export const generators: Generator[] = [
             body: `$$f'\\left(${th}\\right)=${paren(c)}\\cdot${sgn < 0 ? '(-1)\\cdot' : ''}${paren(fracTex(vn, vd))}\\cdot${a}=${fracTex(ansN, vd)}$$`,
           },
         ],
-        tip: `안쪽 미분 $${a}$ ${josa(a, '을', '를')} 곱하지 않으면 답이 $${a}$ 배 작아져요. 각이 $${a}$ 배 빨리 돌면 기울기도 $${a}$ 배가 돼요.`,
+        tip: `안쪽 미분 $${a}$ ${jo(a, '을/를')} 곱하지 않으면 답이 $${a}$ 배 작아져요. 각이 $${a}$ 배 빨리 돌면 기울기도 $${a}$ 배가 돼요.`,
       };
     },
   },
@@ -334,7 +327,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '안쪽과 바깥 나누기',
-              body: `안쪽 $u=${G}$, 바깥 $\\ln u$ 예요. $(\\ln u)'=\\frac1u$ 이고 $u'=${Gd}$ ${ieyoTex(Gd)}.`,
+              body: `안쪽 $u=${G}$, 바깥 $\\ln u$ 예요. $(\\ln u)'=\\frac1u$ 이고 $u'=${Gd}$ ${ieyo(Gd)}.`,
             },
             {
               title: '합성함수의 미분법',
@@ -345,7 +338,7 @@ export const generators: Generator[] = [
               body: `분자 $${Gd}$ 의 값은 $${gdk}$, 분모 $${G}$ 의 값은 $${gk}$ 이므로\n$$f'(${k})=${fracChain(gdk, gk)}$$`,
             },
           ],
-          tip: `$\\ln$ 의 미분은 언제나 "안쪽 미분 ÷ 안쪽" 이에요. 분모에 $${G}$ ${josa(G, '을', '를')} 그대로 두는 것을 잊지 마세요.`,
+          tip: `$\\ln$ 의 미분은 언제나 "안쪽 미분 ÷ 안쪽" 이에요. 분모에 $${G}$ ${jo(G, '을/를')} 그대로 두는 것을 잊지 마세요.`,
         };
       }
     },

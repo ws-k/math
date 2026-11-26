@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd } from './util.ts';
+import { fracAns, fracTex, gcd, ieyo, ro } from './util.ts';
 
 const UNIT = 'prob-conditional';
 
@@ -24,12 +24,6 @@ const C = (n: number, r: number) => {
   for (let i = 0; i < r; i++) v = (v * (n - i)) / (i + 1);
   return v;
 };
-
-// 값이 무작위라 조사는 끝 숫자의 받침으로 고른다(분수는 분자를 마지막에 읽는다: 3분의 2).
-const ieyo = (n: number) => (/[013678]$/.test(String(n)) ? '이에요' : '예요');
-
-/** 숫자 뒤 '으로/로'. 받침이 없거나 ㄹ 받침이면 '로'(이·사·오·구, 일·칠·팔), ㄱ·ㅂ 받침이면 '으로'(육·삼·십) */
-const ro = (n: number) => (/[036]$/.test(String(n)) ? ' 으로' : ' 로');
 
 /** 센 수끼리 나눈 분수. 약분될 때만 '= 기약분수'를 덧붙인다(같은 분수를 두 번 적지 않게) */
 const divTex = (n: number, d: number) =>
@@ -66,7 +60,7 @@ export const generators: Generator[] = [
           concepts: [ADD, COND],
           steps: [
             {
-              title: `분모를 ${N}${ro(N)} 맞추기`,
+              title: `분모를 ${N} ${ro(N)} 맞추기`,
               body: `$$P(A)=${raw(nA, N)},\\quad P(B)=${raw(nB, N)},\\quad P(A\\cup B)=${raw(nU, N)}$$`,
             },
             {

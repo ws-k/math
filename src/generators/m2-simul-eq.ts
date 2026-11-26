@@ -1,13 +1,9 @@
 import type { Step } from '../content/types.ts';
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { paren } from './util.ts';
+import { eul, paren, ro } from './util.ts';
 
 const UNIT = 'm2-simul-eq';
-
-// 숫자 뒤 조사. 읽었을 때 끝 글자의 받침은 마지막 자리로 정해진다(m1-linear-eq 와 같은 규칙).
-const eul = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '을' : '를');
-const ro = (n: number) => ([0, 3, 6].includes(Math.abs(n) % 10) ? '으로' : '로');
 
 const CONCEPT_ADDSUB =
   '가감법: 한 문자의 계수를 같게(또는 부호만 반대로) 맞춘 뒤 두 식을 빼거나 더해 그 문자를 없애요.';

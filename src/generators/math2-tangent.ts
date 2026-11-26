@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracTex, paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
+import { eul, fracTex, ieyo, paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math2-tangent';
 
@@ -11,12 +11,6 @@ const okAns = (n: number) => n !== 0 && Math.abs(n) <= MAX;
 
 /** "+3" / "-3" — 식 뒤에 상수를 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
-
-// '이에요/예요', '을/를'은 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (숫자는 일·삼·육·칠·팔·영/십이 받침, 문자는 영어 이름이라 받침 없음).
-const hasBatchim = (tex: string | number) => /[013678]$/.test(String(tex));
-const ieyo = (tex: string | number) => (hasBatchim(tex) ? '이에요' : '예요');
-const eul = (tex: string | number) => (hasBatchim(tex) ? '을' : '를');
 
 const TANGENT = "접선의 방정식: $y=f'(a)(x-a)+f(a)$";
 

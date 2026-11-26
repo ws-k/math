@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, reduce } from './util.ts';
+import { fracAns, fracTex, ieyo, reduce } from './util.ts';
 
 const UNIT = 'calc-trig-limit-diff';
 
@@ -8,10 +8,6 @@ const UNIT = 'calc-trig-limit-diff';
 // 미분 문제는 diff(...).subs(x, 각) 으로 원래 함수를 미분해 대조한다(풀이의 도함수를 믿지 않으려고).
 
 /** '이에요/예요': 정수는 끝자리 소리, 분수는 '○분의 △'라 분자 끝자리 소리로 고른다 */
-const ieyo = (n: number, d = 1) => {
-  const r = reduce(n, d);
-  return '013678'.includes(String(Math.abs(r.n)).slice(-1)) ? '이에요' : '예요';
-};
 
 /** 3 → "3x", 1 → "x" (삼각함수 안쪽·분모의 계수) */
 const kx = (k: number) => (k === 1 ? 'x' : `${k}x`);

@@ -1,15 +1,12 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { paren } from './util.ts';
+import { ieyo, paren } from './util.ts';
 
 const UNIT = 'geo-space-coord';
 
 // 검산식은 공식을 다시 적지 않고 sympy 의 공간 기하(Point3D·Plane·Line3D)로 계산한다 — 대칭점은
 // "평면(직선) 위로의 정사영을 두 배 한 뒤 원래 점을 뺀 것", 거리는 Point3D.distance, 구는 식에서
 // 완전제곱으로 중심을 읽는다. 풀이에 쓴 규칙(부호 바꾸기 등)과 다른 길로 같은 답이 나오는지 보려는 것.
-
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝자리로 고른다(일·삼·육·칠·팔·영/십 → 받침).
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 type V3 = [number, number, number];
 

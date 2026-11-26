@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex, paren } from './util.ts';
+import { fracAns, fracTex, ieyo, paren } from './util.ts';
 
 const UNIT = 'geo-vector-dot';
 
@@ -37,10 +37,6 @@ const times = (a: number, b: number) => `${paren(a)}\\cdot${paren(b)}`;
 
 // '이에요/예요'는 앞 소리의 받침으로 갈린다. 정수는 끝자리(영·일·삼·육·칠·팔에 받침),
 // 분수는 '○분의 △'로 읽으니 분자 끝자리로 고른다.
-const ieyo = (n: number, d = 1) => {
-  const r = fracAns(n, d).split('/')[0] as string;
-  return '013678'.includes(r.slice(-1)) ? '이에요' : '예요';
-};
 
 function ans(n: number, d: number): Pick<GenProblem, 'answer' | 'answerType' | 'answerTex'> {
   const r = fracAns(n, d);

@@ -1,15 +1,11 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polySym, polyTex } from './util.ts';
+import { fracAns, fracTex, ieyo, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math1-log-func';
 
 // 로그함수 기초는 세 가지 손놀림으로 모인다: 정의로 로그를 벗기기, 역함수를 '방정식 풀기'로 읽기,
 // 부등식에서 밑에 따라 방향을 정하고 진수 조건을 함께 쓰기. 수능 공통 22번이 이 셋을 엮어 묻기 때문에
 // 기초에서는 하나씩 떼어 손에 익히게 한다.
-
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (숫자는 일·삼·육·칠·팔·영/십이 받침).
-const ieyo = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이에요' : '예요');
 
 const DEF = '$\\log_ax=c \\Leftrightarrow x=a^c$';
 

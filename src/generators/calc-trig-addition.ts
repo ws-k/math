@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, reduce } from './util.ts';
+import { fracAns, fracTex, ieyo, paren, reduce } from './util.ts';
 
 const UNIT = 'calc-trig-addition';
 
@@ -8,10 +8,6 @@ const UNIT = 'calc-trig-addition';
 // 검산은 sympy 에 각 자체(asin·acos·atan 으로 만든 각)를 넣고 expand_trig 로 풀어 계산한다 —
 // 짝 값이나 공식의 부호를 옮겨 적다 틀리면 화면 답과 어긋나서 잡힌다.
 // 생성기 id 는 다른 단원과 겹치지 않도록 모두 단원 id 'calc-trig-addition-' 로 시작한다.
-
-// '이에요/예요'는 읽었을 때 끝소리 받침으로 갈린다(분수 b분의 a 는 분자 a 로 끝난다).
-const ieyoN = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
-const ieyoF = (n: number, d: number) => ieyoN(reduce(n, d).n);
 
 /** 피타고라스 수 [짧은 변, 긴 변, 빗변] */
 const TRIPLES: [number, number, number][] = [
@@ -86,11 +82,11 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '$\\cos\\alpha$ 구하기',
-              body: `$\\alpha$ 가 예각이라 $\\cos\\alpha>0$ 이므로 $\\cos\\alpha=\\sqrt{1-\\left(${A(sa)}\\right)^2}=${A(ca)}$ ${ieyoF(ca, ah)}.`,
+              body: `$\\alpha$ 가 예각이라 $\\cos\\alpha>0$ 이므로 $\\cos\\alpha=\\sqrt{1-\\left(${A(sa)}\\right)^2}=${A(ca)}$ ${ieyo(ca, ah)}.`,
             },
             {
               title: '$\\sin\\beta$ 구하기',
-              body: `$\\beta$ 도 예각이라 $\\sin\\beta=\\sqrt{1-\\left(${B(cb)}\\right)^2}=${B(sb)}$ ${ieyoF(sb, bh)}.`,
+              body: `$\\beta$ 도 예각이라 $\\sin\\beta=\\sqrt{1-\\left(${B(cb)}\\right)^2}=${B(sb)}$ ${ieyo(sb, bh)}.`,
             },
             {
               title: '덧셈정리 적용',
@@ -279,7 +275,7 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '기울기를 각으로 보기',
-              body: `두 직선이 $x$ 축과 이루는 각을 $\\alpha$, $\\beta$ 라 하면 $\\tan\\alpha=${m1}$, $\\tan\\beta=${m2}$ ${ieyoN(m2)}.`,
+              body: `두 직선이 $x$ 축과 이루는 각을 $\\alpha$, $\\beta$ 라 하면 $\\tan\\alpha=${m1}$, $\\tan\\beta=${m2}$ ${ieyo(m2)}.`,
             },
             {
               title: '두 각의 차',
@@ -287,7 +283,7 @@ export const generators: Generator[] = [
             },
             {
               title: '예각으로 고치기',
-              body: `예각의 $\\tan$ 은 양수라 절댓값을 써요. $\\tan\\theta=${fracTex(ans.n, ans.d)}$ ${ieyoF(ans.n, ans.d)}.`,
+              body: `예각의 $\\tan$ 은 양수라 절댓값을 써요. $\\tan\\theta=${fracTex(ans.n, ans.d)}$ ${ieyo(ans.n, ans.d)}.`,
             },
           ],
           tip: 'y 절편은 각에 영향을 주지 않아요. 직선을 평행이동해도 기울기, 곧 각은 그대로예요.',

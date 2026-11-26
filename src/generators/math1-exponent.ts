@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex } from './util.ts';
+import { fracAns, fracTex, ieyo } from './util.ts';
 
 const UNIT = 'math1-exponent';
 
@@ -7,13 +7,6 @@ const UNIT = 'math1-exponent';
 // 모든 생성기는 밑을 소수(2·3·5)의 거듭제곱으로 바꾸는 단계를 풀이에 꼭 넣는다.
 // 검산식은 화면 숫자 그대로(Integer(8)**Rational(2,3))를 sympy 에 넣는다 — 파이썬 정수 나눗셈(2/3)이
 // 실수로 바뀌어 검산이 근삿값 비교가 되는 걸 막으려고 지수는 늘 Rational 로 쓴다.
-
-// '이에요/예요'는 앞 소리의 받침으로 갈린다. 분수는 분자가 마지막에 읽혀서("2분의 3") 분자 끝 숫자로 고른다
-// (일·삼·육·칠·팔·영/십/백이 받침).
-const ieyo = (v: string | number) => {
-  const s = String(v).replace(/\\frac\{(-?\d+)\}\{\d+\}/, '$1');
-  return /[013678]$/.test(s) ? '이에요' : '예요';
-};
 
 /** 지수 m/n 의 TeX. 정수면 그대로, 아니면 \frac */
 const expTex = (m: number, n: number) => fracTex(m, n);

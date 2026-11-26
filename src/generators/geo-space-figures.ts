@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd } from './util.ts';
+import { fracAns, fracTex, gcd, ieyo } from './util.ts';
 
 const UNIT = 'geo-space-figures';
 
@@ -10,7 +10,6 @@ const UNIT = 'geo-space-figures';
 
 // '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝자리로 고른다(일·삼·육·칠·팔·영/십 → 받침).
 // 분수 \frac{a}{b} 는 "b분의 a"로 읽으니 분자의 끝자리로 고른다.
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 /** 피타고라스 수 (빗변이 마지막) */
 const TRIPLES: [number, number, number][] = [

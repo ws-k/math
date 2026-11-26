@@ -1,6 +1,18 @@
-import { eul, ieyo as ieyoTex, iga, ro, wa } from './math2-indefinite.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polyEval, polySym, polyTex, reduce } from './util.ts';
+import {
+  eul,
+  fracAns,
+  fracTex,
+  gwa,
+  ieyo,
+  iga,
+  paren,
+  polyEval,
+  polySym,
+  polyTex,
+  reduce,
+  ro,
+} from './util.ts';
 
 const UNIT = 'math2-area-distance';
 
@@ -9,10 +21,6 @@ const UNIT = 'math2-area-distance';
 // 이차식의 정적분은 분수가 자연스러워서 답은 기약분수로 받는다.
 
 /** '이에요/예요' — 분수는 분자를 마지막에 읽는다("3분의 4") */
-function ieyo(n: number, d = 1): string {
-  const r = reduce(n, d);
-  return /[013678]$/.test(String(Math.abs(r.n))) ? '이에요' : '예요';
-}
 
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
 
@@ -72,7 +80,7 @@ export const generators: Generator[] = [
         const ft = polyTex(f);
         const below = c > 0;
         return {
-          q: `곡선 $y=${ft}$ ${wa(ft)} $x$ 축으로 둘러싸인 부분의 넓이를 구하세요.`,
+          q: `곡선 $y=${ft}$ ${gwa(ft)} $x$ 축으로 둘러싸인 부분의 넓이를 구하세요.`,
           choices: null,
           answer: ans,
           answerType: 'fraction',
@@ -125,7 +133,7 @@ export const generators: Generator[] = [
         const gt = polyTex(g);
         const diff = polyTex([-1, p + q, -p * q]);
         return {
-          q: `곡선 $y=${ft}$ ${wa(ft)} 직선 $y=${gt}$ ${ro(gt)} 둘러싸인 부분의 넓이를 구하세요.`,
+          q: `곡선 $y=${ft}$ ${gwa(ft)} 직선 $y=${gt}$ ${ro(gt)} 둘러싸인 부분의 넓이를 구하세요.`,
           choices: null,
           answer: ans,
           answerType: 'fraction',
@@ -169,7 +177,7 @@ export const generators: Generator[] = [
         const change = c * (T - p) ** 2 - c * p * p;
         const vt = polyTex(v, 't');
         return {
-          q: `수직선 위를 움직이는 점 P 의 시각 $t$ 에서의 속도가 $v(t)=${vt}$ ${ieyoTex(vt)}. 시각 $t=0$ 에서 $t=${T}$ 까지 점 P 가 움직인 거리를 구하세요.`,
+          q: `수직선 위를 움직이는 점 P 의 시각 $t$ 에서의 속도가 $v(t)=${vt}$ ${ieyo(vt)}. 시각 $t=0$ 에서 $t=${T}$ 까지 점 P 가 움직인 거리를 구하세요.`,
           choices: null,
           answer: fracAns(d1 + d2, 2),
           answerType: 'fraction',
@@ -218,7 +226,7 @@ export const generators: Generator[] = [
         if (move === 0 || ans === 0 || Math.abs(ans) > 150) continue;
         const vt = polyTex(v, 't');
         return {
-          q: `수직선 위를 움직이는 점 P 의 시각 $t$ 에서의 속도가 $v(t)=${vt}$ ${ieyoTex(vt)}. 시각 $t=0$ 에서 점 P 의 위치가 $${x0}$ 일 때, 시각 $t=${k}$ 에서 점 P 의 위치를 구하세요.`,
+          q: `수직선 위를 움직이는 점 P 의 시각 $t$ 에서의 속도가 $v(t)=${vt}$ ${ieyo(vt)}. 시각 $t=0$ 에서 점 P 의 위치가 $${x0}$ 일 때, 시각 $t=${k}$ 에서 점 P 의 위치를 구하세요.`,
           choices: null,
           answer: String(ans),
           answerType: 'int',

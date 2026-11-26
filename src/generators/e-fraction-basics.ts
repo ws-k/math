@@ -1,20 +1,11 @@
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, gcd, lcm } from './util.ts';
+import { fracAns, gcd, jo, lcm } from './util.ts';
 
 const UNIT = 'e-fraction-basics';
 
 // 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다. e-fraction-addsub 생성기와 같은 규칙(보고서에 공용화 제안).
 // 분수는 "4분의 3"처럼 분자를 마지막에 읽으므로 분자를 넘긴다.
-const BATCHIM = new Set(['0', '1', '3', '6', '7', '8']);
-const RIEUL = new Set(['1', '7', '8']);
-type Pair = '은는' | '이가' | '을를' | '과와' | '으로로' | '이에요예요';
-function j(n: number, pair: Pair): string {
-  const last = String(n).slice(-1);
-  if (pair === '으로로') return BATCHIM.has(last) && !RIEUL.has(last) ? '으로' : '로';
-  if (pair === '이에요예요') return BATCHIM.has(last) ? '이에요' : '예요';
-  return BATCHIM.has(last) ? pair.slice(0, 1) : pair.slice(1);
-}
 
 const f = (n: number | string, d: number | string) => `\\frac{${n}}{${d}}`;
 
@@ -34,7 +25,7 @@ function reduceFrac(rng: Rng): GenProblem {
   const N = n * k;
   const D = d * k;
   return {
-    q: `$${f(N, D)}$${j(N, '을를')} 기약분수로 나타내세요.`,
+    q: `$${f(N, D)}$${jo(N, '을/를')} 기약분수로 나타내세요.`,
     choices: null,
     answer: fracAns(N, D),
     answerType: 'fraction',
@@ -46,7 +37,7 @@ function reduceFrac(rng: Rng): GenProblem {
     steps: [
       {
         title: '최대공약수 찾기',
-        body: `분자 $${N}$${j(N, '과와')} 분모 $${D}$의 최대공약수는 $${k}$${j(k, '이에요예요')}.`,
+        body: `분자 $${N}$${jo(N, '과/와')} 분모 $${D}$의 최대공약수는 $${k}$${jo(k, '이에요/예요')}.`,
       },
       {
         title: '분모와 분자를 나누기',
@@ -54,7 +45,7 @@ function reduceFrac(rng: Rng): GenProblem {
       },
       {
         title: '더 나눌 수 있는지 확인',
-        body: `$${n}$${j(n, '과와')} $${d}$의 공약수는 1뿐이라 기약분수예요.`,
+        body: `$${n}$${jo(n, '과/와')} $${d}$의 공약수는 1뿐이라 기약분수예요.`,
       },
     ],
     tip: `작은 공약수로 여러 번 나눠도 답은 같아요. 끝에 분모와 분자의 공약수가 1뿐인지 꼭 확인해요.`,
@@ -68,7 +59,7 @@ function mixedToImproper(rng: Rng): GenProblem {
   const n = properNum(rng, d);
   const N = w * d + n;
   return {
-    q: `$${w}${f(n, d)}$${j(n, '을를')} 가분수로 나타내세요.`,
+    q: `$${w}${f(n, d)}$${jo(n, '을/를')} 가분수로 나타내세요.`,
     choices: null,
     answer: fracAns(N, d),
     answerType: 'fraction',
@@ -82,8 +73,8 @@ function mixedToImproper(rng: Rng): GenProblem {
         title: '자연수를 분수로',
         body:
           w === 1
-            ? `1은 $${f(1, d)}$이 $${d}$개, 곧 $${f(d, d)}$${j(d, '이에요예요')}.\n$$1=${f(d, d)}$$`
-            : `1은 $${f(d, d)}$${j(d, '이에요예요')}. 그래서 $${w}$${j(w, '은는')} $${f(1, d)}$이 $${w * d}$개예요.\n$$${w}=${f(w * d, d)}$$`,
+            ? `1은 $${f(1, d)}$이 $${d}$개, 곧 $${f(d, d)}$${jo(d, '이에요/예요')}.\n$$1=${f(d, d)}$$`
+            : `1은 $${f(d, d)}$${jo(d, '이에요/예요')}. 그래서 $${w}$${jo(w, '은/는')} $${f(1, d)}$이 $${w * d}$개예요.\n$$${w}=${f(w * d, d)}$$`,
       },
       {
         title: '분수끼리 더하기',
@@ -121,7 +112,7 @@ function compareFrac(rng: Rng): GenProblem {
       steps: [
         {
           title: '공통분모 정하기',
-          body: `$${b}$${j(b, '과와')} $${d}$의 최소공배수는 $${L}$${j(L, '이에요예요')}.`,
+          body: `$${b}$${jo(b, '과/와')} $${d}$의 최소공배수는 $${L}$${jo(L, '이에요/예요')}.`,
         },
         {
           title: '통분하기',
@@ -129,7 +120,7 @@ function compareFrac(rng: Rng): GenProblem {
         },
         {
           title: '분자 비교하기',
-          body: `$${A}$${j(A, '과와')} $${C}$ 중 $${Math.max(A, C)}$${j(Math.max(A, C), '이가')} 더 커요. 그래서 $${f(big[0] as number, big[1] as number)}$${j(big[0] as number, '이가')} 더 커요.`,
+          body: `$${A}$${jo(A, '과/와')} $${C}$ 중 $${Math.max(A, C)}$${jo(Math.max(A, C), '이/가')} 더 커요. 그래서 $${f(big[0] as number, big[1] as number)}$${jo(big[0] as number, '이/가')} 더 커요.`,
         },
       ],
       tip: '분모가 큰 쪽이 크다고 생각하기 쉬워요. 분모가 크면 조각은 오히려 작아요.',
@@ -147,12 +138,12 @@ function equivMissing(rng: Rng): GenProblem {
     {
       title: '몇 배인지 찾기',
       body: top
-        ? `분모가 $${b}$에서 $${b * k}$${j(b * k, '으로로')} $${k}$배가 됐어요.`
-        : `분자가 $${a}$에서 $${a * k}$${j(a * k, '으로로')} $${k}$배가 됐어요.`,
+        ? `분모가 $${b}$에서 $${b * k}$${jo(b * k, '으로/로')} $${k}$배가 됐어요.`
+        : `분자가 $${a}$에서 $${a * k}$${jo(a * k, '으로/로')} $${k}$배가 됐어요.`,
     },
     {
       title: `${top ? '분자' : '분모'}에도 같은 수 곱하기`,
-      body: `크기가 같으려면 ${top ? '분자' : '분모'}에도 $${k}$${j(k, '을를')} 곱해요.\n$$${f(a, b)}=${f(`${a}\\times ${k}`, `${b}\\times ${k}`)}=${f(a * k, b * k)}$$`,
+      body: `크기가 같으려면 ${top ? '분자' : '분모'}에도 $${k}$${jo(k, '을/를')} 곱해요.\n$$${f(a, b)}=${f(`${a}\\times ${k}`, `${b}\\times ${k}`)}=${f(a * k, b * k)}$$`,
     },
   ];
   return {

@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
+import { eun, gwa, ieyo, paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math2-max-min-eq';
 
@@ -8,12 +8,6 @@ const UNIT = 'math2-max-min-eq';
 // 손계산이 맞게 떨어지도록 삼차함수를 극값의 두 자리(α<β)에서 거꾸로 만든다: f'(x)=3A(x-α)(x-β).
 // 검산식은 sympy 의 maximum/minimum·real_roots 처럼 풀이 경로와 다른 길로 계산해, 후보를 빠뜨린
 // 풀이가 맞는 답을 내는 일이 없게 한다. 생성기 id 는 모두 'math2-max-min-eq-' 로 시작한다.
-
-// '이에요/예요'·'을/를'은 앞 소리 받침으로 갈린다(숫자 끝자리: 일·삼·육·칠·팔·영/십 → 받침).
-const batchim = (tex: string | number) => /[013678]$/.test(String(tex));
-const ieyo = (tex: string | number) => (batchim(tex) ? '이에요' : '예요');
-const eun = (tex: string | number) => (batchim(tex) ? '은' : '는');
-const gwa = (tex: string | number) => (batchim(tex) ? '과' : '와');
 
 /** x-α 를 글로: 0 → "x", 2 → "x-2", -3 → "x+3" */
 const lin = (r: number) => (r === 0 ? 'x' : r > 0 ? `x-${r}` : `x+${-r}`);

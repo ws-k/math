@@ -1,6 +1,5 @@
-import { eul, ieyo, iga } from './math2-indefinite.ts';
 import type { Generator } from './types.ts';
-import { paren, polySym, polyTex } from './util.ts';
+import { eul, ieyo, iga, ira, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'calc-diff-app';
 
@@ -15,7 +14,6 @@ const plusC = (n: number) => (n === 0 ? '' : n < 0 ? String(n) : `+${n}`);
 
 /** 계수 a 를 식 앞에: 1 이면 생략, -1 이면 부호만 */
 /** '이라/라' — 앞 소리 받침으로 고른다(ieyo 와 같은 판정) */
-const ira = (tex: string | number) => (ieyo(tex) === '이에요' ? '이라' : '라');
 
 const coef = (a: number, body: string) => (a === 1 ? body : a === -1 ? `-${body}` : `${a}${body}`);
 

@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex, paren } from './util.ts';
+import { eul, fracAns, fracTex, gwa, paren } from './util.ts';
 
 const UNIT = 'h1-circle-eq';
 
@@ -28,10 +28,6 @@ function ans(n: number, d: number): Pick<GenProblem, 'answer' | 'answerType' | '
     : { answer: r, answerType: 'int' };
 }
 
-// 숫자 뒤 조사. 읽었을 때 끝 글자 받침으로 정한다(영·일·삼·육·칠·팔·십 → 받침, 일·칠·팔은 ㄹ 받침)
-const hasB = (n: number) => [0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10);
-const eul = (n: number) => (hasB(n) ? '을' : '를');
-const gwa = (n: number) => (hasB(n) ? '과' : '와');
 /** 맨 앞 계수: 1·x → x, −1·x → −x */
 const lead = (k: number, v: string) => (k === 1 ? v : k === -1 ? `-${v}` : `${k}${v}`);
 

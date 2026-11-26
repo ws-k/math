@@ -1,6 +1,5 @@
-import { j } from './e-fraction-mul.ts';
 import type { Generator } from './types.ts';
-import { paren, polySym, polyTex } from './util.ts';
+import { jo, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'm2-exponent-poly';
 
@@ -292,7 +291,7 @@ export const generators: Generator[] = [
               },
               {
                 title: '동류항끼리 모으기',
-                body: `$$${polyTex(e1)}${polyTex(e2).startsWith('-') ? '' : '+'}${polyTex(e2)}=${polyTex([A, B, 0])}$$\n${name}는 $${want}$${j(Math.abs(want), '이에요예요')}.`,
+                body: `$$${polyTex(e1)}${polyTex(e2).startsWith('-') ? '' : '+'}${polyTex(e2)}=${polyTex([A, B, 0])}$$\n${name}는 $${want}$${jo(Math.abs(want), '이에요/예요')}.`,
               },
             ],
             tip: '단항식을 괄호 안 첫 항에만 곱하고 뒤 항을 빠뜨리는 실수가 잦아요. 넓이 모형의 칸이 모두 채워졌는지 떠올려 봐요.',

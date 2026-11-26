@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { paren, polyDiff, polyEval, polyMul, polySym, polyTex } from './util.ts';
+import { eul, ieyo, paren, polyDiff, polyEval, polyMul, polySym, polyTex, ro } from './util.ts';
 
 const UNIT = 'math2-diff-polynomial';
 
@@ -10,14 +10,6 @@ const okAns = (n: number) => n !== 0 && Math.abs(n) <= MAX;
 
 /** "+3" / "-3" — 식 뒤에 상수를 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
-
-// '이에요/예요', '을/를'은 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (숫자는 일·삼·육·칠·팔·영/십이 받침, 문자는 영어 이름이라 받침 없음).
-const hasBatchim = (tex: string | number) => /[013678]$/.test(String(tex));
-const ieyo = (tex: string | number) => (hasBatchim(tex) ? '이에요' : '예요');
-const eul = (tex: string | number) => (hasBatchim(tex) ? '을' : '를');
-// '로/으로'는 ㄹ 받침(일·칠·팔)이면 '로'라서 받침 규칙과 따로 고른다
-const ro = (tex: string | number) => (/[036]$/.test(String(tex)) ? '으로' : '로');
 
 const POWER = "$(x^n)'=nx^{n-1}$, 상수의 미분은 $0$";
 const LINEAR = "$\\{af(x)+bg(x)\\}'=af'(x)+bg'(x)$ — 항마다 따로 미분해요.";

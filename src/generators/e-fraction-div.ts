@@ -1,8 +1,8 @@
 import type { Step } from '../content/types.ts';
-import { f, finish, j, mixedTex, mulSteps, properNum, R, toImproper } from './e-fraction-mul.ts';
+import { f, finish, mixedTex, mulSteps, properNum, R, toImproper } from './e-fraction-mul.ts';
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { gcd } from './util.ts';
+import { gcd, jo } from './util.ts';
 
 const UNIT = 'e-fraction-div';
 
@@ -23,7 +23,7 @@ function divWhole(rng: Rng): GenProblem {
     const steps: Step[] = [
       {
         title: '역수를 곱하는 꼴로 바꾸기',
-        body: `자연수 $${n}$의 역수는 $${f(1, n)}$${j(1, '이에요예요')}. $${n}$${j(n, '으로로')} 나누는 것은 $${f(1, n)}$${j(1, '을를')} 곱하는 것과 같아요.\n$$${f(a, d)}\\div${n}=${f(a, d)}\\times${f(1, n)}$$`,
+        body: `자연수 $${n}$의 역수는 $${f(1, n)}$${jo(1, '이에요/예요')}. $${n}$${jo(n, '으로/로')} 나누는 것은 $${f(1, n)}$${jo(1, '을/를')} 곱하는 것과 같아요.\n$$${f(a, d)}\\div${n}=${f(a, d)}\\times${f(1, n)}$$`,
       },
     ];
     const m = mulSteps(a, d, 1, n);
@@ -42,7 +42,7 @@ function divWhole(rng: Rng): GenProblem {
       steps,
       tip:
         a % n === 0
-          ? `분자 $${a}$${j(a, '이가')} $${n}$${j(n, '으로로')} 나누어떨어지면 분자만 나눠도 돼요: $${f(a / n, d)}$.`
+          ? `분자 $${a}$${jo(a, '이/가')} $${n}$${jo(n, '으로/로')} 나누어떨어지면 분자만 나눠도 돼요: $${f(a / n, d)}$.`
           : '분자가 자연수로 나누어떨어지지 않으면 분모에 자연수를 곱해요. 조각을 더 잘게 나누는 거예요.',
     };
   }
@@ -58,7 +58,7 @@ function divFrac(rng: Rng): GenProblem {
     const steps: Step[] = [
       {
         title: '나누는 수를 뒤집어 곱하기',
-        body: `$${f(c, d)}$의 역수는 $${c === 1 ? `${f(d, 1)}=${d}` : f(d, c)}$${j(d, '이에요예요')}. ÷를 ×로 바꾸고 나누는 수만 뒤집어요.\n$$${f(a, b)}\\div${f(c, d)}=${f(a, b)}\\times${f(d, c)}$$`,
+        body: `$${f(c, d)}$의 역수는 $${c === 1 ? `${f(d, 1)}=${d}` : f(d, c)}$${jo(d, '이에요/예요')}. ÷를 ×로 바꾸고 나누는 수만 뒤집어요.\n$$${f(a, b)}\\div${f(c, d)}=${f(a, b)}\\times${f(d, c)}$$`,
       },
     ];
     const m = mulSteps(a, b, d, c);
@@ -94,7 +94,7 @@ function divMixed(rng: Rng): GenProblem {
     if (w2 > 0) steps.push(toImproper(w2, a2, d2));
     steps.push({
       title: '나누는 수를 뒤집어 곱하기',
-      body: `$${f(p2, d2)}$의 역수는 $${f(d2, p2)}$${j(d2, '이에요예요')}.\n$$${f(p1, d1)}\\div${f(p2, d2)}=${f(p1, d1)}\\times${f(d2, p2)}$$`,
+      body: `$${f(p2, d2)}$의 역수는 $${f(d2, p2)}$${jo(d2, '이에요/예요')}.\n$$${f(p1, d1)}\\div${f(p2, d2)}=${f(p1, d1)}\\times${f(d2, p2)}$$`,
     });
     const m = mulSteps(p1, d1, d2, p2);
     steps.push(...m.steps);

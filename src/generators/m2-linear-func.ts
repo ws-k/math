@@ -1,12 +1,11 @@
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex, paren, polySym, polyTex } from './util.ts';
+import { fracAns, fracTex, ieyo, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'm2-linear-func';
 
 // 숫자 뒤 조사. 읽었을 때 끝 글자의 받침은 마지막 자리로 정해진다(일·삼·육·칠·팔·영/십 → 받침).
 // 분수·음수도 마지막 자리 숫자로 읽으므로 절댓값의 끝자리만 본다.
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 const CONCEPT_SLOPE = '기울기 = ($y$의 증가량) ÷ ($x$의 증가량)';
 const CONCEPT_FORM = '일차함수 $y=ax+b$에서 $a$는 기울기, $b$는 $y$절편이에요.';

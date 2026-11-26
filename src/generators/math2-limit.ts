@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, paren, polySym, polyTex } from './util.ts';
+import { eul, fracAns, fracTex, ieyo, iga, paren, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math2-limit';
 
@@ -8,13 +8,6 @@ const UNIT = 'math2-limit';
 // 생성기 id 는 단원 id 로 시작한다 — 예전에 다른 단원과 id 가 겹쳐 엉뚱한 문제가 나온 사고가 있었다.
 
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
-
-// 조사는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (숫자 일·삼·육·칠·팔·영/십은 받침, 이·사·오·구는 받침 없음. x 는 '엑스'라 받침 없음).
-const batchim = (s: number | string) => /[013678]$/.test(String(s));
-const ieyo = (s: number | string) => (batchim(s) ? '이에요' : '예요');
-const eul = (s: number | string) => (batchim(s) ? '을' : '를');
-const iga = (s: number | string) => (batchim(s) ? '이' : '가');
 
 /** x-a 를 TeX 로: a=-3 → "x+3", a=0 → "x" */
 const lin = (a: number) => polyTex([1, -a]);

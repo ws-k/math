@@ -1,13 +1,8 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { polySym, polyTex } from './util.ts';
+import { eul, ieyo, polySym, polyTex } from './util.ts';
 
 const UNIT = 'm3-sqrt';
-
-// 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다(m1-linear-eq 와 같은 규칙). 숫자가 무작위라 마지막 자리로 고른다.
-// (일·삼·육·칠·팔·영/십 → 받침, 이·사·오·구 → 없음). ㄹ 받침(1·7·8)은 '로'를 쓴다.
-const eul = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '을' : '를');
-const ieyo = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
 
 const CONCEPT_SQ = '$a>0$ 이면 $(\\sqrt{a})^2=a$, $(-\\sqrt{a})^2=a$ 예요.';
 const CONCEPT_ABS = '$\\sqrt{a^2}=|a|$. 근호 안이 제곱이면 꺼낸 값은 늘 0 이상이에요.';

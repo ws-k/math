@@ -77,6 +77,72 @@ export function paren(n: number | string): string {
   return s.startsWith('-') ? `(${s})` : s;
 }
 
+// ---- 조사 도우미 ----
+// 생성기 글은 값이 무작위라 숫자·식 뒤 조사(을/를, 이에요/예요 …)를 글자로 고정할 수 없어, 읽는 소리의 끝 받침으로
+// 고른다. 예전에는 생성기마다 따로 적어 규칙이 갈렸다(분수 \frac{3}{4} 를 '}' 로 보고 받침 없음, √3 을 받침 없음 등 —
+// 요청 18). 한곳에 두고 모두 이것을 쓴다.
+
+/** 받침을 읽을 수 있는 것: 수, TeX 글자, 분수 {n, d}(약분한 분자 소리) */
+export type Sayable = number | string | { n: number; d: number };
+
+/** 숫자 끝자리 소리: 영·일·삼·육·칠·팔은 받침, 그 가운데 일·칠·팔은 ㄹ 받침. 0 으로 끝나면 십·백·천·만이라 받침 */
+const DIGIT_BATCHIM = '013678';
+const DIGIT_RIEUL = '178';
+
+/**
+ * 소리 내어 읽은 끝 글자에 받침이 있나·그 받침이 ㄹ 인가. TeX 는 읽는 순서대로 본다: 분수는 'b분의 a' 라 분자,
+ * 거듭제곱은 '제곱'(받침), ° 는 '도'(받침 없음), 괄호·근호·집합 기호는 안쪽 끝 글자. 영문 글자·그리스 문자는
+ * 받침 없음으로 본다(x 엑스 · π 파이 — 단위 cm·m 를 '엠' 으로 잘못 읽지 않게, 예전 생성기들과 같은 판단)
+ */
+export function lastSound(v: Sayable): { batchim: boolean; rieul: boolean } {
+  if (typeof v === 'object') return lastSound(reduce(v.n, v.d).n);
+  let s = String(v).trim();
+  for (;;) {
+    // 닫는 괄호·근호 칸·집합 기호·수식 구분 $ 는 소리가 없다 — 안쪽 끝 글자가 끝소리
+    const t = s.replace(/(\\right)?[)\]}|$]$|\\[{}]$|\s+$/, '');
+    if (t === s) break;
+    s = t;
+  }
+  if (/\^\{?\\circ\}?$|°$/.test(s)) return { batchim: false, rieul: false };
+  const frac = /\\[dt]?frac\{(-?[^{}]+)\}\{[^{}]+$/.exec(s);
+  if (frac) return lastSound(frac[1] as string);
+  if (/\^(\{[^{}]*|[A-Za-z0-9])$/.test(s)) return { batchim: true, rieul: false };
+  const last = s.slice(-1);
+  if (/\d/.test(last))
+    return { batchim: DIGIT_BATCHIM.includes(last), rieul: DIGIT_RIEUL.includes(last) };
+  const code = last.charCodeAt(0) - 0xac00;
+  if (code >= 0 && code < 11172) return { batchim: code % 28 !== 0, rieul: code % 28 === 8 };
+  return { batchim: false, rieul: false };
+}
+
+export type JoPair =
+  | '은/는'
+  | '이/가'
+  | '을/를'
+  | '과/와'
+  | '으로/로'
+  | '이에요/예요'
+  | '이라/라'
+  | '이었어요/였어요';
+
+/** 짝 조사 가운데 앞 소리에 맞는 쪽. 으로/로 는 받침이 없거나 ㄹ 받침이면 '로' */
+export function jo(v: Sayable, pair: JoPair): string {
+  const [yes, no] = pair.split('/') as [string, string];
+  const s = lastSound(v);
+  return s.batchim && !(pair === '으로/로' && s.rieul) ? yes : no;
+}
+
+/** 자주 쓰는 짝의 줄임. 둘째 인자가 있으면 분수 n/d(약분한 분자의 소리) */
+const say = (v: Sayable, d?: number): Sayable =>
+  d === undefined || typeof v !== 'number' ? v : { n: v, d };
+export const ieyo = (v: Sayable, d?: number) => jo(say(v, d), '이에요/예요');
+export const eul = (v: Sayable, d?: number) => jo(say(v, d), '을/를');
+export const eun = (v: Sayable, d?: number) => jo(say(v, d), '은/는');
+export const iga = (v: Sayable, d?: number) => jo(say(v, d), '이/가');
+export const gwa = (v: Sayable, d?: number) => jo(say(v, d), '과/와');
+export const ro = (v: Sayable, d?: number) => jo(say(v, d), '으로/로');
+export const ira = (v: Sayable, d?: number) => jo(say(v, d), '이라/라');
+
 /** 두 다항식(계수 배열)의 곱 */
 export function polyMul(a: number[], b: number[]): number[] {
   const out = new Array(a.length + b.length - 1).fill(0);

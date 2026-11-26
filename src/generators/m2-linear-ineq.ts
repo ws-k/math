@@ -1,8 +1,7 @@
 import type { Step } from '../content/types.ts';
-import { j } from './e-fraction-mul.ts';
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracTex, polySym, polyTex, reduce } from './util.ts';
+import { fracTex, jo, polySym, polyTex, reduce } from './util.ts';
 
 const UNIT = 'm2-linear-ineq';
 
@@ -74,8 +73,8 @@ function solveSteps(A: number, B: number, rel: Rel, C: number, D: number) {
     if (neg) r = FLIP[r];
     steps.push({
       title: neg
-        ? `양변을 $${K}$${j(K, '으로로')} 나누기 — 방향 바꾸기`
-        : `양변을 $${K}$${j(K, '으로로')} 나누기`,
+        ? `양변을 $${K}$${jo(K, '으로/로')} 나누기 — 방향 바꾸기`
+        : `양변을 $${K}$${jo(K, '으로/로')} 나누기`,
       body: neg
         ? `음수로 나누면 크기 순서가 뒤집혀요. 그래서 부등호 방향도 반대로 바꿔요.\n$$x${TEX[r]}${boundTex(D - B, K)}$$`
         : `양수로 나누니 방향은 그대로예요.\n$$x${TEX[r]}${boundTex(D - B, K)}$$`,
@@ -92,8 +91,8 @@ function pickStep(rel: Rel, n: number, d: number, ans: number): Step {
   return {
     title: big ? '가장 큰 정수 고르기' : '가장 작은 정수 고르기',
     body: exact
-      ? `경계 $${n / d}$${incl ? '도 해에 들어가요(등호 포함)' : '는 해에 들어가지 않아요(등호 없음)'}. 그래서 $${ans}$${j(ans, '이에요예요')}.`
-      : `경계가 정수가 아니라서, 해 안쪽에서 경계에 가장 가까운 정수를 골라요. $${ans}$${j(ans, '이에요예요')}.`,
+      ? `경계 $${n / d}$${incl ? '도 해에 들어가요(등호 포함)' : '는 해에 들어가지 않아요(등호 없음)'}. 그래서 $${ans}$${jo(ans, '이에요/예요')}.`
+      : `경계가 정수가 아니라서, 해 안쪽에서 경계에 가장 가까운 정수를 골라요. $${ans}$${jo(ans, '이에요/예요')}.`,
   };
 }
 
@@ -123,7 +122,7 @@ function build(
     steps: [...pre, ...s.steps, pickStep(s.rel, s.n, s.d, ans)],
     tip: s.flipped
       ? '음수로 나눈 순간 부등호를 뒤집었는지 꼭 확인해요. 답을 처음 부등식에 넣어 보면 바로 알 수 있어요.'
-      : `답 $${ans}$${j(ans, '과와')} 그보다 한 칸 바깥 정수를 처음 부등식에 넣어 보면 경계를 맞게 잡았는지 확인할 수 있어요.`,
+      : `답 $${ans}$${jo(ans, '과/와')} 그보다 한 칸 바깥 정수를 처음 부등식에 넣어 보면 경계를 맞게 잡았는지 확인할 수 있어요.`,
   };
 }
 
@@ -210,7 +209,7 @@ export const generators: Generator[] = [
             [
               {
                 title: '괄호 풀기',
-                body: `분배법칙으로 괄호 안 두 항에 모두 $${k}$${j(k, '을를')} 곱해요.\n$$${polyTex([k, k * m])}${TEX[r]}${polyTex([n, p])}$$`,
+                body: `분배법칙으로 괄호 안 두 항에 모두 $${k}$${jo(k, '을/를')} 곱해요.\n$$${polyTex([k, k * m])}${TEX[r]}${polyTex([n, p])}$$`,
               },
             ],
             ['분배법칙: $k(x+m)=kx+km$', CONCEPT_ADD],
@@ -239,7 +238,7 @@ export const generators: Generator[] = [
           [
             {
               title: `양변에 $${p}$ 곱하기`,
-              body: `분모를 없애려고 양변에 양수 $${p}$${j(p, '을를')} 곱해요. 양수라 방향은 그대로이고, 상수항에도 빠짐없이 곱해요.\n$$${polyTex([sg, p * q])}${TEX[r]}${p * s}$$`,
+              body: `분모를 없애려고 양변에 양수 $${p}$${jo(p, '을/를')} 곱해요. 양수라 방향은 그대로이고, 상수항에도 빠짐없이 곱해요.\n$$${polyTex([sg, p * q])}${TEX[r]}${p * s}$$`,
             },
           ],
           [CONCEPT_POS, CONCEPT_ADD],

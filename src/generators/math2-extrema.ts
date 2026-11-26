@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
+import { eul, ieyo, paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math2-extrema';
 
@@ -8,10 +8,6 @@ const UNIT = 'math2-extrema';
 // 계수가 아니라 극값을 갖는 두 자리(α<β)에서 거꾸로 만든다: f'(x)=3A(x-α)(x-β).
 // 검산식은 "극대 = f'' < 0 인 임계점"처럼 극대·극소의 정의에서 직접 고르게 해서, 풀이가 부호를 뒤집어
 // 적어도 잡히게 한다. 생성기 id 는 다른 단원과 겹치지 않도록 모두 'math2-extrema-' 로 시작한다.
-
-// '이에요/예요'는 앞 소리 받침으로 갈린다(숫자 끝자리: 일·삼·육·칠·팔·영/십 → 받침, x 는 '엑스').
-const ieyo = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이에요' : '예요');
-const eul = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '을' : '를');
 
 /** x-α 를 글로: 0 → "x", 2 → "x-2", -3 → "x+3" */
 const lin = (r: number) => (r === 0 ? 'x' : r > 0 ? `x-${r}` : `x+${-r}`);

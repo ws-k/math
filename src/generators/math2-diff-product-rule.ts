@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { paren, polyDiff, polyEval, polyMul, polySym, polyTex } from './util.ts';
+import { ieyo, paren, polyDiff, polyEval, polyMul, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math2-diff-product-rule';
 
@@ -11,10 +11,6 @@ const okAns = (n: number) => n !== 0 && Math.abs(n) <= MAX;
 
 /** "+3" / "-3" — 식 뒤에 상수를 이어 붙일 때 */
 const signed = (n: number) => (n < 0 ? String(n) : `+${n}`);
-
-// '이에요/예요'는 앞 소리의 받침으로 갈리는데 값이 무작위라 끝 글자로 고른다
-// (숫자는 일·삼·육·칠·팔·영/십이 받침, x 는 '엑스'라 받침 없음).
-const ieyo = (tex: string | number) => (/[013678]$/.test(String(tex)) ? '이에요' : '예요');
 
 const PRODUCT = "곱의 미분법: $\\{f(x)g(x)\\}'=f'(x)g(x)+f(x)g'(x)$";
 const PRODUCT_HINT = '"앞 미분 × 뒤 그대로 + 앞 그대로 × 뒤 미분"';

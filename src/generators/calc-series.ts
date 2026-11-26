@@ -1,5 +1,5 @@
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, gcd, paren, reduce } from './util.ts';
+import { fracAns, fracTex, gcd, ieyo, paren, reduce } from './util.ts';
 
 const UNIT = 'calc-series';
 
@@ -8,11 +8,6 @@ const UNIT = 'calc-series';
 // 검산식은 sympy summation 에 화면의 일반항을 그대로 넣어 무한히 더한 값과 대조한다 —
 // 공식(a/(1-r), 남는 항)을 거쳐 쓰면 공식을 잘못 옮겨도 함께 틀려서 잡히지 않는다.
 // 생성기 id 는 다른 단원과 겹치지 않도록 모두 단원 id 'calc-series-' 로 시작한다.
-
-// '이에요/예요'는 읽었을 때 끝소리 받침으로 갈린다. 분수 b분의 a 는 분자 a 로 끝나고,
-// 숫자는 끝자리(일·삼·육·칠·팔·영/십 → 받침, 이·사·오·구 → 받침 없음)로 정한다.
-const ieyoN = (n: number) => ([0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10) ? '이에요' : '예요');
-const ieyoF = (n: number, d: number) => ieyoN(reduce(n, d).n);
 
 /** 괄호 속 분수 거듭제곱의 밑: 3/1 → "3", -1/3 → "\left(-\frac13\right)" 처럼 */
 const baseTex = (p: number, q: number) => {
@@ -73,11 +68,11 @@ export const generators: Generator[] = [
           steps: [
             {
               title: '첫째항 구하기',
-              body: `$n=1$ 을 넣은 항이 첫째항이에요. 첫째항은 $${F}$ ${ieyoF(first.n, first.d)}.`,
+              body: `$n=1$ 을 넣은 항이 첫째항이에요. 첫째항은 $${F}$ ${ieyo(first.n, first.d)}.`,
             },
             {
               title: '공비 구하기',
-              body: `$n$ 이 1 커질 때마다 곱해지는 수라서 공비는 $r=${R}$ ${ieyoF(p, q)}.`,
+              body: `$n$ 이 1 커질 때마다 곱해지는 수라서 공비는 $r=${R}$ ${ieyo(p, q)}.`,
             },
             {
               title: '수렴하는지 확인',
@@ -89,7 +84,7 @@ export const generators: Generator[] = [
             },
           ],
           tip: shifted
-            ? `지수가 $n$ 이면 첫째항은 앞의 계수가 아니라 $n=1$ 을 넣은 값 $${F}$ ${ieyoF(first.n, first.d)}. 계수를 그대로 첫째항으로 쓰면 $\\frac{${a}}{${oneMinus}}=${fracTex(a * q, q - p)}$ 처럼 틀린 값이 나와요.`
+            ? `지수가 $n$ 이면 첫째항은 앞의 계수가 아니라 $n=1$ 을 넣은 값 $${F}$ ${ieyo(first.n, first.d)}. 계수를 그대로 첫째항으로 쓰면 $\\frac{${a}}{${oneMinus}}=${fracTex(a * q, q - p)}$ 처럼 틀린 값이 나와요.`
             : `공비가 ${p < 0 ? '음수여도' : '분수여도'} $-1<r<1$ 이면 수렴해요. 부분합 $S_n=\\frac{${a}\\{1-(${R})^n\\}}{1-${paren(R)}}$ 에서 $(${R})^n\\to0$ 이 되기 때문이에요.`,
         };
       }
@@ -241,11 +236,11 @@ export const generators: Generator[] = [
           },
           {
             title: '빼는 식의 극한',
-            body: `분모·분자를 $n$ 으로 나누면 $${frac}\\to${p}$ ${ieyoN(p)}.`,
+            body: `분모·분자를 $n$ 으로 나누면 $${frac}\\to${p}$ ${ieyo(p)}.`,
           },
           {
             title: '$a_n$ 의 극한',
-            body: `$a_n=\\left(a_n-${frac}\\right)+${frac}$ 이므로 $\\lim a_n=0+${paren(p)}=${p}$ ${ieyoN(p)}.`,
+            body: `$a_n=\\left(a_n-${frac}\\right)+${frac}$ 이므로 $\\lim a_n=0+${paren(p)}=${p}$ ${ieyo(p)}.`,
           },
           {
             title: '구하는 극한',

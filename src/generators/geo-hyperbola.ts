@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
-import { fracAns, fracTex } from './util.ts';
+import { fracAns, fracTex, ieyo } from './util.ts';
 
 const UNIT = 'geo-hyperbola';
 
@@ -35,10 +35,6 @@ function ans(n: number, d: number): Pick<GenProblem, 'answer' | 'answerType' | '
     ? { answer: r, answerType: 'fraction', answerTex: `$${fracTex(n, d)}$` }
     : { answer: r, answerType: 'int' };
 }
-
-// 숫자 뒤 '이에요/예요'. 읽었을 때 끝 글자 받침으로 정한다(영·일·삼·육·칠·팔·십 → 받침)
-const hasB = (n: number) => [0, 1, 3, 6, 7, 8].includes(Math.abs(n) % 10);
-const ieyo = (n: number) => (hasB(n) ? '이에요' : '예요');
 
 const pickTriple = (rng: Rng) => rng.pick(TRIPLES);
 

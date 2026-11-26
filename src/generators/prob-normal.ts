@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { fracAns, fracTex, reduce } from './util.ts';
+import { eun, fracAns, fracTex, ieyo, reduce } from './util.ts';
 
 const UNIT = 'prob-normal';
 
@@ -37,12 +37,6 @@ const PY_TABLE = `T = {${Object.entries(TABLE)
   .join(', ')}}
 def F(z):
     return Rational(1, 2) + (T[z] if z > 0 else (0 if z == 0 else -T[-z]))`;
-
-// '이에요/예요'는 끝소리 받침으로 갈린다. 소수·정수는 마지막 숫자를 읽고(영·일·삼·육·칠·팔에 받침),
-// 분수는 "b분의 a" 라서 분자가 끝 소리다.
-const ieyoStr = (s: string) => (/[013678]$/.test(s) ? '이에요' : '예요');
-const ieyo = (n: number, d = 1) => ieyoStr(String(Math.abs(reduce(n, d).n)));
-const eun = (s: string | number) => (/[013678]$/.test(String(s)) ? '은' : '는');
 
 const STD =
   '$Z=\\frac{X-m}{\\sigma}$ 로 바꾸면 $Z$ 는 표준정규분포 $\\mathrm{N}(0,\\ 1)$ 을 따라요.';
@@ -102,7 +96,7 @@ export const generators: Generator[] = [
       if (mode === 'ge-le')
         steps.push({
           title: '대칭으로 뒤집기',
-          body: `곡선이 $z=0$ 을 기준으로 대칭이라 $P(Z\\ge ${sign < 0 ? '-' : ''}${zTex(h)})$ 와 $P(Z\\le ${kTex})$ 는 넓이가 같아요. 그래서 $k=${kTex}$ ${ieyoStr(zTex(h))}.`,
+          body: `곡선이 $z=0$ 을 기준으로 대칭이라 $P(Z\\ge ${sign < 0 ? '-' : ''}${zTex(h)})$ 와 $P(Z\\le ${kTex})$ 는 넓이가 같아요. 그래서 $k=${kTex}$ ${ieyo(zTex(h))}.`,
         });
       return {
         q: `확률변수 $X$ 가 정규분포 $${nTex(m, s, asVar)}$ 을 따를 때, $${lhs}=${rhs}$ 를 만족시키는 상수 $k$ 의 값을 구하세요. (단, $Z$ 는 표준정규분포를 따르는 확률변수예요.)`,

@@ -1,21 +1,13 @@
 import type { Step } from '../content/types.ts';
 import type { Rng } from './rng.ts';
 import type { Generator, GenProblem } from './types.ts';
+import { jo } from './util.ts';
 
 const UNIT = 'e-whole-ops';
 
 // 숫자 뒤 조사는 읽는 소리의 받침으로 갈린다(3 '삼'→으로, 2 '이'→로). 숫자가 무작위라 조사를 박아 두면
 // "3로", "2은" 같은 글이 나오므로 마지막 자리로 고른다. e-fraction-addsub 생성기와 같은 규칙이다
 // (util.ts 로 올리면 좋지만 단원 작성 범위 밖이라 여기 둔다 — 보고서에 적음).
-const BATCHIM = new Set(['0', '1', '3', '6', '7', '8']);
-const RIEUL = new Set(['1', '7', '8']);
-type Pair = '은는' | '이가' | '을를' | '과와' | '으로로' | '이에요예요';
-function j(n: number, pair: Pair): string {
-  const last = String(n).slice(-1);
-  if (pair === '으로로') return BATCHIM.has(last) && !RIEUL.has(last) ? '으로' : '로';
-  if (pair === '이에요예요') return BATCHIM.has(last) ? '이에요' : '예요';
-  return BATCHIM.has(last) ? pair.slice(0, 1) : pair.slice(1);
-}
 
 const ORDER = '계산 순서: 괄호 안 → 곱셈·나눗셈(앞에서부터) → 덧셈·뺄셈(앞에서부터)';
 
@@ -53,7 +45,7 @@ function mixedOrder(rng: Rng): GenProblem {
       ],
       tip:
         form === 'add'
-          ? `앞에서부터 $${a}+${b}$${j(b, '을를')} 먼저 하면 $${(a + b) * c}$${j((a + b) * c, '이가')} 나와요. 곱셈이 먼저예요.`
+          ? `앞에서부터 $${a}+${b}$${jo(b, '을/를')} 먼저 하면 $${(a + b) * c}$${jo((a + b) * c, '이/가')} 나와요. 곱셈이 먼저예요.`
           : '빼는 수가 곱셈이면, 곱셈으로 빼는 양을 먼저 구한 다음 빼요.',
     };
   }
@@ -73,7 +65,7 @@ function mixedOrder(rng: Rng): GenProblem {
         { title: '괄호 안 먼저', body: `$$${a}+${b}=${s}$$` },
         { title: '곱셈', body: `$$${s}\\times ${c}=${s * c}$$` },
       ],
-      tip: `괄호가 없다면 $${a}+${b}\\times ${c}=${a + b * c}$${j(a + b * c, '이에요예요')}. 괄호 하나로 답이 달라져요.`,
+      tip: `괄호가 없다면 $${a}+${b}\\times ${c}=${a + b * c}$${jo(a + b * c, '이에요/예요')}. 괄호 하나로 답이 달라져요.`,
     };
   }
   let a: number;
@@ -128,12 +120,12 @@ function divRemainder(rng: Rng): GenProblem {
     steps: [
       {
         title: '몫 찾기',
-        body: `$${b}$에 어떤 수를 곱해야 $${a}$${j(a, '을를')} 넘지 않으면서 가장 가까운지 찾아요.\n$$${b}\\times ${qt}=${b * qt},\\quad ${b}\\times ${qt + 1}=${b * (qt + 1)}$$\n$${b * (qt + 1)}$${j(b * (qt + 1), '은는')} $${a}$보다 커서 몫은 $${qt}$${j(qt, '이에요예요')}.`,
+        body: `$${b}$에 어떤 수를 곱해야 $${a}$${jo(a, '을/를')} 넘지 않으면서 가장 가까운지 찾아요.\n$$${b}\\times ${qt}=${b * qt},\\quad ${b}\\times ${qt + 1}=${b * (qt + 1)}$$\n$${b * (qt + 1)}$${jo(b * (qt + 1), '은/는')} $${a}$보다 커서 몫은 $${qt}$${jo(qt, '이에요/예요')}.`,
       },
       { title: '나머지 구하기', body: `$$${a}-${b * qt}=${r}$$` },
       {
         title: '검산',
-        body: `$$${b}\\times ${qt}+${r}=${a}$$\n나머지 $${r}$${j(r, '은는')} $${b}$보다 작아요.`,
+        body: `$$${b}\\times ${qt}+${r}=${a}$$\n나머지 $${r}$${jo(r, '은/는')} $${b}$보다 작아요.`,
       },
     ],
     tip: '나머지가 나누는 수보다 크거나 같으면 한 번 더 덜어 낼 수 있다는 뜻이에요. 몫을 다시 확인해요.',
@@ -162,7 +154,7 @@ function multiplyTwoDigit(rng: Rng): GenProblem {
       { title: '일의 자리 곱', body: `$$${a}\\times ${u}=${lo}$$` },
       {
         title: '십의 자리 곱',
-        body: `십의 자리 $${t}$${j(t, '은는')} 사실 $${10 * t}$${j(10 * t, '이에요예요')}.\n$$${a}\\times ${10 * t}=${hi}$$`,
+        body: `십의 자리 $${t}$${jo(t, '은/는')} 사실 $${10 * t}$${jo(10 * t, '이에요/예요')}.\n$$${a}\\times ${10 * t}=${hi}$$`,
       },
       { title: '더하기', body: `$$${lo}+${hi}=${a * b}$$` },
     ],
@@ -195,7 +187,7 @@ function addSubCarry(rng: Rng): GenProblem {
         steps.push({
           title: place,
           body: top
-            ? `$$${x}+${y}${plus}=${s}$$\n$${s % 10}$${j(s % 10, '을를')} 쓰고 $1$${j(1, '을를')} ${PLACE[i + 1]}의 자리로 올려요.`
+            ? `$$${x}+${y}${plus}=${s}$$\n$${s % 10}$${jo(s % 10, '을/를')} 쓰고 $1$${jo(1, '을/를')} ${PLACE[i + 1]}의 자리로 올려요.`
             : `$$${x}+${y}${plus}=${s}$$`,
         });
         carry = top ? 1 : 0;
@@ -208,7 +200,7 @@ function addSubCarry(rng: Rng): GenProblem {
         steps.push({
           title: place,
           body: need
-            ? `${carry ? '아랫자리에 1을 빌려주고 남은 수에서' : `$${x}$에서`} $${y}$${j(y, '을를')} 뺄 수 없어요. ${PLACE[i + 1]}의 자리에서 10을 빌려요.\n$$10+${x}${minus}-${y}=${v}$$`
+            ? `${carry ? '아랫자리에 1을 빌려주고 남은 수에서' : `$${x}$에서`} $${y}$${jo(y, '을/를')} 뺄 수 없어요. ${PLACE[i + 1]}의 자리에서 10을 빌려요.\n$$10+${x}${minus}-${y}=${v}$$`
             : `$$${x}${minus}-${y}=${v}$$`,
         });
         carry = need ? 1 : 0;

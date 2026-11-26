@@ -1,7 +1,7 @@
-import { eul, evalSteps, ieyo } from './math2-indefinite.ts';
+import { evalSteps } from './math2-indefinite.ts';
 import type { Rng } from './rng.ts';
 import type { Generator } from './types.ts';
-import { paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
+import { eul, ieyo, paren, polyDiff, polyEval, polySym, polyTex } from './util.ts';
 
 const UNIT = 'math2-definite';
 
