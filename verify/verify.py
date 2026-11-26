@@ -303,13 +303,18 @@ def _limit(f, v, a, d="+-"):
     return sympy.Limit(f, v, a, d)
 
 
-SPOT_NS = dict(NS, C=_CONST, Limit=_limit)
+def _multichoose(n, r):
+    """중복조합 ₙHᵣ = ₙ₊ᵣ₋₁Cᵣ. sympy 에 없는 이름이라 여기서만 둔다(화면 글자 ₙHᵣ 는 sym.ts)"""
+    return sympy.binomial(n + r - 1, r)
+
+
+SPOT_NS = dict(NS, C=_CONST, Limit=_limit, H=_multichoose)
 _BIG = (sympy.Sum, sympy.Integral, sympy.Limit)
 # 문자가 든 채로 부등식에 오면 판정하지 않는 것 — 자연수라는 조건을 검산기가 다루지 않아 n=1/2 같은 반례로
 # '틀렸다'고 하거나 풀지 못해 소리 없이 넘어간다(types.ts 에 적어 둠)
 _COMB = (sympy.factorial, sympy.binomial, sympy.FallingFactorial, sympy.Sum)
 # ff(n,2) 는 읽자마자 n(n−1) 로 풀려 식 구조로는 못 알아본다 — 글자로 본다
-_COMB_RE = re.compile(r"\b(factorial|binomial|ff|Sum)\(")
+_COMB_RE = re.compile(r"\b(factorial|binomial|ff|Sum|H)\(")
 
 
 def _guard_comb(s):
@@ -535,9 +540,27 @@ def _indef_holds(left, right, ints):
     return _refute_eq(d, sympy.Integer(0))
 
 
+def _logic_holds(left, op, right):
+    """명제(Implies·Not 으로 엮은 논리식) 두 개가 늘 같은 참·거짓인가(역·대우). 다른 참·거짓이 되는 글자 값(반례)이 있으면
+    False — sympy 의 satisfiable 이 Xor 를 참으로 만드는 값을 찾아 준다. 명제와 수를 견주거나 부등호로 견주면
+    뜻이 없는 식이라 오류로 올린다(형식 검사 schema.ts 도 같은 규칙)"""
+    if op != "=":
+        raise ValueError("명제(논리식)는 부등호로 견주지 않음")
+    for e in (left, right):
+        if not isinstance(e, sympy.logic.boolalg.Boolean) or e.is_number:
+            raise ValueError(f"명제와 수를 견줄 수 없음: {left} = {right}")
+    return sympy.satisfiable(sympy.Xor(left, right)) is False
+
+
+def _is_logic(*es):
+    return any(isinstance(e, sympy.logic.boolalg.BooleanFunction) for e in es)
+
+
 def spot_holds(left, op, right):
     """식이 늘 성립하는가. True 는 증명, False 는 반례(또는 C 빠뜨림·정의 안 되는 값)가 있을 때만 — 둘 다 아니면
     Undecided 로 검산 실패. 등식은 항등식인가, 부등식은 미지수가 없으면 참인가·하나면 모든 실수에서 참인가."""
+    if _is_logic(left, right):
+        return _logic_holds(left, op, right)
     ints = _indefinite(left) + _indefinite(right)
     if ints:
         if op != "=":
@@ -553,6 +576,9 @@ def spot_holds(left, op, right):
         if equal(lv, rv):
             return True
         return _refute_eq(lv, rv)
+    if lv.has(sympy.I) or rv.has(sympy.I):
+        # 복소수에는 크기가 없다 — sympy 는 I > 0 을 계산하지 못하거나 오류를 내 '거짓'으로 넘어갈 수 있다
+        raise Undecided(f"허수가 든 부등식은 판정하지 않음: {lv} {op} {rv}")
     syms = lv.free_symbols | rv.free_symbols
     rel = _REL[op](lv, rv)
     if not syms:
@@ -576,6 +602,9 @@ def spot_solutions(left, op, right):
     if _indefinite(left) or _indefinite(right):
         raise Undecided("부정적분이 든 방정식·부등식의 해는 판정하지 않음")
     lv, rv = _calc(left), _calc(right)
+    if lv.has(sympy.I) or rv.has(sympy.I) or _is_logic(lv, rv):
+        # 해 집합은 실수에서 구한다 — 허수 해(x=i)·명제는 이 비교로 다룰 수 없다
+        raise Undecided(f"허수·명제가 든 식의 해는 판정하지 않음: {lv} {op} {rv}")
     syms = lv.free_symbols | rv.free_symbols
     if len(syms) != 1:
         raise ValueError(f"미지수가 하나인 식이 아님: {lv} {op} {rv}")

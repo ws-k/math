@@ -34,7 +34,7 @@ import {
   rationalStr,
   str,
 } from './parse.ts';
-import { parseSpot, spotFreeVars, texToSym } from './sym.ts';
+import { hasImag, isLogicSpot, parseSpot, spotFreeVars, texToSym } from './sym.ts';
 import type { NumFormat, Rel, SpotToken } from './types.ts';
 import { widgetDefs } from './widgets/specs.ts';
 
@@ -128,7 +128,31 @@ function spotRel(v: unknown, at: string, rel: boolean): string {
   return s;
 }
 
-const COMB_RE = /\b(factorial|binomial|ff|Sum)\(/;
+const COMB_RE = /\b(factorial|binomial|ff|Sum|H)\(/;
+
+/**
+ * 허수·명제가 든 식의 쓰임 제한(검산기 verify.py 와 같은 규칙). 복소수에는 크기가 없어 부등식이 뜻이 없고, equivalent 는
+ * 실수 해 집합을 견주므로 허수 해(x=i)를 다룰 수 없다. 명제(→·~)는 identity 의 = 로만 견준다(화면은 ⇔, 참·거짓이 늘
+ * 같은가) — 수와 견주거나 해 집합을 구할 수 없어서. 명제 쪽 맞은편은 명제나 글자 하나(~ 를 두 번 붙인 것을 고친 p)
+ */
+function spotKindRules(at: string, mode: string, exprs: string[]) {
+  for (const e of exprs) {
+    const parts = splitRel(e);
+    const sides = parts.length === 3 ? [parts[0], parts[2]] : [parts[0]];
+    if (sides.some(hasImag)) {
+      if (parts.length === 3 && parts[1] !== '=')
+        fail(at, `허수가 든 부등식은 검산하지 않음 (${e})`);
+      if (mode === 'equivalent')
+        fail(at, `허수가 든 식은 해 집합을 견주지 않음(identity·value 로) (${e})`);
+    }
+    const logic = sides.map(isLogicSpot);
+    if (!logic.some(Boolean)) continue;
+    if (mode !== 'identity' || parts[1] !== '=')
+      fail(at, `명제(→·~)는 identity 의 = 로만 견줌 (${e})`);
+    if (sides.some((x, k) => !logic[k] && parseSpot(x).t !== 'var'))
+      fail(at, `명제와 수를 견줄 수 없음 (${e})`);
+  }
+}
 /** ∑ 의 k 처럼 묶인 글자를 뺀, 식에 남는 글자가 있는가 */
 const sideHasVars = (...sides: string[]) => sides.some((x) => spotFreeVars(parseSpot(x)).size > 0);
 
@@ -501,6 +525,7 @@ export function validateLesson(
             // 고친 식 = bad 토큰만 바꿔 끼운 식. 고친 식을 따로 받으면 bad 표시를 엉뚱한 토큰에 달아도 통과한다
             const fixed = spotRel(spotEquation(spotFixed(tokens, fixSym)), `${ia} 고친 식`, !value);
             tokensFaithful(spotFixed(tokens, fixSym), `${ia} 고친 토큰`);
+            spotKindRules(ia, mode, [...(from !== undefined ? [from] : []), wrong, fixed]);
             if (check !== undefined && check.replace(/\s+/g, '') === fixed)
               fail(
                 `${ia} check`,

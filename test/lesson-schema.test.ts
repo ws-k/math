@@ -243,6 +243,81 @@ for (const [name, item] of [
   });
 }
 
+// ---- 틀린 곳 찾기 기호 2차(3-바): 허수 i · H · 도(°) · t 로 미분 · 논리(역·대우) ----
+test('기호 2차: 토큰을 이어 그린 글자가 검산하는 식과 같고 형식 검사를 통과', () => {
+  const ok = [
+    idTok(['(3+2*I)*(3-2*I)'], ['9-4'], '9+4'),
+    idTok(['I**2'], ['1'], '-1'),
+    idTok(['2', '*I'], ['I', '+I'], '*2'),
+    idTok(['H(3,4)'], ['binomial(3,4)'], 'binomial(6,4)'),
+    idTok(['sin(rad(30))'], ['sqrt(3)/2'], '1/2'),
+    idTok(['diff(t**3,t)'], ['3*t'], '3*t**2'),
+    idTok(['Implies(p,q)'], ['Implies(Not(p),Not(q))'], 'Implies(Not(q),Not(p))'),
+    {
+      prompt: 'p',
+      mode: 'value',
+      from: '(1+I)**2',
+      tokens: [{ sym: '1' }, { sym: '+1', bad: true }],
+      fix: { sym: '+2*I-1', body: 'b' },
+    },
+    {
+      prompt: 'p',
+      mode: 'identity',
+      tokens: [{ sym: 'sin(rad(30))' }, { sep: '>', bad: true }, { sym: 'sin(rad(60))' }],
+      fix: { sym: '<', body: 'b' },
+    },
+  ];
+  for (const it of ok) assert.deepEqual(spotWith([it]).errors, [], JSON.stringify(it.tokens));
+});
+
+for (const [name, item] of [
+  [
+    '허수가 든 부등식(복소수에는 크기가 없음)',
+    {
+      prompt: 'p',
+      mode: 'identity',
+      tokens: [{ sym: 'I**2' }, { sep: '>', bad: true }, { sym: '0' }],
+      fix: { sym: '<', body: 'b' },
+    },
+  ],
+  [
+    '허수가 든 방정식 변형(해는 실수에서 구함)',
+    {
+      prompt: 'p',
+      mode: 'equivalent',
+      from: 'x**2=-1',
+      tokens: [{ sym: 'x' }, { sep: '=' }, { sym: 'I', bad: true }],
+      fix: { sym: '-I', body: 'b' },
+    },
+  ],
+  [
+    '명제를 부등호로',
+    {
+      prompt: 'p',
+      mode: 'identity',
+      tokens: [{ sym: 'Implies(p,q)' }, { sep: '<' }, { sym: 'Implies(q,p)', bad: true }],
+      fix: { sym: 'Implies(Not(q),Not(p))', body: 'b' },
+    },
+  ],
+  ['명제와 수', idTok(['Implies(p,q)'], ['1'], '0')],
+  [
+    '명제를 방정식 변형(equivalent)으로',
+    {
+      prompt: 'p',
+      mode: 'equivalent',
+      from: 'Implies(p,q)=p',
+      tokens: [{ sym: 'p' }, { sep: '=' }, { sym: 'Implies(q,p)', bad: true }],
+      fix: { sym: 'Implies(p,q)', body: 'b' },
+    },
+  ],
+  ['명제에 수를 더함', idTok(['Implies(p,q)+1'], ['2'], '1')],
+  ['d/dt 미분에 글자 d', idTok(['diff(d*t,t)'], ['1'], 'd')],
+] as const) {
+  test(`오류여야 함(기호 2차): ${name}`, () => {
+    assert.ok(spotWith([item]).errors.length > 0, '오류가 없음');
+  });
+}
+
 test('직접 풀기: 예제와 같은 검산 항목', () => {
   const r = run(good());
   assert.equal(r.items.filter((i) => i.ref.startsWith('u/lesson:try:')).length, 2);

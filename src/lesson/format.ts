@@ -1,6 +1,6 @@
 // 레슨 화면 글자를 데이터에서 만들어 내는 순수 함수들. 검사기와 화면이 같은 함수를 써야
 // "검산한 값 = 보이는 값"이 보장된다.
-import { reduce, spotContinuationTex, spotTex } from './sym.ts';
+import { isLogicSpot, reduce, spotContinuationTex, spotTex } from './sym.ts';
 import type { Lesson, NumFormat, Rel, SpotToken } from './types.ts';
 
 const MINUS = '−';
@@ -114,13 +114,21 @@ export function splitRel(s: string): [string, Rel, string] | [string] {
   return [l, ops[0] as Rel, r];
 }
 
-/** spot 식("왼쪽 관계 오른쪽", 또는 관계 없는 식) → KaTeX. 등식은 예전 화면과 같은 글자(양쪽을 따로 그려 = 로 잇기) */
+/**
+ * spot 식("왼쪽 관계 오른쪽", 또는 관계 없는 식) → KaTeX. 등식은 예전 화면과 같은 글자(양쪽을 따로 그려 = 로 잇기).
+ * 명제끼리의 = 는 ⇔ 로 그린다 — 검산기는 '참·거짓이 늘 같은가'를 보는데 p→q = ~q→~p 는 수의 등식처럼 읽힌다
+ */
 export function relTex(s: string): string {
   const parts = splitRel(s);
   if (parts.length === 1) return spotTex(parts[0]);
   const [l, op, r] = parts;
-  return `${spotTex(l)}${REL_TEX[op]}${spotTex(r)}`;
+  const sign = op === '=' && (isLogicSpot(l) || isLogicSpot(r)) ? '\\Leftrightarrow ' : REL_TEX[op];
+  return `${spotTex(l)}${sign}${spotTex(r)}`;
 }
+
+/** 틀린 곳 찾기 토큰 사이 등호 자리의 글자(누를 수 없는 칸). 명제끼리면 relTex 와 같게 ⇔ */
+export const spotEqSign = (tokens: SpotToken[]): '=' | '⇔' =>
+  tokens.some((t) => 'sym' in t && isLogicSpot(t.sym)) ? '⇔' : '=';
 
 /** 레슨 글의 {{이름}} 값: 연습문제 수 + 레슨 values(검산된 값). 화면과 검사기가 같이 쓴다 */
 export function lessonVars(l: Lesson, problems: number): Record<string, string> {

@@ -7,6 +7,7 @@ import {
   numSplit,
   relTex,
   splitRel,
+  spotEqSign,
   spotEquation,
   spotFixed,
   symToTex,
@@ -149,4 +150,17 @@ test('symToTex: 곱셈 기호를 빼먹은 꼴은 거부(sympy 가 못 읽는다
   assert.throws(() => symToTex('2(x+1)'));
   assert.throws(() => symToTex('(x)(x)'));
   assert.doesNotThrow(() => symToTex('2*(x+1)'));
+});
+
+test('명제끼리의 = 는 ⇔ 로(참·거짓이 늘 같음) — 고친 식 글자와 토큰 사이 기호가 같게', () => {
+  assert.equal(
+    relTex('Implies(p,q)=Implies(Not(q),Not(p))'),
+    'p\\to q\\Leftrightarrow \\sim q\\to\\sim p',
+  );
+  assert.equal(
+    spotEqSign([{ sym: 'Implies(p,q)' }, { sep: '=' }, { sym: 'Implies(q,p)', bad: true }]),
+    '⇔',
+  );
+  assert.equal(spotEqSign([{ sym: 'x' }, { sep: '=' }, { sym: '2', bad: true }]), '=');
+  assert.equal(relTex('I**2=-1'), 'i^{2}=-1');
 });

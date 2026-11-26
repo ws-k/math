@@ -3,7 +3,10 @@
 // 다른 식을 그려 냈다. 검산한 식과 보이는 식이 같아야 하므로 구조를 거쳐 만든다.
 // 연산 우선순위는 파이썬(sympy 가 읽는 방식)을 그대로 따른다: -2*x = (-2)*x, -x**2 = -(x**2), 2**3**2 = 2**(3**2).
 
-/** diff 는 x 로 미분한 식(틀린 곳 찾기에서 "{f(x)g(x)}' = …" 을 적으려고). 둘째 인자는 늘 x */
+/**
+ * diff 는 미분한 식(틀린 곳 찾기에서 "{f(x)g(x)}' = …" 을 적으려고). 둘째 인자는 x 이고, 틀린 곳 찾기 식에서만
+ * 다른 글자도 된다(매개변수 t — 화면은 d/dt(…). {…}' 에는 무엇으로 미분했는지가 없어서)
+ */
 export type Fn = 'sqrt' | 'sin' | 'cos' | 'tan' | 'log' | 'Abs' | 'diff';
 
 export type Node =
@@ -18,9 +21,22 @@ export type Node =
  * 틀린 곳 찾기 식에서만 읽는 기호(sympy 이름 그대로 — 검산기가 같은 글자를 그대로 읽는다).
  * factorial(n) → n! · binomial(n,r) → ₙCᵣ · ff(n,r) → ₙPᵣ(내림 계승) · Sum(몸통,(k,a,b)) → ∑ ·
  * Integral(몸통,x)·Integral(몸통,(x,a,b)) → ∫ · Limit(몸통,x,a[,'+'|'-']) → lim(넷째 인자 없으면 양쪽 극한).
- * 계산기(expr.ts)·좌표평면은 이 기호를 모른다 — parseSym 은 거부하고 parseSpot 만 읽는다.
+ * 2차(3-바): H(n,r) → ₙHᵣ(중복조합. 검산기가 ₙ₊ᵣ₋₁Cᵣ 로 읽는다) · rad(30) → 30°(sympy 의 rad 는 도를 라디안으로
+ * 바꾸는 함수라 sin(rad(30)) 이 그대로 sin 30° 의 값이다 — 이름을 새로 지으면 검산기와 뜻이 갈린다) ·
+ * Implies(p,q) → p→q · Not(p) → ~p(명제. 글자나 그 부정끼리만 — 아래 logicOnly).
+ * 계산기(expr.ts)·좌표평면은 이 기호를 모른다 — parseSym 은 거부하고 parseSpot 만 읽는다. 허수 I 도 마찬가지.
  */
-export type SpotFn = 'factorial' | 'binomial' | 'ff' | 'Sum' | 'Integral' | 'Limit';
+export type SpotFn =
+  | 'factorial'
+  | 'binomial'
+  | 'ff'
+  | 'Sum'
+  | 'Integral'
+  | 'Limit'
+  | 'H'
+  | 'rad'
+  | 'Implies'
+  | 'Not';
 
 /**
  * 틀린 곳 찾기 식의 구조: Node 에 ÷(div 의 obelus)·∞(oo)·SpotFn 을 더한 것. Node 는 이 타입에 그대로 들어간다.
@@ -30,7 +46,8 @@ export type SpotFn = 'factorial' | 'binomial' | 'ff' | 'Sum' | 'Integral' | 'Lim
 export type SpotNode =
   | { t: 'num'; v: string }
   | { t: 'var'; v: string }
-  | { t: 'const'; v: 'pi' | 'E' | 'oo' }
+  /** I: 허수 단위(sympy 이름 그대로, 화면은 i) */
+  | { t: 'const'; v: 'pi' | 'E' | 'oo' | 'I' }
   | { t: 'neg' | 'pos'; a: SpotNode }
   | { t: 'add' | 'sub' | 'mul' | 'pow'; a: SpotNode; b: SpotNode }
   /** obelus: 값은 같은 나눗셈인데 분수 대신 ÷ 로 그린다(분수의 나눗셈 단원은 ÷ 가 보여야 해서) */
@@ -60,6 +77,10 @@ const SPOT_FNS: Record<SpotFn, number[]> = {
   Sum: [2],
   Integral: [2],
   Limit: [3, 4],
+  H: [2],
+  rad: [1],
+  Implies: [2],
+  Not: [1],
 };
 
 const fail = (src: string, why: string): never => {
@@ -199,6 +220,7 @@ function parse(src: string, spot: boolean): SpotNode {
     const name = tk.v;
     if (name === 'pi' || name === 'E') return { t: 'const', v: name };
     if (spot && name === 'oo') return { t: 'const', v: 'oo' };
+    if (spot && name === 'I') return { t: 'const', v: 'I' };
     if (spot && Object.hasOwn(SPOT_FNS, name)) return spotCall(name as SpotFn);
     const arity = FNS[name];
     if (arity) {
@@ -211,9 +233,14 @@ function parse(src: string, spot: boolean): SpotNode {
       eat(')');
       if (!arity.includes(args.length)) fail(src, `${name} 인자 수`);
       if (name === 'exp') return { t: 'pow', a: { t: 'const', v: 'E' }, b: args[0] as SpotNode };
-      // 화면 글자 {…}' 에는 무엇으로 미분했는지가 없다 — x 가 아니면 보이는 식과 검산 식이 달라진다
-      if (name === 'diff' && (args[1]?.t !== 'var' || args[1].v !== 'x'))
-        fail(src, 'diff 는 x 로만 미분');
+      // 화면 글자 {…}' 에는 무엇으로 미분했는지가 없다 — x 가 아니면 보이는 식과 검산 식이 달라진다.
+      // 틀린 곳 찾기 식은 다른 글자(t)도 받아 d/dt(…) 로 그린다. 글자 d 는 d/dd·d/dt(dt) 처럼 미분 기호와 헷갈려 막는다
+      if (name === 'diff') {
+        const v = args[1];
+        if (v?.t !== 'var' || (v.v !== 'x' && !spot)) fail(src, 'diff 는 x 로만 미분');
+        else if (v.v !== 'x' && (v.v === 'd' || hasVar(args[0] as SpotNode, 'd')))
+          fail(src, 'd/dt 로 그리는 미분에는 글자 d 를 쓰지 않음');
+      }
       return { t: 'call', f: name as Fn, args };
     }
     if (VARS.has(name)) return { t: 'var', v: name };
@@ -229,7 +256,49 @@ function parse(src: string, spot: boolean): SpotNode {
     const juxt = rest.k !== 'op' || rest.v === '(';
     fail(src, juxt ? '곱셈은 * 로 적어야 함' : `'${rest.v}' 자리가 이상함`);
   }
+  if (spot) logicOnly(e, true, src);
   return e;
+}
+
+/**
+ * 명제(→·~)는 식 전체로만, 그리고 글자나 그 부정끼리만 잇는다(p→q · ~q→~p). 명제에 수를 더하거나 함수에 넣으면
+ * 뜻이 없고, ~~p · p→(q→r) 같은 겹친 꼴은 화면 글자(~·→ 만, 괄호 없음)로 어디까지가 한 명제인지 보일 수 없다
+ */
+function logicOnly(n: SpotNode, root: boolean, src: string) {
+  if (n.t === 'call' && n.f === 'Implies') {
+    if (!root) fail(src, '명제(→)는 식 전체로만');
+    for (const a of n.args)
+      if (!(a.t === 'var' || (a.t === 'call' && a.f === 'Not' && a.args[0]?.t === 'var')))
+        fail(src, '→ 의 양쪽은 글자나 그 부정(~p)');
+    return;
+  }
+  if (n.t === 'call' && n.f === 'Not') {
+    if (!root) fail(src, '명제(~)는 식 전체나 → 의 한쪽으로만');
+    if (n.args[0]?.t !== 'var') fail(src, '~ 는 글자 하나에만');
+    return;
+  }
+  if (n.t === 'call') for (const a of n.args) logicOnly(a, false, src);
+  else if ('a' in n) {
+    logicOnly(n.a, false, src);
+    if ('b' in n) logicOnly(n.b, false, src);
+  }
+}
+
+/** 틀린 곳 찾기 식 하나가 명제(Implies·Not)인가. 명제끼리의 = 는 화면에 ⇔(참·거짓이 늘 같음)로 보인다 */
+export function isLogicSpot(sym: string): boolean {
+  const n = parseSpot(sym);
+  return n.t === 'call' && (n.f === 'Implies' || n.f === 'Not');
+}
+
+/** 틀린 곳 찾기 식에 허수 i 가 있는가. 복소수는 크기를 견줄 수 없고 실수 해 집합으로도 다룰 수 없어 형식 검사가 본다 */
+export function hasImag(sym: string): boolean {
+  const walk = (n: SpotNode): boolean =>
+    n.t === 'const'
+      ? n.v === 'I'
+      : n.t === 'call'
+        ? n.args.some(walk)
+        : 'a' in n && (walk(n.a) || ('b' in n && walk(n.b)));
+  return walk(parseSpot(sym));
 }
 
 // ---- 구조 → TeX ----
@@ -268,8 +337,18 @@ function spotCallTex(n: Extract<SpotNode, { t: 'call' }>): string {
     }
     case 'binomial':
     case 'ff':
-      // 교과서 표기 ₙCᵣ·ₙPᵣ — 왼쪽 아래 첨자는 빈 묶음 {} 에 붙인다
-      return `{}_{${a}}\\mathrm{${n.f === 'binomial' ? 'C' : 'P'}}_{${v}}`;
+    case 'H':
+      // 교과서 표기 ₙCᵣ·ₙPᵣ·ₙHᵣ — 왼쪽 아래 첨자는 빈 묶음 {} 에 붙인다
+      return `{}_{${a}}\\mathrm{${n.f === 'binomial' ? 'C' : n.f === 'ff' ? 'P' : 'H'}}_{${v}}`;
+    case 'rad': {
+      // 도(°)는 n! 처럼 바로 앞 값에 붙는다 — 식이면 괄호로 묶어 어디까지가 각인지 보이게
+      const atomic = arg0.t === 'num' || arg0.t === 'var';
+      return `${atomic ? a : paren(a)}^{\\circ}`;
+    }
+    case 'Implies':
+      return `${a}\\to${v.startsWith('\\') ? '' : ' '}${v}`;
+    case 'Not':
+      return `\\sim ${a}`;
     case 'Sum':
       return `\\sum_{${v}=${lo}}^{${hi}}${body(arg0)}`;
     case 'Integral':
@@ -355,13 +434,14 @@ function tex(n: SpotNode): string {
     case 'var':
       return n.v;
     case 'const':
-      return n.v === 'pi' ? '\\pi' : n.v === 'oo' ? '\\infty' : 'e';
+      return n.v === 'pi' ? '\\pi' : n.v === 'oo' ? '\\infty' : n.v === 'I' ? 'i' : 'e';
     case 'call': {
       if (isSpotFn(n)) return spotCallTex(n);
       const [a, b] = n.args.map(tex) as [string, string | undefined];
       if (n.f === 'sqrt') return `\\sqrt{${a}}`;
       if (n.f === 'Abs') return `\\left|${a}\\right|`;
-      if (n.f === 'diff') return `\\left\\{${a}\\right\\}'`;
+      if (n.f === 'diff')
+        return b === 'x' ? `\\left\\{${a}\\right\\}'` : `\\frac{d}{d${b}}\\left(${a}\\right)`;
       if (n.f === 'log') return b === undefined ? `\\ln(${a})` : `\\log_{${b}}(${a})`;
       return `\\${n.f}(${a})`;
     }
@@ -436,6 +516,8 @@ export function texToSym(src: string): string {
   let lastValue = 0;
   /** 아직 닫히지 않은 ( 의 out 안 자리 */
   const opens: number[] = [];
+  /** → 를 만나 Implies( 로 열어 둔 것(글 끝에서 닫는다) */
+  let implies = false;
   const rawGroup = (): string => {
     if (src[i] !== '{') fail(src, '{ 가 와야 함');
     let depth = 0;
@@ -507,11 +589,11 @@ export function texToSym(src: string): string {
     } else if (cmd('{}_')) {
       i += 3;
       const n = group();
-      const m = /^\\mathrm\{([CP])\}_/.exec(src.slice(i));
-      if (!m) return fail(src, 'ₙCᵣ·ₙPᵣ 꼴이 아님');
+      const m = /^\\mathrm\{([CPH])\}_/.exec(src.slice(i));
+      if (!m) return fail(src, 'ₙCᵣ·ₙPᵣ·ₙHᵣ 꼴이 아님');
       i += m[0].length;
       const r = group();
-      value(`${m[1] === 'C' ? 'binomial' : 'ff'}(${n},${r})`);
+      value(`${m[1] === 'C' ? 'binomial' : m[1] === 'P' ? 'ff' : 'H'}(${n},${r})`);
     } else if (cmd('\\sum_')) {
       i += 5;
       const m = /^([a-z])=(.*)$/s.exec(rawGroup());
@@ -546,6 +628,25 @@ export function texToSym(src: string): string {
       const v = src[end + 3] as string;
       i = end + 4;
       value(range ? `Integral(${b},(${v},${range}))` : `Integral(${b},${v})`);
+    } else if (/^\\frac\{d\}\{d[a-z]\}\\left\(/.test(src.slice(i))) {
+      // d/dt(…): 미분할 글자 뒤 \left( 와 짝이 되는 \right) 까지가 몸통(안에 d/dt 가 또 있을 수 있다)
+      const v = src[i + 10] as string;
+      i += 18;
+      let depth = 1;
+      let end = i;
+      while (depth > 0) {
+        const open = src.indexOf('\\left(', end);
+        const close = src.indexOf('\\right)', end);
+        if (close < 0) return fail(src, 'd/dt ( ) 짝');
+        if (open >= 0 && open < close) {
+          depth++;
+          end = open + 6;
+        } else if (--depth > 0) end = close + 7;
+        else end = close;
+      }
+      const inner = texToSym(src.slice(i, end));
+      i = end + 7;
+      value(`diff(${inner},${v})`);
     } else if (cmd('\\frac')) {
       i += 5;
       const a = group();
@@ -600,10 +701,29 @@ export function texToSym(src: string): string {
       i += name.length + 1;
       // 함수 이름 뒤 ( 는 곱셈이 아니라 인자 — 값이 끝난 것으로 치지 않는다
       value(name === 'ln' ? 'log' : name, false);
+    } else if (cmd('^{\\circ}')) {
+      // ° 는 ! 처럼 바로 앞 값에 붙는다(spotTex 는 그보다 큰 식이면 괄호로 묶어 둔다)
+      i += 8;
+      out = `${out.slice(0, lastValue)}rad(${out.slice(lastValue)})`;
+      valueEnd = true;
     } else if (c === '^') {
       i++;
       out += `**(${group()})`;
       valueEnd = true;
+    } else if (cmd('\\sim')) {
+      // ~p: 글자 하나의 부정만 그린다(sym.ts logicOnly)
+      i += 4;
+      while (src[i] === ' ') i++;
+      const v = src[i++] as string;
+      if (!/[a-z]/.test(v)) return fail(src, '~ 뒤에는 글자 하나');
+      value(`Not(${v})`);
+    } else if (cmd('\\to')) {
+      // p→q: 명제는 식 전체로만 쓰여(logicOnly) → 는 많아야 하나 — 앞까지를 첫 인자로 묶고 글 끝에서 닫는다
+      i += 3;
+      if (implies) return fail(src, '→ 가 둘 이상');
+      out = `Implies(${out},`;
+      implies = true;
+      valueEnd = false;
     } else if (/\d/.test(c)) {
       const m = src.slice(i).match(/^\d+(\.\d+)?/) as RegExpMatchArray;
       i += m[0].length;
@@ -611,6 +731,10 @@ export function texToSym(src: string): string {
     } else if (c === 'e') {
       i++;
       value('E');
+    } else if (c === 'i') {
+      // 글자 i 는 허수 단위뿐이다(보통 글자 목록 VARS 에 없다)
+      i++;
+      value('I');
     } else if (/[a-zC]/.test(c)) {
       i++;
       value(c);
@@ -632,7 +756,7 @@ export function texToSym(src: string): string {
       fail(src, `모르는 TeX '${c}'`);
     }
   }
-  return out;
+  return implies ? `${out})` : out;
 }
 
 // ---- 숫자만 있는 식의 정확한 값 ----

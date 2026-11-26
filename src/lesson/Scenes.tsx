@@ -20,6 +20,7 @@ import {
   handsOnCount,
   relSignTex,
   relTex,
+  spotEqSign,
   spotEquation,
   spotFixed,
   tokenTex,
@@ -304,7 +305,7 @@ function SpotCard({ it, onFound }: { it: SpotItem; onFound(): void }) {
           'sep' in t && t.sep === '=' ? (
             // biome-ignore lint/suspicious/noArrayIndexKey: 토큰 순서는 데이터에서 고정
             <span key={i} className="arrow">
-              =
+              {spotEqSign(it.tokens)}
             </span>
           ) : (
             // 부등호는 누를 수 있는 토큰 — 방향을 잘못 쓴 실수가 틀린 곳일 수 있고, 부등호만 버튼이면 답이 드러난다
