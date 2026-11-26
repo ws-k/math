@@ -29,6 +29,14 @@ test('t 로 미분: x 는 예전처럼 {…}′, 다른 글자는 d/dt(…)', ()
   assert.equal(spotTex('diff(x**2,x)'), "\\left\\{x^{2}\\right\\}'");
   assert.equal(spotTex('diff(t**3+t,t)'), '\\frac{d}{dt}\\left(t^{3}+t\\right)');
   assert.equal(spotTex('2*diff(t**2,t)'), '2\\times\\frac{d}{dt}\\left(t^{2}\\right)');
+  // d/dt(…) 는 오른쪽이 열린 꼴이라(뒤에 붙은 것까지 미분하는 것처럼 읽힘 — 검토 M1) 거듭제곱 밑이면 { } 로,
+  // 곱셈 왼쪽이면 괄호로 묶는다
+  assert.equal(spotTex('diff(t+1,t)**2'), '\\left\\{\\frac{d}{dt}\\left(t+1\\right)\\right\\}^{2}');
+  assert.equal(spotTex('diff(t**2,t)*t'), '(\\frac{d}{dt}\\left(t^{2}\\right))t');
+  assert.equal(
+    spotTex('sqrt(diff(t**2,t)**2+diff(t**3,t)**2)'),
+    '\\sqrt{\\left\\{\\frac{d}{dt}\\left(t^{2}\\right)\\right\\}^{2}+\\left\\{\\frac{d}{dt}\\left(t^{3}\\right)\\right\\}^{2}}',
+  );
   // 미분할 글자가 d 거나 몸통에 d 가 있으면 d/dt 와 헷갈린다
   for (const s of ['diff(d*t,t)', 'diff(t,d)', 'diff(t,2)']) assert.throws(() => spotTex(s), s);
 });
@@ -76,6 +84,11 @@ const SAMPLES = [
   'diff(sin(2*t),t)+1',
   'diff(diff(t**3,t),t)',
   'diff(t**2,t)**2',
+  'sqrt(diff(t**2,t)**2+diff(t**3,t)**2)',
+  'diff(t**2,t)*diff(t,t)',
+  '6÷diff(t**2,t)*t',
+  'diff(x**2,x)**2',
+  'diff(diff(t**3,t)**2,t)',
   'Implies(p,q)',
   'Implies(Not(q),Not(p))',
   'Implies(q,p)',

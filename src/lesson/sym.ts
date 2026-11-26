@@ -307,6 +307,9 @@ const paren = (s: string) => `(${s})`;
 const signed = (s: string) => /^[-+]/.test(s);
 
 const isObelus = (n: SpotNode) => n.t === 'div' && n.obelus === true;
+/** x 가 아닌 글자로 미분한 식(화면 d/dt(…)) */
+const isTDiff = (n: SpotNode) =>
+  n.t === 'call' && n.f === 'diff' && !(n.args[1]?.t === 'var' && n.args[1].v === 'x');
 const isSpotFn = (n: SpotNode) => n.t === 'call' && Object.hasOwn(SPOT_FNS, n.f);
 
 /**
@@ -315,7 +318,8 @@ const isSpotFn = (n: SpotNode) => n.t === 'call' && Object.hasOwn(SPOT_FNS, n.f)
  * 괄호로 이미 묶인 경우까지 참이라고 해도 괄호가 하나 더 생길 뿐 다른 식이 되지는 않는다.
  */
 const openTail = (n: SpotNode): boolean => {
-  if (n.t === 'call') return n.f === 'Sum' || n.f === 'Limit';
+  // d/dt(…) 도 오른쪽이 열린 꼴이다 — d/dt(t²)t 는 (t²)t 를 미분하는 것처럼 읽힌다(검토 M1)
+  if (n.t === 'call') return n.f === 'Sum' || n.f === 'Limit' || isTDiff(n);
   if (n.t === 'neg' || n.t === 'pos') return openTail(n.a);
   if (n.t === 'mul' || (n.t === 'div' && n.obelus)) return openTail(n.b);
   return false;
@@ -488,8 +492,10 @@ function tex(n: SpotNode): string {
     case 'pow': {
       const atomBase = n.a.t === 'num' || n.a.t === 'var' || n.a.t === 'const';
       // 함수 호출은 sin(x)^2 처럼 괄호 없이 — 다만 n!·ₙCᵣ·∑ 에 지수를 붙이면 어디에 붙는지 흐려 괄호
-      const callBase = n.a.t === 'call' && !isSpotFn(n.a);
+      const callBase = n.a.t === 'call' && !isSpotFn(n.a) && !isTDiff(n.a);
       const b = tex(n.a);
+      // d/dt(t+1)² 은 (t+1)² 의 미분으로 읽힌다 — 몸통의 ( ) 와 다른 { } 로 미분 전체를 묶는다(검토 M1)
+      if (isTDiff(n.a)) return `\\left\\{${b}\\right\\}^{${tex(n.b)}}`;
       return `${atomBase || callBase ? b : paren(b)}^{${tex(n.b)}}`;
     }
   }
@@ -667,22 +673,24 @@ export function texToSym(src: string): string {
       value(`Abs(${inner})`);
     } else if (cmd('\\left\\{')) {
       i += 7;
-      // 짝 맞추기: 안에 또 {…}' 가 있을 수 있다
+      // 짝 맞추기: 안에 또 { } 가 있을 수 있다. 닫는 } 뒤에 ' 가 있으면 x 로 미분({…}'), 없으면 묶음뿐
+      // (d/dt(…) 에 지수를 붙일 때 미분 전체를 묶는 { } — spotTex 의 pow)
       let depth = 1;
       let end = i;
       while (depth > 0) {
         const open = src.indexOf('\\left\\{', end);
-        const close = src.indexOf("\\right\\}'", end);
+        const close = src.indexOf('\\right\\}', end);
         if (close < 0) return fail(src, '{ } 짝');
         if (open >= 0 && open < close) {
           depth++;
           end = open + 7;
-        } else if (--depth > 0) end = close + 9;
+        } else if (--depth > 0) end = close + 8;
         else end = close;
       }
       const inner = texToSym(src.slice(i, end));
-      i = end + 9;
-      value(`diff(${inner},x)`);
+      const prime = src[end + 8] === "'";
+      i = end + (prime ? 9 : 8);
+      value(prime ? `diff(${inner},x)` : `(${inner})`);
     } else if (cmd('\\log_')) {
       i += 5;
       const base = group();
