@@ -666,7 +666,7 @@ function PairNode({ i, name, g, svg, rubber, busy, picked, deg, label, ...h }: P
       <circle className="ct-fring" cx={x} cy={y} r={g.r + 6} />
       <circle className="ct-dot" cx={x} cy={y} r={g.r} />
       <text
-        className="ct-name"
+        className="ct-name mid-text"
         x={x}
         y={y}
         style={{ fontSize: fitPx(name, nodeInner(g.r), NODE_FONT) ?? LABEL_MIN }}
@@ -676,7 +676,7 @@ function PairNode({ i, name, g, svg, rubber, busy, picked, deg, label, ...h }: P
       {deg !== undefined && (
         <g className="ct-deg">
           <circle cx={x + g.r * 0.78} cy={y - g.r * 0.78} r={11} />
-          <text x={x + g.r * 0.78} y={y - g.r * 0.78}>
+          <text className="mid-text" x={x + g.r * 0.78} y={y - g.r * 0.78}>
             {deg}
           </text>
         </g>

@@ -556,7 +556,8 @@ function lastMarks(p: SimParams, raw: number[] | undefined): Mark[] {
     out.push({
       k: `lt:${j}`,
       tag: 'text',
-      a: { x: cx, y: cy + 5, class: `sim-lt${back}${idle}` },
+      // 칸 한가운데에 공용 가운데 글자로(widgets.css .mid-text) — y 를 손으로 내리면 글자 크기에 따라 어긋난다
+      a: { x: cx, y: cy, class: `sim-lt mid-text${back}${idle}` },
       text,
     });
   }
