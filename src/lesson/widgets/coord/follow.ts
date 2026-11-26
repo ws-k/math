@@ -2,9 +2,9 @@
 // 따라오는 점({x:'x(P)', y:0} — 수선의 발, {on:'g', x:'x(P)'} — 다른 곡선 위 같은 세로줄, {x:'h', y:0} — 꼭짓점)과
 // 세로선 자리({vline:'x(P)'})가 같은 꼴을 쓴다. 점 좌표를 구하는 일(pointXY·xSym)은 point.ts 몫이라 여기서는
 // '점 좌표를 어떻게 얻는가'를 부르는 쪽이 넘기는 함수로 받는다 — 이 파일이 point.ts 를 가져오면 순환이 생긴다.
-import { compile, evalExact, evalNum, exactStr, toSym, varsOf } from '../../expr.ts';
+import { compile, evalExact, evalNum, exactStr, varsOf } from '../../expr.ts';
 import { fail, str } from '../../parse.ts';
-import type { Node, Rational } from '../../sym.ts';
+import type { Rational } from '../../sym.ts';
 import type { FollowExpr, ParseCtx } from './types.ts';
 
 /**
@@ -45,7 +45,12 @@ export function parseFollow(
     refs.push(r);
     return r.v;
   });
-  return { src, node: compile(body, [...ids, ...refs.map((r) => r.v)]), refs };
+  try {
+    return { src, node: compile(body, [...ids, ...refs.map((r) => r.v)]), refs };
+  } catch (e) {
+    // 앞의 읽어 보기를 통과하면 여기서는 안 터지지만, 터지면 자리표(u·v …)가 아니라 적은 그대로 보인다
+    return fail(at, (e as Error).message.replace(body, src));
+  }
 }
 
 /** 슬라이더도 점도 안 쓰는 식(수 하나) — 옛 꼴(칸 위 고정 점·고정 세로선)과 같은 길로 보낸다 */
@@ -87,28 +92,11 @@ export function followQ(
   return evalExact(e.node, env);
 }
 
-/** sympy 글자: 자리표에 그 점의 검산 글자(끄는 점은 상태 기호 pt_P_x)를 넣는다. 슬라이더 이름은 그대로(상태가 넣는다) */
+/**
+ * sympy 글자: 원문의 x(P)·y(P) 를 그 점의 검산 글자(끄는 점은 상태 기호 pt_P_x)로 바로 바꾼다. 슬라이더 이름은 그대로
+ * (상태가 넣는다). 앱이 읽은 식 구조(node)를 거치지 않으므로 sympy 가 원문을 따로 읽는다 — 앱의 식 읽기가 틀려도
+ * 검산이 같이 틀리지 않게(parity 의 뜻)
+ */
 export function followSym(e: FollowExpr, ref: (pt: string, ax: 'x' | 'y') => string): string {
-  const put = new Map(e.refs.map((r) => [r.v, `(${ref(r.pt, r.ax)})`]));
-  // 글자에서 바꾸지 않고 식 구조에서 바꾼다 — 한 글자 자리표(u·y)를 글자로 찾으면 다른 이름 속 글자까지 바뀐다
-  const sub = (n: Node): Node => {
-    switch (n.t) {
-      case 'var':
-        return { t: 'var', v: put.get(n.v) ?? n.v };
-      case 'neg':
-      case 'pos':
-        return { ...n, a: sub(n.a) };
-      case 'add':
-      case 'sub':
-      case 'mul':
-      case 'div':
-      case 'pow':
-        return { ...n, a: sub(n.a), b: sub(n.b) };
-      case 'call':
-        return { ...n, args: n.args.map(sub) };
-      default:
-        return n;
-    }
-  };
-  return toSym(sub(e.node));
+  return e.src.replace(REF, (_m, ax: 'x' | 'y', id: string) => `(${ref(id, ax)})`);
 }

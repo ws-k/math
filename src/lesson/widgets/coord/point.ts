@@ -8,7 +8,7 @@ import { MAX_SNAPS, near, numExpr, toIndex } from './common.ts';
 import { curveExact, curveNum, curveOf, curveVars, fAt, wholeCurve } from './curve.ts';
 import { followNum, followQ, followSliders, followSym, isConst, parseFollow } from './follow.ts';
 import { fmtNum, iRange, isWide, r1, toPx } from './frame.ts';
-import { sliderCombos, sliderQ, sliderSym, sliderValues } from './slider.ts';
+import { sliderCombos, sliderOpts, sliderQ } from './slider.ts';
 import type {
   Axis,
   CoordParams,
@@ -18,6 +18,7 @@ import type {
   KindDef,
   ParseCtx,
   PointObj,
+  StateOpt,
 } from './types.ts';
 
 export const pointOf = (p: CoordParams, id: string) =>
@@ -103,15 +104,31 @@ export const followNow = (p: CoordParams, s: CoordState, e: FollowExpr): number 
 /** 따라오는 좌표 식의 sympy 글자(가리키는 점은 그 점의 검산 글자로) */
 export const followSymOf = (p: CoordParams, e: FollowExpr): string => followSym(e, refSym(p));
 
+/**
+ * 따라오는 점 좌표를 (매개변수, 상태)마다 한 번만 센다. 그리기 한 번에 점·이름표·선분 끝·세로선·직각·읽는 값이 같은
+ * 점을 여러 번 묻고, 사슬(따라오는 점을 따라오는 점)이면 앞 점을 또 거슬러 센다. 상태는 바뀔 때마다 새 객체라
+ * (model.ts 손 조작은 고친 사본을 낸다) 상태를 열쇠로 둔다 — 끄는 동안 프레임마다 새 상태라 저절로 비워진다
+ */
+const followCache = new WeakMap<CoordParams, WeakMap<CoordState, Map<string, [number, number]>>>();
+
 function followXY(
   p: CoordParams,
   s: CoordState,
   o: PointObj,
   f: NonNullable<PointObj['follow']>,
 ): [number, number] {
+  const byS = followCache.get(p) ?? new WeakMap<CoordState, Map<string, [number, number]>>();
+  followCache.set(p, byS);
+  const m = byS.get(s) ?? new Map<string, [number, number]>();
+  byS.set(s, m);
+  const hit = m.get(o.id);
+  if (hit) return hit;
   const x = followNow(p, s, f.x);
-  if (o.on) return [x, Number.isFinite(x) ? fAt(p, s, o.on, x) : Number.NaN];
-  return [x, f.y ? followNow(p, s, f.y) : Number.NaN];
+  const out: [number, number] = o.on
+    ? [x, Number.isFinite(x) ? fAt(p, s, o.on, x) : Number.NaN]
+    : [x, f.y ? followNow(p, s, f.y) : Number.NaN];
+  m.set(o.id, out);
+  return out;
 }
 
 /** 점 자리를 움직이는 것: 끄는 점 id 와 슬라이더 id. 따라오는 점은 가리키는 점을 거슬러 올라가 모은다 */
@@ -239,6 +256,28 @@ export function pointState(
   const o = pointOf(p, id);
   if (o.on) return { [`pt_${id}_x`]: symAt(i, o.snap) };
   return { [`pt_${id}_x`]: symAt(i, p.x.step), [`pt_${id}_y`]: symAt(j, p.y.step) };
+}
+
+/**
+ * 끄는 점 하나가 닿는 칸마다 상태 바꾸기(types.ts StateOpt): 가로는 xCells, 세로는 곡선 위 점이면 없음·가로로만
+ * 끄는 점이면 처음 칸·그 밖은 y 축 칸 전부. 목표 판정(goal.ts)과 따라오는 것의 검산(depStates)이 같이 쓴다
+ */
+export function pointOpts(p: CoordParams, id: string): StateOpt[] {
+  const o = pointOf(p, id);
+  const { i0, i1 } = xCells(p.x, o);
+  const [j0, j1] = o.on
+    ? [0, 0]
+    : o.drag === 'x'
+      ? [o.j, o.j]
+      : (iRange(p.y.lo, p.y.hi, p.y.st) as [number, number]);
+  const opts: StateOpt[] = [];
+  for (let i = i0; i <= i1; i++)
+    for (let j = j0; j <= j1; j++)
+      opts.push({
+        patch: (s) => ({ ...s, pts: { ...s.pts, [id]: { i, j } } }),
+        sym: pointState(p, id, i, j),
+      });
+  return opts;
 }
 
 /** 끄는 x 범위 range:[a,b](축 위 칸, 양 끝 포함)를 칸 번호로 읽어 점에 붙인다 */
@@ -456,6 +495,19 @@ export function noFollow(o: PointObj, at: string, what: string): PointObj {
 const inFrame = (f: { l: number; r: number; t: number; b: number }, X: number, Y: number) =>
   X >= f.l - 0.5 && X <= f.r + 0.5 && Y >= f.t - 0.5 && Y <= f.b + 0.5;
 
+/**
+ * 따라오는 점 사슬 깊이 상한. 끄는 동안 프레임마다 사슬 끝까지 거슬러 세므로(그리기 한 번 안에서는 followCache 가
+ * 덜어 줌) 길이를 묶고, 사람이 읽기에도 '수선의 발의 중점'(2단)·'그 점의 대칭점'(3단)을 넘는 사슬은 식이 헷갈린다
+ */
+const MAX_FOLLOW_DEPTH = 3;
+/** 따라오는 점의 사슬 깊이: 따라오지 않는 점은 0, 따라오는 점은 가리키는 점 중 가장 깊은 것 + 1 */
+function followDepth(lk: PointLook, id: string): number {
+  const o = lk.point(id);
+  if (!o?.follow) return 0;
+  const refs = [...o.follow.x.refs, ...(o.follow.y?.refs ?? [])];
+  return 1 + Math.max(0, ...refs.map((r) => followDepth(lk, r.pt)));
+}
+
 /** 좌표 글자가 슬라이더·점 좌표를 쓰면 따라오는 식, 수만 쓰면(또는 없으면) null — 수는 예전 길로 읽는다 */
 function followOf(v: unknown, at: string, cx: ParseCtx): FollowExpr | null {
   if (typeof v !== 'string') return null;
@@ -507,6 +559,12 @@ function parseFollower(
     x: cx.x,
     y: cx.y,
   };
+  const depth = followDepth(lk, id);
+  if (depth > MAX_FOLLOW_DEPTH)
+    fail(
+      at,
+      `따라오는 점을 따라오는 사슬이 ${depth}단 — ${MAX_FOLLOW_DEPTH}단까지(앞 점의 식을 바로 적으세요)`,
+    );
   const deps = pointDeps(lk, id);
   if (deps.pts.size === 0)
     for (const cb of sliderCombos(cx.sliders, [...deps.sliders], at)) {
@@ -539,38 +597,16 @@ const MAX_FOLLOW_STATES = 400;
 export function depStates(
   p: CoordParams,
   deps: Deps,
+  cap = MAX_FOLLOW_STATES,
 ): { s: CoordState; sym: Record<string, string> }[] {
-  type Opt = { patch: (s: CoordState) => CoordState; sym: Record<string, string> };
-  const dims: Opt[][] = [];
+  const dims: StateOpt[][] = [];
   for (const id of deps.sliders) {
     const sl = p.sliders.find((x) => x.id === id);
-    if (!sl) continue;
-    dims.push(
-      sliderValues(sl).map(({ k, v }) => ({
-        patch: (s: CoordState) => ({ ...s, vars: { ...s.vars, [id]: v } }),
-        sym: { [id]: sliderSym(sl, k) },
-      })),
-    );
+    if (sl) dims.push(sliderOpts(sl));
   }
-  for (const id of deps.pts) {
-    const o = pointOf(p, id);
-    const { i0, i1 } = xCells(p.x, o);
-    const [j0, j1] = o.on
-      ? [0, 0]
-      : o.drag === 'x'
-        ? [o.j, o.j]
-        : (iRange(p.y.lo, p.y.hi, p.y.st) as [number, number]);
-    const opts: Opt[] = [];
-    for (let i = i0; i <= i1; i++)
-      for (let j = j0; j <= j1; j++)
-        opts.push({
-          patch: (s) => ({ ...s, pts: { ...s.pts, [id]: { i, j } } }),
-          sym: pointState(p, id, i, j),
-        });
-    dims.push(opts);
-  }
+  for (const id of deps.pts) dims.push(pointOpts(p, id));
   const total = dims.reduce((n, d) => n * d.length, 1);
-  const k = Math.min(total, MAX_FOLLOW_STATES);
+  const k = Math.min(total, cap);
   const base: CoordState = {
     solved: false,
     vars: Object.fromEntries(p.sliders.map((sl) => [sl.id, sl.value])),
@@ -587,7 +623,7 @@ export function depStates(
     let s = base;
     let sym: Record<string, string> = {};
     for (const d of dims) {
-      const o = d[n % d.length] as Opt;
+      const o = d[n % d.length] as StateOpt;
       n = Math.floor(n / d.length);
       s = o.patch(s);
       sym = { ...sym, ...o.sym };

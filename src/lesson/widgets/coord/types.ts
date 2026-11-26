@@ -113,11 +113,12 @@ export interface PointObj {
 }
 /**
  * 따라오는 좌표 식: 수·슬라이더 이름·앞에 나온 점의 x(P)·y(P) 로 계산(세로선 자리도 같은 꼴).
- * 식 글자(sym.ts)는 x(P) 를 읽지 못하므로 점 좌표마다 자리표 변수(zqa…)로 바꿔 쥐고, refs 가 그 자리표가 가리키는
- * 점과 축을 적는다 — 그리기는 그 점의 지금 좌표를, 검산은 그 점의 sympy 글자(xSym·ySym)를 자리표에 넣는다
+ * 식 글자(sym.ts)는 x(P) 를 읽지 못하므로 점 좌표마다 한 글자 자리표 변수(u·v·w·y·z — 슬라이더 이름과 x 가 아닌 것)로
+ * 바꿔 쥐고, refs 가 그 자리표가 가리키는 점과 축을 적는다 — 그리기는 그 점의 지금 좌표를 자리표에 넣는다. 검산은
+ * 이 식 구조를 거치지 않고 원문의 x(P) 를 그 점의 sympy 글자(xSym·ySym)로 바로 바꿔 sympy 가 따로 읽는다
  */
 export interface FollowExpr {
-  /** 원문(검산 항목 이름·오류 글) */
+  /** 원문(검산 글자·항목 이름·오류 글) */
   src: string;
   node: Node;
   refs: { v: string; pt: string; ax: 'x' | 'y' }[];
@@ -419,6 +420,16 @@ export interface CoordState {
   user: GridPt[];
   /** 그은 선(세계 좌표). sketch */
   stroke: [number, number][];
+}
+
+/**
+ * 닿는 상태 하나로 바꾸는 법: 상태 고치기와 그 상태의 검산 글자(sympy 기호 → 값). 슬라이더 하나·끄는 점 하나의
+ * 닿는 칸마다 하나씩(slider.ts sliderOpts·point.ts pointOpts) — 목표 판정(goal.ts)과 따라오는 것의 검산(point.ts
+ * depStates)이 같은 목록을 써서 '닿는 자리'가 어긋나지 않게
+ */
+export interface StateOpt {
+  patch: (s: CoordState) => CoordState;
+  sym: Record<string, string>;
 }
 
 // ---- 화면 좌표 ----

@@ -20,11 +20,11 @@ import {
 import { fail, obj, str } from '../../parse.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { near, numExpr, target, toIndex } from './common.ts';
-import { iRange, MIN_SNAP_PX, narrowFrame } from './frame.ts';
+import { MIN_SNAP_PX, narrowFrame } from './frame.ts';
 import { initial } from './model.ts';
-import { noFollow, pointOf, pointState, pointXY, worldX, xCells, xSym, ySym } from './point.ts';
+import { noFollow, pointOf, pointOpts, pointXY, worldX, xCells, xSym, ySym } from './point.ts';
 import { parseReadoutExpr, readoutMovers, readoutSym, readoutVal } from './readout.ts';
-import { MIN_SLIDER_STEP_PX, sliderStepPx, sliderSym, sliderValues } from './slider.ts';
+import { MIN_SLIDER_STEP_PX, sliderOpts, sliderStepPx } from './slider.ts';
 import type {
   CoordParams,
   CoordState,
@@ -255,33 +255,9 @@ function enumerate(p: CoordParams, g: NewGoal): Enumerated {
   let acc: { s: CoordState; sym: Record<string, string> }[] = [{ s: initial(p), sym: {} }];
   for (const id of m.sliders) {
     const sl = p.sliders.find((x) => x.id === id);
-    if (!sl) continue;
-    acc = growStates(
-      acc,
-      sliderValues(sl).map(({ k, v }) => ({
-        patch: (s: CoordState) => ({ ...s, vars: { ...s.vars, [id]: v } }),
-        sym: { [id]: sliderSym(sl, k) },
-      })),
-      '좌표 goal',
-    );
+    if (sl) acc = growStates(acc, sliderOpts(sl), '좌표 goal');
   }
-  for (const id of m.points) {
-    const o = pointOf(p, id);
-    const { i0, i1 } = xCells(p.x, o);
-    const [j0, j1] = o.on
-      ? [0, 0]
-      : o.drag === 'x'
-        ? [o.j, o.j]
-        : (iRange(p.y.lo, p.y.hi, p.y.st) as [number, number]);
-    const opts: { patch: (s: CoordState) => CoordState; sym: Record<string, string> }[] = [];
-    for (let i = i0; i <= i1; i++)
-      for (let j = j0; j <= j1; j++)
-        opts.push({
-          patch: (s) => ({ ...s, pts: { ...s.pts, [id]: { i, j } } }),
-          sym: pointState(p, id, i, j),
-        });
-    acc = growStates(acc, opts, '좌표 goal');
-  }
+  for (const id of m.points) acc = growStates(acc, pointOpts(p, id), '좌표 goal');
   return { states: acc.map((a) => a.s), syms: acc.map((a) => a.sym) };
 }
 

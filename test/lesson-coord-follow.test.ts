@@ -263,3 +263,43 @@ test('검산: 슬라이더만 따라오는 점 (h, 0) 은 x 만 항목(y 는 수
   const r = runChecks(coordChecks(p));
   assert.ok(r.ok, r.out);
 });
+
+// ---- 검토 반영(m4·m7·m10) ----
+
+test('검산 글자(m4): 원문의 x(P)·y(P) 를 그 점의 검산 글자로 바로 바꿔 sympy 가 따로 읽는다(앱 식 구조를 거치지 않음)', () => {
+  const p = parseCoord(shiftRaw());
+  const by = (n: string) => coordChecks(p).find((c) => c.name === n);
+  const kx = by('따라오는 점 K x');
+  const ky = by('따라오는 점 K y');
+  assert.ok(kx && 'expr' in kx && ky && 'expr' in ky);
+  assert.equal(kx.expr, '((pt_P_x))/2');
+  assert.equal(ky.expr, '((x**2).subs(x,(pt_P_x)))-c');
+});
+
+test('사슬 깊이(m7): 따라오는 점을 따라오는 점은 3단까지 — 넷째 단은 형식 오류', () => {
+  const chain = (n: number) =>
+    vertexRaw({
+      objects: [
+        ...vertexRaw().objects,
+        ...Array.from({ length: n }, (_, k) => ({
+          id: `W${k + 1}`,
+          point: { x: k === 0 ? 'x(V)' : `x(W${k})`, y: 0 },
+        })),
+      ],
+    });
+  // V(1단) → W1(2단) → W2(3단)
+  assert.doesNotThrow(() => parseCoord(chain(2)));
+  assert.throws(() => parseCoord(chain(3)), /3단/);
+});
+
+test('오류 글(m10): 자리표가 아니라 원문으로 — 식을 못 읽으면 적은 그대로 보인다', () => {
+  assert.throws(
+    () =>
+      parseCoord(
+        vertexRaw({
+          objects: [...vertexRaw().objects, { id: 'W', point: { x: 'x(V)+', y: 0 } }],
+        }),
+      ),
+    (e: Error) => e.message.includes('x(V)+') && !/\bu\b/.test(e.message.replace('x(V)+', '')),
+  );
+});

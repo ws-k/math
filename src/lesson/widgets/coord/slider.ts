@@ -8,7 +8,7 @@ import type { Rational } from '../../sym.ts';
 import { add, mul, num, qi, ratStr } from '../q.ts';
 import { near, numExpr, toIndex } from './common.ts';
 import { fmtNum, isWide, NARROW_BOX_W, piText } from './frame.ts';
-import type { Slider } from './types.ts';
+import type { Slider, StateOpt } from './types.ts';
 
 export function parseSliders(raw: unknown): Slider[] {
   return (raw === undefined ? [] : arr(raw, '좌표 sliders', 1, 3)).map((rs, k) => {
@@ -205,6 +205,13 @@ export function sliderSym(sl: Slider, k: number): string {
   if (m && st) return ratStr(add(m, mul(qi(k), st)));
   return `(${sl.minSrc})+${k}*(${sl.stepSrc})`;
 }
+
+/** 슬라이더 하나가 닿는 칸마다 상태 바꾸기(types.ts StateOpt) — 목표 판정·따라오는 것의 검산이 같이 쓴다 */
+export const sliderOpts = (sl: Slider): StateOpt[] =>
+  sliderValues(sl).map(({ k, v }) => ({
+    patch: (s) => ({ ...s, vars: { ...s.vars, [sl.id]: v } }),
+    sym: { [sl.id]: sliderSym(sl, k) },
+  }));
 
 /** 슬라이더 값 조합 하나: 수(앱 계산)·sympy 글자(검산 점)·사람이 읽는 글(형식 오류 글) */
 export interface SliderCombo {
