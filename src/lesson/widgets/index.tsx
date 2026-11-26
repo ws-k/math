@@ -4,6 +4,7 @@ import { type ComponentType, useMemo } from 'react';
 import type { WidgetSpec } from '../types.ts';
 import { AreaModel } from './AreaModel.tsx';
 import { Balance } from './Balance.tsx';
+import { Column } from './Column.tsx';
 import { Coord } from './Coord.tsx';
 import { Count } from './Count.tsx';
 import { FactorTree } from './FactorTree.tsx';
@@ -44,6 +45,7 @@ export const widgetViews: Record<string, ComponentType<WidgetProps<any>>> = {
   count: Count,
   simulate: Simulate,
   factorTree: FactorTree,
+  column: Column,
 };
 
 export function Widget({
