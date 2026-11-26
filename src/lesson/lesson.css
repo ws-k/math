@@ -168,6 +168,9 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  /* 수식 꼬리표(KaTeX)가 있으면 그 줄이 높아지는데, 늘이기(기본)면 옆 글자 꼬리표도 같이 늘어나 글자가 위로 붙었다
+     (prob-estimation 도입, 1.9px) — 꼬리표는 제 높이로 두고 줄 가운데에 */
+  align-items: center;
 }
 /* 꼬리표는 직계 span 만 — 자손(span)으로 걸면 꼬리표 속 수식(KaTeX)의 안쪽 span 마다 둥근 배경·여백이 붙어
    수식이 흩어지고 가로로 넘쳤다(prob-normal·calc-seq-limit 등 도입 장면) */
@@ -1538,7 +1541,6 @@
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 800;
-  text-anchor: middle;
 }
 @media (max-height: 600px) {
   .lesson .readouts {

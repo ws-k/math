@@ -450,7 +450,7 @@ function Tiles({ params: p, onDone, onMiss }: WidgetProps<TilesParams>) {
               // biome-ignore lint/a11y/noAriaHiddenOnFocusable: SVG g 는 포커스를 받지 않는데 규칙이 잘못 짚는다
               <g key={`c${r.key}`} className="stack-n" aria-hidden="true">
                 <circle cx={r.x + r.w} cy={r.y} r={9} />
-                <text x={r.x + r.w} y={r.y + 4}>
+                <text className="mid-text" x={r.x + r.w} y={r.y}>
                   {r.count}
                 </text>
               </g>
