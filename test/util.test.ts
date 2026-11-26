@@ -52,6 +52,24 @@ test('끝소리: TeX 는 읽는 소리대로 — 분수는 분자(b분의 a), �
     ['3명', true],
   ] as const)
     assert.equal(lastSound(v).batchim, b, v);
+  // 검토 m2: 분수 분자는 중괄호 짝으로 꺼낸다(분자에 { } 가 있어도), 글자 n·m·l·r 은 엔·엠·엘·알 받침
+  // (l·r 은 ㄹ), 단위(cm · 3 m · \mathrm{…})는 받침 없음 그대로
+  for (const [v, b] of [
+    ['\\frac{x^{2}}{3}', true],
+    ['\\frac{\\sqrt{3}}{2}', true],
+    ['\\sqrt{\\frac{1}{2}}', true],
+    ['n', true],
+    ['a_n', true],
+    ['2m', true],
+    ['cm', false],
+    ['3 m', false],
+    ['\\mathrm{cm}', false],
+    ['\\ln', false],
+  ] as const)
+    assert.equal(lastSound(v).batchim, b, v);
+  assert.equal(ro('l'), '로');
+  assert.equal(ro('r'), '로');
+  assert.equal(ro('n'), '으로');
   // 분수 값은 (분자, 분모) 로도 — 약분한 분자의 소리
   assert.equal(ieyo(6, 4), '이에요');
   assert.equal(ieyo(4, 6), '예요');

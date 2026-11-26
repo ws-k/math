@@ -96,23 +96,49 @@ const DIGIT_RIEUL = '178';
  */
 export function lastSound(v: Sayable): { batchim: boolean; rieul: boolean } {
   if (typeof v === 'object') return lastSound(reduce(v.n, v.d).n);
+  const none = { batchim: false, rieul: false };
   let s = String(v).trim();
   for (;;) {
+    // 단위 글자(\mathrm{cm} · \text{m})는 '센티미터'처럼 읽어 받침 없음으로 둔다
+    if (/\\(mathrm|text)\{[^{}]*\}$/.test(s)) return none;
+    const num = trailingFracNumerator(s);
+    if (num !== null) return lastSound(num);
     // 닫는 괄호·근호 칸·집합 기호·수식 구분 $ 는 소리가 없다 — 안쪽 끝 글자가 끝소리
     const t = s.replace(/(\\right)?[)\]}|$]$|\\[{}]$|\s+$/, '');
     if (t === s) break;
     s = t;
   }
-  if (/\^\{?\\circ\}?$|°$/.test(s)) return { batchim: false, rieul: false };
-  const frac = /\\[dt]?frac\{(-?[^{}]+)\}\{[^{}]+$/.exec(s);
-  if (frac) return lastSound(frac[1] as string);
+  if (/\^\{?\\circ\}?$|°$/.test(s)) return none;
   if (/\^(\{[^{}]*|[A-Za-z0-9])$/.test(s)) return { batchim: true, rieul: false };
   const last = s.slice(-1);
   if (/\d/.test(last))
     return { batchim: DIGIT_BATCHIM.includes(last), rieul: DIGIT_RIEUL.includes(last) };
   const code = last.charCodeAt(0) - 0xac00;
   if (code >= 0 && code < 11172) return { batchim: code % 28 !== 0, rieul: code % 28 === 8 };
-  return { batchim: false, rieul: false };
+  // 글자 하나인 문자(n 엔 · m 엠 · l 엘 · r 알)는 받침, l·r 은 ㄹ. 앞이 글자(cm · \ln)거나 띄어 쓴 단위(3 m)면 받침 없음
+  const prev = s.slice(-2, -1);
+  if (/[nmlr]/.test(last) && !/[A-Za-z\s]/.test(prev))
+    return { batchim: true, rieul: last === 'l' || last === 'r' };
+  return none;
+}
+
+/** 글 끝이 \frac{분자}{분모} 이면 분자(중괄호 짝으로 꺼낸다 — \frac{x^{2}}{3} 처럼 분자에 { } 가 있어도). 아니면 null */
+function trailingFracNumerator(s: string): string | null {
+  const group = (i: number): { body: string; end: number } | null => {
+    if (s[i] !== '{') return null;
+    let depth = 0;
+    for (let j = i; j < s.length; j++) {
+      if (s[j] === '{') depth++;
+      else if (s[j] === '}' && --depth === 0) return { body: s.slice(i + 1, j), end: j + 1 };
+    }
+    return null;
+  };
+  for (const m of s.matchAll(/\\[dt]?frac(?=\{)/g)) {
+    const a = group((m.index ?? 0) + m[0].length);
+    const b = a && group(a.end);
+    if (a && b && b.end === s.length) return a.body;
+  }
+  return null;
 }
 
 export type JoPair =

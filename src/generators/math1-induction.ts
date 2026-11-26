@@ -14,9 +14,8 @@ const REC = '귀납적 정의: 첫째항과 $a_{n+1}$ 을 $a_n$ 으로 나타낸
 const ARITH = '$a_{n+1}=a_n+d$ 꼴이면 공차가 $d$ 인 등차수열: $a_n=a_1+(n-1)d$';
 const GEO = '$a_{n+1}=ra_n$ 꼴이면 공비가 $r$ 인 등비수열: $a_n=a_1r^{n-1}$';
 
-// 점화식 뒤 조사: 끝이 a_n('엔')이면 받침이 있어 '을'
 const head = (a1: number, rule: string) =>
-  `수열 $\\{a_n\\}$ 이 $a_1=${a1}$ 이고, 모든 자연수 $n$ 에 대하여 $${rule}$ ${/n$/.test(rule) ? '을' : eul(rule)} 만족시켜요.`;
+  `수열 $\\{a_n\\}$ 이 $a_1=${a1}$ 이고, 모든 자연수 $n$ 에 대하여 $${rule}$ ${eul(rule)} 만족시켜요.`;
 
 /** 검산식: 첫째항에서 점화식을 (k-1)번 그대로 돌린다. 일반항 공식을 쓰지 않아 풀이와 독립이다 */
 const loopCheck = (a1: number, step: string, k: number) =>
