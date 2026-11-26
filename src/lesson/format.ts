@@ -39,8 +39,13 @@ export function formatValue(value: string, f: NumFormat): string {
   }
   // 반올림해서 0 이 되면(−0.3 → 0) 부호를 붙이지 않는다 — "−0" 은 다른 수처럼 보인다
   const zero = !/[1-9]/.test(body);
-  // π 의 계수 1 은 적지 않는다(1π 가 아니라 π). 0 은 π 를 붙이면 다른 수처럼 보여 0 그대로
-  if (f.pi && !zero) body = body === '1' ? 'π' : `${body}π`;
+  // π 의 계수 1 은 적지 않는다(1π 가 아니라 π). 0 은 π 를 붙이면 다른 수처럼 보여 0 그대로.
+  // 분수 계수는 π 를 분자에 둔다(4π/3 · π/3 — 4/3π 는 4/(3π) 로도 읽혀서. 검토 M4, PM 기본값)
+  if (f.pi && !zero) {
+    const [num, den] = body.split('/') as [string, string | undefined];
+    const top = num === '1' ? 'π' : `${num}π`;
+    body = den === undefined ? top : `${top}/${den}`;
+  }
   return (neg && !zero ? MINUS : '') + body + (f.unit ?? '');
 }
 
@@ -63,8 +68,8 @@ export function choiceLabel(
  * 크롬은 수와 단위를 한 낱말로 봐 칸 밖으로 넘쳤다. 수로 시작하지 않으면 null
  */
 export function numSplit(text: string): [string, string] | null {
-  // π 보기의 π 는 수에 붙은 덩어리 — 36 과 π 사이에서 줄이 바뀌면 다른 두 수처럼 보인다
-  const m = /^([−-]?\d[\d,]*(?:[./]\d+)?π?)(.*)$/s.exec(text);
+  // π 보기의 π 는 수에 붙은 덩어리 — 36 과 π, 4π 와 /3 사이에서 줄이 바뀌면 다른 수처럼 보인다
+  const m = /^([−-]?\d[\d,]*(?:\.\d+)?(?:\/\d+|π\/\d+|π)?)(.*)$/s.exec(text);
   return m ? [m[1] as string, m[2] as string] : null;
 }
 

@@ -3,7 +3,7 @@
 // 글자는 손으로 쓰되 정답 여부를 조건식 when 으로 검산).
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { choiceLabel, formatValue } from '../src/lesson/format.ts';
+import { choiceLabel, formatValue, numSplit } from '../src/lesson/format.ts';
 import { validateLesson } from '../src/lesson/schema.ts';
 import type { Lesson, QuestionScene, Scene } from '../src/lesson/types.ts';
 import { goodLesson as good } from './lesson-fixture.ts';
@@ -21,7 +21,14 @@ test('π 보기: 계수 value 에 π 를 붙여 그리고, 보기 값 검산은 
   assert.equal(formatValue('36', { pi: true }), '36π');
   assert.equal(formatValue('1', { pi: true }), 'π');
   assert.equal(formatValue('-1', { pi: true }), '−π');
-  assert.equal(formatValue('4/3', { pi: true, unit: ' cm³' }), '4/3π cm³');
+  // 분수 계수는 π 를 분자에(검토 M4 — PM 기본값): 4π/3 · π/3 · −2π/3
+  assert.equal(formatValue('4/3', { pi: true, unit: ' cm³' }), '4π/3 cm³');
+  assert.equal(formatValue('1/3', { pi: true }), 'π/3');
+  assert.equal(formatValue('-2/3', { pi: true }), '−2π/3');
+  // 수 덩어리는 π 와 분모까지 한 덩어리(줄바꿈이 2π 와 /3 사이에 생기지 않게)
+  assert.deepEqual(numSplit('4π/3 cm³'), ['4π/3', ' cm³']);
+  assert.deepEqual(numSplit('36π cm³'), ['36π', ' cm³']);
+  assert.deepEqual(numSplit('4/3가지'), ['4/3', '가지']);
   assert.equal(formatValue('0', { pi: true }), '0');
   const r = withQ((q) => {
     q.choices = [
@@ -183,6 +190,57 @@ for (const [name, f] of [
       ];
       q.answer = 0;
       q.eq = 'coffee';
+    },
+  ],
+  // ---- 검토 반영(M2·m4·m5) ----
+  [
+    '글자 보기 조건에 v 가 없음(늘 같은 참·거짓)',
+    (q: QuestionScene) => {
+      q.format = undefined;
+      q.choices = [
+        { text: '참', when: '1>0' },
+        { text: '거짓', when: 'Not(v)', feedback: 'f' },
+      ];
+      q.answer = 0;
+    },
+  ],
+  [
+    '식 보기 answerCheck 가 정답 보기를 베낌',
+    (q: QuestionScene) => {
+      q.format = undefined;
+      q.choices = [{ sym: 'x>-3' }, { sym: 'x<-3', feedback: 'f' }];
+      q.answer = 0;
+      q.answerCheck = 'x > -3';
+    },
+  ],
+  [
+    '식 보기 answerCheck 가 집합을 그대로 적음',
+    (q: QuestionScene) => {
+      q.format = undefined;
+      q.choices = [{ sym: 'x>-3' }, { sym: 'x<-3', feedback: 'f' }];
+      q.answer = 0;
+      q.answerCheck = 'Interval.open(-3, oo)';
+    },
+  ],
+  [
+    '식 보기들의 미지수 글자가 다름',
+    (q: QuestionScene) => {
+      q.format = undefined;
+      q.choices = [{ sym: 'x>-3' }, { sym: 'y<-3', feedback: 'f' }];
+      q.answer = 0;
+      q.answerCheck = 'solveset(-2*x<6, x, S.Reals)';
+    },
+  ],
+  [
+    'π 보기 검산식이 여러 줄',
+    (q: QuestionScene) => {
+      q.format = { pi: true };
+      q.choices = [
+        { value: '36', check: 'r = 3\nans = 4*pi*r**3/3' },
+        { value: '27', check: 'pi*3**3', feedback: 'f' },
+      ];
+      q.answer = 0;
+      q.answerCheck = 'Rational(4,3)*pi*3**3';
     },
   ],
 ] as const) {

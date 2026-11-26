@@ -17,6 +17,7 @@ import {
   RELS,
   relTex,
   solveAnswerText,
+  splitChain,
   splitRel,
   spotEquation,
   spotFixed,
@@ -143,6 +144,38 @@ function spotRel(v: unknown, at: string, rel: boolean): string {
 }
 
 const COMB_RE = /\b(factorial|binomial|ff|Sum|H)\(/;
+
+/**
+ * 식·구간 보기 질문의 형식 규칙(검토 M2·m4). answerCheck 는 문제 조건에서 해 집합·식을 계산하는 식이어야 한다 —
+ * 정답 보기 식을 그대로 베끼거나 집합을 숫자로 적은 것(Interval.open(-3, oo))은 검산이 아무것도 보지 않는다.
+ * 보기들의 미지수 글자가 다르면(x>−3 · y<−3) 해 집합끼리 견주는 뜻이 없다
+ */
+function symChoiceRules(at: string, check: string, syms: string[]) {
+  const c = check.replace(/\s+/g, '');
+  if (syms.includes(c)) fail(`${at} answerCheck`, `정답 보기 식을 그대로 적음 (${check})`);
+  const rest = c.replace(
+    /Interval(\.(open|Lopen|Ropen))?|FiniteSet|Union|Rational|Integer|S\.Reals|oo/g,
+    '',
+  );
+  if (!/[A-Za-z]/.test(rest))
+    fail(
+      `${at} answerCheck`,
+      `해 집합을 그대로 적음 — 문제 조건에서 계산하는 식이어야 함 (${check})`,
+    );
+  const vars = syms.map((s) =>
+    [
+      ...new Set(
+        splitChain(s)
+          .filter((_, k) => k % 2 === 0)
+          .flatMap((x) => [...spotFreeVars(parseSpot(x))]),
+      ),
+    ]
+      .sort()
+      .join(','),
+  );
+  const named = [...new Set(vars.filter(Boolean))];
+  if (named.length > 1) fail(`${at} choices`, `보기마다 미지수 글자가 다름 (${named.join(' / ')})`);
+}
 
 /**
  * 허수·명제가 든 식의 쓰임 제한(검산기 verify.py 와 같은 규칙). 복소수에는 크기가 없어 부등식이 뜻이 없고, equivalent 는
@@ -423,12 +456,19 @@ export function validateLesson(
               const c = obj(rc, ca, ['text', 'when'], ['feedback']);
               label = str(c.text, `${ca} text`);
               text(`${ca} 글자`, label);
-              whens.push(str(c.when, `${ca} when`));
+              const when = str(c.when, `${ca} when`);
+              // v 가 없는 조건(1>0)은 answerCheck 와 상관없이 늘 같은 참·거짓 — 정답을 손으로 박은 셈이다(검토 M2)
+              if (!/(?<![\w.])v(?!\w)/.test(when))
+                fail(`${ca} when`, `answerCheck 의 값 v 를 쓰는 조건이어야 함 (${when})`);
+              whens.push(when);
             } else {
               const c = obj(rc, ca, ['value', 'check'], ['feedback']);
               const value = choiceValue(c.value, `${ca} value`);
               values.push(value);
               checkExpr(`${ca} check`, c.check, errors);
+              // π 보기는 검산식을 (식)/pi 로 감싸 견주는데, 여러 줄(ans = …)이면 감쌀 수 없다(검토 m5)
+              if (format.pi && String(c.check).includes('\n'))
+                fail(`${ca} check`, 'π 보기의 검산식은 한 줄로(π 로 나눠 견주려고 식째 감싼다)');
               label = formatValue(value, format);
               checks.push(String(c.check));
             }
@@ -448,6 +488,7 @@ export function validateLesson(
             // 식·글자 보기는 보기마다 값 항목이 없다 — 보기 식(조건) 전체를 정답 검산 한 항목이 본다
             const base = { ref: ref(id), unit: unitId, answer: String(answer + 1) };
             const check = String(s.answerCheck);
+            if (kind === 'sym') symChoiceRules(at, check, syms);
             items.push(
               kind === 'sym'
                 ? { ...base, kind: 'choicesym', check, choices: syms }
