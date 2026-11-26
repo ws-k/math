@@ -1,64 +1,33 @@
-// 확률 실험 조절기(makeSimControl): 누르기·'계속'·멈추기·떠나기·낭독기 누름을 화면(Simulate.tsx)과 떼어 순수하게 확인한다.
-// 화면은 DOM 사건을 이 조절기에 이어 주기만 하므로(포인터는 공용 useDrag 의 attachDrag), 배선도 가짜 요소로 시험한다.
-// 검토 지적(2026-11-23 Major 1~6) 하나하나가 테스트 하나다.
+// 확률 실험 조절기(makeSimControl): '던지기·10번·100번' 누름과 목표·기록 상한 판정을 화면(Simulate.tsx)과 떼어
+// 순수하게 확인한다. 화면은 단추의 click 을 이 조절기에 이어 주기만 한다(키보드 Enter·Space·낭독기 활성화도 click).
+// 그 밖에 검토 지적(2026-11-23 Major 4·6)의 그림·형식 검사 테스트가 남아 있다.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { attachDrag } from '../src/lesson/useDrag.ts';
 import {
   makeSimControl,
   SIM_MAX,
+  SIM_STEPS,
   type SimParams,
   seedBias,
   simAppend,
   simDraw,
   simHistory,
   simSay,
+  simStepLabel,
   simTheoryShort,
   simulateDef,
 } from '../src/lesson/widgets/simulate.ts';
 
 const parse = (raw: unknown) => simulateDef.parse(raw) as SimParams;
 
-function fakeClock() {
-  let now = 0;
-  let jobs: { at: number; fn: () => void; id: number }[] = [];
-  let id = 0;
-  return {
-    now: () => now,
-    later(ms: number, fn: () => void) {
-      const j = { at: now + ms, fn, id: ++id };
-      jobs.push(j);
-      return () => {
-        jobs = jobs.filter((x) => x !== j);
-      };
-    },
-    run(ms: number) {
-      const end = now + ms;
-      for (;;) {
-        jobs.sort((a, b) => a.at - b.at || a.id - b.id);
-        const j = jobs[0];
-        if (!j || j.at > end) break;
-        jobs.shift();
-        now = j.at;
-        j.fn();
-      }
-      now = end;
-    },
-  };
-}
-
 /** 기록 길이만 세는 가짜 화면. cap 으로 기록 상한을 흉내 낸다 */
 function rig(goal = 100, start = 0, cap = SIM_MAX) {
-  const clock = fakeClock();
   const log: string[] = [];
   let total = start;
-  let painted = 0;
   const ctl = makeSimControl({
-    clock,
     toss(k) {
       const n = Math.max(0, Math.min(k, cap - total));
       total += n;
-      if (n) painted += 1;
       return n;
     },
     total: () => total,
@@ -66,217 +35,103 @@ function rig(goal = 100, start = 0, cap = SIM_MAX) {
     full: () => total >= cap,
     settle: () => log.push(`settle@${total}`),
     done: () => log.push(`done@${total}`),
-    setAuto: (on) => log.push(`auto:${on}`),
   });
-  return { clock, log, ctl, total: () => total, painted: () => painted };
+  return { log, ctl, total: () => total };
 }
 
-// ---- M1: '계속' 모드와 목표 ----
+// ---- 한 번 누르면 정해진 만큼(2026-11-26 PM: 꾹 누르기 대신 '10번·100번') ----
 
-test('M1 계속 모드: 목표 횟수에 닿는 박자에서 한 번 멈추고 settle·목표를 적는다(화면 밖에서 1만 번까지 던지지 않게)', () => {
-  const r = rig(100);
-  r.ctl.toggleAuto();
-  assert.equal(r.ctl.auto, true);
-  r.clock.run(60_000);
-  assert.equal(r.ctl.on, false);
-  assert.ok(r.total() >= 100 && r.total() < 110, String(r.total()));
-  assert.deepEqual(
-    r.log.filter((x) => !x.startsWith('auto')),
-    [`settle@${r.total()}`, `done@${r.total()}`],
-  );
-  assert.deepEqual(
-    r.log.filter((x) => x.startsWith('auto')),
-    ['auto:true', 'auto:false'],
-  );
-  // 목표를 넘긴 뒤 다시 켜면 계속(다시 멈추지 않음), 끄면 멈춘다
-  r.ctl.toggleAuto();
-  r.clock.run(3000);
-  assert.ok(r.ctl.on);
-  r.ctl.toggleAuto();
-  assert.equal(r.ctl.on, false);
+test('한 번 누르면 그만큼만 던지고 상태는 한 번만 정한다(누를 때마다 settle 1번 — 렌더 1번)', () => {
+  const r = rig(1000);
+  assert.equal(r.ctl.toss(1), 1);
+  assert.equal(r.ctl.toss(10), 10);
+  assert.equal(r.ctl.toss(100), 100);
+  assert.equal(r.total(), 111);
+  assert.deepEqual(r.log, ['settle@1', 'settle@11', 'settle@111']);
+});
+
+test('목표: 단추 한 번으로 목표를 넘겨도(95 → 105) 그 자리에서 한 번 적고, 다시 넘겨도 또 적지 않는다', () => {
+  const r = rig(100, 95);
+  r.ctl.toss(10);
+  assert.deepEqual(r.log, ['settle@105', 'done@105']);
+  r.ctl.toss(100);
   assert.equal(r.log.filter((x) => x.startsWith('done')).length, 1);
+  // 딱 맞게 닿아도(0 → 100) 목표
+  const s = rig(100);
+  s.ctl.toss(100);
+  assert.deepEqual(s.log, ['settle@100', 'done@100']);
+  // 목표 전이면 적지 않는다
+  const u = rig(100);
+  for (let i = 0; i < 9; i++) u.ctl.toss(10);
+  assert.equal(u.log.filter((x) => x.startsWith('done')).length, 0);
+  u.ctl.toss(1);
+  u.ctl.toss(10);
+  assert.deepEqual(u.log.slice(-2), ['settle@101', 'done@101']);
 });
 
-test('M1 꾹 누르기는 목표에서 멈추지 않는다(손을 뗀 자리에서만 판정 — P3)', () => {
-  const r = rig(20);
-  r.ctl.press();
-  r.clock.run(5000);
-  assert.ok(r.ctl.on);
-  assert.equal(r.log.length, 0);
-  r.ctl.release();
-  assert.deepEqual(r.log, [`settle@${r.total()}`, `done@${r.total()}`]);
-});
-
-test('M1 떠나기(장면이 사라짐): 상태는 정하지 않되, 기록이 목표 이상이면 목표는 적는다', () => {
-  const r = rig(10);
-  r.ctl.press();
-  r.clock.run(3000);
-  r.ctl.leave();
-  assert.equal(r.ctl.on, false);
-  assert.deepEqual(r.log, [`done@${r.total()}`]);
-  const n = r.total();
-  r.clock.run(3000);
-  assert.equal(r.total(), n, '떠난 뒤에는 던지지 않는다');
-  // 목표 전이면 아무것도 적지 않는다
-  const s = rig(1000);
-  s.ctl.toggleAuto();
-  s.clock.run(1000);
-  s.ctl.leave();
-  assert.deepEqual(
-    s.log.filter((x) => !x.startsWith('auto')),
-    [],
-  );
-  // 개발 모드의 두 번 붙이기: 다시 살리면 정상
-  s.ctl.revive();
-  s.ctl.press();
-  s.ctl.release();
-  assert.ok(s.log.some((x) => x.startsWith('settle')));
-});
-
-// ---- M2·M5: 멈추기(창 가림·되감기 시작·화면 밖) ----
-
-test('M2·M5 stop: 무엇으로 시작했든 멈추고 한 번 settle(창이 가려짐·되감기를 잡음·장면이 화면 밖)', () => {
-  for (const start of ['press', 'auto'] as const) {
-    const r = rig(1000);
-    if (start === 'press') r.ctl.press();
-    else r.ctl.toggleAuto();
-    r.clock.run(2000);
-    r.ctl.stop();
-    r.ctl.stop();
-    assert.equal(r.ctl.on, false);
-    assert.equal(r.log.filter((x) => x.startsWith('settle')).length, 1, start);
-    const n = r.total();
-    r.clock.run(2000);
-    assert.equal(r.total(), n);
-  }
-});
-
-// ---- M3: 공용 끌기 장치(attachDrag)로 이은 배선 ----
-
-class FakeEl extends EventTarget {
-  captured = new Set<number>();
-  setPointerCapture(id: number) {
-    this.captured.add(id);
-  }
-  hasPointerCapture(id: number) {
-    return this.captured.has(id);
-  }
-  releasePointerCapture(id: number) {
-    this.captured.delete(id);
-  }
-}
-const ptr = (type: string, id = 1, primary = true) =>
-  Object.assign(new Event(type, { cancelable: true }), {
-    pointerId: id,
-    isPrimary: primary,
-    button: 0,
-    clientX: 0,
-    clientY: 0,
-  });
-const noRaf = () => 0;
-
-test('M3 배선: 누름 = 한 번, 뗌 = settle, 두 번째 손가락은 무시, 잠금은 시작·끝에 한 번씩', () => {
-  const r = rig(1000);
-  const el = new FakeEl();
-  const guard: boolean[] = [];
-  attachDrag(
-    el as unknown as HTMLElement,
-    () => r.ctl.drag,
-    (g) => guard.push(g),
-    noRaf,
-    () => {},
-  );
-  el.dispatchEvent(ptr('pointerdown'));
-  assert.equal(r.total(), 1);
-  el.dispatchEvent(ptr('pointerdown', 2, false));
-  el.dispatchEvent(ptr('pointerup', 2, false));
-  assert.equal(r.log.length, 0, '다른 손가락을 떼도 멈추지 않는다');
-  r.clock.run(2000);
-  el.dispatchEvent(ptr('pointerup'));
-  assert.deepEqual(r.log, [`settle@${r.total()}`]);
-  assert.deepEqual(guard, [true, false]);
-});
-
-test('M3 배선: 시스템이 빼앗거나(pointercancel) 부품이 사라지면(떼어 냄) 멈춘다', () => {
-  const r = rig(1000);
-  const el = new FakeEl();
-  attachDrag(
-    el as unknown as HTMLElement,
-    () => r.ctl.drag,
-    () => {},
-    noRaf,
-    () => {},
-  );
-  el.dispatchEvent(ptr('pointerdown'));
-  r.clock.run(1000);
-  el.dispatchEvent(ptr('pointercancel'));
-  assert.equal(r.ctl.on, false);
-  assert.equal(r.log.length, 1);
-  const s = rig(1000);
-  const el2 = new FakeEl();
-  const detach = attachDrag(
-    el2 as unknown as HTMLElement,
-    () => s.ctl.drag,
-    () => {},
-    noRaf,
-    () => {},
-  );
-  el2.dispatchEvent(ptr('pointerdown'));
-  s.clock.run(1000);
-  detach();
-  assert.equal(s.ctl.on, false);
-});
-
-test('M3 키보드: 누름 = 시작, 키 반복은 무시, 뗌·초점 잃음 = 멈춤', () => {
-  const r = rig(1000);
-  r.ctl.press();
-  r.ctl.press(); // 키 반복이 와도 새로 시작하지 않는다
-  r.clock.run(100);
-  r.ctl.release();
-  assert.equal(r.total(), 1);
-  assert.equal(r.log.length, 1);
-});
-
-test('낭독기 누름: 포인터·키로 누른 뒤 따라오는 click 은 무시, 포인터 없이 온 click 만 한 번 던지기', () => {
-  const r = rig(1000);
-  const el = new FakeEl();
-  attachDrag(
-    el as unknown as HTMLElement,
-    () => r.ctl.drag,
-    () => {},
-    noRaf,
-    () => {},
-  );
-  el.dispatchEvent(ptr('pointerdown'));
-  el.dispatchEvent(ptr('pointerup'));
-  r.ctl.click();
-  assert.equal(r.total(), 1, '손가락 한 번에 click 이 겹쳐도 한 번');
-  r.clock.run(5000);
-  r.ctl.click();
-  assert.equal(r.total(), 2, '포인터 없이 온 click(낭독기 활성화)은 한 번');
-  assert.equal(r.log.filter((x) => x.startsWith('settle')).length, 2);
-  // 키로 누른 뒤의 click 도 겹치지 않는다
-  r.ctl.press();
-  r.ctl.release();
-  r.ctl.click();
-  assert.equal(r.total(), 3);
-});
-
-// ---- M4: 기록이 가득 참 ----
-
-test('M4 기록이 가득 차면 누르기·계속이 아무 일도 안 하고, 상한에 닿는 박자에서 멈춘다', () => {
-  const r = rig(10, 0, 30);
-  r.ctl.press();
-  r.clock.run(10_000);
-  assert.equal(r.ctl.on, false);
-  assert.equal(r.total(), 30);
+test('기록 상한: 남은 만큼만 던지고(9950 에서 100번 → 50), 가득 차면 누름이 아무 일도 안 한다', () => {
+  const r = rig(10, SIM_MAX - 50);
+  assert.equal(r.ctl.toss(100), 50);
+  assert.equal(r.total(), SIM_MAX);
   assert.equal(r.ctl.full, true);
   const n = r.log.length;
-  r.ctl.press();
-  r.ctl.toggleAuto();
-  r.ctl.click();
-  assert.equal(r.ctl.on, false);
-  assert.equal(r.log.length, n);
+  assert.equal(r.ctl.toss(1), 0);
+  assert.equal(r.ctl.toss(100), 0);
+  assert.equal(r.log.length, n, '가득 찬 뒤에는 settle 도 없다');
+});
+
+// ---- 같은 시드면 같은 기록 ----
+
+test('1번 단추를 100번 누른 것과 100번 단추를 한 번 누른 것은 같은 기록(같은 시드)', () => {
+  const p = parse({ device: 'die', n: 2, seed: 5, goal: 200 });
+  const run = (presses: number[]) => {
+    const h = simHistory(p);
+    const ctl = makeSimControl({
+      toss: (k) => simAppend(p, h, k),
+      total: () => h.cats.length,
+      goal: () => p.goal,
+      full: () => h.cats.length >= SIM_MAX,
+      settle() {},
+      done() {},
+    });
+    for (const k of presses) ctl.toss(k);
+    return h;
+  };
+  const ones = run(Array.from({ length: 100 }, () => 1));
+  const hundred = run([100]);
+  // 10 + 1×10 + 10×8 = 100
+  const mixed = run([10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 10, 10, 10, 10, 10, 10, 10, 10]);
+  assert.equal(hundred.cats.length, 100);
+  assert.equal(mixed.cats.length, 100);
+  assert.deepEqual(ones.raws, hundred.raws);
+  assert.deepEqual(ones.cats, hundred.cats);
+  assert.deepEqual(mixed.raws, hundred.raws);
+});
+
+// ---- 단추 글 ----
+
+test('단추 셋: 1번은 기구의 동사, 10번·100번은 짧은 글 + 낭독기는 동사까지(무엇을 10번 하는지)', () => {
+  assert.deepEqual(SIM_STEPS, [1, 10, 100]);
+  const coin = parse({ device: 'coin', n: 1, seed: 1 });
+  const bag = parse({
+    device: 'bag',
+    bag: [
+      { label: '빨강', count: 1 },
+      { label: '파랑', count: 2 },
+    ],
+    seed: 1,
+  });
+  const tr = parse({ device: 'trial', p: '1/3', n: 2, seed: 1 });
+  assert.deepEqual(
+    SIM_STEPS.map((k) => simStepLabel(coin, k)),
+    [
+      { text: '던지기', aria: '1번 던지기' },
+      { text: '10번', aria: '10번 던지기' },
+      { text: '100번', aria: '100번 던지기' },
+    ],
+  );
+  assert.deepEqual(simStepLabel(bag, 10), { text: '10번', aria: '10번 꺼내기' });
+  assert.deepEqual(simStepLabel(tr, 1), { text: '해 보기', aria: '1번 해 보기' });
 });
 
 test('M4 그림·낭독: 가득 차면 "기록이 가득 찼어요(10000번)", 되감은 자리는 그대로', () => {

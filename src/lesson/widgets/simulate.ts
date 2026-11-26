@@ -1,14 +1,15 @@
 // 확률 실험 부품의 모델(순수). 화면(Simulate.tsx)과 검산(checks)이 이 함수들을 같이 쓴다.
-// 동전·주사위·주머니·성공 횟수 기구를 학습자가 한 번씩 직접 던지고(누르고 있으면 계속), 나온 비율 막대를 이론값과
+// 동전·주사위·주머니·성공 횟수 기구를 학습자가 직접 던지고(한 번·10번·100번 단추), 나온 비율 막대를 이론값과
 // 나란히 본다. 던지기는 시드 난수(generators/rng.ts 그대로)라 같은 시드면 같은 기록 — 되감기·테스트·화면 확인이 재현된다.
 // 이론값은 모든 경우를 늘어놓아 세서 분수로 정확히 구하고, checks 가 sympy 로 따로 세어 대조한다.
 //
 // 2026-11-23 '직접 던지기'(조각 ④ · 1-나, 시안 outputs/widgets-v2/prob/toss.html): '1번·10번·100번' 버튼은 결과를 대신
-// 그려 주는 버튼이라(P2) 없앴다. 기록(던진 결과 전부)을 남기고 화면은 그 앞의 t 개만 세므로, 되감기는 t 만 바꾼다.
-// 누르는 동안은 React 를 거치지 않고 그릴 목록(simDraw)을 직접 적용한다(P8) — 그래서 그림이 이 파일의 순수 함수에서 나온다.
+// 그려 주는 버튼이라(P2) 없애고 '꾹 누르면 점점 빠르게 계속'으로 바꿨다. 2026-11-26 PM 이 그 자동 반복의 과부하를 걱정해
+// 다시 '10번·100번'으로 되돌렸다 — 레슨 목표가 60~300번이라 한 번씩만 누르기는 비현실적이다(SIM_STEPS).
+// 기록(던진 결과 전부)을 남기고 화면은 그 앞의 t 개만 세므로, 되감기는 t 만 바꾼다.
+// 되감는 동안은 React 를 거치지 않고 그릴 목록(simDraw)을 직접 적용한다(P8) — 그래서 그림이 이 파일의 순수 함수에서 나온다.
 import { makeRng, type Rng } from '../../generators/rng.ts';
 import { arr, fail, int, obj, oneOf, rationalStr, str } from '../parse.ts';
-import type { DragHandlers } from '../useDrag.ts';
 import { type Drawing, type Mark, r2 } from './draw.ts';
 import { div, type Q, q, qi, ratStr } from './q.ts';
 import type { WidgetCheck, WidgetDef } from './specs.ts';
@@ -194,7 +195,7 @@ export function simRun(p: SimParams, s: SimState, rng: Rng, times: number): SimS
 
 // ---- 기록과 되감기 ----
 
-/** 기록 상한. 끝 속도(초당 약 80번)로 2분 — 되감기 손잡이 한 칸이 너무 잘아지지 않게, 기억 공간도 묶는다 */
+/** 기록 상한. 100번 단추를 100번 누를 만큼 — 되감기 손잡이 한 칸이 너무 잘아지지 않게, 기억 공간도 묶는다 */
 export const SIM_MAX = 10000;
 
 /** 던진 결과 전부(지우지 않는다). 같은 시드로 시작하므로 같은 횟수면 같은 기록 */
@@ -237,171 +238,55 @@ export function simCountsAt(p: SimParams, h: SimHistory, t: number): number[] {
   return counts;
 }
 
-// ---- 누르고 있기 ----
-
-/** 처음 한 번 던진 뒤 이만큼 누르고 있어야 계속 던지기가 시작된다(짧게 누른 한 번이 두 번이 되지 않게) */
-export const HOLD_FIRST = 380;
+// ---- 조절기: 던지기·10번·100번 ----
 
 /**
- * 누른 지 ms 지났을 때 한 박자에 던질 수(k)와 다음 박자까지(wait). 시안 그대로 초당 약 7 → 33 → 83번.
- * 처음엔 하나하나 보이게 느리게, 오래 누르면 '많이 던지면 다가간다'가 보일 만큼 빠르게.
+ * 한 번 누를 때 던지는 수. 2026-11-26 PM 결정: 꾹 누르면 점점 빠르게 계속 던지던 것(자동 반복)은 과부하가 걱정돼
+ * 없애고, 레슨 목표(60~300번)를 한 번씩 누르기는 비현실적이라 '10번·100번'을 둔다 — 누를 때마다 정해진 만큼만
  */
-export function holdPace(ms: number): { k: number; wait: number } {
-  if (ms < 1400) return { k: 1, wait: 140 };
-  if (ms < 2600) return { k: 2, wait: 60 };
-  return { k: 5, wait: 60 };
-}
-
-export interface HoldClock {
-  now(): number;
-  /** ms 뒤에 fn. 돌려준 함수를 부르면 취소 */
-  later(ms: number, fn: () => void): () => void;
-}
+export const SIM_STEPS = [1, 10, 100] as const;
 
 /**
- * 누르고 있기 조절기. start 에서 바로 한 번(tick(1, true)), HOLD_FIRST 뒤부터 holdPace 박자로 tick(k, false).
- * tick 은 그림만 고치고(React 렌더 없음), 손을 떼거나(stop) tick 이 false(기록이 참)를 돌려주면 settle 을 한 번 부른다 —
- * 상태(React)는 settle 에서만 바뀐다(P8: 누르는 동안 렌더 0회). 이미 누르는 중이면 start 는 아무 일도 하지 않는다(P9).
+ * 단추 글. 1번은 기구의 동사(simActLabel), 10번·100번은 접은 화면 한 줄에 셋이 들게 횟수만 쓴다.
+ * 낭독기는 셋을 가를 수 있게 늘 '몇 번 + 동사'로 읽는다(보이는 글이 그 안에 들어 있어 음성 명령도 맞는다)
  */
-export function makeHold(
-  clock: HoldClock,
-  tick: (k: number, first: boolean) => boolean,
-  settle: () => void,
-) {
-  let on = false;
-  let cancel: (() => void) | null = null;
-  let t0 = 0;
-  const stop = () => {
-    if (!on) return;
-    on = false;
-    cancel?.();
-    cancel = null;
-    settle();
-  };
-  const loop = () => {
-    cancel = null;
-    if (!on) return;
-    const { k, wait } = holdPace(clock.now() - t0);
-    if (!tick(k, false)) return stop();
-    cancel = clock.later(wait, loop);
-  };
-  return {
-    start() {
-      if (on) return;
-      on = true;
-      t0 = clock.now();
-      if (!tick(1, true)) return stop();
-      cancel = clock.later(HOLD_FIRST, loop);
-    },
-    stop,
-    get on() {
-      return on;
-    },
-  };
+export function simStepLabel(p: SimParams, k: number): { text: string; aria: string } {
+  const act = simActLabel(p);
+  return { text: k === 1 ? act : `${k}번`, aria: `${k}번 ${act}` };
 }
-
-// ---- 조절기: 누르기·'계속'·멈추기·떠나기 ----
 
 export interface SimControlDeps {
-  clock: HoldClock;
-  /** k 번 더 던져 그림만 고친다(React 렌더 없음). 실제로 던진 수 */
-  toss(k: number, first: boolean): number;
+  /** k 번 더 던져 기록에 잇고 그림을 고친다. 실제로 던진 수(상한에 닿으면 그보다 적다) */
+  toss(k: number): number;
   /** 지금 기록 길이 */
   total(): number;
   goal(): number;
   /** 기록이 가득 찼는가 */
   full(): boolean;
-  /** 상태로 정하기(렌더 한 번 + 낭독 요약). 누름이 끝날 때만 */
+  /** 상태로 정하기(렌더 한 번 + 낭독 요약). 누를 때마다 한 번 */
   settle(): void;
   /** 목표(던진 횟수)를 이뤘다 — 장면 완료로 적는다. 한 번만 부른다 */
   done(): void;
-  /** '계속' 단추의 켜짐 표시 */
-  setAuto(on: boolean): void;
 }
 
-/** 포인터·키로 누른 뒤 이 시간 안에 오는 click 은 그 누름이 낸 것으로 본다(겹쳐 던지지 않게) */
-const CLICK_ECHO = 800;
-
 /**
- * 확률 실험 조절기. 화면은 DOM 사건을 이어 주기만 한다 — 그래야 판정을 가짜 시계로 시험할 수 있다.
- * - 누르기(press/release, 포인터는 drag 로 공용 useDrag 에): 누르는 동안 계속, 손을 떼면 settle·목표 판정(P3).
- * - '계속'(toggleAuto): 손을 대지 않아도 계속. 목표 횟수에 닿는 박자에서 한 번 멈추고 settle — 켜 둔 채 장면을 떠나도
- *   화면 밖에서 기록 상한까지 던지지 않고, 목표는 그 자리에서 적힌다.
- * - stop: 창이 가려짐·되감기를 잡음·장면이 화면 밖 — 무엇으로 시작했든 멈추고 settle.
- * - leave: 장면이 사라짐. 상태는 정하지 않되(없는 화면) 기록이 목표 이상이면 목표는 적는다. revive 는 개발 모드의
- *   두 번 붙이기에서 되살리기.
- * - click: 포인터·키 없이 오는 누름(화면 낭독기의 '활성화')만 한 번 던지기. 포인터·키로 누른 직후의 click 은 무시
- *   (click 의 detail 값은 브라우저·보조 기술마다 달라 믿지 않는다).
+ * 확률 실험 조절기. 화면은 단추의 click(포인터·키보드 Enter·Space·낭독기 활성화 모두)을 이어 주기만 한다 —
+ * 그래야 목표·상한 판정을 화면 없이 시험할 수 있다. 100번도 한 번에 기록에 붙이고 상태는 한 번만 바꾼다(P8).
+ * 목표는 넘긴 그 누름에서 한 번 적는다(95번에서 10번을 눌러 105번이 되어도).
  */
 export function makeSimControl(d: SimControlDeps) {
-  let src: 'press' | 'auto' | null = null;
-  let gone = false;
   let achieved = false;
-  let lastPress = Number.NEGATIVE_INFINITY;
-  const judge = () => {
-    if (!achieved && d.total() >= d.goal()) {
-      achieved = true;
-      d.done();
-    }
-  };
-  const hold = makeHold(
-    d.clock,
-    (k, first) => {
-      const before = d.total();
-      const added = d.toss(k, first);
-      if (added < k || d.full()) return false;
-      return !(src === 'auto' && before < d.goal() && d.total() >= d.goal());
-    },
-    () => {
-      const was = src;
-      src = null;
-      if (gone) return;
-      if (was === 'auto') d.setAuto(false);
-      d.settle();
-      judge();
-    },
-  );
-  const press = () => {
-    if (hold.on || gone || d.full()) return;
-    src = 'press';
-    hold.start();
-  };
-  const release = () => {
-    if (src !== 'press') return;
-    lastPress = d.clock.now();
-    hold.stop();
-  };
-  const drag: DragHandlers = { onStart: press, onMove() {}, onEnd: release };
   return {
-    press,
-    release,
-    drag,
-    toggleAuto() {
-      if (src === 'auto') return hold.stop();
-      if (hold.on || gone || d.full()) return;
-      src = 'auto';
-      d.setAuto(true);
-      hold.start();
-    },
-    stop: () => hold.stop(),
-    click() {
-      if (hold.on || d.clock.now() - lastPress < CLICK_ECHO) return;
-      press();
-      release();
-    },
-    leave() {
-      gone = true;
-      hold.stop();
-      judge();
-    },
-    revive() {
-      gone = false;
-    },
-    get on() {
-      return hold.on;
-    },
-    get auto() {
-      return src === 'auto';
+    toss(k: number): number {
+      if (d.full()) return 0;
+      const added = d.toss(k);
+      if (added === 0) return 0;
+      d.settle();
+      if (!achieved && d.total() >= d.goal()) {
+        achieved = true;
+        d.done();
+      }
+      return added;
     },
     get full() {
       return d.full();
@@ -445,7 +330,7 @@ export function simFrame(compact: boolean) {
   return compact ? { W: 320, H: 136, TOP: 10, BASE: 112 } : { W: 320, H: 190, TOP: 16, BASE: 150 };
 }
 
-/** 던지기 단추의 글. 기구에 맞는 동사(주머니는 공을 '꺼낸다', 성공 횟수는 한 묶음을 '해 본다') */
+/** 1번 단추의 글. 기구에 맞는 동사(주머니는 공을 '꺼낸다', 성공 횟수는 한 묶음을 '해 본다') */
 export function simActLabel(p: SimParams): string {
   if (p.device === 'bag') return '꺼내기';
   if (p.device === 'trial') return '해 보기';
@@ -483,7 +368,7 @@ function resultText(p: SimParams, cat: number): string {
   return c.label;
 }
 
-/** 마지막 결과 그림의 한 칸 크기·한 줄 칸 수. 접은 화면 한 줄(던지기 단추 옆 약 120px)에 들게 */
+/** 마지막 결과 그림의 한 칸 크기·한 줄 칸 수. 접은 화면 한 줄(단추 셋 옆 약 120px)에 들게 */
 export function simLastFrame(p: SimParams) {
   const g = p.device === 'bag' ? p.draws : p.n;
   const perRow = p.device === 'trial' ? 5 : 4;
@@ -565,12 +450,12 @@ function lastMarks(p: SimParams, raw: number[] | undefined): Mark[] {
 }
 
 export interface SimDrawing extends Drawing {
-  /** 마지막 결과 그림(던지기 단추 옆 작은 SVG) */
+  /** 마지막 결과 그림(던지기 단추들 옆 작은 SVG) */
   last: Mark[];
 }
 
 /**
- * 기록 h 의 앞 t 번을 센 그림. 처음과 손을 뗀 뒤에는 React 가(Marks), 누르는 동안·되감는 동안에는 applyDrawing 이
+ * 기록 h 의 앞 t 번을 센 그림. 처음과 상태가 바뀐 뒤에는 React 가(Marks), 단추를 누른 직후·되감는 동안에는 applyDrawing 이
  * 같은 목록을 쓴다. theory 가 false(질문을 맞히기 전)면 이론 점선을 목록에서 아예 뺀다 — 숨김(visibility)으로 두면
  * 점선의 높이가 그림 속에 정답으로 남는다(P3).
  */
@@ -665,7 +550,7 @@ export function simDraw(
 const FULL = `기록이 가득 찼어요(${SIM_MAX}번)`;
 
 /**
- * 손을 뗀 뒤 화면 낭독기가 한 번 읽을 글(던질 때마다 읽으면 시끄럽다). 결과가 7가지 이상이면(주사위 합 11가지,
+ * 단추를 누르거나 되감기를 놓은 뒤 화면 낭독기가 한 번 읽을 글(100번 단추도 요약 한 번 — 하나하나 읽으면 시끄럽다). 결과가 7가지 이상이면(주사위 합 11가지,
  * 표본평균 21가지) 하나하나 읽으면 너무 길어 가장 많이 나온 것만
  */
 export function simSay(p: SimParams, h: SimHistory, t: number): string {

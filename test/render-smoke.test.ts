@@ -345,10 +345,13 @@ test('접은 화면(382×580) 모양도 예외 없이 그려진다: 확률 실�
     };
     const dice = pick('m2-probability');
     assert.match(dice, /class="sim-table fold"/);
-    // 직접 던지기(1-나): 접은 화면은 '계속' 짧은 글, 던지기 단추는 '꾹 누르면 계속' 안내, 주머니는 '꺼내기'
-    assert.match(dice, /class="lbtn soft sim-auto"[^>]*>계속</);
-    assert.match(dice, /class="lbtn blue sim-go"[^>]*>던지기<small>꾹 누르면 계속<\/small>/);
-    assert.match(dice, /class="lbtn blue sim-go"[^>]*>꺼내기<small>/);
+    // 직접 던지기(1-나): '던지기·10번·100번' 한 줄(주머니는 '꺼내기'), 낭독기는 무엇을 몇 번 하는지까지 읽는다.
+    // 꾹 누르기·'계속'은 2026-11-26 PM 결정으로 없앴다
+    assert.match(dice, /class="lbtn blue sim-go"[^>]*aria-label="1번 던지기"[^>]*>던지기</);
+    assert.match(dice, /class="lbtn soft sim-go"[^>]*aria-label="10번 던지기"[^>]*>10번</);
+    assert.match(dice, /class="lbtn soft sim-go"[^>]*aria-label="100번 던지기"[^>]*>100번</);
+    assert.match(dice, /class="lbtn blue sim-go"[^>]*aria-label="1번 꺼내기"[^>]*>꺼내기</);
+    assert.doesNotMatch(dice, /sim-auto|꾹 누르/);
     const tiles = pick('m3-factoring');
     assert.match(tiles, /class="slot x rot"/);
     assert.match(pick('math2-diff-product-rule'), /class="readouts grow-ro"/);
