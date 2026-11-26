@@ -7,7 +7,7 @@ import { mul, qi, ratStr } from '../q.ts';
 import { MAX_SNAPS, near, numExpr, toIndex } from './common.ts';
 import { curveExact, curveNum, curveOf, curveVars, fAt, wholeCurve } from './curve.ts';
 import { followNum, followQ, followSliders, followSym, isConst, parseFollow } from './follow.ts';
-import { fmtNum, iRange, r1, toPx } from './frame.ts';
+import { fmtNum, iRange, isWide, r1, toPx } from './frame.ts';
 import { sliderCombos, sliderQ, sliderSym, sliderValues } from './slider.ts';
 import type {
   Axis,
@@ -268,13 +268,11 @@ function withRange(
 // ---- 점 이름 ----
 
 /**
- * 점 이름표(.pname 13px 굵게)의 글자 폭 어림(px): 한글 13·그 밖 9. 이름표 자리 고르기(draw.ts)와 폭 상한이 같은 셈을
- * 써야 '형식 검사를 통과한 이름은 그림 안에 놓인다'가 맞는다. 한글을 영문과 같은 9px 로 세면 '그저께'가 실제보다
- * 12px 좁게 잡혀 오른쪽 끝 점의 이름표가 그림 밖으로 나간다
+ * 점 이름표(.pname 13px 굵게)의 글자 폭 어림(px): 넓은 글자 13·아는 좁은 글자 9(frame.ts isWide — 모르는 글자는
+ * 넓게). 이름표 자리 고르기(draw.ts)와 폭 상한이 같은 셈을 써야 '형식 검사를 통과한 이름은 그림 안에 놓인다'가 맞는다.
+ * 한글을 영문과 같은 9px 로 세면 '그저께'가 실제보다 12px 좁게 잡혀 오른쪽 끝 점의 이름표가 그림 밖으로 나간다
  */
-export const nameWidth = (t: string) => [...t].reduce((w, ch) => w + (HANGUL.test(ch) ? 13 : 9), 0);
-/** 한글(자모·호환 자모·음절). 프라임 ′(U+2032)·아래 첨자 ₁ 은 코드 값이 커도 좁은 글자라 범위로 가린다 */
-const HANGUL = /[ᄀ-ᇿ㄰-㆏가-힣]/;
+export const nameWidth = (t: string) => [...t].reduce((w, ch) => w + (isWide(ch) ? 13 : 9), 0);
 /**
  * 이름표 폭 상한(px) — 한글 4자·영문 6자. 가장 좁은 화면(382px) 그림 폭 250px 의 1/5 남짓: 더 길면 점 둘레를 넓게
  * 덮어 곡선·다른 점을 가리고, 이웃 점과 자리를 나눌 수 없게 된다

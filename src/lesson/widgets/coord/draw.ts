@@ -24,27 +24,33 @@ export function draw(p: CoordParams, s: CoordState, box: Box): Drawing {
 }
 
 /**
- * 형식 검사(무거운 쪽): 가장 좁은 화면, 처음 자리에서 점 이름표가 그림 밖으로 나가거나 서로 겹치면 오류.
- * labels.ts 는 자리가 모자라면 겹치는 자리라도 고르므로(이름표를 아예 안 그리는 것보다 낫게) 그 경우를 여기서 잡는다 —
- * 여러 글자 이름(요청 19)이 생기면서 이웃 점끼리 자리를 못 나누는 장면을 만들 수 있게 되었다
+ * 형식 검사(무거운 쪽): 가장 좁은 화면, 처음 자리에서 점 이름표가 그림 밖으로 나가거나, 서로 겹치거나, 다른 점을
+ * 덮으면 오류. labels.ts 는 자리가 모자라면 겹치는 자리라도 고르므로(이름표를 아예 안 그리는 것보다 낫게) 그 경우를
+ * 여기서 잡는다 — 여러 글자 이름(요청 19)이 생기면서 이웃 점끼리 자리를 못 나누는 장면을 만들 수 있게 되었다.
+ * 맞힌 뒤에는 숨긴 목표 점과 그 이름표가 더해지므로 그 상태도 한 번 더 본다
  */
 export function checkLabels(p: CoordParams): void {
-  const { rects, f } = drawWith(p, initial(p), { w: NARROW_BOX_W, h: MIN_BOX_H });
-  const hit = (a: Rect, b: Rect) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
-  for (const [i, { r, text }] of rects.entries()) {
-    if (r.l < f.l - 0.5 || r.r > f.r + 0.5 || r.t < f.t - 0.5 || r.b > f.b + 0.5)
-      fail(
-        '좌표',
-        `가장 좁은 화면에서 이름표 '${text}' 이 그림 밖 — 이름을 짧게 하거나 점을 안쪽으로`,
-      );
-    const other = rects.slice(0, i).find((q) => hit(q.r, r));
-    if (other)
-      fail(
-        '좌표',
-        `가장 좁은 화면에서 이름표 '${other.text}'·'${text}' 이 겹침 — 이름을 짧게 하거나 점 사이를 넓게`,
-      );
+  const s0 = initial(p);
+  for (const [s, when] of [
+    [s0, ''],
+    [{ ...s0, solved: true }, '맞힌 뒤 '],
+  ] as const) {
+    const { rects, f, spots } = drawWith(p, s, { w: NARROW_BOX_W, h: MIN_BOX_H });
+    const at = `좌표 ${when}가장 좁은 화면에서`;
+    for (const [i, { r, text }] of rects.entries()) {
+      if (r.l < f.l - 0.5 || r.r > f.r + 0.5 || r.t < f.t - 0.5 || r.b > f.b + 0.5)
+        fail(at, `이름표 '${text}' 이 그림 밖 — 이름을 짧게 하거나 점을 안쪽으로`);
+      const other = rects.slice(0, i).find((q) => hit(q.r, r));
+      if (other)
+        fail(at, `이름표 '${other.text}'·'${text}' 이 겹침 — 이름을 짧게 하거나 점 사이를 넓게`);
+      const d = LABEL.dotR;
+      if (spots.some((q) => hit(r, { l: q.x - d, t: q.y - d, r: q.x + d, b: q.y + d })))
+        fail(at, `이름표 '${text}' 이 다른 점을 덮음 — 이름을 짧게 하거나 점 사이를 넓게`);
+    }
   }
 }
+
+const hit = (a: Rect, b: Rect) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
 
 function drawWith(p: CoordParams, s: CoordState, box: Box) {
   const f = frame(box, p);
@@ -84,5 +90,10 @@ function drawWith(p: CoordParams, s: CoordState, box: Box) {
     handles: cx.handles,
     readouts: cx.readouts,
   };
-  return { d, f, rects: rects.map((r, i) => ({ r, text: cx.pins[i]?.it.text ?? '' })) };
+  return {
+    d,
+    f,
+    spots: cx.spots,
+    rects: rects.map((r, i) => ({ r, text: cx.pins[i]?.it.text ?? '' })),
+  };
 }

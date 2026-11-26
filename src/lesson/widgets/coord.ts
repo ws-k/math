@@ -43,6 +43,7 @@ export {
   fmtNum,
   frame,
   grid,
+  isWide,
   labelWidth,
   MIN_BOX_H,
   MIN_PLOT,

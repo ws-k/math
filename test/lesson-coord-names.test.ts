@@ -9,7 +9,11 @@ import {
   frame,
   type Item,
   initial,
+  isWide,
+  labelWidth,
+  MIN_BOX_H,
   NAME_MAX_PX,
+  NARROW_BOX_W,
   nameWidth,
   parseCoord,
 } from '../src/lesson/widgets/coord.ts';
@@ -83,4 +87,68 @@ test('형식 검사(무거운 쪽): 가장 좁은 화면에서 처음 자리의 
     objects: crowd.objects.slice(0, 3).map((o, k) => ({ ...o, point: { x: 1 + 4 * k, y: 3 } })),
   });
   assert.doesNotThrow(() => coordDef.deep?.(ok));
+});
+
+// ---- 검토 반영(m2·m3·m9) ----
+
+test('이름 폭(m2): 아는 좁은 글자(영문·숫자·프라임·첨자)만 9px, 모르는 글자는 넓게 13px', () => {
+  assert.equal(nameWidth('p1'), 18);
+  assert.equal(nameWidth('P₁′'), 27);
+  assert.equal(nameWidth('ж'), 13);
+  assert.equal(nameWidth('★'), 13);
+  assert.equal(nameWidth('漢'), 13);
+});
+
+test('넓은 글자 판별(m3): 한 함수를 축 글자·슬라이더 글자·점 이름이 같이 쓴다', () => {
+  assert.equal(isWide('가'), true);
+  assert.equal(isWide('ж'), true);
+  for (const ch of ['A', 'p', '1', '′', '₁', '−', '(', 'é']) assert.equal(isWide(ch), false, ch);
+  assert.equal(labelWidth('시간(분)'), 11 * 3 + 6.5 * 2);
+});
+
+test('이름표 검사(m9): 맞힌 뒤(숨긴 목표 점이 보일 때)도 본다', () => {
+  // 한 자리에 이름 붙은 점 넷은 네 귀퉁이에 놓인다. 숨긴 목표 점 T 가 맞힌 뒤 다섯째로 보이면 겹친다
+  const four = ['A', 'B', 'C', 'D'].map((id) => ({ id, point: { x: 5, y: 3 }, name: `${id}점` }));
+  const raw = (extra: Record<string, unknown>[]) => ({
+    mode: 'explore',
+    x: { min: 0, max: 10, step: 1 },
+    y: { min: 0, max: 6, step: 1 },
+    objects: [...four, { id: 'P', point: { x: 1, y: 1, drag: 'xy' } }, ...extra],
+    goal: { approach: ['P', extra.length ? 'T' : 'A'] },
+  });
+  assert.doesNotThrow(() => coordDef.deep?.(parseCoord(raw([]))));
+  assert.throws(
+    () => coordDef.deep?.(parseCoord(raw([{ id: 'T', point: { x: 5, y: 3 }, name: 'T점', hide: true }]))),
+    /맞힌 뒤.*이름표/,
+  );
+});
+
+test('이름표 검사(m9): 후보 자리 여섯 곳이 모두 다른 점에 막혀 이름표가 점을 덮으면 오류', () => {
+  const W = { w: NARROW_BOX_W, h: MIN_BOX_H };
+  const raw = (objs: Record<string, unknown>[]) => ({
+    mode: 'explore',
+    x: { min: 0, max: 40, step: 1 },
+    y: { min: 0, max: 20, step: 1 },
+    objects: objs,
+  });
+  const A = { id: 'A', point: { x: 20, y: 10 }, name: 'A' };
+  const p0 = parseCoord(raw([A]));
+  const f = frame(W, p0);
+  const sx = (f.r - f.l) / 40;
+  const sy = (f.b - f.t) / 20;
+  // 후보 상자 가운데(labels.ts: 틈 가로 10·세로 7, 높이 13, 한 자 9px)
+  const cs: [number, number][] = [
+    [14.5, -13.5],
+    [-14.5, -13.5],
+    [14.5, 13.5],
+    [-14.5, 13.5],
+    [0, -15.5],
+    [0, 15.5],
+  ];
+  const dots = cs.map(([dx, dy], k) => ({
+    id: `Q${k}`,
+    point: { x: 20 + Math.round(dx / sx), y: 10 - Math.round(dy / sy) },
+  }));
+  assert.doesNotThrow(() => coordDef.deep?.(p0));
+  assert.throws(() => coordDef.deep?.(parseCoord(raw([A, ...dots]))), /점을 덮음/);
 });

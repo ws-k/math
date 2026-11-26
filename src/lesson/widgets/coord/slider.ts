@@ -7,7 +7,7 @@ import { arr, fail, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { add, mul, num, qi, ratStr } from '../q.ts';
 import { near, numExpr, toIndex } from './common.ts';
-import { fmtNum, NARROW_BOX_W, piText } from './frame.ts';
+import { fmtNum, isWide, NARROW_BOX_W, piText } from './frame.ts';
 import type { Slider } from './types.ts';
 
 export function parseSliders(raw: unknown): Slider[] {
@@ -71,9 +71,8 @@ export const MIN_SLIDER_STEP_PX = 7;
 export function sliderTextWidth(t: string): number {
   const plain = t.replace(/\\[A-Za-z]+/g, 'x').replace(/[$\\{}^_]/g, '');
   return [...plain].reduce((w, ch) => {
-    // 빼기 기호(U+2212)는 한글 자리 코드지만 폭은 숫자와 비슷하다 — 한글로 세면 음수 칸이 괜히 좁게 잡힌다
-    if (ch === '−') return w + 11;
-    if (ch.charCodeAt(0) >= 0x1100) return w + 16;
+    // 빼기 기호(U+2212)는 코드 값이 커도 좁은 글자(isWide 가 좁게 본다) — 숫자 폭으로 센다
+    if (isWide(ch)) return w + 16;
     if (ch === ' ') return w + 4.5;
     if (ch === '.' || ch === ',') return w + 5;
     return w + 11;
