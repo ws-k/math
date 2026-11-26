@@ -55,7 +55,7 @@ test('조립제법: 계수 넷·빈칸 일곱(가운데 셋 + 아래 넷)·옮�
   const { render } = await entry;
   const html = render({ mode: 'synth', coeffs: [1, 0, -2, 1], root: 2 });
   assert.equal(html.match(/class="cl-sslot"/g)?.length, 7);
-  assert.match(html, /class="cl-num act"/);
+  assert.match(html, /class="cl-num cl-act"/);
   assert.match(html, /x−2=0/);
   assert.match(html, /첫 계수 1 을 맨 아래 줄로 끌어 내려 보세요\./);
 });

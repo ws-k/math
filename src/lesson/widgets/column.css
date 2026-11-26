@@ -67,29 +67,29 @@
     color 0.2s,
     background 0.2s;
 }
-.lesson .cl-c.dv {
+.lesson .cl-c.cl-dv {
   width: 34px;
   margin-left: 0;
 }
-.lesson .cl-c.faint {
+.lesson .cl-c.cl-faint {
   color: var(--faint);
 }
-.lesson .cl-c.q {
+.lesson .cl-c.cl-q {
   color: var(--primary);
 }
-.lesson .cl-c.q.faint {
+.lesson .cl-c.cl-q.cl-faint {
   color: var(--faint);
 }
-.lesson .cl-c.cur {
+.lesson .cl-c.cl-cur {
   background: var(--primary-soft);
   border-radius: 6px;
 }
-.lesson .cl-c.rep {
+.lesson .cl-c.cl-rep {
   background: var(--good-soft);
   color: var(--good);
   border-radius: 6px;
 }
-.lesson .cl-c.new {
+.lesson .cl-c.cl-new {
   animation: cl-pop 0.35s;
 }
 .lesson .cl-uline {
@@ -98,7 +98,7 @@
   background: var(--ink);
   transform-origin: left;
 }
-.lesson .cl-uline.new {
+.lesson .cl-uline.cl-new {
   animation: cl-grow 0.3s;
 }
 /* 내려 쓸 수: 글자는 20px 이지만 누르는 칸은 44px. 놓을 점선 칸은 남은 수 바로 옆 하나 */
@@ -155,8 +155,8 @@
   font-weight: 800;
   transition: top 0.3s;
 }
-.lesson .cl-bar.done .cl-frame,
-.lesson .cl-bar.done .cl-nlab {
+.lesson .cl-bar[data-done] .cl-frame,
+.lesson .cl-bar[data-done] .cl-nlab {
   opacity: 0.35;
 }
 .lesson .cl-blk {
@@ -240,7 +240,7 @@
   padding: 0 8px;
   font-variant-numeric: tabular-nums;
 }
-.lesson .cl-r.rep {
+.lesson .cl-r.cl-rep {
   background: var(--good-soft);
   color: var(--good);
 }
@@ -283,19 +283,19 @@
   font-weight: 800;
   border-radius: 12px;
 }
-.lesson .cl-num.new {
+.lesson .cl-num.cl-new {
   animation: cl-pop 0.35s;
 }
-.lesson .cl-num.a {
+.lesson .cl-num.cl-root {
   border: 2px solid var(--sub);
   color: var(--sub);
 }
-.lesson .cl-num.rem {
+.lesson .cl-num.cl-rem {
   background: var(--good-soft);
   color: var(--good);
 }
 /* 지금 옮길 수: 칩처럼 테두리. 아래에 같은 수가 남고, 들어 올리면 '값 × 근' 그림자로 바뀌어 손가락을 따라간다 */
-.lesson .cl-num.act {
+.lesson .cl-num.cl-act {
   border: 2px solid var(--primary);
   color: var(--primary);
   background: var(--bg);
@@ -307,7 +307,7 @@
   cursor: grab;
   z-index: 3;
 }
-.lesson .cl-num.act.sel {
+.lesson .cl-num.cl-act.cl-sel {
   background: var(--primary);
   color: var(--primary-ink);
 }
@@ -329,13 +329,13 @@
   white-space: nowrap;
   box-shadow: 0 10px 24px rgba(22, 27, 38, 0.22);
 }
-.lesson .cl-num.act[data-lift] {
+.lesson .cl-num.cl-act[data-lift] {
   z-index: 6;
   cursor: grabbing;
   border-color: transparent;
   background: transparent;
 }
-.lesson .cl-num.act[data-lift] .cl-ghost {
+.lesson .cl-num.cl-act[data-lift] .cl-ghost {
   display: grid;
 }
 /* 빈칸은 모두 같은 점선 — 정답 칸만 다르게 그리지 않는다(어디에 놓을지는 학생이 정한다) */
@@ -360,15 +360,15 @@
   min-height: 52px;
   font-variant-numeric: tabular-nums;
 }
-.lesson .cl-res .faint {
+.lesson .cl-res .cl-faint {
   color: var(--faint);
 }
-.lesson .cl-res .f {
+.lesson .cl-res .cl-f {
   font-size: 0.88rem;
   color: var(--sub);
   font-weight: 700;
 }
-.lesson .cl-res.done .f {
+.lesson .cl-res[data-done] .cl-f {
   color: var(--good);
 }
 
@@ -387,20 +387,20 @@
     background 0.3s,
     color 0.3s;
 }
-.lesson .cl-n.new {
+.lesson .cl-n.cl-new {
   animation: cl-pop 0.35s;
 }
-.lesson .cl-n.dv {
+.lesson .cl-n.cl-dv {
   color: var(--primary);
 }
-.lesson .cl-n.gcd {
+.lesson .cl-n.cl-gcd {
   background: var(--primary-soft);
 }
-.lesson .cl-n.rest {
+.lesson .cl-n.cl-rest {
   background: var(--good-soft);
   color: var(--good);
 }
-.lesson .cl-lg svg path.ell {
+.lesson .cl-lg svg path.cl-ell {
   stroke: var(--good);
   stroke-dasharray: 5 4;
 }
@@ -452,7 +452,7 @@
   cursor: grabbing;
   box-shadow: 0 10px 24px rgba(22, 27, 38, 0.22);
 }
-.lesson .cl-chip.sel {
+.lesson .cl-chip.cl-sel {
   background: var(--primary);
   color: var(--primary-ink);
 }
@@ -465,13 +465,13 @@
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
-.lesson .cl-ldres .g {
+.lesson .cl-ldres .cl-g {
   color: var(--primary);
 }
-.lesson .cl-ldres .l {
+.lesson .cl-ldres .cl-l {
   color: var(--good);
 }
-.lesson .cl-ldres .tag {
+.lesson .cl-ldres .cl-tag {
   color: var(--sub);
   font-size: 0.8rem;
 }
@@ -486,10 +486,10 @@
   white-space: nowrap;
 }
 @media (prefers-reduced-motion: reduce) {
-  .lesson .cl-c.new,
-  .lesson .cl-uline.new,
-  .lesson .cl-num.new,
-  .lesson .cl-n.new {
+  .lesson .cl-c.cl-new,
+  .lesson .cl-uline.cl-new,
+  .lesson .cl-num.cl-new,
+  .lesson .cl-n.cl-new {
     animation: none;
   }
   .lesson .cl-frame,

@@ -5,8 +5,18 @@
 // 맞다/틀리다 색이 없고, 막대를 넘친 토막의 빗금·손가락 밑 칸의 테두리처럼 '지금 어디인가'만 보인다.
 // 그냥 누르기·놓친 끌기가 두 번이면 '눌러도 돼요'(P4, 시안의 plainTap). 키보드는 처음부터 된다.
 // 판정·칸 자리·안내 글은 모두 column.ts 에 있고 여기서는 그리기만 한다.
-import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { centerOf, clamp, FAILS_FOR_TAP, inBox, isTap } from '../drag.ts';
+import {
+  Fragment,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { centerOf, clamp, FAILS_FOR_TAP, inBox, isTap, keyStep, nearest } from '../drag.ts';
 import { landAt } from '../fly.ts';
 import { reducedMotion } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
@@ -33,6 +43,8 @@ import {
   ldHeight,
   longBar,
   longBringSpot,
+  longDragQ,
+  longFocus,
   longJudge,
   longNext,
   longPlan,
@@ -47,6 +59,7 @@ import {
   type SynthParams,
   synthCols,
   synthDone,
+  synthFocus,
   synthInit,
   synthLabels,
   synthPlace,
@@ -63,6 +76,10 @@ const FLY_MS = 220;
 /** 조립제법: 곱한 값이 올라간 뒤 더한 값이 내려오기까지(시안 380ms) — 두 일이 차례로 보이게 */
 const SUM_MS = 380;
 const TAP_ON = '끌기가 어려우면 눌러도 돼요.';
+/** 눌러서 하기 안내(모드마다 무엇을 누르나) */
+const TAP_BAR = '막대에서 덜어 낼 높이를 누르세요.';
+const SYN_TAP = '수를 누르고, 놓을 빈칸을 누르세요.';
+const LD_TAP = '카드를 누르고, 점선 칸을 누르세요.';
 
 export function Column({ params: p, onDone, onMiss }: WidgetProps<ColumnParams>) {
   const done = useRef(false);
@@ -130,6 +147,35 @@ function useFresh(keys: string[]) {
   return (k: string) => prev !== null && !prev.has(k);
 }
 
+/**
+ * 키보드·화면 낭독기로 한 일 뒤 초점 지키기(리뷰 M4). 누른 단추가 사라지거나 숨겨지면(0 을 내리면 내릴 수 단추가 없어지고,
+ * 몫을 맞히면 손잡이가 숨는다) 초점이 문서 맨 앞으로 튀어 다음 할 일을 Tab 으로 다시 찾아야 했다. 초점이 떨어졌을 때만
+ * target 으로 옮긴다 — 손가락으로 했거나 이미 다른 곳에 초점이 있으면 건드리지 않는다.
+ */
+function useKeyFocus(target: () => HTMLElement | null | undefined) {
+  const kb = useRef(false);
+  useEffect(() => {
+    if (!kb.current) return;
+    const a = document.activeElement;
+    if (a && a !== document.body) return;
+    target()?.focus();
+  });
+  return {
+    onKeyDownCapture() {
+      kb.current = true;
+    },
+    onPointerDownCapture() {
+      kb.current = false;
+    },
+    onClickCapture(e: MouseEvent) {
+      // 화면 낭독기의 누르기는 keydown 없이 detail 0 click 으로 온다
+      if (e.detail === 0) kb.current = true;
+    },
+  };
+}
+const focusIn = (root: RefObject<HTMLElement | null>, sel: string) =>
+  root.current?.querySelector<HTMLElement>(sel);
+
 // ---- 긴 나눗셈 ----
 
 function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
@@ -140,9 +186,16 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
   const [msg, setMsg] = useState<Msg>({ text: longText.intro(pl), cls: '' });
   const [live, setLive] = useState('');
   const fails = useFails(setMsg);
+  const root = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLDivElement>(null);
   const handle = useRef<HTMLButtonElement>(null);
   const busy = useRef(false);
+  const keyFocus = useKeyFocus(() => {
+    const t = longFocus(s);
+    return t === 'handle'
+      ? handle.current
+      : focusIn(root, t === 'bring' ? '.cl-bring' : '.cl-reset');
+  });
   const v = longView(pl, s);
   const fresh = useFresh(v.cells.map((c) => c.key));
   const g = longBar(pl);
@@ -175,7 +228,7 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
       if (t) t.textContent = `${d}×${k}`;
       if (m) m.textContent = `= ${k * d}`;
       h.setAttribute('aria-valuenow', String(k));
-      h.setAttribute('aria-valuetext', `토막 ${k}개, ${d} 곱하기 ${k} 는 ${k * d}`);
+      h.setAttribute('aria-valuetext', longText.slider(k, d));
     }
   };
   const shownQ = s.phase === 'q' ? q : back ? 0 : (cur?.q ?? 0);
@@ -191,9 +244,13 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
     const st = pl.steps[s.k];
     const next = longNext(pl, s);
     setS(next);
-    if (next.phase === 'bring') {
+    if (next.phase === 'q') {
+      // 몫 첫 자리 0: 다음 수가 저절로 내려와 바로 다음 몫(내려쓰기 건너뜀)
+      setQ(0);
+      setLive(longText.judge(pl, s.k, k).text);
+    } else if (next.phase === 'bring') {
       const b = longBringSpot(pl, next.k);
-      setLive(`몫 ${st?.q}, 남은 수 ${st?.r}. 다음 ${b.digit} 을 내리세요.`);
+      setLive(longText.bringLive(st?.q ?? 0, st?.r ?? 0, b.digit));
     } else {
       setLive(longText.end(pl).text);
       finish();
@@ -201,6 +258,7 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
   };
 
   const start = useRef(0);
+  /** 끄는 동안 마지막으로 그린 토막 수(같은 수면 다시 그리지 않으려고만 쓴다 — 판정은 뗀 순간의 dy 로) */
   const dragged = useRef(0);
   const moved = useMoved();
   useDrag(handle, {
@@ -215,7 +273,7 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
     onMove(dx, dy) {
       moved.see(dx, dy);
       // 위로 끈 만큼 토막 한 개 높이마다 하나씩
-      const k = clamp(start.current + Math.round(-dy / g.bh), 0, L_QMAX);
+      const k = longDragQ(start.current, dy, g.bh);
       if (k === dragged.current) return;
       dragged.current = k;
       paint(k);
@@ -223,34 +281,33 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
     onEnd(dx, dy, cancelled) {
       busy.current = false;
       handle.current?.removeAttribute('data-lift');
-      const k = dragged.current;
       if (cancelled) return paint(q);
       if (moved.tap(dx, dy)) {
         paint(q);
-        if (!fails.tapMode)
-          fails.miss(
-            { text: '손잡이를 누른 채 위로 끌어 보세요.', cls: '' },
-            '막대에서 덜어 낼 높이를 누르세요.',
-          );
+        // 눌러서 하기가 켜진 뒤에 손잡이를 누르면 할 일을 다시 알려 준다(아무 반응이 없으면 고장으로 보인다)
+        if (fails.tapMode) setMsg({ text: `${TAP_ON} ${TAP_BAR}`, cls: '' });
+        else fails.miss({ text: '손잡이를 누른 채 위로 끌어 보세요.', cls: '' }, TAP_BAR);
         return;
       }
+      const k = longDragQ(start.current, dy, g.bh);
       paint(k);
       setQ(k);
       judge(k);
     },
   });
 
-  const onKey = (e: React.KeyboardEvent) => {
+  const onKey = (e: KeyboardEvent) => {
     if (s.phase !== 'q') return;
-    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') setQ(Math.min(L_QMAX, q + 1));
-    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') setQ(Math.max(0, q - 1));
-    // Enter·Space 는 단추의 click(detail 0)이 정하기로 받는다 — 여기서도 받으면 한 번 눌러 두 번 판정된다
-    else return;
+    // ↑→ 하나 더, ↓← 하나 덜, Home 0, End 9. Enter·Space 는 단추의 click(detail 0)이 정하기로 받는다 —
+    // 여기서도 받으면 한 번 눌러 두 번 판정된다
+    const k = keyStep(q, e.key, 1, 0, L_QMAX);
+    if (k === null) return;
+    setQ(k);
     e.preventDefault();
   };
 
   // 눌러서 하기(P4): 막대 빈 곳을 누르면 그 높이까지 토막을 채우고 바로 판정
-  const tapBar = (e: React.MouseEvent) => {
+  const tapBar = (e: MouseEvent) => {
     if (!fails.tapMode || s.phase !== 'q' || handle.current?.contains(e.target as Node)) return;
     const r = bar.current?.getBoundingClientRect();
     if (!r) return;
@@ -286,7 +343,7 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
   const bring = s.phase === 'bring' ? longBringSpot(pl, s.k) : null;
   const top = g.by - n * g.s;
   return (
-    <div className="wgt cl">
+    <div className="wgt cl" ref={root} {...keyFocus}>
       <div className="cl-long">
         <div className="cl-dg" style={{ width: v.w, height: v.h }}>
           <svg width={v.w} height={v.h} aria-hidden="true">
@@ -296,7 +353,9 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
           {v.cells.map((c) => (
             <span
               key={c.key}
-              className={`cl-c ${c.cls.join(' ')}${fresh(c.key) ? ' new' : ''}`}
+              className={['cl-c', ...c.cls.map((x) => `cl-${x}`), fresh(c.key) ? 'cl-new' : '']
+                .join(' ')
+                .trim()}
               style={{ left: c.x, top: c.y }}
             >
               {c.text}
@@ -305,7 +364,7 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
           {v.lines.map((l) => (
             <span
               key={l.key}
-              className={`cl-uline${fresh(l.key) ? ' new' : ''}`}
+              className={`cl-uline${fresh(l.key) ? ' cl-new' : ''}`}
               style={{ left: l.x0, width: l.x1 - l.x0, top: l.y }}
             />
           ))}
@@ -324,14 +383,14 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
                 onDrop={drop}
                 onTap={() =>
                   fails.miss(
-                    { text: `${bring.digit} 을 누른 채 아래 점선 칸까지 끌어 보세요.`, cls: '' },
-                    `${bring.digit} 을 한 번 누르면 내려가요.`,
+                    { text: longText.tapBring(bring.digit), cls: '' },
+                    longText.tapBringOn(bring.digit),
                   )
                 }
                 onMissed={() => {
                   fails.miss(
                     { text: longText.missBring(pl, s.k), cls: 'bad' },
-                    `${bring.digit} 을 한 번 누르면 내려가요.`,
+                    longText.tapBringOn(bring.digit),
                   );
                   onMiss();
                 }}
@@ -342,7 +401,8 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
         {/* 덜어 내기 막대: 지금 나누는 수 n 의 길이 안에 d 짜리 토막을 몇 개 쌓을 수 있나 = 몫 */}
         {/* biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/useKeyWithClickEvents: 막대 누르기는 끌기가 어려운 사람의 대체(P4) — 키보드는 손잡이의 방향키가 맡는다 */}
         <div
-          className={`cl-bar${s.phase === 'done' ? ' done' : ''}`}
+          className="cl-bar"
+          data-done={s.phase === 'done' ? '' : undefined}
           ref={bar}
           style={{ width: g.w, height: g.h }}
           onClick={tapBar}
@@ -386,7 +446,7 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
             // biome-ignore lint/suspicious/noArrayIndexKey: 남은 수가 나온 차례
             <span key={i}>
               {i > 0 && '→'}
-              <span className={`cl-r${v.trailRep?.includes(i) ? ' rep' : ''}`}>{r}</span>
+              <span className={`cl-r${v.trailRep?.includes(i) ? ' cl-rep' : ''}`}>{r}</span>
             </span>
           ))}
         </div>
@@ -408,7 +468,7 @@ function LongDiv({ p, finish, onMiss }: Part<LongParams>) {
           )
         }
       />
-      <button type="button" className="lbtn quiet" onClick={reset}>
+      <button type="button" className="lbtn quiet cl-reset" onClick={reset}>
         처음부터 다시
       </button>
       <div className="cl-sr" aria-live="polite">
@@ -498,6 +558,7 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
   const [msg, setMsg] = useState<Msg>({ text: synthText.intro(p), cls: '' });
   const [live, setLive] = useState('');
   const fails = useFails(setMsg);
+  const root = useRef<HTMLDivElement>(null);
   const board = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -529,7 +590,13 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
       ? { j: 0, y: S_Y.top, v: p.coeffs[0] as number }
       : { j: s.k - 1, y: S_Y.bot, v: s.bot[s.k - 1] as number };
 
+  const keyFocus = useKeyFocus(() =>
+    focusIn(root, synthFocus(p, s) === 'act' ? '.cl-act' : '.cl-reset'),
+  );
+
   const place = (row: 'mid' | 'bot', j: number) => {
+    // 끌어서 놓았든 눌러 놓았든 고른 표시는 여기서 끝난다(남아 있으면 다음 수가 골라진 채로 보였다)
+    setPicked(false);
     const r = synthPlace(p, s, row, j);
     if (r.res === 'first') {
       setS(r.s);
@@ -556,32 +623,19 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
     onMiss();
   };
 
-  const nearest = (x: number, y: number) => {
-    let best: Slot | null = null;
-    let bd = 34;
-    for (const sl of slots) {
-      const dd = Math.hypot(sl.x - x, sl.y - y);
-      if (dd < bd) {
-        bd = dd;
-        best = sl;
-      }
-    }
-    return best;
-  };
+  /** 놓은 자리에서 반경 34 안의 가장 가까운 빈칸(시안과 같은 반경) */
+  const nearestSlot = (x: number, y: number) => nearest(slots, { x, y }, 34);
 
   const tapAct = () => {
     if (fails.tapMode) {
       setPicked(!picked);
       setMsg({
-        text: picked ? '수를 누르고, 놓을 빈칸을 누르세요.' : '이제 놓을 빈칸을 누르세요.',
+        text: picked ? SYN_TAP : '이제 놓을 빈칸을 누르세요.',
         cls: '',
       });
       return;
     }
-    fails.miss(
-      { text: '수를 누른 채 빈칸까지 끌어 보세요.', cls: '' },
-      '수를 누르고, 놓을 빈칸을 누르세요.',
-    );
+    fails.miss({ text: '수를 누른 채 빈칸까지 끌어 보세요.', cls: '' }, SYN_TAP);
   };
 
   const reset = () => {
@@ -597,7 +651,7 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
   const mul = (v: number) =>
     s.k === 0 ? fmt(v) : `${fmt(v)} × ${p.root < 0 ? `(${fmt(p.root)})` : p.root}`;
   return (
-    <div className="wgt cl">
+    <div className="wgt cl" ref={root} {...keyFocus}>
       <div className="cl-sg" ref={board} style={{ height: S_H }}>
         <svg width={L_W} height={S_H} aria-hidden="true">
           <path d={`M52 18 V122 H${L_W}`} />
@@ -609,7 +663,7 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
             {t}
           </span>
         ))}
-        <span className="cl-num a" style={{ left: S_AX, top: S_Y.top }}>
+        <span className="cl-num cl-root" style={{ left: S_AX, top: S_Y.top }}>
           {fmt(p.root)}
         </span>
         <span className="cl-lab" style={{ left: S_AX, top: 66 }}>
@@ -630,8 +684,15 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
             style={{ left: sl.x, top: sl.y }}
             aria-label={`${sl.row === 'mid' ? '가운데' : '맨 아래'} 줄 ${labels[sl.j]} 칸`}
             onClick={() => {
-              if (!picked || pending) return;
-              setPicked(false);
+              if (pending) return;
+              if (!picked) {
+                // 수를 고르지 않고 빈칸만 누르면 순서를 알려 준다
+                setMsg({
+                  text: fails.tapMode ? SYN_TAP : '수를 누른 채 빈칸까지 끌어 보세요.',
+                  cls: '',
+                });
+                return;
+              }
               place(sl.row, sl.j);
             }}
           />
@@ -641,7 +702,7 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
             <span
               // biome-ignore lint/suspicious/noArrayIndexKey: 계수 자리
               key={`m${j}`}
-              className={`cl-num${fresh(`m${j}`) ? ' new' : ''}`}
+              className={`cl-num${fresh(`m${j}`) ? ' cl-new' : ''}`}
               style={{ left: CX[j], top: S_Y.mid }}
             >
               {fmt(v)}
@@ -653,7 +714,7 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
             <span
               // biome-ignore lint/suspicious/noArrayIndexKey: 계수 자리
               key={`b${j}`}
-              className={`cl-num${done && j === CX.length - 1 ? ' rem' : ''}${fresh(`b${j}`) ? ' new' : ''}`}
+              className={`cl-num${done && j === CX.length - 1 ? ' cl-rem' : ''}${fresh(`b${j}`) ? ' cl-new' : ''}`}
               style={{ left: CX[j], top: S_Y.bot }}
             >
               {fmt(v)}
@@ -670,14 +731,11 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
             picked={picked}
             locked={pending}
             busy={busy}
-            nearest={nearest}
+            nearest={nearestSlot}
             onPlace={place}
             onTap={tapAct}
             onNowhere={() => {
-              fails.miss(
-                { text: '빈칸 위에서 손을 떼요.', cls: '' },
-                '수를 누르고, 놓을 빈칸을 누르세요.',
-              );
+              fails.miss({ text: '빈칸 위에서 손을 떼요.', cls: '' }, SYN_TAP);
               onMiss();
             }}
             onKeyPick={() => {
@@ -688,17 +746,17 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
           />
         )}
       </div>
-      <div className={`cl-res${done ? ' done' : ''}`}>
+      <div className="cl-res" data-done={done ? '' : undefined}>
         {done ? (
           <>
             몫 {view.quotient} · 나머지 {fmt(view.remainder as number)}
-            <div className="f">
+            <div className="cl-f">
               f({fmt(p.root)}) = {view.fa} — 마지막 칸과 같아요
             </div>
           </>
         ) : (
           <>
-            <span className="faint">
+            <span className="cl-faint">
               몫{' '}
               {s.bot
                 .slice(0, -1)
@@ -706,12 +764,12 @@ function Synth({ p, finish, onMiss }: Part<SynthParams>) {
                 .join(' ')}{' '}
               · 나머지 □
             </span>
-            <div className="f">아래 줄이 몫의 계수, 맨 끝이 나머지</div>
+            <div className="cl-f">아래 줄이 몫의 계수, 맨 끝이 나머지</div>
           </>
         )}
       </div>
       <Toast msg={msg} />
-      <button type="button" className="lbtn quiet" onClick={reset}>
+      <button type="button" className="lbtn quiet cl-reset" onClick={reset}>
         처음부터 다시
       </button>
       <div className="cl-sr" aria-live="polite">
@@ -727,7 +785,7 @@ const synthSummedLive = (p: SynthParams, s: SState) =>
     : synthText.summedSr(p, s);
 
 /**
- * 지금 옮길 수. 원래 수는 제자리에 남고(아래 cl-num), 들어 올린 단추에는 '값 × 근'이 따라간다 —
+ * 지금 옮길 수. 원래 수는 제자리에 남고(판의 cl-num), 들어 올린 단추에는 '값 × 근'이 따라간다 —
  * 옮기는 동안 무엇을 하는지(곱해서 올리기)가 보이게(시안 synth.html 의 그림자).
  */
 function SynthAct(props: {
@@ -776,28 +834,24 @@ function SynthAct(props: {
       props.onPlace(sl.row, sl.j);
     },
   });
+  // 원래 수는 판이 이미 그 자리에 그려 둔다(위 줄 계수·아래 줄 수) — 여기서 또 그리면 같은 수가 두 겹이었다
   return (
-    <>
-      <span className="cl-num" style={{ left: props.x, top: props.y }}>
-        {props.text}
+    <button
+      ref={ref}
+      type="button"
+      className={`cl-num cl-act${props.picked ? ' cl-sel' : ''}`}
+      style={{ left: props.x, top: props.y }}
+      aria-label={`${props.text}. Enter 로 잡고 놓을 칸을 고르세요`}
+      aria-pressed={props.picked}
+      onClick={(e) => {
+        if (e.detail === 0 && !props.locked) props.onKeyPick();
+      }}
+    >
+      {props.text}
+      <span className="cl-ghost" aria-hidden="true">
+        {props.ghost}
       </span>
-      <button
-        ref={ref}
-        type="button"
-        className={`cl-num act${props.picked ? ' sel' : ''}`}
-        style={{ left: props.x, top: props.y }}
-        aria-label={`${props.text}. Enter 로 잡고 놓을 칸을 고르세요`}
-        aria-pressed={props.picked}
-        onClick={(e) => {
-          if (e.detail === 0 && !props.locked) props.onKeyPick();
-        }}
-      >
-        {props.text}
-        <span className="cl-ghost" aria-hidden="true">
-          {props.ghost}
-        </span>
-      </button>
-    </>
+    </button>
   );
 }
 
@@ -810,13 +864,17 @@ function Ladder({ p, finish, onMiss }: Part<LadderParams>) {
   const [msg, setMsg] = useState<Msg>({ text: ladderText.intro(p), cls: '' });
   const [live, setLive] = useState('');
   const fails = useFails(setMsg);
+  const root = useRef<HTMLDivElement>(null);
   const board = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
+  const keyFocus = useKeyFocus(() => (finished ? focusIn(root, '.cl-reset') : null));
   const rows = s.rows.length;
   const h = ldHeight(rows);
   const fresh = useFresh(s.rows.map((_, r) => `r${r}`));
 
   const apply = (card: number) => {
+    // 끌어서 놓았든 키보드로 놓았든 고른 카드 표시는 여기서 끝난다
+    setSel(null);
     const m = ladderText.apply(s, card);
     const r = ladderApply(s, card);
     setMsg(m);
@@ -829,6 +887,7 @@ function Ladder({ p, finish, onMiss }: Part<LadderParams>) {
     const m = ladderText.done(s);
     setMsg(m);
     if (ladderDone(s) === 'still') return onMiss();
+    setSel(null);
     setFinished(true);
     setLive('최대공약수와 최소공배수가 나왔어요');
     finish();
@@ -853,31 +912,31 @@ function Ladder({ p, finish, onMiss }: Part<LadderParams>) {
     : '';
   const result = finished ? ladderResult(s) : null;
   return (
-    <div className="wgt cl">
+    <div className="wgt cl" ref={root} {...keyFocus}>
       <div className="cl-lg" ref={board} style={{ height: h }}>
         <svg width={L_W} height={h} aria-hidden="true">
           <path d={path} />
-          {ell && <path className="ell" d={ell} />}
+          {ell && <path className="cl-ell" d={ell} />}
         </svg>
         {s.rows.map(([a, b], r) => {
-          const c = `cl-n${finished && r === rows - 1 ? ' rest' : ''}${fresh(`r${r}`) ? ' new' : ''}`;
+          const c = `cl-n${finished && r === rows - 1 ? ' cl-rest' : ''}${fresh(`r${r}`) ? ' cl-new' : ''}`;
           return (
             // biome-ignore lint/suspicious/noArrayIndexKey: 줄 차례
-            <span key={r}>
+            <Fragment key={r}>
               <span className={c} style={{ left: LD_AX, top: LD_RY(r) }}>
                 {a}
               </span>
               <span className={c} style={{ left: LD_BX, top: LD_RY(r) }}>
                 {b}
               </span>
-            </span>
+            </Fragment>
           );
         })}
         {s.divs.map((d, r) => (
           <span
             // biome-ignore lint/suspicious/noArrayIndexKey: 줄 차례
             key={r}
-            className={`cl-n dv${finished ? ' gcd' : ''}`}
+            className={`cl-n cl-dv${finished ? ' cl-gcd' : ''}`}
             style={{ left: LD_LX, top: LD_RY(r) }}
           >
             {d}
@@ -889,12 +948,17 @@ function Ladder({ p, finish, onMiss }: Part<LadderParams>) {
             className="cl-target"
             data-target=""
             style={{ left: LD_LX, top: LD_RY(rows - 1) }}
-            aria-label={`${s.rows.at(-1)?.join('와 ')} 을 함께 나눌 수 칸`}
+            aria-label={ladderText.target(...(s.rows.at(-1) as [number, number]))}
             onClick={() => {
-              if (sel === null) return;
-              const c = sel;
-              setSel(null);
-              apply(c);
+              if (sel === null) {
+                // 카드를 고르지 않고 칸만 누르면 순서를 알려 준다
+                setMsg({
+                  text: fails.tapMode ? LD_TAP : '카드를 누른 채 점선 칸까지 끌어 보세요.',
+                  cls: '',
+                });
+                return;
+              }
+              apply(sel);
             }}
           />
         )}
@@ -916,15 +980,12 @@ function Ladder({ p, finish, onMiss }: Part<LadderParams>) {
                 onApply={() => apply(c)}
                 onTap={() => {
                   if (fails.tapMode) return setSel(sel === c ? null : c);
-                  fails.miss(
-                    { text: '카드를 누른 채 점선 칸까지 끌어 보세요.', cls: '' },
-                    '카드를 누르고, 점선 칸을 누르세요.',
-                  );
+                  fails.miss({ text: '카드를 누른 채 점선 칸까지 끌어 보세요.', cls: '' }, LD_TAP);
                 }}
                 onNowhere={() => {
                   fails.miss(
                     { text: '카드를 맨 아래 줄 왼쪽 점선 칸 위에서 놓아요.', cls: '' },
-                    '카드를 누르고, 점선 칸을 누르세요.',
+                    LD_TAP,
                   );
                   onMiss();
                 }}
@@ -938,20 +999,20 @@ function Ladder({ p, finish, onMiss }: Part<LadderParams>) {
       )}
       {result && (
         <div className="cl-ldres">
-          <span className="g">
+          <span className="cl-g">
             최대공약수 = {result.divs.join(' × ')}
             {result.divs.length > 1 ? ` = ${result.g}` : ''}
           </span>{' '}
-          <span className="tag">왼쪽 줄</span>
+          <span className="cl-tag">왼쪽 줄</span>
           <br />
-          <span className="l">
+          <span className="cl-l">
             최소공배수 = {[...result.divs, ...result.rest].join(' × ')} = {result.l}
           </span>{' '}
-          <span className="tag">L자</span>
+          <span className="cl-tag">L자</span>
         </div>
       )}
       <Toast msg={msg} />
-      <button type="button" className="lbtn quiet" onClick={reset}>
+      <button type="button" className="lbtn quiet cl-reset" onClick={reset}>
         처음부터 다시
       </button>
       <div className="cl-sr" aria-live="polite">
@@ -1014,7 +1075,7 @@ function LadderChip(props: {
     <button
       ref={ref}
       type="button"
-      className={`cl-chip${props.sel ? ' sel' : ''}`}
+      className={`cl-chip${props.sel ? ' cl-sel' : ''}`}
       aria-label={`수 카드 ${props.card}. Enter 로 지금 줄에 놓기`}
       aria-pressed={props.sel}
       onClick={(e) => {

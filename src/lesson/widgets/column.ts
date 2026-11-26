@@ -205,11 +205,34 @@ export type LState = { k: number; phase: 'q' | 'bring' | 'done' };
 const hasBring = (pl: LPlan, i: number) => i < pl.steps.length - 1 || pl.end === 'repeat';
 
 /** 맞힌 뒤·내린 뒤 다음 상태. q 에서 맞히면 내리기(없으면 끝), 내리고 나면 다음 몫(더 없으면 끝) */
+/**
+ * 몫 첫 자리가 0 인 단계(1 ÷ 20 의 10)는 내려쓰기를 건너뛴다 — 0 을 정한 순간 다음 0 이 저절로 내려와 바로 100 을 나눈다.
+ * 학교 세로셈도 앞자리 0 은 곱·뺄셈 없이 한 자리 더 붙여 시작하고, 아직 아무것도 덜어 내지 않은 줄에 0 을 손으로
+ * 옮기는 일은 뜻이 없다(P1, 리뷰 M2). 중간 자리의 몫 0(1203 ÷ 12)은 그 자리까지 나눈 뒤라 그대로 내려 쓴다.
+ */
+const skipBring = (pl: LPlan, k: number) =>
+  k === 0 && (pl.steps[0] as LStep).q === 0 && hasBring(pl, 0);
+
 export function longNext(pl: LPlan, s: LState): LState {
-  if (s.phase === 'q') return { k: s.k + 1, phase: hasBring(pl, s.k) ? 'bring' : 'done' };
+  if (s.phase === 'q') {
+    if (skipBring(pl, s.k)) return { k: s.k + 1, phase: 'q' };
+    return { k: s.k + 1, phase: hasBring(pl, s.k) ? 'bring' : 'done' };
+  }
   if (s.phase === 'bring') return { k: s.k, phase: s.k >= pl.steps.length ? 'done' : 'q' };
   return s;
 }
+
+/**
+ * 손을 뗀 그 끌기의 토막 수: 시작 토막 수 + 위로 끈 거리 ÷ 토막 높이(반올림), 0~9.
+ * 프레임마다 그린 마지막 값이 아니라 뗀 순간의 dy 로 정한다 — 마지막 움직임이 그려지기 전에 떼면 한 칸 어긋났다(리뷰 M3)
+ */
+export const longDragQ = (start: number, dy: number, bh: number) =>
+  clampN(start + Math.round(-dy / bh), 0, L_QMAX);
+const clampN = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/** 키보드로 한 일 뒤 초점이 갈 곳(눌러 쓴 단추가 사라지면 초점이 문서 맨 앞으로 튀지 않게, 리뷰 M4) */
+export const longFocus = (s: LState): 'handle' | 'bring' | 'reset' =>
+  s.phase === 'q' ? 'handle' : s.phase === 'bring' ? 'bring' : 'reset';
 
 /** 단계 k−1 뒤에 내려 쓸 수: 맨 위 줄의 그 칸에서 남은 수 바로 옆 칸으로 */
 export function longBringSpot(pl: LPlan, k: number) {
@@ -297,7 +320,9 @@ export function longView(pl: LPlan, s: LState): LView {
       for (let j = 0; j < rs.length; j++)
         put(`r${i}-${j}`, rs[j] as string, st.c - rs.length + 1 + j, L_ROW(st.row + 2));
     }
-    if (brought(i)) put(`b${i}`, pl.digits[st.c + 1] as string, st.c + 1, L_ROW(after(st)));
+    // 맨 위 줄에 그대로 붙는 수(몫 첫 자리 0 뒤)는 이미 그 자리에 적혀 있어 다시 적지 않는다
+    if (brought(i) && after(st) > 0)
+      put(`b${i}`, pl.digits[st.c + 1] as string, st.c + 1, L_ROW(after(st)));
   });
 
   const mark = (row: number, c: number, w: number, cls: string) => {
@@ -383,6 +408,14 @@ export const longText = {
       return { text: `남은 칸(${left})에 ${d} ${jo(d, '이')} 한 번 더 들어가요.`, cls: 'bad' };
     }
     const next = longNext(pl, { k, phase: 'q' });
+    if (next.phase === 'q') {
+      const n1 = (pl.steps[k + 1] as LStep).n;
+      const dg = Number(pl.digits[s.c + 1]);
+      return {
+        text: `${s.n} 에는 ${d} ${jo(d, '이')} 한 번도 안 들어가요 → 몫 0. 다음 ${dg} ${jo(dg, '을')} 내려 ${n1} 에서 다시 덜어 내요.`,
+        cls: '',
+      };
+    }
     const head =
       s.q === 0
         ? `${s.n} 에는 ${d} ${jo(d, '이')} 한 번도 안 들어가요 → 몫 0.`
@@ -424,6 +457,16 @@ export const longText = {
     const s = pl.steps[k] as LStep;
     return `${s.n} ${jo(s.n, '이')} 됐어요. 다시 손잡이를 끌어 ${pl.p.divisor} 씩 덜어 내요.`;
   },
+  /** 내릴 수를 그냥 눌렀을 때(첫 번) */
+  tapBring: (digit: string) =>
+    `${digit} ${jo(Number(digit), '을')} 누른 채 아래 점선 칸까지 끌어 보세요.`,
+  /** 눌러서 하기가 켜질 때 */
+  tapBringOn: (digit: string) => `${digit} ${jo(Number(digit), '을')} 한 번 누르면 내려가요.`,
+  /** 손잡이를 화면 낭독기가 읽는 값 */
+  slider: (k: number, d: number) => `토막 ${k}개, ${d} 곱하기 ${k} ${jo(k, '은')} ${k * d}`,
+  /** 몫을 정한 뒤 화면 낭독기 */
+  bringLive: (q: number, r: number, digit: string) =>
+    `몫 ${q}, 남은 수 ${r}. 다음 ${digit} ${jo(Number(digit), '을')} 내리세요.`,
   missBring(pl: LPlan, k: number): string {
     const b = longBringSpot(pl, k);
     const r = (pl.steps[k - 1] as LStep).r;
@@ -543,6 +586,9 @@ export const synthInit = (p: SynthParams): SState => ({
   bot: p.coeffs.map(() => null),
 });
 export const synthDone = (p: SynthParams, s: SState) => s.k >= p.coeffs.length;
+/** 키보드로 놓은 뒤 초점: 다음 옮길 수, 끝나면 '처음부터 다시' */
+export const synthFocus = (p: SynthParams, s: SState): 'act' | 'reset' =>
+  synthDone(p, s) ? 'reset' : 'act';
 
 /**
  * 놓은 칸 판정(P3). 빈칸은 모두 같은 점선이라 어디에 놓을지는 학생이 정하고, 규칙에 맞는 칸만 받는다:
@@ -683,7 +729,7 @@ function parseSynth(o: Record<string, unknown>): SynthParams {
   for (let j = 1; j < coeffs.length; j++) s = synthSum(p, synthPlace(p, s, 'mid', j).s);
   for (const v of [...coeffs, ...s.mid, ...s.bot])
     if (v !== null && !fits(v))
-      fail('조립제법', `칸에 ${fmt(v)} 이 안 들어감(빼기 기호 포함 3글자까지)`);
+      fail('조립제법', `칸에 ${fmt(v)} ${jo(v, '이')} 안 들어감(빼기 기호 포함 3글자까지)`);
   return p;
 }
 
@@ -752,6 +798,8 @@ export function ladderResult(s: LdState) {
 }
 
 export const ladderText = {
+  /** 점선 칸의 이름(화면 낭독기) */
+  target: (a: number, b: number) => `${a} ${jo(a, '과')} ${b} ${jo(b, '을')} 함께 나눌 수 칸`,
   intro: (p: LadderParams) =>
     `수 카드를 끌어 ${p.numbers[0]}·${p.numbers[1]} 왼쪽 칸에 놓아 보세요.`,
   apply(s: LdState, card: number): Msg {
@@ -815,11 +863,15 @@ function parseLadder(o: Record<string, unknown>): LadderParams {
       ? DEFAULT_CARDS
       : arr(o.cards, '사다리 cards', 1, 4).map((v, i) => int(v, `사다리 cards${i + 1}`, 2, 97));
   cards.forEach((c, i) => {
-    if (!isPrime(c)) fail('사다리 cards', `${c} 는 소수가 아님(카드는 소수만)`);
+    if (!isPrime(c)) fail('사다리 cards', `${c} ${jo(c, '은')} 소수가 아님(카드는 소수만)`);
     if (i > 0 && c <= (cards[i - 1] as number)) fail('사다리 cards', '작은 수부터, 겹치지 않게');
   });
   const g = gcd(nums[0], nums[1]);
-  if (g === 1) fail('사다리', `${nums[0]} 과 ${nums[1]} 은 서로소라 함께 나눌 수가 없음`);
+  if (g === 1)
+    fail(
+      '사다리',
+      `${nums[0]} ${jo(nums[0], '과')} ${nums[1]} ${jo(nums[1], '은')} 서로소라 함께 나눌 수가 없음`,
+    );
   const fs = primeFactors(g);
   for (const f of fs)
     if (!cards.includes(f)) fail('사다리 cards', `공약수의 소인수 ${f} 카드가 없음`);
