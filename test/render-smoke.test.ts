@@ -63,6 +63,42 @@ test('모든 단원 레슨의 모든 장면이 예외 없이 그려진다', asyn
   }
 });
 
+test('틀린 곳 찾기 기호 1차: 부등호 토큰은 버튼, 등식 아닌 식·×·÷ 조각·∫ 이 그려진다', async () => {
+  const { renderLesson } = await entry;
+  const l = goodLesson();
+  const spot = l.scenes.find((s) => s.kind === 'spot');
+  assert.ok(spot?.kind === 'spot');
+  spot.items = [
+    {
+      prompt: '부등호',
+      mode: 'equivalent',
+      from: '-2*x<6',
+      tokens: [{ sym: 'x' }, { sep: '<', bad: true }, { sym: '-3' }],
+      fix: { sym: '>', body: 'b' },
+    },
+    {
+      prompt: '등식 아닌 식',
+      mode: 'value',
+      from: '(3/4)÷(2/5)',
+      tokens: [{ sym: '3/4' }, { sym: '*(2/5)', bad: true }],
+      fix: { sym: '*(5/2)', body: 'b' },
+    },
+    {
+      prompt: '적분',
+      mode: 'identity',
+      tokens: [{ sym: 'Integral(x**3,x)' }, { sep: '=' }, { sym: 'x**4/4', bad: true }],
+      fix: { sym: 'x**4/4+C', body: 'b' },
+    },
+  ];
+  const html = renderLesson(withLesson(l));
+  const card = html.slice(html.indexOf('data-scene="traps"'));
+  // 버튼 수: 부등호 카드 3(부등호 포함) + 등식 아닌 식 2 + 적분 2(등호는 버튼이 아님)
+  assert.equal(card.slice(0, card.indexOf('data-scene="try"')).match(/class="tok/g)?.length, 7);
+  assert.match(card, /∫/);
+  assert.match(card, /÷/);
+  assert.match(card, /×/);
+});
+
 test('모르는 부품이면 실패한다', async () => {
   const { renderLesson } = await entry;
   const l = goodLesson();

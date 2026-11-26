@@ -13,13 +13,17 @@ export interface AnswerCheck {
   choiceChecks?: string[];
 }
 
-/** 틀린 곳 찾기: 틀린 식은 성립하지 않고 고친 식은 성립하는가 */
+/**
+ * 틀린 곳 찾기: 틀린 식은 성립하지 않고 고친 식은 성립하는가. 식은 등식·부등식(<,>,<=,>=), value 면 관계 없는 식.
+ * value 의 기준은 보이는 식 from 이나 숨은 sympy 검산식 check 하나
+ */
 export interface SpotCheck {
   ref: string;
   unit: string;
   kind: 'spot';
-  mode: 'identity' | 'equivalent';
+  mode: 'identity' | 'equivalent' | 'value';
   from?: string;
+  check?: string;
   wrong: string;
   fixed: string;
 }

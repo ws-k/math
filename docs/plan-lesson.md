@@ -28,8 +28,10 @@ type Scene =
  | Base & { kind:'spot'; items: SpotItem[] }                          // 틀린 곳 찾기
  | Base & { kind:'solve'; items: (Example & { placeholder?:string })[] } // 기존 Example 재사용
  | Base & { kind:'summary'; points:string[]; next?:string }
-interface SpotItem { prompt:string; tokens:{tex:string; bad?:true}[]; fix:{tex:string; body:string};
-  verify:{ mode:'identity'|'equivalent'; from?:string; wrong:string; fixed:string } }
+// 실제 형식은 src/lesson/types.ts 의 SpotItem(2-마 에서 넓힘). 토큰은 TeX 가 아니라 sympy 식(sym)이고,
+// 검산 식은 따로 적지 않고 토큰을 이어 붙여 만든다(고친 식 = bad 토큰 자리에 fix.sym)
+interface SpotItem { prompt:string; mode:'identity'|'equivalent'|'value'; from?:string; check?:string;
+  tokens:({sym:string; bad?:true} | {sep:'='|'<'|'>'|'<='|'>='; bad?:true})[]; fix:{sym:string; body:string} }
 interface WidgetSpec { type:string; params:Record<string,unknown>; alt?:string }  // alt = 끌기 대체 안내
 ```
 - **'지름길'은 따로 종류를 두지 않습니다.** `explore` 장면에 `chip:"지름길"`만 붙입니다. 장면 종류는 교육적 역할로 나누고, 인터랙션의 차이는 부품이 맡습니다.
