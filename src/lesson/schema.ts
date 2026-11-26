@@ -10,13 +10,13 @@ import {
   texOk,
 } from '../content/check.ts';
 import type { Example } from '../content/types.ts';
+import { answerText } from '../lib/answer.ts';
 import {
   chainTex,
   fill,
   formatValue,
   RELS,
   relTex,
-  solveAnswerText,
   splitChain,
   splitRel,
   spotEquation,
@@ -708,7 +708,16 @@ export function validateLesson(
             }
             // 레슨은 문제·힌트·풀이 단계 모두 강조 표기(**)를 살려 그린다. {{answer}} 는 이 문제의 검산된 답
             // (정답 표기가 있으면 그 표기, 객관식이면 보기 번호 ①~⑤ — 화면 SolveCard 와 같은 함수)
-            const own = { answer: solveAnswerText(e as SolveItem) };
+            const own = { answer: answerText(e as SolveItem) };
+            // 정답 표기($0.8185$)·보기 번호(④)는 수식 글자가 아니라 수식 안에 들어가면 깨진다 — KaTeX 오류로
+            // 흐리게 나오기 전에 까닭을 밝힌다(검토 m6)
+            if (own.answer !== e.answer)
+              for (const t of [e.q, e.hint, e.tip, ...e.steps.flatMap((st) => [st.title, st.body])])
+                if (typeof t === 'string' && /\$[^$]*\{\{answer\}\}[^$]*\$/.test(t))
+                  fail(
+                    ia,
+                    '정답 표기·객관식은 {{answer}} 를 수식 밖에 써야 함($…$ 안에 넣으면 깨짐)',
+                  );
             text(`${ia} 문제`, e.q, own);
             text(`${ia} hint`, optStr(e.hint, `${ia} hint`), own);
             e.steps.forEach((st, si) => {

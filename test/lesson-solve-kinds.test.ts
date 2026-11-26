@@ -37,6 +37,20 @@ test('texNumber: 수 하나만 적은 TeX 를 기약분수 글자로, 아니면 
   assert.equal(texNumber('$0.8185$'), '1637/2000');
   for (const s of ['3', '$x$', '$3$개', '$1+2$', '$\\frac{1}{0}$', '$3$ 또는 $4$'])
     assert.equal(texNumber(s), null, s);
+  // 검토 m7: 천 단위 {,} 는 받고, 대분수의 분자≥분모·앞자리 0 은 거부(손으로 적다 틀린 꼴)
+  assert.equal(texNumber('$1{,}000$'), '1000');
+  assert.equal(texNumber('$-12{,}345.5$'), '-24691/2');
+  for (const s of [
+    '$1\\frac{3}{2}$',
+    '$1\\frac{2}{2}$',
+    '$03$',
+    '$00.5$',
+    '$0\\frac{1}{2}$',
+    '$1{,}00$',
+  ])
+    assert.equal(texNumber(s), null, s);
+  assert.equal(texNumber('$0.5$'), '1/2');
+  assert.equal(texNumber('$0$'), '0');
 });
 
 test('객관식: 보기 5개, 보기 글자마다 그 보기 검산값과 같은 수인지 항목', () => {
@@ -59,6 +73,17 @@ test('객관식: 보기 5개, 보기 글자마다 그 보기 검산값과 같은
     check: 'Rational(-1,2)',
   });
   assert.equal(items.length, 6);
+});
+
+test('정답 표기·객관식의 {{answer}} 가 수식 안이면 까닭을 밝혀 알린다(KaTeX 오류로 흐리지 않게)', () => {
+  const r = withItem((it) => {
+    it.answerTex = '$2$';
+    it.steps = [{ title: 't', body: '$x={{answer}}$' }];
+  });
+  assert.ok(
+    r.errors.some((e) => e.includes('{{answer}} 를 수식 밖에')),
+    r.errors.join('\n'),
+  );
 });
 
 test('정답 표기(answerTex): 답과 같은 수면 통과, {{answer}} 는 그 표기로 채운다', () => {
@@ -107,6 +132,22 @@ for (const [name, f] of [
     '정답 표기가 수가 아님',
     (it: SolveItem) => {
       it.answerTex = '$x=2$';
+    },
+  ],
+  [
+    // 검토 m6: 정답 표기($…$)·보기 번호(④)는 수식 안에 들어가면 깨진다 — 바로 알린다
+    '정답 표기가 있는데 {{answer}} 가 수식 안',
+    (it: SolveItem) => {
+      it.answer = '2';
+      it.answerTex = '$2$';
+      it.steps = [{ title: 't', body: '$x={{answer}}$' }];
+    },
+  ],
+  [
+    '객관식인데 {{answer}} 가 수식 안',
+    (it: SolveItem) => {
+      choiceItem(it);
+      it.steps = [{ title: 't', body: '답은 $\\text{{{answer}}}$' }];
     },
   ],
   [

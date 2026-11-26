@@ -14,14 +14,12 @@ import { InkPage } from '../app/InkPage.tsx';
 import { NumPad } from '../app/NumPad.tsx';
 import { store } from '../app/store.ts';
 import type { Background, Tool } from '../ink/types.ts';
-import { compareAnswer } from '../lib/answer.ts';
+import { answerText, CIRCLED, compareAnswer } from '../lib/answer.ts';
 import {
-  CIRCLED,
   choiceLabel,
   handsOnCount,
   relSignTex,
   relTex,
-  solveAnswerText,
   spotEqSign,
   spotEquation,
   spotFixed,
@@ -390,7 +388,7 @@ function SolveCard(p: {
 }) {
   const { it } = p;
   /** 이 문제 글에서만 쓰는 값: 검산된 답 */
-  const own = { answer: solveAnswerText(it) };
+  const own = { answer: answerText(it) };
   const [input, setInput] = useState('');
   const [pad, setPad] = useState(false);
   const [fb, setFb] = useState<{ text: string; cls: '' | 'ok' | 'bad' } | null>(null);

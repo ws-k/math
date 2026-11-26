@@ -3,15 +3,13 @@
 import { useState } from 'react';
 import type { Example, Problem, Step, Unit } from '../content/types.ts';
 import { generatorById } from '../generators/index.ts';
-import { compareAnswer, type Verdict } from '../lib/answer.ts';
+import { answerText, CIRCLED, compareAnswer, type Verdict } from '../lib/answer.ts';
 import type { CardState, Grade } from '../lib/srs.ts';
 import { NumPad } from './NumPad.tsx';
 import { genPid } from './pages.ts';
 import { Rich } from './Rich.tsx';
 import { routeHash } from './route.ts';
 import { dueText, GRADE_LABEL } from './today.ts';
-
-const CIRCLED = ['①', '②', '③', '④', '⑤'];
 
 /** 옛 개념 설명(레슨이 없는 단원만). 레슨이 생기면 단원 홈에서 레슨이 이 자리를 대신한다 */
 export function ConceptCard({ unit }: { unit: Unit }) {
@@ -203,14 +201,7 @@ export function ProblemCard(p: {
       )}
       {showAnswer && (
         <p className="answer-reveal">
-          정답:{' '}
-          <Rich
-            inline
-            src={
-              pr.answerTex ??
-              (pr.choices ? (CIRCLED[Number(pr.answer) - 1] ?? pr.answer) : pr.answer)
-            }
-          />
+          정답: <Rich inline src={answerText(pr)} />
         </p>
       )}
       {shown > 0 && (

@@ -1,6 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { compareAnswer } from '../src/lib/answer.ts';
+import { answerText, CIRCLED, compareAnswer } from '../src/lib/answer.ts';
+
+// 문제 화면(정답 보기)·레슨({{answer}})·형식 검사가 같은 답 글자를 쓴다(검토 M5)
+test('answerText: 정답 표기가 있으면 그것, 객관식이면 ①~⑤, 아니면 답 그대로', () => {
+  assert.equal(CIRCLED[2], '③');
+  assert.equal(
+    answerText({ answer: '1637/2000', answerType: 'fraction', answerTex: '$0.8185$' }),
+    '$0.8185$',
+  );
+  assert.equal(answerText({ answer: '4', answerType: 'choice' }), '④');
+  assert.equal(answerText({ answer: '12', answerType: 'int' }), '12');
+});
 
 test('정수', () => {
   assert.equal(compareAnswer('8', '8', 'int'), 'correct');
