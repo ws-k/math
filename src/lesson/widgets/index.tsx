@@ -6,6 +6,7 @@ import { AreaModel } from './AreaModel.tsx';
 import { Balance } from './Balance.tsx';
 import { Coord } from './Coord.tsx';
 import { Count } from './Count.tsx';
+import { FactorTree } from './FactorTree.tsx';
 import { Fraction } from './Fraction.tsx';
 import { NumberLine } from './NumberLine.tsx';
 import { Shape } from './Shape.tsx';
@@ -42,6 +43,7 @@ export const widgetViews: Record<string, ComponentType<WidgetProps<any>>> = {
   shape: Shape,
   count: Count,
   simulate: Simulate,
+  factorTree: FactorTree,
 };
 
 export function Widget({
