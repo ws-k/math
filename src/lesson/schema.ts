@@ -69,16 +69,19 @@ const NAME_OK = /^[a-z][a-zA-Z0-9]*$/;
 /**
  * 글 속 숫자 가운데 {{…}} 로 넣지 않은 것 — 검산 밖이라 경고로 알린다. 수식($…$)은 덩어리째,
  * 일반 글은 숫자 하나씩(쉼표·소수점 포함) 알린다. 수식 밖 "12,000원" 도 답과 어긋날 수 있는 숫자다.
+ * 셈한 값이 아닌 수는 빼서 경고가 볼 것만 남게 한다(요청 91): 낱말에 붙은 이름(고1·중2·빨1·P1 — 수 앞이 글자)과
+ * 함정 카드 꼬리표 "함정 N"
  */
 function textNumbers(s: string): string[] {
   const out: string[] = [];
-  const src = s.replace(/\{\{\w+\}\}/g, '');
+  const src = s.replace(/\{\{\w+\}\}/g, '').replace(/함정 \d+/g, '');
   const math = /\$\$([^$]+)\$\$|\$([^$]+)\$/g;
   for (const m of src.matchAll(math)) {
     const seg = m[1] ?? m[2] ?? '';
     if (/\d/.test(seg)) out.push((m[0] as string).trim());
   }
-  for (const m of src.replace(math, ' ').matchAll(/\d[\d,.]*/g)) out.push(m[0]);
+  for (const m of src.replace(math, ' ').matchAll(/(?<![가-힣A-Za-z\d.,])\d[\d,.]*/g))
+    out.push(m[0]);
   return out;
 }
 
@@ -247,8 +250,12 @@ export function validateLesson(
         const at = `${W} values.${k}`;
         if (!NAME_OK.test(k) || k === 'problems' || k === 'answer') fail(at, '쓸 수 없는 이름');
         const v = obj(rv, at, ['value'], ['check', 'eq']);
-        const value = rationalStr(v.value, `${at} value`);
-        vars[k] = value;
+        // 소수(1.4 · 1.96)는 글에 소수 그대로 넣고, 검산 항목에는 같은 수의 기약분수로 — 검산기의 fraction 답은
+        // a/b 꼴만 읽고, 소수를 그대로 넘기면 부동소수로 읽힐 틈이 생긴다
+        const dec = typeof v.value === 'string' && /^-?\d+\.\d+$/.test(v.value);
+        const shown = dec ? (v.value as string) : rationalStr(v.value, `${at} value`);
+        const value = dec ? (texNumber(`$${shown}$`) as string) : shown;
+        vars[k] = shown;
         const vref = `${unitId}/lesson:값:${k}`;
         if ((v.check === undefined) === (v.eq === undefined)) fail(at, 'check 와 eq 중 하나만');
         if (v.eq !== undefined) {

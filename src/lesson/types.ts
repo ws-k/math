@@ -22,7 +22,10 @@ export interface Lesson {
 }
 
 export interface LessonValue {
-  /** 정수·"a/b". 글에는 그대로(쉼표 없이) 들어간다 — 수식 안에도 쓰도록 */
+  /**
+   * 정수·"a/b"·소수("1.96"). 글에는 그대로(쉼표 없이) 들어간다 — 수식 안에도 쓰도록. 소수는 같은 수의 기약분수로
+   * 검산한다(check 도 Rational 로 — 파이썬이 1.96 을 부동소수로 계산하지 않게)
+   */
   value: string;
   /** 이 값을 문제 조건으로 계산하는 sympy 식. eq 와 둘 중 하나만 */
   check?: string;
