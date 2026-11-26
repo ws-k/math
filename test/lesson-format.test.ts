@@ -162,5 +162,14 @@ test('명제끼리의 = 는 ⇔ 로(참·거짓이 늘 같음) — 고친 식 �
     '⇔',
   );
   assert.equal(spotEqSign([{ sym: 'x' }, { sep: '=' }, { sym: '2', bad: true }]), '=');
+  // 앞 토큰에 ×·÷ 로 이어지는 조각('*3' · '÷2')은 혼자 식이 아니다 — 쪽 전체로 판정해야 예외가 안 난다(검토 C1)
+  assert.equal(
+    spotEqSign([{ sym: '2*2' }, { sym: '*3', bad: true }, { sep: '=' }, { sym: '72' }]),
+    '=',
+  );
+  assert.equal(
+    spotEqSign([{ sym: '12' }, { sym: '÷(2*3)' }, { sep: '=' }, { sym: '6', bad: true }]),
+    '=',
+  );
   assert.equal(relTex('I**2=-1'), 'i^{2}=-1');
 });

@@ -99,6 +99,29 @@ test('틀린 곳 찾기 기호 1차: 부등호 토큰은 버튼, 등식 아닌 �
   assert.match(card, /×/);
 });
 
+test('= 가 있는 ×·÷ 조각 카드도 그려진다(등호 칸 글자를 쪽 전체로 정함 — 검토 C1)', async () => {
+  const { renderLesson } = await entry;
+  const l = goodLesson();
+  const spot = l.scenes.find((s) => s.kind === 'spot');
+  assert.ok(spot?.kind === 'spot');
+  spot.items = [
+    {
+      prompt: '최소공배수',
+      mode: 'identity',
+      tokens: [{ sym: '2*2' }, { sym: '*3', bad: true }, { sep: '=' }, { sym: '72' }],
+      fix: { sym: '*3*2*3', body: 'b' },
+    },
+    {
+      prompt: '나눗셈',
+      mode: 'identity',
+      tokens: [{ sym: '12' }, { sym: '÷(2*3)' }, { sep: '=' }, { sym: '6', bad: true }],
+      fix: { sym: '2', body: 'b' },
+    },
+  ];
+  const html = renderLesson(withLesson(l));
+  assert.match(html.slice(html.indexOf('data-scene="traps"')), /class="arrow">=</);
+});
+
 test('질문 보기 꼴(3-바): π 보기·식 보기·글자 보기가 단추 안에 그려진다', async () => {
   const { renderLesson } = await entry;
   const shown = (choices: unknown, format?: object) => {

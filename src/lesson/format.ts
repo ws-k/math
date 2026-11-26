@@ -197,8 +197,14 @@ export function chainTex(s: string): string {
 }
 
 /** 틀린 곳 찾기 토큰 사이 등호 자리의 글자(누를 수 없는 칸). 명제끼리면 relTex 와 같게 ⇔ */
-export const spotEqSign = (tokens: SpotToken[]): '=' | '⇔' =>
-  tokens.some((t) => 'sym' in t && isLogicSpot(t.sym)) ? '⇔' : '=';
+// 토큰 하나씩이 아니라 이어 붙인 쪽 전체로 본다 — '*3'·'÷2' 처럼 앞 토큰에 이어지는 조각은 혼자 식이 아니라
+// 토큰마다 읽으면 화면이 예외로 죽는다(검토 C1). 명제는 식 전체로만 쓰여(sym.ts logicOnly) 쪽 단위로 판정해도 같다
+export function spotEqSign(tokens: SpotToken[]): '=' | '⇔' {
+  const parts = splitRel(spotEquation(tokens));
+  return parts.length === 3 && parts[1] === '=' && (isLogicSpot(parts[0]) || isLogicSpot(parts[2]))
+    ? '⇔'
+    : '=';
+}
 
 /** 레슨 글의 {{이름}} 값: 연습문제 수 + 레슨 values(검산된 값). 화면과 검사기가 같이 쓴다 */
 export function lessonVars(l: Lesson, problems: number): Record<string, string> {
