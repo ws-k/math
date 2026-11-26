@@ -30,8 +30,18 @@ export function evalSteps(F: number[], k: number): string {
     const e = deg - i;
     if (c === 0) return;
     const pow = e === 0 ? '' : e === 1 ? paren(k) : `${paren(k)}^${e}`;
+    // 맨 앞 항의 계수가 −1 인 거듭제곱에 양수를 넣으면 "-1^3" 이 (−1)³ 로도 읽혀 흐리다(요청 80) — 거듭제곱을
+    // 괄호로 묶어 −(1³) 로 보인다. 가운데 항(27−3²)은 빼기로 읽혀 흐리지 않고, 음수를 넣으면 이미 (−2)² 로
+    // 묶여 있고, 일차 항(−1)은 흐릴 것이 없다
+    const neg1Pow = c === -1 && e >= 2 && k > 0 && parts.length === 0;
     const body =
-      e === 0 ? String(Math.abs(c)) : Math.abs(c) === 1 ? pow : `${Math.abs(c)}\\cdot ${pow}`;
+      e === 0
+        ? String(Math.abs(c))
+        : Math.abs(c) === 1
+          ? neg1Pow
+            ? `(${pow})`
+            : pow
+          : `${Math.abs(c)}\\cdot ${pow}`;
     parts.push(`${c < 0 ? '-' : parts.length ? '+' : ''}${body}`);
   });
   return parts.length ? parts.join('') : '0';
