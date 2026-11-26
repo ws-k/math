@@ -191,6 +191,14 @@ function movers(p: CoordParams, g: NewGoal): { points: string[]; sliders: string
 }
 
 /** 목표가 보는 끄는 점(옛 approach 목표는 다가가는 쪽 점). 끌기가 칸을 묶지 않을 점들 */
+/** 목표 판정이 늘어놓는 것(끄는 점·슬라이더). 옛 다가가기는 끄는 점 하나 */
+export function goalMovers(p: CoordParams): { points: string[]; sliders: string[] } {
+  const g = p.goal;
+  if (!g) return { points: [], sliders: [] };
+  if (!isNew(g)) return { points: goalPoints(p), sliders: [] };
+  return movers(p, g);
+}
+
 export function goalPoints(p: CoordParams): string[] {
   const g = p.goal;
   if (!g) return [];

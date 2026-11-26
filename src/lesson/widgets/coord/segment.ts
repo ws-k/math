@@ -75,8 +75,8 @@ export const slidersIn = (n: Node, cx: Pick<ParseCtx, 'sliders'>) => {
   const vs = varsOf(n);
   return cx.sliders.map((sl) => sl.id).filter((id) => vs.has(id));
 };
-/** 형식 검사 중의 점·곡선 찾기(point.ts pointDeps·pointNum 이 받는 꼴) */
-const lookIn = (cx: Pick<ParseCtx, 'sliders' | 'points' | 'curves' | 'x' | 'y'>) => ({
+/** 형식 검사 중의 점·곡선 찾기(point.ts pointDeps·pointNum·exprNum 이 받는 꼴) — 선분·세로선·직각 표시가 같이 쓴다 */
+export const lookIn = (cx: Pick<ParseCtx, 'sliders' | 'points' | 'curves' | 'x' | 'y'>) => ({
   point: (id: string) => cx.points.get(id),
   curve: (id: string) => cx.curves.get(id),
   sliders: cx.sliders,

@@ -311,3 +311,102 @@ test('직각 표시 검산: 보이는 상태마다 두 변의 내적 = 0 (sympy)
   const bad = cs.map((c) => (c === it ? { ...it, expr: `${it.expr}+1` } : c));
   assert.equal(runChecks(bad).ok, false);
 });
+
+// ---- 검토 반영(M1·m1·m5·m6·m8) ----
+
+/** O·A(2,1) 고정, P 를 끌어 직각을 만드는 장면(축척 같게) */
+const aop = (over: Record<string, unknown> = {}) =>
+  base(
+    [
+      { id: 'O', point: { x: 0, y: 0 } },
+      { id: 'A', point: { x: 2, y: 1 } },
+      { id: 'P', point: { x: -1, y: 2, drag: 'xy' } },
+      { right: ['A', 'O', 'P'] },
+    ],
+    { equal: true, ...over },
+  );
+
+test('직각 검산(M1): 앱 내적값이 아니라 0 을 넘긴다 — 직각 아닌 상태를 보이는 상태에 끼우면 sympy 가 잡는다', () => {
+  const cs = coordChecks(parseCoord(aop()));
+  const dot = cs.find((c) => c.name === '직각 A-O-P 내적');
+  assert.ok(dot && 'kind' in dot && dot.kind === 'parity');
+  assert.ok(dot.values.every((v) => v === 0));
+  assert.ok(dot.points.length >= 2);
+  const r = runChecks(cs);
+  assert.ok(r.ok, r.out);
+  // P=(1,1) 은 직각이 아님 — 보이는 상태로 끼워 넣으면 실패해야
+  const bad = cs.map((c) =>
+    c === dot
+      ? {
+          ...dot,
+          points: [...dot.points, { pt_P_x: '1', pt_P_y: '1' }],
+          values: [...dot.values, 0],
+        }
+      : c,
+  );
+  assert.equal(runChecks(bad).ok, false);
+});
+
+test('직각 검산(M1): 보임 항목 — 그리지 않은 상태 중 sympy 로 보여야 할 것(직각)이 없다', () => {
+  const cs = coordChecks(parseCoord(aop()));
+  const seen = cs.find((c) => c.name === '직각 A-O-P 보임');
+  assert.ok(seen && 'kind' in seen && seen.kind === 'parity');
+  // P 의 칸 9×9 전부
+  assert.equal(seen.points.length, 81);
+  assert.ok(seen.values.includes(1) && seen.values.includes(0));
+  const r = runChecks(cs);
+  assert.ok(r.ok, r.out);
+  // 보이는 상태 하나를 '안 보임'으로 바꾸면(앱이 직각을 놓친 셈) 실패
+  const k = seen.values.indexOf(1);
+  const bad = cs.map((c) =>
+    c === seen ? { ...seen, values: seen.values.map((v, j) => (j === k ? 0 : v)) } : c,
+  );
+  assert.equal(runChecks(bad).ok, false);
+});
+
+test('직각 표시(m1): 축척 같게가 아니면 그림이 우연히 정사각형이어도 비스듬한 직각은 그리지 않는다(규칙으로)', () => {
+  const p = parseCoord(aop({ equal: undefined }));
+  // 그림 영역이 250×250 — 가로·세로 한 칸이 우연히 같은 상자
+  const sq = { w: 298, h: 290 };
+  const f = frame(sq, p);
+  assert.ok(Math.abs(f.r - f.l - (f.b - f.t)) < 1e-9);
+  const m = draw(p, initial(p), sq).items.find((it) => it.t === 'path' && it.cls === 'rmark');
+  assert.ok(m && m.t === 'path');
+  assert.equal(m.d, '');
+});
+
+test('보이는 상태 0(m5, 무거운 검사): 끄는 점에 기대는 따라오는 점·세로선·직각 표시가 어느 상태에서도 안 보이면 오류', () => {
+  const objs = (extra: Record<string, unknown>[]) =>
+    base([{ id: 'P', point: { x: 1, y: 1, drag: 'xy' } }, ...extra]);
+  const deep = (raw: Record<string, unknown>) => () => coordDef.deep?.(parseCoord(raw));
+  assert.throws(deep(objs([{ vline: 'x(P)+10' }])), /보이는 상태가 없음/);
+  assert.throws(deep(objs([{ id: 'H', point: { x: 'x(P)+10', y: 0 } }])), /보이는 상태가 없음/);
+  // 내적 x + y/7 — 칸 위 P 에서는 0 이 (0,0)(길이 0)뿐이라 끝내 안 보임
+  assert.throws(
+    deep(objs([{ id: 'O', point: { x: 0, y: 0 } }, { right: [[1, '1/7'], 'O', 'P'] }])),
+    /보이는 상태가 없음/,
+  );
+  assert.doesNotThrow(deep(objs([{ vline: 'x(P)+1' }])));
+});
+
+test('직각 표시(m6): 목표가 움직이는 점·슬라이더에 기대는 직각 표시는 형식 오류(꺾쇠가 정답 자리를 알려 줌 — P3)', () => {
+  const raw = aop({
+    goal: {
+      place: { point: 'P', x: { value: '-1', check: '-1*1' }, y: { value: '2', check: '2*1' } },
+      hint: '직각이 되는 자리',
+    },
+  });
+  assert.throws(() => parseCoord(raw), /목표.*직각 표시/);
+});
+
+test('직각 표시(m8): 같은 직각 표시 두 번(두 끝 차례만 바꾼 것 포함)은 형식 오류', () => {
+  const pts = [
+    { id: 'A', point: { x: 0, y: 3 } },
+    { id: 'H', point: { x: 0, y: 0 } },
+    { id: 'B', point: { x: 3, y: 0 } },
+  ];
+  assert.throws(
+    () => parseCoord(base([...pts, { right: ['A', 'H', 'B'] }, { right: ['B', 'H', 'A'] }])),
+    /같은 직각 표시가 두 번/,
+  );
+});

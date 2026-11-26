@@ -118,7 +118,10 @@ test('이름표 검사(m9): 맞힌 뒤(숨긴 목표 점이 보일 때)도 본�
   });
   assert.doesNotThrow(() => coordDef.deep?.(parseCoord(raw([]))));
   assert.throws(
-    () => coordDef.deep?.(parseCoord(raw([{ id: 'T', point: { x: 5, y: 3 }, name: 'T점', hide: true }]))),
+    () =>
+      coordDef.deep?.(
+        parseCoord(raw([{ id: 'T', point: { x: 5, y: 3 }, name: 'T점', hide: true }])),
+      ),
     /맞힌 뒤.*이름표/,
   );
 });

@@ -26,6 +26,7 @@ import { coordChecks } from './coord/checks.ts';
 import { checkLabels } from './coord/draw.ts';
 import { checkReachable, goalTexts } from './coord/goal.ts';
 import { kindOf } from './coord/kinds.ts';
+import { checkShown } from './coord/mark.ts';
 import { parseCoord } from './coord/parse.ts';
 import { checkPolyCurves } from './coord/readout.ts';
 import { checkSmooth } from './coord/smooth.ts';
@@ -119,6 +120,7 @@ export const coordDef: WidgetDef<CoordParams> = {
     checkSmooth(p);
     checkBarsFit(p);
     checkLabels(p);
+    checkShown(p);
   },
   checks: coordChecks,
   texts(p) {

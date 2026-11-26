@@ -3,9 +3,10 @@
 //
 // 세로선: 곡선으로는 x 가 하나인 선을 그릴 수 없고, 선분으로 그리면 끝을 화면 끝 좌표로 적어야 해 점근선 점선도, 점을
 // 따라 움직이는 세로줄(math2-indefinite 'P 와 같은 세로줄')도 안 됐다. 자리는 따라오는 좌표 식(follow.ts)과 같은 꼴.
-// 직각 표시: 꼭짓점에서 두 변을 따라 작은 꺾쇠. 정말 직각일 때만 그린다 — 끄는 점이면 직각이 된 순간에만 나타나
-// '직각이 되는 자리를 찾아보기'에 쓸 수 있다. 화면에서 직각으로 보일 때만이기도 하다(축척이 다르면 비스듬한 직각은
-// 화면에서 비뚤어 보여 꺾쇠가 틀린 말을 한다).
+// 직각 표시: 꼭짓점에서 두 변을 따라 작은 꺾쇠. 정말 직각일 때만 그린다 — 끄는 점이면 직각이 된 순간에만 나타난다.
+// 그래서 목표가 움직이는 점·슬라이더에 기대면 꺾쇠가 정답 자리를 알려 주는 신호가 되므로(P3) 형식 오류로 막는다
+// (checkRightGoal) — 목표 없는 탐색에서 '직각이 되는 곳'을 보이는 데만 쓴다. 화면에서 직각으로 보일 때만이기도 하다:
+// 축척 같게(equal)면 세계의 직각 그대로, 아니면 두 변이 가로·세로일 때만(비스듬한 직각은 비뚤어 보여 꺾쇠가 틀린 말을 함).
 import { evalNum } from '../../expr.ts';
 import { arr, fail, obj, oneOf, str } from '../../parse.ts';
 import { near } from './common.ts';
@@ -20,13 +21,15 @@ import {
   followSymOf,
   lookOf,
   pointDeps,
+  pointXY,
   xSym,
   ySym,
 } from './point.ts';
-import { endAt, endSliders, endText, endXY, parseEnd, slidersIn } from './segment.ts';
+import { endAt, endSliders, endText, endXY, lookIn, parseEnd, slidersIn } from './segment.ts';
 import { sliderCombos } from './slider.ts';
 import {
   type CoordParams,
+  type CoordState,
   type KindDef,
   type ParseCtx,
   type RightObj,
@@ -34,15 +37,6 @@ import {
   TONES,
   type VlineObj,
 } from './types.ts';
-
-/** 형식 검사 중의 점·곡선 찾기(point.ts exprDeps·exprNum 이 받는 꼴) */
-const lookIn = (cx: ParseCtx) => ({
-  point: (id: string) => cx.points.get(id),
-  curve: (id: string) => cx.curves.get(id),
-  sliders: cx.sliders,
-  x: cx.x,
-  y: cx.y,
-});
 
 // ---- 세로선 ----
 
@@ -138,26 +132,32 @@ const len2 = (a: V2) => Math.hypot(a[0], a[1]);
 /** 두 변이 수직인가(길이에 비례한 너그러움 — 부동소수 찌꺼기만큼) */
 const perp = (u: V2, v: V2, tol: number) => Math.abs(dot2(u, v)) <= tol * len2(u) * len2(v);
 
+/** 길이에 비해 0 인가(부동소수 찌꺼기만큼 너그럽게) */
+const flat = (c: number, u: V2) => Math.abs(c) <= 1e-9 * len2(u);
+
 /**
- * 세계 좌표의 세 끝 → 그릴 꺾쇠 경로(안 보이면 ''). 세계에서 직각이고 화면(px)에서도 직각일 때만 —
- * 축척 같게(equal)가 아니면 비스듬한 직각은 화면에서 직각이 아니다(가로·세로 변은 어느 축척에서도 직각)
+ * 세계 좌표의 세 끝 → 그릴 꺾쇠 경로(안 보이면 ''). 보이는 때는 규칙으로 정한다(화면 px 로 재지 않음 — 축척이 다른
+ * 그림이 어느 상자 크기에서 우연히 정사각형이 되면 비스듬한 직각이 그 화면에서만 보였다):
+ *   축척 같게면 세계에서 직각일 때, 아니면 두 변이 하나는 가로·하나는 세로일 때(어느 축척에서도 직각)
  */
 function rightPath(
   pa: V2,
   po: V2,
   pb: V2,
+  equal: boolean,
   px: (q: V2) => V2,
   minLen = 0,
-): { d: string; world: boolean; screen: boolean; short: boolean } {
+): { d: string; world: boolean; shown: boolean; short: boolean } {
   const u = sub2(pa, po);
   const v = sub2(pb, po);
-  const none = { d: '', world: false, screen: false, short: false };
+  const none = { d: '', world: false, shown: false, short: false };
   if (![...u, ...v].every(Number.isFinite) || len2(u) === 0 || len2(v) === 0) return none;
   if (!perp(u, v, 1e-9)) return none;
+  const axes = (flat(u[0], u) && flat(v[1], v)) || (flat(u[1], u) && flat(v[0], v));
+  if (!equal && !axes) return { ...none, world: true };
   const O = px(po);
   const U = sub2(px(pa), O);
   const V = sub2(px(pb), O);
-  if (!perp(U, V, 1e-6)) return { ...none, world: true };
   const L = Math.min(len2(U), len2(V));
   const s = Math.min(RIGHT_PX, L * 0.4);
   const a: V2 = [O[0] + (U[0] / len2(U)) * s, O[1] + (U[1] / len2(U)) * s];
@@ -166,11 +166,10 @@ function rightPath(
   return {
     d: `M${r1(a[0])} ${r1(a[1])}L${r1(c[0])} ${r1(c[1])}L${r1(b[0])} ${r1(b[1])}`,
     world: true,
-    screen: true,
+    shown: true,
     short: L < minLen,
   };
 }
-
 /**
  * 직각 표시 형식 검사(끝이 다 셀 수 있을 때 — 끄는 점에 기대면 손에 달려 건너뜀): 끝이 쓰는 슬라이더의 칸마다 보고,
  * 한 칸에서도 세계에서 직각이 아니면 오류(늘 안 보이는 표시), 직각인데 화면에서 비뚤어 한 번도 안 보이면 equal 을 권하는
@@ -189,9 +188,9 @@ function checkRight(o: RightObj, at: string, cx: ParseCtx): void {
     const qs = ends.map((e) => endAt(e, cx, { ...cx.env0, ...cb.num }));
     if (qs.some((q) => q === null)) return;
     const [pa, po, pb] = qs as V2[];
-    const r = rightPath(pa as V2, po as V2, pb as V2, px, MIN_RAY_PX);
+    const r = rightPath(pa as V2, po as V2, pb as V2, cx.equal, px, MIN_RAY_PX);
     if (r.world) world++;
-    if (!r.screen) continue;
+    if (!r.shown) continue;
     shown++;
     if (r.short)
       fail(
@@ -209,7 +208,7 @@ function checkRight(o: RightObj, at: string, cx: ParseCtx): void {
   if (shown === 0)
     fail(
       at,
-      `축척이 달라 비스듬한 직각이 화면에서 비뚤어 보여 그리지 않음 (${o.ref}) — 좌표에 equal: true 를`,
+      `축척 같게가 아니라 비스듬한 직각은 화면에서 비뚤어 보여 그리지 않음 (${o.ref}) — 좌표에 equal: true 를(가로·세로 변의 직각만 축척과 상관없이 그림)`,
     );
 }
 
@@ -243,28 +242,117 @@ export const rightKind: KindDef<RightObj> = {
   },
   draw(o, k, { p, s, f, items }) {
     const [pa, po, pb] = [o.a, o.o, o.b].map((e) => endXY(p, s, e)) as [V2, V2, V2];
-    const r = rightPath(pa, po, pb, (q) => toPx(p, f, q[0], q[1]));
+    const r = rightPath(pa, po, pb, !!p.equal, (q) => toPx(p, f, q[0], q[1]));
     items.push({ t: 'path', key: `q${k}`, d: r.d, cls: 'rmark' });
   },
   checks(o, { p, out }) {
-    // 꺾쇠가 보이는 상태마다 두 변의 내적 = 0 (sympy). '그린 곳은 정말 직각'을 앱 셈과 따로 확인한다.
-    // 화면 직각 여부는 가장 좁은 화면 축척으로 본다(축척 같게면 크기와 상관없고, 아니면 가로·세로 변만 보임)
+    // 두 항목으로 앱의 '보임' 판정을 sympy 가 따로 확인한다:
+    //  내적 — 꺾쇠가 보이는 상태마다 두 변의 내적 = 0 (앱 값이 아니라 0 을 넘긴다 — 앱 내적값을 넘기면 앱이 직각이 아닌
+    //         상태에 꺾쇠를 그려도 '앱 값 = sympy 값'으로 통과한다)
+    //  보임 — 늘어놓은 모든 상태에서 앱의 보임(1·0) = sympy 가 규칙(직각이고, 축척 같게가 아니면 가로·세로 변)으로 낸 값.
+    //         직각인데 앱이 안 그린 상태(놓침)도 잡는다
     const deps: Deps = { pts: new Set(), sliders: new Set() };
     for (const e of [o.a, o.o, o.b]) endDeps(p, e, deps);
     const f = narrowFrame(p);
-    const seen = depStates(p, deps).flatMap((q) => {
-      const [pa, po, pb] = [o.a, o.o, o.b].map((e) => endXY(p, q.s, e)) as [V2, V2, V2];
-      if (!rightPath(pa, po, pb, (w) => toPx(p, f, w[0], w[1])).screen) return [];
-      return [{ sym: q.sym, v: dot2(sub2(pa, po), sub2(pb, po)) }];
+    const st = depStates(p, deps).flatMap((q) => {
+      const ends = [o.a, o.o, o.b].map((e) => endXY(p, q.s, e)) as [V2, V2, V2];
+      if (!ends.flat().every(Number.isFinite)) return [];
+      const shown = rightPath(...ends, !!p.equal, (w) => toPx(p, f, w[0], w[1])).shown;
+      return [{ sym: q.sym, shown }];
     });
-    if (seen.length === 0) return;
-    const d = (ax: 'x' | 'y', e: SegEnd) => `(${endSym(p, e, ax)})-(${endSym(p, o.o, ax)})`;
+    if (st.length === 0) return;
+    const d = (ax: 'x' | 'y', e: SegEnd) => `((${endSym(p, e, ax)})-(${endSym(p, o.o, ax)}))`;
+    const [ux, uy, vx, vy] = [d('x', o.a), d('y', o.a), d('x', o.b), d('y', o.b)];
+    const dot = `${ux}*${vx}+${uy}*${vy}`;
+    const seen = st.filter((q) => q.shown);
+    if (seen.length > 0)
+      out.push({
+        name: `직각 ${o.ref} 내적`,
+        kind: 'parity',
+        expr: dot,
+        points: seen.map((q) => q.sym),
+        values: seen.map(() => 0),
+      });
+    const long = `Ne(${ux}**2+${uy}**2,0),Ne(${vx}**2+${vy}**2,0)`;
+    const rule = p.equal
+      ? `And(Eq(${dot},0),${long})`
+      : `And(Or(And(Eq(${ux},0),Eq(${vy},0)),And(Eq(${uy},0),Eq(${vx},0))),${long})`;
     out.push({
-      name: `직각 ${o.ref} 내적`,
+      name: `직각 ${o.ref} 보임`,
       kind: 'parity',
-      expr: `(${d('x', o.a)})*(${d('x', o.b)})+(${d('y', o.a)})*(${d('y', o.b)})`,
-      points: seen.map((q) => q.sym),
-      values: seen.map((q) => q.v),
+      expr: `Piecewise((1,${rule}),(0,True))`,
+      points: st.map((q) => q.sym),
+      values: st.map((q) => (q.shown ? 1 : 0)),
     });
   },
 };
+
+/** 같은 직각 표시 두 번(parse.ts): 꼭짓점과 두 끝(차례 상관없이 정렬)을 글자로 견준다 */
+export const rightKey = (o: RightObj) =>
+  `${endText(o.o)}|${[endText(o.a), endText(o.b)].sort().join(',')}`;
+
+/**
+ * 목표가 움직이는 점·슬라이더에 기대는 직각 표시는 형식 오류(P3): 직각일 때만 나타나는 꺾쇠가 끄는 도중 '여기가 정답'
+ * 신호가 된다. 목표 판정이 늘어놓는 것(movers)과 꺾쇠를 움직이는 것이 겹치면 막는다
+ */
+export function checkRightGoal(p: CoordParams, movers: { points: string[]; sliders: string[] }) {
+  for (const o of p.objects) {
+    if (o.kind !== 'right') continue;
+    const deps: Deps = { pts: new Set(), sliders: new Set() };
+    for (const e of [o.a, o.o, o.b]) endDeps(p, e, deps);
+    const hit = [
+      ...movers.points.filter((id) => deps.pts.has(id)),
+      ...movers.sliders.filter((id) => deps.sliders.has(id)),
+    ];
+    if (hit.length)
+      fail(
+        '좌표 objects',
+        `목표가 움직이는 ${hit.join('·')} 에 기대는 직각 표시 (${o.ref}) — 직각일 때만 나타나는 꺾쇠가 정답 자리를 알려 줌(P3). 목표가 있는 장면에서는 고정된 직각에만`,
+      );
+  }
+}
+
+/**
+ * 무거운 형식 검사: 끄는 점에 기대는 따라오는 점·세로선·직각 표시가 닿는 상태(끄는 점 칸 × 슬라이더 칸, 2000 상태 넘으면
+ * 고르게 덜어 냄) 어디서도 안 보이면 오류 — 늘 숨은 객체는 적은 사람의 실수다. 슬라이더에만 기대는 것은 형식 검사가
+ * 이미 칸마다 본다
+ */
+export function checkShown(p: CoordParams): void {
+  const lk = lookOf(p);
+  const f = narrowFrame(p);
+  const inX = (x: number) => Number.isFinite(x) && x >= p.x.lo - 1e-9 && x <= p.x.hi + 1e-9;
+  const inY = (y: number) => Number.isFinite(y) && y >= p.y.lo - 1e-9 && y <= p.y.hi + 1e-9;
+  for (const o of p.objects) {
+    let deps: Deps;
+    let shown: (s: CoordState) => boolean;
+    let what: string;
+    if (o.kind === 'point' && o.follow) {
+      deps = pointDeps(lk, o.id);
+      shown = (s) => {
+        const [x, y] = pointXY(p, s, o.id);
+        return inX(x) && inY(y);
+      };
+      what = `따라오는 점 ${o.id}`;
+    } else if (o.kind === 'vline' && !isConst(o.at)) {
+      deps = exprDeps(lk, o.at);
+      shown = (s) => inX(followNow(p, s, o.at));
+      what = `세로선 x=${o.at.src}`;
+    } else if (o.kind === 'right') {
+      deps = { pts: new Set(), sliders: new Set() };
+      for (const e of [o.a, o.o, o.b]) endDeps(p, e, deps);
+      shown = (s) => {
+        const ends = [o.a, o.o, o.b].map((e) => endXY(p, s, e)) as [V2, V2, V2];
+        return rightPath(...ends, !!p.equal, (w) => toPx(p, f, w[0], w[1])).shown;
+      };
+      what = `직각 표시 ${o.ref}`;
+    } else continue;
+    if (deps.pts.size === 0) continue;
+    if (!depStates(p, deps, SHOWN_STATES).some((q) => shown(q.s)))
+      fail(
+        '좌표',
+        `${what}: 끄는 점·슬라이더가 닿는 어느 자리에서도 보이는 상태가 없음 — 늘 숨은 표시(식·자리를 확인)`,
+      );
+  }
+}
+/** checkShown 이 늘어놓는 상태 상한(목표 판정 상한과 같은 값) */
+const SHOWN_STATES = 2000;
