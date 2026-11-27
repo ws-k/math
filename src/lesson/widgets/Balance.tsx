@@ -14,7 +14,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { centerOf, FAILS_FOR_TAP, inBox, isTap } from '../drag.ts';
+import { centerOf, inBox, isTap, tapMode as isTapMode, TAP_ON } from '../drag.ts';
 import { landAt, rectsOf, useSettleFx } from '../fly.ts';
 import { formatValue } from '../format.ts';
 import { LRich, Tex } from '../ui.tsx';
@@ -168,7 +168,7 @@ export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams
   }, [p]);
   const [g, setG] = useState(fresh);
   const [fails, setFails] = useState(0);
-  const tapMode = fails >= FAILS_FOR_TAP;
+  const tapMode = isTapMode(fails);
   const busy = useRef(false);
   const pans = { l: useRef<HTMLDivElement>(null), r: useRef<HTMLDivElement>(null) };
   const root = useRef<HTMLDivElement>(null);
@@ -376,8 +376,7 @@ export function Balance({ params: p, onDone, onMiss }: WidgetProps<BalanceParams
       </div>
       {tapMode && (
         <p className="bal-hint">
-          끌기가 어려우면 눌러도 돼요. 접시 위 물건을 누르면 내려가고, 바닥의 물건을 누르면
-          올라가요.
+          {TAP_ON} 접시 위 물건을 누르면 내려가고, 바닥의 물건을 누르면 올라가요.
         </p>
       )}
       <button type="button" className="lbtn quiet" onClick={reset}>

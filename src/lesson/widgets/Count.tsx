@@ -21,7 +21,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { centerOf, FAILS_FOR_TAP, isTap } from '../drag.ts';
+import { centerOf, FAILS_FOR_TAP, isTap, missHint, TAP_ON } from '../drag.ts';
 import { landAt, useSettleFx } from '../fly.ts';
 import { useDrag } from '../useDrag.ts';
 import {
@@ -82,8 +82,6 @@ type Msg = { text: string; cls: '' | 'ok' | 'bad' };
 const FLY_MS = 220;
 /** 이미 찾은 경우·짝을 깜빡이는 시간 */
 const FLASH_MS = 900;
-/** '눌러도 돼요' 안내의 앞말(두 번째 누르기·놓친 끌기에서) */
-const TAP_ON = '끌기가 어려우면 눌러도 돼요.';
 
 /** 처음 안내(토스트 한 줄). 장면이 words.intro 로 바꾼다 */
 const INTRO: Partial<Record<ReturnType<typeof viewOf>, string>> = {
@@ -209,7 +207,7 @@ function useTaps(say: (m: Msg) => void, how: string) {
     miss(text: string) {
       const fails = t.fails + 1;
       setT({ ...t, fails });
-      say({ text: fails === FAILS_FOR_TAP ? `${TAP_ON} ${how}` : text, cls: '' });
+      say({ text: missHint(fails) === 'tap' ? `${TAP_ON} ${how}` : text, cls: '' });
     },
     reset: () => setT({ fails: t.fails, pick: null }),
   };

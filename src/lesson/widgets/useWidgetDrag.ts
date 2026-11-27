@@ -6,6 +6,35 @@ import { type RefObject, useEffect, useRef } from 'react';
 import { type DragHandlers, useDrag } from '../useDrag.ts';
 import { applyDrawing, type Drawing } from './draw.ts';
 
+export interface WidgetDragCore<S> {
+  /** 지금 상태 */
+  get(): S;
+  /** 끌기를 시작한 상태(다시 그려져도 끌기 동안 유지되게 바깥이 쥔다) */
+  start: { current: S };
+  draw(s: S): Drawing;
+  /** 놓은 상태를 반영한다. 돌려준 값이 있으면 그것을 마지막 그림으로 쓴다(놓은 뒤 제자리로 돌아가는 조각 등) */
+  commit(s: S): S | undefined;
+  /** 그림을 직접 적용(화면은 applyDrawing) */
+  paint(d: Drawing): void;
+}
+
+/** useWidgetDrag 의 알맹이(React 없이 시험하려고 뺐다 — 부품의 배선 테스트가 화면과 같은 순서로 부른다) */
+export function widgetDrag<S>(c: WidgetDragCore<S>) {
+  return (move: (s: S, dx: number, dy: number) => S) => ({
+    onStart() {
+      c.start.current = c.get();
+    },
+    onMove(dx: number, dy: number) {
+      c.paint(c.draw(move(c.start.current, dx, dy)));
+    },
+    onEnd(dx: number, dy: number, cancelled: boolean) {
+      const n = cancelled ? c.start.current : move(c.start.current, dx, dy);
+      const shown = cancelled ? n : (c.commit(n) ?? n);
+      c.paint(c.draw(shown));
+    },
+  });
+}
+
 export function useWidgetDrag<S>(
   root: RefObject<HTMLElement | null>,
   state: S,
@@ -16,17 +45,13 @@ export function useWidgetDrag<S>(
   const cur = useRef(state);
   cur.current = state;
   const start = useRef(state);
-  return (move: (s: S, dx: number, dy: number) => S) => ({
-    onStart() {
-      start.current = cur.current;
-    },
-    onMove(dx: number, dy: number) {
-      if (root.current) applyDrawing(root.current, draw(move(start.current, dx, dy)));
-    },
-    onEnd(dx: number, dy: number, cancelled: boolean) {
-      const n = cancelled ? start.current : move(start.current, dx, dy);
-      const shown = cancelled ? n : (commit(n) ?? n);
-      if (root.current) applyDrawing(root.current, draw(shown));
+  return widgetDrag({
+    get: () => cur.current,
+    start,
+    draw,
+    commit,
+    paint: (d) => {
+      if (root.current) applyDrawing(root.current, d);
     },
   });
 }

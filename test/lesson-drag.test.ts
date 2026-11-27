@@ -9,9 +9,14 @@ import {
   inBox,
   isTap,
   keyStep,
+  MIN_CELL_PX,
+  missHint,
+  NARROW_CARD_W,
   nearest,
   snap,
+  TAP_ON,
   TAP_PX,
+  tapMode,
 } from '../src/lesson/drag.ts';
 
 test('snap: 가장 가까운 칸으로(간격 기준점 min)', () => {
@@ -67,6 +72,22 @@ test('끌어 놓기 판정: 8px 못 움직였으면 누르기, 두 번 놓치면
   assert.equal(isTap(5, 6), true); // 7.81
   assert.equal(isTap(8, 0), false); // 딱 8 은 끌기
   assert.equal(isTap(6, -6), false); // 8.49
+});
+
+test('놓침 세기(count·세로셈·저울·수직선 공용): 첫 번째는 끄는 법, 두 번째에 눌러서 하기 안내, 그 뒤는 조용히', () => {
+  assert.equal(TAP_ON, '끌기가 어려우면 눌러도 돼요.');
+  assert.equal(missHint(0), null);
+  assert.equal(missHint(1), 'drag');
+  assert.equal(missHint(FAILS_FOR_TAP), 'tap');
+  assert.equal(missHint(3), null);
+  assert.equal(tapMode(1), false);
+  assert.equal(tapMode(FAILS_FOR_TAP), true);
+  assert.equal(tapMode(5), true);
+});
+
+test('손가락 칸 폭 하한: 가장 좁은 화면(382) 카드 안쪽 폭 298px, 한 칸 7px(좌표평면 슬라이더와 같은 기준)', () => {
+  assert.equal(NARROW_CARD_W, 298);
+  assert.equal(MIN_CELL_PX, 7);
 });
 
 test('끌어 놓기 판정: 놓은 요소의 가운데, 여유를 둔 상자 안(경계 포함)', () => {
