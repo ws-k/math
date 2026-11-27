@@ -37,6 +37,80 @@ export const WIDGET_SCENES: Scene[] = [
     jumps: { start: '5', moves: ['-7', '3'] },
     region: { lo: { at: '1', open: false } },
   }),
+  // 수직선 2-라 새 옵션(단원 적용은 3-아): 두 줄 · 범위 확대 · 소수 눈금 + 무리수 점 · 두 조각 구간 · 편차 막대 ·
+  // 점 무게 · 진리집합 비교
+  explore('nl-two', 'numberLine', {
+    min: 0,
+    max: 2,
+    step: '1/3',
+    label: '1',
+    unit: 'L',
+    second: { min: '0', max: '6', step: '1', unit: '컵' },
+    points: [{ id: 'P', at: '0', drag: true }],
+    task: { type: 'point', point: 'P', answer: '2/3', check: 'Rational(2)/3' },
+  }),
+  explore('nl-range', 'numberLine', {
+    min: 0,
+    max: 5000,
+    step: '200',
+    label: '1000',
+    jumps: { start: '5000', moves: ['-1200', '-1200', '-1200'] },
+  }),
+  explore('nl-irr', 'numberLine', {
+    min: 0,
+    max: 4,
+    step: '1/5',
+    label: '1',
+    decimal: true,
+    points: [
+      { id: 'B', at: 'pi', label: 'π' },
+      { id: 'P', at: '0', drag: true },
+    ],
+    task: { type: 'point', point: 'P', near: 'sqrt(2)' },
+  }),
+  explore('nl-out', 'numberLine', {
+    min: -5,
+    max: 5,
+    step: '1',
+    task: {
+      type: 'interval',
+      ineq: 'Abs(x-1)>2',
+      answer: { lo: { at: '-1', open: true }, hi: { at: '3', open: true }, out: true },
+    },
+  }),
+  explore('nl-dev', 'numberLine', {
+    min: 0,
+    max: 15,
+    step: '1',
+    label: '5',
+    data: { values: ['1', '5', '7', '9', '13'], show: ['mean', 'dev', 'var', 'sd'], drag: true },
+  }),
+  explore('nl-weight', 'numberLine', {
+    min: 0,
+    max: 10,
+    step: '1',
+    data: {
+      values: ['0', '3', '6'],
+      weights: [3, 2, 1],
+      show: ['mean', 'median'],
+      drag: true,
+    },
+  }),
+  explore('nl-sets', 'numberLine', {
+    min: -2,
+    max: 6,
+    step: '1',
+    sets: [
+      {
+        name: 'P',
+        cond: 'Abs(x-2)<1',
+        lo: { at: '1', open: true },
+        hi: { at: '3', open: true },
+      },
+      { name: 'Q', cond: 'x>0', lo: { at: '0', open: true } },
+    ],
+    compare: true,
+  }),
   explore('fr-add', 'fraction', {
     shape: 'bar',
     mode: 'add',
