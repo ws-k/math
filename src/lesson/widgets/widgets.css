@@ -209,6 +209,94 @@
   stroke-dasharray: 3 3;
   pointer-events: none;
 }
+/* 2-라 두 줄: 위 점과 아래 줄의 같은 자리를 잇는 점선, 아래 줄의 작은 점(끄는 점과 같은 색 — 같은 점의 다른 이름) */
+.lesson .nl-link {
+  stroke: var(--primary);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+.lesson .nl-p2 {
+  fill: var(--primary);
+  pointer-events: none;
+}
+/* 편차 막대: 평균보다 작은 쪽·큰 쪽 색을 나눈다(합이 0 이 되는 걸 눈으로 비교하게). 점 아래에 깔린다 */
+.lesson .nl-dev {
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.lesson .nl-dev.neg {
+  stroke: var(--bad);
+}
+.lesson .nl-dev.pos,
+.lesson .nl-dev.zero {
+  stroke: var(--good);
+}
+/* 점 무게: 개수를 적은 큰 점. 끄는 점이면 손잡이 위에 덮어 그리므로 눌림은 손잡이가 받는다 */
+.lesson .nl-dot.top {
+  pointer-events: none;
+}
+.lesson .wgt-svg .nl-wt {
+  fill: var(--bg);
+  font-size: 11px;
+  font-weight: 800;
+  pointer-events: none;
+}
+/* 진리집합 줄: 집합마다 색(1번째 파랑·2번째 초록·3번째 빨강), 끝점에서 수직선까지 옅은 점선 */
+.lesson .nl-region.set1 {
+  stroke: var(--good);
+}
+.lesson .nl-region.set2 {
+  stroke: var(--bad);
+}
+.lesson .nl-region.set0,
+.lesson .nl-region.set1,
+.lesson .nl-region.set2 {
+  stroke-width: 5;
+}
+.lesson .nl-arrow.set1,
+.lesson .wgt-svg .nl-setname.set1 {
+  fill: var(--good);
+}
+.lesson .nl-arrow.set2,
+.lesson .wgt-svg .nl-setname.set2 {
+  fill: var(--bad);
+}
+.lesson .nl-end.set1 {
+  fill: var(--good);
+  stroke: var(--good);
+}
+.lesson .nl-end.set2 {
+  fill: var(--bad);
+  stroke: var(--bad);
+}
+.lesson .nl-end.open.set1,
+.lesson .nl-end.open.set2 {
+  fill: var(--bg);
+}
+.lesson .wgt-svg .nl-setname {
+  fill: var(--primary);
+  font-weight: 800;
+}
+/* 두 끝 구간 단추 셋을 한 줄에(버튼 줄 안의 한 줄 — 높이 52px 그대로, 폭을 고르게 나눈다) */
+.lesson .nl-iw {
+  display: flex;
+  flex: 1 1 100%;
+  gap: 8px;
+}
+.lesson .nl-iw .lbtn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 4px;
+}
+.lesson .nl-guide {
+  stroke: var(--faint);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  pointer-events: none;
+}
 
 /* 단위원 */
 .lesson .uc-axis {

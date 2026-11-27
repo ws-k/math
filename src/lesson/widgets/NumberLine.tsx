@@ -4,6 +4,8 @@
 //
 // 점프: 점을 다음 도착 칸에 '놓으면' 화살표가 생긴다(P2·P3). 두 번 놓치면 ◀▶ 단추가 나온다(P4).
 // 점 찍기 점의 ◀▶ 는 예전처럼 늘 보인다: 점 찍기는 '확인'으로 채점해 놓을 때 판정이 없고, 지금 26장면의 화면을 그대로 둔다.
+// 2-라: 두 줄(아래 줄 축·눈금), 진리집합 줄(nlSets), 두 끝 구간 고르기(끝점 둘 + 왼쪽 끝·오른쪽 끝·사이/바깥 단추),
+// 점프 화살표 이름표 자리(nlJumpArcs — 겹치면 생략)는 모두 모델이 정하고 여기서는 그리기만 한다.
 import { useEffect, useRef, useState } from 'react';
 import { clamp, tapMode } from '../drag.ts';
 import { Tex } from '../ui.tsx';
@@ -14,21 +16,26 @@ import { Marks } from './Marks.tsx';
 import {
   cellOfHandle,
   ineqTex,
+  isTopMark,
   JUMPER,
-  jumpEnds,
   type NLParams,
   type NLState,
   nlActive,
   nlGrade,
   nlHeight,
   nlInit,
+  nlIwEnds,
+  nlIwFlip,
+  nlJumpArcs,
   nlLine,
+  nlLine2,
   nlRegion,
+  nlSets,
   nlSliderValues,
   nlTicks,
+  nlTicks2,
   valueAt,
   W,
-  xOf,
 } from './numberLine.ts';
 import { type NLMsg, nlWire } from './numberLineWire.ts';
 import { num } from './q.ts';
@@ -158,7 +165,9 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
       ? sel
       : (handles[0]?.id ?? null);
   const arrowsName = handles.find((h) => h.id === arrows)?.name;
-  const ends = jumpEnds(p);
+  const arcs = nlJumpArcs(p);
+  const line2 = nlLine2(p);
+  const iwEnds = nlIwEnds(st);
   const reads = Object.entries(d.texts).filter(([k]) => k !== 'slider');
 
   return (
@@ -171,37 +180,28 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
       <svg viewBox={`0 0 ${W} ${nlHeight(p)}`} className="wgt-svg">
         <title>수직선</title>
         <line x1={4} y1={line} x2={W - 4} y2={line} className="nl-axis" />
-        {nlTicks(p).map((t, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: 눈금 순서는 매개변수에서 고정
-          <g key={i}>
-            <line x1={t.x} y1={line - 6} x2={t.x} y2={line + 6} className="nl-tick" />
-            {t.label !== undefined && (
-              <text x={t.x} y={line + 26} className="nl-num">
-                {t.label}
+        <Ticks ticks={nlTicks(p)} y={line} unit={p.unit} />
+        {p.second && (
+          <>
+            <line x1={4} y1={line2} x2={W - 4} y2={line2} className="nl-axis" />
+            <Ticks ticks={nlTicks2(p)} y={line2} unit={p.second.unit} />
+          </>
+        )}
+        <Marks marks={nlSets(p)} />
+        <Marks marks={nlRegion(p)} />
+        {arcs.map((a, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: 점프 순서는 매개변수에서 고정
+          <g key={i} className="nl-jump" visibility={i < st.jump ? 'visible' : 'hidden'}>
+            <path d={a.d} />
+            <polygon points={a.arrow} />
+            {a.label && (
+              <text x={a.label.x} y={a.label.y}>
+                {a.label.text}
               </text>
             )}
           </g>
         ))}
-        <Marks marks={nlRegion(p)} />
-        {ends.map(([a, b], i) => {
-          const x1 = xOf(p, 0) + ((num(a) - p.min) / (p.max - p.min)) * (W - 48);
-          const x2 = xOf(p, 0) + ((num(b) - p.min) / (p.max - p.min)) * (W - 48);
-          const y = line - 4;
-          const top = y - 34;
-          const dir = x2 > x1 ? 1 : -1;
-          const mv = p.jumps?.moves[i] ?? '';
-          return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: 점프 순서는 매개변수에서 고정
-            <g key={i} className="nl-jump" visibility={i < st.jump ? 'visible' : 'hidden'}>
-              <path d={`M${x1} ${y} Q${(x1 + x2) / 2} ${top} ${x2} ${y}`} />
-              <polygon points={`${x2},${y} ${x2 - dir * 9},${y - 9} ${x2 - dir * 2},${y - 12}`} />
-              <text x={(x1 + x2) / 2} y={top + 8}>
-                {mv.startsWith('-') ? `−${mv.slice(1)}` : `+${mv}`}
-              </text>
-            </g>
-          );
-        })}
-        <Marks marks={d.marks.filter((m) => !m.k.startsWith('h:') && m.k !== 'iv-top')} />
+        <Marks marks={d.marks.filter((m) => !m.k.startsWith('h:') && !isTopMark(m.k))} />
         {handles.map((h) => {
           const k = cellOfHandle(st, h.id);
           const m = d.marks.find((x) => x.k === `h:${h.id}`);
@@ -236,7 +236,7 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
             />
           );
         })}
-        <Marks marks={d.marks.filter((m) => m.k === 'iv-top')} />
+        <Marks marks={d.marks.filter((m) => isTopMark(m.k))} />
       </svg>
       {/* 다 뛴 뒤 초점을 받을 수 있게(tabIndex −1 — 탭 순서에는 넣지 않는다) */}
       <div className="wgt-read" aria-live="polite" tabIndex={-1}>
@@ -295,6 +295,39 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
             </button>
           </>
         )}
+        {st.iw && iwEnds && (
+          // 세 단추를 한 줄에(382 폭에서 두 줄씩 접히면 '확인'이 아래 고정 단추에 가린다 — 헤드리스 실측).
+          // 글은 지금 모양(● 찬 점·○ 빈 점, 사이·바깥), 낭독은 aria-label 로 풀어서
+          <div className="nl-iw">
+            <button
+              type="button"
+              className="lbtn soft"
+              aria-pressed={iwEnds.lo}
+              aria-label={`왼쪽 끝 ${iwEnds.lo ? '빈 점' : '찬 점'}`}
+              onClick={() => setS({ ...s, iw: nlIwFlip(st, 'lo').iw ?? null })}
+            >
+              {iwEnds.lo ? '왼쪽 ○' : '왼쪽 ●'}
+            </button>
+            <button
+              type="button"
+              className="lbtn soft"
+              aria-pressed={iwEnds.hi}
+              aria-label={`오른쪽 끝 ${iwEnds.hi ? '빈 점' : '찬 점'}`}
+              onClick={() => setS({ ...s, iw: nlIwFlip(st, 'hi').iw ?? null })}
+            >
+              {iwEnds.hi ? '오른쪽 ○' : '오른쪽 ●'}
+            </button>
+            <button
+              type="button"
+              className="lbtn soft"
+              aria-pressed={st.iw.out}
+              aria-label={st.iw.out ? '바깥 두 조각' : '사이 한 구간'}
+              onClick={() => setS({ ...s, iw: nlIwFlip(st, 'out').iw ?? null })}
+            >
+              {st.iw.out ? '바깥' : '사이'}
+            </button>
+          </div>
+        )}
         {p.task && !jumping && (
           <button type="button" className="lbtn blue wide" onClick={check} disabled={done}>
             확인
@@ -305,5 +338,36 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
         {msg.text}
       </div>
     </div>
+  );
+}
+
+/**
+ * 한 줄의 눈금·숫자. 단위는 마지막 숫자 뒤에 붙인다(자처럼 "60 분") — 두 줄일 때 어느 줄이 무엇인지 보이게.
+ * 줄 이름을 왼쪽 여백에 따로 두면 첫 숫자·끝 손잡이와 겹친다(여백 24 단위)
+ */
+function Ticks({
+  ticks,
+  y,
+  unit,
+}: {
+  ticks: { x: number; label?: string }[];
+  y: number;
+  unit?: string;
+}) {
+  const last = ticks.findLastIndex((t) => t.label !== undefined);
+  return (
+    <>
+      {ticks.map((t, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: 눈금 순서는 매개변수에서 고정
+        <g key={i}>
+          <line x1={t.x} y1={y - 6} x2={t.x} y2={y + 6} className="nl-tick" />
+          {t.label !== undefined && (
+            <text x={t.x} y={y + 26} className="nl-num">
+              {unit && i === last ? `${t.label} ${unit}` : t.label}
+            </text>
+          )}
+        </g>
+      ))}
+    </>
   );
 }
