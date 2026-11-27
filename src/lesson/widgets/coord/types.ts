@@ -321,6 +321,17 @@ export interface RightObj {
   /** 검산 항목 이름(A-H-B) */
   ref: string;
 }
+/**
+ * 계단 표시 {stair:['P','Q'], digits?}(요청 64 — 3-가): P 에서 가로로 Q 의 x 까지, 거기서 세로로 Q 까지. 꺾인 곳에 직각
+ * 꺾쇠, 두 변에 길이 글자(|Δx|·|Δy| 와 축 단위). 할선 기울기 = 세로 ÷ 가로 를 그림에서 읽게 한다
+ */
+export interface StairObj {
+  kind: 'stair';
+  a: string;
+  b: string;
+  /** 길이 글자의 소수 자리(읽는 값과 같은 기본 2) */
+  digits: number;
+}
 export type CoordObj =
   | CurveObj
   | PointObj
@@ -335,7 +346,29 @@ export type CoordObj =
   | ShadeObj
   | CiObj
   | VlineObj
-  | RightObj;
+  | RightObj
+  | StairObj;
+
+/**
+ * 길 띠 {strip:{dir, min, max, step, label?, unit?, at, face}}(3-가): 그림에 붙는 1차원 띠(x = 그림 아래 가로 띠,
+ * y = 그림 오른쪽 세로 띠) 위 표식 하나. 표식 자리 = 읽는 값 at(같은 글자의 읽는 값 객체가 있어야 — 화면 숫자와 표식이
+ * 같은 값), 표식 모양 = 진행 방향 face 의 부호(+ 오른쪽·위, − 왼쪽·아래, 0 멈춤). 눈금·숫자는 수직선(numberLine.ts)의
+ * 칸 계산을 그대로 읽어 쓴다 — 그래서 min·max 는 정수, step·label 은 수직선과 같은 꼴
+ */
+export interface StripObj {
+  dir: 'x' | 'y';
+  min: number;
+  max: number;
+  step: string;
+  label?: string;
+  unit?: string;
+  /** 표식 자리(읽는 값 글자·식) */
+  src: string;
+  at: ReadoutExpr;
+  /** 진행 방향(속도) 읽는 값 */
+  faceSrc: string;
+  face: ReadoutExpr;
+}
 
 export interface Slider {
   id: string;
@@ -406,6 +439,8 @@ export interface CoordParams {
   done?: string;
   /** 직선 그리기의 두 손잡이 처음 자리(칸 번호) */
   start?: [GridPt, GridPt];
+  /** 길 띠(그림 아래·오른쪽) — 그림 영역을 그만큼 줄인다(frame.ts) */
+  strip?: StripObj;
 }
 
 // ---- 상태 ----
@@ -504,6 +539,8 @@ export interface Drawing {
   /** 격자 아래에 깔리는 칠하기(밭·강·길) — 격자선이 그 위로 보여 칸을 셀 수 있게 */
   fills: Item[];
   items: Item[];
+  /** 그림 영역 밖(잘라 내지 않는 층): 길 띠의 표식. 띠는 그림 아래·오른쪽 여백에 있어 그림 영역으로 자르면 안 보인다 */
+  outer: Item[];
   handles: HandleItem[];
   readouts: ReadoutLine[];
 }
@@ -540,6 +577,8 @@ export interface ParseCtx {
   cis: Map<string, CiObj>;
   /** 축척 같게(조각 폭 상한을 셀 때 그림 영역이 달라진다) */
   equal: boolean;
+  /** 길 띠의 방향(그림 영역이 띠만큼 줄어든다 — 형식 검사도 같은 영역으로 센다). 띠의 나머지는 객체 뒤에 읽는다 */
+  strip?: { dir: 'x' | 'y' };
   /** 새 이름을 검사하고 등록한다(중복이면 형식 오류) */
   named(id: unknown, at: string): string;
   /**
@@ -562,6 +601,10 @@ export interface DrawCtx {
   items: Item[];
   /** 맨 위 이름표(칠한 영역 이름 — 조각·곡선에 가리지 않게) */
   tags: Item[];
+  /** 그림 영역 밖 층(길 띠 표식) */
+  outer: Item[];
+  /** 상자 크기 — 길 띠는 그림 영역이 아니라 상자 끝에 붙는다 */
+  box: Box;
   handles: HandleItem[];
   readouts: Drawing['readouts'];
   /** 자리를 나중에 고를 점 이름표(점 px 자리와 함께) — 다른 이름표·점과 겹치지 않게 draw 가 한꺼번에 놓는다 */

@@ -39,6 +39,7 @@ import {
   removeUser,
   sliderSnap,
   sliderText,
+  stripView,
   toWorld,
 } from './coord.ts';
 import { GoalLine } from './GoalLine.tsx';
@@ -116,7 +117,7 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
   /** 그릴 목록을 DOM 에 바로 적용(끄는 동안). React 가 다음에 그릴 값과 같은 값이다 */
   const apply = (d: Drawing) => {
     const m = els.current;
-    for (const it of [...d.fills, ...d.items]) {
+    for (const it of [...d.fills, ...d.items, ...d.outer]) {
       const el = m.get(it.key);
       if (!el) continue;
       if (it.t === 'path') {
@@ -138,6 +139,8 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
         el.setAttribute('x', String(it.x));
         el.setAttribute('y', String(it.y));
         el.setAttribute('visibility', it.hidden ? 'hidden' : 'visible');
+        // 계단 길이 글자는 끄는 동안 글자가 바뀐다(점 이름표는 그대로라 같은 글자면 건드리지 않는다)
+        if (el.textContent !== it.text) el.textContent = it.text;
       }
     }
     for (const h of d.handles) {
@@ -345,6 +348,8 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
 
   const d = useMemo(() => draw(p, st, box), [p, st, box]);
   const g = useMemo(() => grid(p, box), [p, box]);
+  // 길 띠(3-가): 띠·눈금·숫자는 매개변수와 상자 크기로만 정해져 끄는 동안 그대로다 — 표식만 그릴 목록(outer)으로 바뀐다
+  const sv = useMemo(() => (p.strip ? stripView(p, box) : null), [p, box]);
   const f = frame(box, p);
   const xName = axisLabel(p.x);
   const yName = axisLabel(p.y);
@@ -521,6 +526,30 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
             )}
           </g>
           <g clipPath={`url(#${clip})`}>{d.items.map(node)}</g>
+          {/* 길 띠는 그림 영역 밖(아래·오른쪽 여백)이라 잘라 내지 않는 층. 띠·숫자 다음에 표식(띠를 덮게) */}
+          {sv && (
+            <g className={`strip s-${sv.dir}`}>
+              <path d={sv.band} className="sband" />
+              <path d={sv.tickD} className="stick" />
+              {sv.nums.map((n) => (
+                <text
+                  key={`sn${n.text}`}
+                  x={n.x}
+                  y={n.y}
+                  textAnchor={n.anchor === 'middle' ? 'middle' : undefined}
+                  className="snum"
+                >
+                  {n.text}
+                </text>
+              ))}
+              {sv.unit && (
+                <text x={sv.unit.x} y={sv.unit.y} textAnchor="middle" className="snum sunit">
+                  {sv.unit.text}
+                </text>
+              )}
+              {d.outer.map(node)}
+            </g>
+          )}
         </svg>
         {d.handles.map((h) => (
           <Handle

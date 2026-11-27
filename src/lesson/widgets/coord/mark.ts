@@ -1,5 +1,6 @@
-// 표시 객체: 세로선 {vline}(요청 77·131)과 직각 표시 {right}(요청 56). 둘 다 값을 읽거나 끄는 것이 아니라 그림 위의
-// 표시라, 끄는 동안에는 같은 key 의 항목 값만 바뀐다(세로선 v<순번> 의 x·숨김, 직각 q<순번> 의 경로 글자 — 안 보이면 빈 경로).
+// 표시 객체: 세로선 {vline}(요청 77·131)·직각 표시 {right}(요청 56)·계단 표시 {stair}(요청 64). 셋 다 값을 읽거나 끄는
+// 것이 아니라 그림 위의 표시라, 끄는 동안에는 같은 key 의 항목 값만 바뀐다(세로선 v<순번> 의 x·숨김, 직각 q<순번> 의 경로
+// 글자 — 안 보이면 빈 경로, 계단 z<순번> 의 경로·꺾쇠 zq·길이 글자 zx·zy).
 //
 // 세로선: 곡선으로는 x 가 하나인 선을 그릴 수 없고, 선분으로 그리면 끝을 화면 끝 좌표로 적어야 해 점근선 점선도, 점을
 // 따라 움직이는 세로줄(math2-indefinite 'P 와 같은 세로줄')도 안 됐다. 자리는 따라오는 좌표 식(follow.ts)과 같은 꼴.
@@ -8,10 +9,10 @@
 // (checkRightGoal) — 목표 없는 탐색에서 '직각이 되는 곳'을 보이는 데만 쓴다. 화면에서 직각으로 보일 때만이기도 하다:
 // 축척 같게(equal)면 세계의 직각 그대로, 아니면 두 변이 가로·세로일 때만(비스듬한 직각은 비뚤어 보여 꺾쇠가 틀린 말을 함).
 import { evalNum } from '../../expr.ts';
-import { arr, fail, obj, oneOf, str } from '../../parse.ts';
+import { arr, fail, int, obj, oneOf, str } from '../../parse.ts';
 import { near } from './common.ts';
 import { isConst, parseFollow } from './follow.ts';
-import { narrowFrame, r1, toPx } from './frame.ts';
+import { fmtNum, isWide, narrowFrame, r1, toPx } from './frame.ts';
 import {
   type Deps,
   depStates,
@@ -21,6 +22,7 @@ import {
   followSymOf,
   lookOf,
   pointDeps,
+  pointNum,
   pointXY,
   xSym,
   ySym,
@@ -34,6 +36,7 @@ import {
   type ParseCtx,
   type RightObj,
   type SegEnd,
+  type StairObj,
   TONES,
   type VlineObj,
 } from './types.ts';
@@ -312,6 +315,148 @@ export function checkRightGoal(p: CoordParams, movers: { points: string[]; slide
   }
 }
 
+// ---- 계단 표시 ----
+// 할선 기울기(Δy/Δx)를 그림에서 읽게: 가로 변(P → Q 의 x)과 세로 변(그 끝 → Q)을 긋고 변마다 길이를 적는다. 길이는 부호를
+// 뗀 |Δx|·|Δy|(변의 길이라 음수가 없다 — 부호는 변이 아래로 가는지로 보인다). 두 변은 늘 가로·세로라 꺾인 곳은 어느 축척에서도
+// 직각이고, 직각 표시와 같은 꺾쇠(rightPath)를 그린다. 계단의 두 끝은 점만 — 끄는 점·따라오는 점이 정하는 자리라 그 점의
+// 화면 밖 규칙(따라오는 점 숨김·고정 점 화면 안)을 그대로 받는다.
+
+/** 길이 글자(.zlen 12px 굵게)의 어림 폭: 넓은 글자 12, 그 밖 7px */
+const zlenWidth = (t: string) => [...t].reduce((w, ch) => w + (isWide(ch) ? 12 : 7), 0);
+/** 글자 기준선에서 글자 윗변까지 */
+const ZLEN_ASCENT = 10;
+/** 변과 글자 사이 틈 */
+const ZLEN_GAP = 5;
+
+/** 두 점이 겹치는가(가로 변 0) — 부동소수 찌꺼기만큼 너그럽게 */
+const zero = (d: number, ref: number) => Math.abs(d) <= 1e-9 * Math.max(1, Math.abs(ref));
+
+/** 계단의 두 변 길이(부호 뗌). 정의 안 되면 NaN */
+function stairLens(p: CoordParams, s: CoordState, o: StairObj) {
+  const [xa, ya] = pointXY(p, s, o.a);
+  const [xb, yb] = pointXY(p, s, o.b);
+  const fin = [xa, ya, xb, yb].every(Number.isFinite);
+  const h = fin && !zero(xb - xa, xa);
+  return { xa, ya, xb, yb, h, v: h && !zero(yb - ya, ya) };
+}
+
+const stairDeps = (p: CoordParams, o: StairObj): Deps => {
+  const lk = lookOf(p);
+  return pointDeps(lk, o.b, pointDeps(lk, o.a));
+};
+
+/** 길이 글자: 소수 digits 자리와 그 축의 단위 */
+const lenText = (v: number, digits: number, unit: string | undefined) =>
+  `${fmtNum(Math.abs(v), digits)}${unit ? ` ${unit}` : ''}`;
+
+/** 같은 계단 두 번(parse.ts): 두 점(차례 상관없이) */
+export const stairKey = (o: StairObj) => [o.a, o.b].sort().join('|');
+
+export const stairKind: KindDef<StairObj> = {
+  parse(ro, at, cx) {
+    const c = obj(ro, at, ['stair'], ['digits']);
+    const [ra, rb] = arr(c.stair, `${at} stair`, 2, 2);
+    const a = cx.pointRef(ra, `${at} stair1`).id;
+    const b = cx.pointRef(rb, `${at} stair2`).id;
+    if (a === b) fail(`${at} stair`, `같은 점 두 번 (${a}) — 계단은 두 점 사이`);
+    const o: StairObj = {
+      kind: 'stair',
+      a,
+      b,
+      digits: c.digits === undefined ? 2 : int(c.digits, `${at} digits`, 0, 4),
+    };
+    // 늘 안 보이는 계단: 두 점이 끄는 점에 기대지 않으면 슬라이더 칸마다 셀 수 있다 — 어느 칸에서도 x 가 같으면 오류.
+    // 끄는 점에 기대면 무거운 검사(checkShown)가 닿는 상태로 본다
+    const lk = lookIn(cx);
+    const d = pointDeps(lk, b, pointDeps(lk, a));
+    if (d.pts.size === 0) {
+      const ids = cx.sliders.map((sl) => sl.id).filter((id) => d.sliders.has(id));
+      const seen = sliderCombos(cx.sliders, ids, at).some((cb) => {
+        const env = { ...cx.env0, ...cb.num };
+        const [pa, pb] = [pointNum(lk, a, env), pointNum(lk, b, env)];
+        return !!pa && !!pb && Number.isFinite(pa[0] - pb[0]) && !zero(pb[0] - pa[0], pa[0]);
+      });
+      if (!seen)
+        fail(
+          at,
+          `가로 변이 늘 0 (${a}·${b} 의 x 가 같음) — 계단이 그려지지 않음(세로 선분이면 segment 로)`,
+        );
+    }
+    return o;
+  },
+  draw(o, k, { p, s, f, items }) {
+    const L = stairLens(p, s, o);
+    const px = (x: number, y: number) => toPx(p, f, x, y);
+    const A = L.h ? px(L.xa, L.ya) : [0, 0];
+    const C = L.h ? px(L.xb, L.ya) : [0, 0];
+    const B = L.h ? px(L.xb, L.yb) : [0, 0];
+    const pt = (q: number[]) => `${r1(q[0] as number)} ${r1(q[1] as number)}`;
+    items.push({
+      t: 'path',
+      key: `z${k}`,
+      d: L.h ? `M${pt(A)}L${pt(C)}${L.v ? `L${pt(B)}` : ''}` : '',
+      cls: 'stair',
+    });
+    // 꺾인 곳의 꺾쇠 — 세로 변이 있을 때만(직각 표시와 같은 그리기: 가로·세로 두 변이라 늘 보이는 규칙)
+    items.push({
+      t: 'path',
+      key: `zq${k}`,
+      d: L.v
+        ? rightPath([L.xa, L.ya], [L.xb, L.ya], [L.xb, L.yb], !!p.equal, (q) => px(q[0], q[1])).d
+        : '',
+      cls: 'rmark',
+    });
+    // 길이 글자는 변 바깥쪽(가로 글자는 Q 반대쪽 위·아래, 세로 글자는 P 반대쪽 옆)에 두고, 그림 끝을 넘으면 안쪽으로 당긴다 —
+    // 그림 영역으로 잘라 내는 층이라 넘으면 글자가 잘린다
+    const fit = (x: number, w: number, y: number) => ({
+      x: r1(Math.max(f.l + 1, Math.min(f.r - 1 - w, x))),
+      y: r1(Math.max(f.t + ZLEN_ASCENT + 1, Math.min(f.b - 2, y))),
+    });
+    const xu = p.x.unit;
+    const yu = p.y.unit;
+    const tx = L.h ? lenText(L.xb - L.xa, o.digits, xu) : '';
+    const ty = L.v ? lenText(L.yb - L.ya, o.digits, yu) : '';
+    const wx = zlenWidth(tx);
+    const wy = zlenWidth(ty);
+    const up = (B[1] as number) < (A[1] as number);
+    const hx = fit(
+      ((A[0] as number) + (C[0] as number)) / 2 - wx / 2,
+      wx,
+      up ? (A[1] as number) + ZLEN_GAP + ZLEN_ASCENT : (A[1] as number) - ZLEN_GAP,
+    );
+    const right = (B[0] as number) > (A[0] as number);
+    const vy = fit(
+      right ? (C[0] as number) + ZLEN_GAP : (C[0] as number) - ZLEN_GAP - wy,
+      wy,
+      ((C[1] as number) + (B[1] as number)) / 2 + ZLEN_ASCENT / 2,
+    );
+    items.push({ t: 'label', key: `zx${k}`, ...hx, text: tx, hidden: !L.h, cls: 'zlen' });
+    items.push({ t: 'label', key: `zy${k}`, ...vy, text: ty, hidden: !L.v, cls: 'zlen' });
+  },
+  checks(o, { p, out }) {
+    // 닿는 상태마다 앱의 두 길이 = sympy 가 두 점의 원문 좌표 식(곡선 위 점은 곡선 식에 x 를 넣은 것)으로 따로 낸 Abs(차) —
+    // 앱이 구한 좌표를 옮겨 적지 않는다(원칙 P7)
+    const st = depStates(p, stairDeps(p, o));
+    const val = (ax: 0 | 1) =>
+      st.map((q) => {
+        const L = stairLens(p, q.s, o);
+        const v = ax === 0 ? L.xb - L.xa : L.yb - L.ya;
+        return Number.isFinite(v) ? Math.abs(v) : null;
+      });
+    for (const [ax, what, sym] of [
+      [0, '가로', xSym],
+      [1, '세로', ySym],
+    ] as const)
+      out.push({
+        name: `계단 ${o.a}-${o.b} ${what}`,
+        kind: 'parity',
+        expr: `Abs((${sym(p, o.b)})-(${sym(p, o.a)}))`,
+        points: st.map((q) => q.sym),
+        values: val(ax),
+      });
+  },
+};
+
 /**
  * 무거운 형식 검사: 끄는 점에 기대는 따라오는 점·세로선·직각 표시가 닿는 상태(끄는 점 칸 × 슬라이더 칸, 2000 상태 넘으면
  * 고르게 덜어 냄) 어디서도 안 보이면 오류 — 늘 숨은 객체는 적은 사람의 실수다. 슬라이더에만 기대는 것은 형식 검사가
@@ -345,6 +490,10 @@ export function checkShown(p: CoordParams): void {
         return rightPath(...ends, !!p.equal, (w) => toPx(p, f, w[0], w[1])).shown;
       };
       what = `직각 표시 ${o.ref}`;
+    } else if (o.kind === 'stair') {
+      deps = stairDeps(p, o);
+      shown = (s) => stairLens(p, s, o).h;
+      what = `계단 ${o.a}-${o.b}`;
     } else continue;
     if (deps.pts.size === 0) continue;
     if (!depStates(p, deps, SHOWN_STATES).some((q) => shown(q.s)))

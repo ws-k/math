@@ -67,11 +67,20 @@ export const MIN_PLOT = {
   h: (MIN_BOX_H - PAD.t - PAD.b) / 2,
 };
 
+/**
+ * 길 띠(3-가)가 차지하는 폭(px): 가로 띠는 상자 아래 이만큼(표식 20 + 띠 5 + 눈금 숫자 한 줄), 세로 띠는 상자 오른쪽
+ * 이만큼(띠 + 리프트 칸 + 숫자 두 자리). 손가락 높이(44)를 넘지 않게 — 접은 화면(382×580)에서 상자 높이를 늘리면 읽는 값
+ * 3개·목표 글·◀▶ 가 있는 카드(427px)가 '계속하기' 위 444px 를 27px 넘어서, 늘리지 않고 그림 영역에서 덜어 낸다
+ */
+export const STRIP_PX = 44;
+
 /** 그림 영역을 정하는 데 쓰는 것만(형식 검사 중에도 셀 수 있게 CoordParams 전체가 아니라) */
 export interface View {
   x: Axis;
   y: Axis;
   equal?: boolean;
+  /** 길 띠의 방향만(띠 자리를 비운다) */
+  strip?: { dir: 'x' | 'y' };
 }
 
 /**
@@ -82,12 +91,16 @@ export interface View {
  */
 export function frame(b: Box, v?: View): Frame {
   const xl = v ? axisLabel(v.x) : null;
+  const dir = v?.strip?.dir;
+  // 글자는 영역 끝에서 틈만큼 떨어져 시작하고 상자 끝에서 6px 안쪽에서 끝나게(기본 오른쪽 여백 14px 를 넘는 만큼만 더 비움)
+  const right = PAD.r + (xl ? Math.max(0, AXIS_LABEL_GAP + labelWidth(xl) + 6 - PAD.r) : 0);
   const f = {
     l: PAD.l,
-    // 글자는 영역 끝에서 틈만큼 떨어져 시작하고 상자 끝에서 6px 안쪽에서 끝나게(기본 오른쪽 여백 14px 를 넘는 만큼만 더 비움)
-    r: b.w - PAD.r - (xl ? Math.max(0, AXIS_LABEL_GAP + labelWidth(xl) + 6 - PAD.r) : 0),
+    // 세로 띠는 그림 오른쪽 높이(위~아래 끝) 안, 가로축 끝 글자는 그 아래 눈금 줄이라 둘은 겹치지 않는다 — 더 넓은 쪽만 비운다
+    r: b.w - (dir === 'y' ? Math.max(right, STRIP_PX) : right),
     t: PAD.t,
-    b: b.h - PAD.b,
+    // 가로 띠는 가로축 눈금 숫자 줄 아래
+    b: b.h - PAD.b - (dir === 'x' ? STRIP_PX : 0),
   };
   if (!v?.equal) return f;
   const sx = (f.r - f.l) / (v.x.hi - v.x.lo);

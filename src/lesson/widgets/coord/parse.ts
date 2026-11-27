@@ -6,9 +6,10 @@ import { axis, ID, MAX_CELLS, numExpr, toIndex } from './common.ts';
 import { MIN_PLOT, narrowFrame } from './frame.ts';
 import { goalMovers, goalPoints, parseGoal } from './goal.ts';
 import { KINDS } from './kinds.ts';
-import { checkRightGoal, rightKey, vlineKey } from './mark.ts';
+import { checkRightGoal, rightKey, stairKey, vlineKey } from './mark.ts';
 import { segKey } from './segment.ts';
 import { parseSliders } from './slider.ts';
+import { parseStrip, stripDir } from './strip.ts';
 import { parseTask } from './task.ts';
 import type {
   BarsObj,
@@ -28,7 +29,7 @@ export function parseCoord(raw: unknown): CoordParams {
     raw,
     '좌표',
     ['mode', 'x', 'y', 'objects'],
-    ['sliders', 'task', 'goal', 'intro', 'done', 'start', 'equal'],
+    ['sliders', 'task', 'goal', 'intro', 'done', 'start', 'equal', 'strip'],
   );
   const mode = oneOf(o.mode, '좌표 mode', [
     'explore',
@@ -41,8 +42,10 @@ export function parseCoord(raw: unknown): CoordParams {
   const y = axis(o.y, '좌표 y', true);
   if (o.equal !== undefined && o.equal !== true) fail('좌표 equal', 'true 만');
   const equal = o.equal === true;
-  // 축 끝 글자 자리·축척 같게로 줄어든 가장 좁은 화면의 그림이 너무 작으면 칸·곡선을 읽을 수 없다(frame.ts MIN_PLOT)
-  const nf = narrowFrame({ x, y, equal });
+  // 길 띠는 그림 영역을 띠만큼 줄인다 — 객체(칸 폭·이름표 자리 검사)를 읽기 전에 방향을 알아야 같은 영역으로 센다
+  const strip = o.strip === undefined ? undefined : stripDir(o.strip);
+  // 축 끝 글자 자리·축척 같게·길 띠로 줄어든 가장 좁은 화면의 그림이 너무 작으면 칸·곡선을 읽을 수 없다(frame.ts MIN_PLOT)
+  const nf = narrowFrame({ x, y, equal, ...(strip ? { strip } : {}) });
   const [pw, ph] = [nf.r - nf.l, nf.b - nf.t];
   if (pw < MIN_PLOT.w - 1e-9 || ph < MIN_PLOT.h - 1e-9)
     fail(
@@ -95,6 +98,7 @@ export function parseCoord(raw: unknown): CoordParams {
     x,
     y,
     equal,
+    ...(strip ? { strip } : {}),
     sliders,
     vars,
     env0,
@@ -152,6 +156,15 @@ export function parseCoord(raw: unknown): CoordParams {
     seenR.add(key);
   }
 
+  // 같은 계단 두 번(두 점 차례만 바꾼 것 포함)도 한 자리에 겹치고 검산 항목 이름이 겹친다(mark.ts stairKey)
+  const seenZ = new Set<string>();
+  for (const ob of objects) {
+    if (ob.kind !== 'stair') continue;
+    const key = stairKey(ob);
+    if (seenZ.has(key)) fail('좌표 objects', `같은 계단이 두 번 (${ob.a}-${ob.b})`);
+    seenZ.add(key);
+  }
+
   const p: CoordParams = {
     mode,
     x,
@@ -159,6 +172,8 @@ export function parseCoord(raw: unknown): CoordParams {
     ...(equal ? { equal: true as const } : {}),
     objects,
     sliders,
+    // 띠의 자리·방향 읽는 값은 객체(읽는 값·점·칠하기)를 가리키므로 객체 뒤에
+    ...(o.strip !== undefined ? { strip: parseStrip(o.strip, ctx, objects) } : {}),
     ...(o.intro !== undefined ? { intro: str(o.intro, '좌표 intro') } : {}),
     ...(o.done !== undefined ? { done: str(o.done, '좌표 done') } : {}),
   };

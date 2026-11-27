@@ -7,6 +7,7 @@ import { frame, MIN_BOX_H, NARROW_BOX_W, r1 } from './frame.ts';
 import { kindOf } from './kinds.ts';
 import { initial } from './model.ts';
 import { nameWidth } from './point.ts';
+import { drawStrip } from './strip.ts';
 import { drawTask } from './task.ts';
 import type { Box, CoordParams, CoordState, DrawCtx, Drawing } from './types.ts';
 
@@ -62,12 +63,15 @@ function drawWith(p: CoordParams, s: CoordState, box: Box) {
     shapes: [],
     items: [],
     tags: [],
+    outer: [],
+    box,
     handles: [],
     readouts: [],
     pins: [],
     spots: [],
   };
   for (const [k, o] of p.objects.entries()) kindOf(o).draw?.(o, k, cx);
+  drawStrip(cx);
   drawTask(cx);
   // 이름표: 겹치지 않고 그림(잘라 내는 영역) 안에 드는 자리. 아무것도 겹치지 않으면 예전처럼 점의 오른쪽 위
   // 폭은 글자 수가 아니라 실제 폭 어림(한글은 영문보다 넓다) — labels.ts 는 '한 자 폭 × n' 으로 세므로 n 을 폭/한 자로 넘긴다
@@ -95,6 +99,7 @@ function drawWith(p: CoordParams, s: CoordState, box: Box) {
       ...drawn.filter((it) => it.t === 'label'),
       ...cx.tags,
     ],
+    outer: cx.outer,
     handles: cx.handles,
     readouts: cx.readouts,
   };

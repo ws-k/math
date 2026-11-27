@@ -2,7 +2,7 @@
 // 실제 코드는 coord/ 폴더에 객체 종류별로 나뉘어 있다 — 그림 객체가 늘어날 때 종류 하나가 파일 하나가 되게.
 //   types(타입) · common(형식 검사 도우미) · frame(px 변환·눈금) ← 아래층
 //   curve(+ piece: 조각 함수·구간만 그리기) · point(+ follow: 따라오는 좌표 식) · line(할선·접선) · segment(선분·화살표) ·
-//   mark(세로선·직각 표시) · readout ·
+//   mark(세로선·직각 표시·계단 표시) · readout · strip(길 띠 — 그림 아래·오른쪽 1차원 띠와 표식) ·
 //   fill(칠하기) · rects(구분구적) · bars(히스토그램·이항분포 막대) · normal(정규분포 넓이 shade) · ci(신뢰구간)
 //     ← 객체 종류마다 형식 검사·그리기·검산 몫
 //   stat(통계 객체 공용: 수 또는 슬라이더·고르는 끝·닿는 상태·분수 반올림 글자)
@@ -30,6 +30,7 @@ import { checkShown } from './coord/mark.ts';
 import { parseCoord } from './coord/parse.ts';
 import { checkPolyCurves } from './coord/readout.ts';
 import { checkSmooth } from './coord/smooth.ts';
+import { checkStrip } from './coord/strip.ts';
 import type { CoordParams } from './coord/types.ts';
 import type { WidgetDef } from './specs.ts';
 
@@ -51,6 +52,7 @@ export {
   MIN_SNAP_PX,
   NARROW_BOX_W,
   narrowFrame,
+  STRIP_PX,
   snapMult,
   tickText,
   toPx,
@@ -74,6 +76,7 @@ export { polyOf, rationalRoots, rootCount, rootsBetween } from './coord/poly.ts'
 export { absCheckSym, readout, readoutVal, unitOf } from './coord/readout.ts';
 export { MIN_RECT_PX, sumsAt } from './coord/rects.ts';
 export { sliderSnap, sliderText } from './coord/slider.ts';
+export { type StripView, stripAt, stripView } from './coord/strip.ts';
 export { grade, lineTarget, userSlope } from './coord/task.ts';
 export type {
   Axis,
@@ -101,6 +104,8 @@ export type {
   RectsObj,
   SecantObj,
   Slider,
+  StairObj,
+  StripObj,
   TangentObj,
   Target,
   Task,
@@ -121,6 +126,7 @@ export const coordDef: WidgetDef<CoordParams> = {
     checkBarsFit(p);
     checkLabels(p);
     checkShown(p);
+    checkStrip(p);
   },
   checks: coordChecks,
   texts(p) {

@@ -4,6 +4,7 @@ import { exactStr } from '../../expr.ts';
 import type { WidgetCheck } from '../specs.ts';
 import { goalChecks } from './goal.ts';
 import { kindOf } from './kinds.ts';
+import { stripChecks } from './strip.ts';
 import { taskChecks, taskDerivOf } from './task.ts';
 import type { CheckCtx, CoordParams } from './types.ts';
 
@@ -29,6 +30,8 @@ export function coordChecks(p: CoordParams): WidgetCheck[] {
     out: [],
   };
   for (const o of p.objects) kindOf(o).checks?.(o, cx);
+  // 길 띠는 객체가 아니라 좌표 칸 하나라 객체 뒤에(띠가 없는 장면의 항목 순서는 그대로 — 기준선 비교 열쇠)
+  stripChecks(p, cx.out);
   taskChecks(p, cx.out);
   goalChecks(p, cx.out);
   return cx.out;
