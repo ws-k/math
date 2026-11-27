@@ -1208,7 +1208,13 @@ const end = (v: unknown, where: string, p: NLParams): NLEnd => {
  * 범위(min~max)를 step 으로 나눈 칸 수. step > 0·max > min·나누어떨어짐·칸 수 상한을 본다 — 위 줄·아래 줄·슬라이더가
  * 같은 규칙이라 한곳에서
  */
-function cellCount(min: string, max: string, step: string, where: string, cap: number): number {
+export function cellCount(
+  min: string,
+  max: string,
+  step: string,
+  where: string,
+  cap: number,
+): number {
   if (cmp(q(step), qi(0)) <= 0) fail(`${where} step`, '0 보다 커야 함');
   if (cmp(q(max), q(min)) <= 0) fail(`${where} max`, 'min 보다 커야 함');
   const n = div(sub(q(max), q(min)), q(step));

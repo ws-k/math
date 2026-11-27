@@ -133,3 +133,15 @@ test('이름표 글자: 선 위에서도 읽히게 바탕색 테두리(paint-ord
     assert.match(body, /pointer-events: none;/, sel);
   }
 });
+
+test('길 띠 낭독(서버 렌더): 띠 묶음에 이름(읽는 값 이름), 눈금 숫자는 aria-hidden, 방향 글자가 묶음 안에', async () => {
+  const { render } = await load();
+  const s = WIDGET_SCENES.find((x) => x.id === 'co-walk');
+  assert.ok(s && s.kind === 'explore' && s.widget);
+  const html = render(s.widget.params);
+  const g = html.slice(html.indexOf('<g class="strip'));
+  assert.match(g, /^<g class="strip s-x" role="group" aria-label="길 띠: 집 기준 위치"/);
+  assert.match(g, /<g aria-hidden="true"><text[^>]*class="snum"/);
+  // B 처음 자리 t=1 — 속도 2 라 오른쪽으로
+  assert.match(g, /class="sdir"[^>]*>오른쪽으로 걷는 중</);
+});

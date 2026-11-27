@@ -197,11 +197,15 @@ export function statStates(
   return acc.map((a) => ({
     s: a.s,
     sym: a.sym,
-    text: Object.entries(a.sym)
-      .map(([k, v]) => `${k}=${v}`)
-      .join(', '),
+    text: symText(a.sym),
   }));
 }
+
+/** 상태를 적은 글('n=10, p=3/10' — 검산 항목 이름·오류 글이 어느 칸인지 알려 줄 때) */
+export const symText = (sym: Record<string, string>) =>
+  Object.entries(sym)
+    .map(([k, v]) => `${k}=${v}`)
+    .join(', ');
 
 /**
  * 분수를 d 자리로 반올림한 글자(0.5 는 0 에서 먼 쪽 — sympy approx 검산과 같은 규칙), 끝의 0 은 뗀다(다른 읽는 값
