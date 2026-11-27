@@ -272,6 +272,65 @@ export const WIDGET_SCENES: Scene[] = [
       { id: 'C', point: { x: 'a', y: 1 }, name: '중심' },
     ],
   }),
+  // 좌표평면 3-가 새 옵션(단원 적용은 3-나): 가로 길 띠 + 걷는 사람(math2-area-distance trip 꼴 — 읽는 값 3개 + 목표)
+  explore('co-walk', 'coord', {
+    mode: 'explore',
+    x: { min: 0, max: 4, step: 1, unit: '시간' },
+    y: { min: -4, max: 4, step: 2, name: '속도', unit: 'km/시', areaUnit: 'km' },
+    objects: [
+      { id: 'v', curve: '4-2*x', label: '속도 $v(t)=4-2t$' },
+      { id: 'B', point: { on: 'v', x: 1, drag: 'x', snap: '1/4' }, name: 'B' },
+      { id: 'F', fill: { top: 'v', x: [0, 'B'] }, sign: true },
+      { readout: 'x(B)', label: '출발 뒤' },
+      { readout: 'net(F)', label: '집 기준 위치' },
+      { readout: 'abs(F)', label: '걸은 거리' },
+    ],
+    strip: {
+      dir: 'x',
+      min: 0,
+      max: 4,
+      step: '1/2',
+      label: '1',
+      unit: 'km',
+      at: 'net(F)',
+      face: 'y(B)',
+    },
+    goal: {
+      value: { of: 'net(F)', is: 0, places: 2 },
+      hint: '출발 말고 위치가 0 인 때가 또 있어요.',
+    },
+    intro: '집 기준 위치가 0 인 때를 두 번 찾아 B 를 놓아 보세요.',
+  }),
+  // 세로 길 띠 + 리프트(math2-velocity move 꼴 — 시간 슬라이더를 따라오는 점의 높이, 방향 = 미분계수의 부호)
+  explore('co-lift', 'coord', {
+    mode: 'explore',
+    x: { min: 0, max: 4, step: 1, unit: '분' },
+    y: { min: -1, max: 5, step: 1, name: '높이', unit: 'm' },
+    sliders: [{ id: 't', min: 0, max: 4, step: '1/4', value: 0, label: '시각 $t$' }],
+    objects: [
+      { id: 'X', curve: 'x**3-6*x**2+9*x', label: '높이 $h(t)$' },
+      { id: 'P', point: { on: 'X', x: 't' }, name: 'P' },
+      { readout: 'value(t)', label: '시각' },
+      { readout: 'y(P)', label: '높이' },
+    ],
+    strip: { dir: 'y', min: -1, max: 5, step: '1', unit: 'm', at: 'y(P)', face: 'deriv(X,P)' },
+  }),
+  // 계단 표시(요청 64 — math2-diff-coefficient secant 꼴): P~Q 의 가로·세로 변과 길이
+  explore('co-stair', 'coord', {
+    mode: 'explore',
+    x: { min: 0, max: '7/2', step: '1/2', name: '시간', unit: '초' },
+    y: { min: 0, max: 10, step: 1, name: '거리', unit: 'm' },
+    objects: [
+      { id: 'f', curve: 'x**2', label: '$s=t^2$' },
+      { id: 'P', point: { on: 'f', x: 1 }, name: 'P' },
+      { id: 'Q', point: { on: 'f', x: 3, drag: 'x', snap: '1/10' }, name: 'Q' },
+      { secant: ['P', 'Q'] },
+      { stair: ['P', 'Q'] },
+      { readout: 'slope(P,Q)', label: 'P~Q 평균 빠르기' },
+    ],
+    goal: { approach: ['Q', 'P'] },
+    intro: 'Q 를 끌어 P 에 겹쳐 보세요.',
+  }),
 ];
 
 /**
