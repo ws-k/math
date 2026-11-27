@@ -11,6 +11,7 @@ import { EDGE, nearest } from '../drag.ts';
 import { HANDLE_HIT, Handle, handleAt } from '../Handle.tsx';
 import { LRich } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
+import type { Slider } from './coord/types.ts';
 import {
   AXIS_LABEL_GAP,
   addUser,
@@ -42,6 +43,8 @@ import {
 } from './coord.ts';
 import { GoalLine } from './GoalLine.tsx';
 import type { WidgetProps } from './index.tsx';
+import { SliderRow } from './SliderRow.tsx';
+import type { SliderHandlers } from './sliderInput.ts';
 import { useGoal } from './useGoal.ts';
 
 /** 이만큼 움직이지 않고 떼면 '누르기'(탭)로 본다 */
@@ -185,8 +188,6 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
       else judge.release(goalHits(p, n));
     }
   };
-  const settleRef = useRef(settle);
-  settleRef.current = settle;
 
   const gridMode = p.mode === 'plot' || p.mode === 'connect' || p.mode === 'line';
 
@@ -312,70 +313,35 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
     }
   };
 
-  // 슬라이더: 움직이는 동안은 직접 적용, 놓을 때 상태로(React 렌더는 놓을 때 한 번)
-  const sliderRefs = useRef(new Map<string, HTMLInputElement>());
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 슬라이더 목록은 매개변수에서 고정. 최신 상태는 live 로 읽는다
-  useEffect(() => {
-    const offs: (() => void)[] = [];
-    for (const s of p.sliders) {
-      const el = sliderRefs.current.get(s.id);
-      if (!el) continue;
-      // 손으로 끈 슬라이더(pointerdown ~ 놓을 때의 change)만 '손 뗌'으로 바로 판정한다. 나머지 change —
-      // 방향키, 그리고 키 이벤트 없이 change 만 보내는 보조기기 — 는 키처럼 멈출 때 한 번만 판정한다
-      let hand = false;
-      const up = () => {
-        sliding.current = false;
-        window.removeEventListener('pointerup', up);
-        window.removeEventListener('pointercancel', up);
-        // 놓을 때의 change 는 pointerup 바로 뒤에 온다 — 그것까지 손으로 치고 끝낸다
-        setTimeout(() => {
-          hand = false;
-        }, 0);
+  // 슬라이더: 움직이는 동안은 직접 적용, 놓을 때 상태로(React 렌더는 놓을 때 한 번). 손 처리(손 놓음/키 놓음 구분,
+  // 낭독 글자)는 수직선과 같이 쓰는 SliderRow(sliderInput.ts) — 여기는 이 부품이 값으로 무엇을 하는지만
+  const sliderH = (s: Slider): SliderHandlers => ({
+    grab() {
+      // 손으로 끌기 시작: 기다리던 키 판정을 지금 끝내고(끄는 도중 터지지 않게), 손 뗄 때까지 끄는 중
+      judge.flush();
+      sliding.current = true;
+      return true;
+    },
+    release() {
+      sliding.current = false;
+    },
+    input(raw, el) {
+      // 제외 값(밑 a=1 등)은 움직이던 쪽으로 건너뛴다
+      const v = sliderSnap(s, raw, live.current.vars[s.id] ?? s.value);
+      if (v !== raw) el.value = String(v);
+      live.current = {
+        ...live.current,
+        vars: { ...live.current.vars, [s.id]: v },
       };
-      const ptr = () => {
-        hand = true;
-        // 손으로 끌기 시작: 기다리던 키 판정을 지금 끝내고(끄는 도중 터지지 않게), 손 뗄 때까지 끄는 중
-        judge.flush();
-        sliding.current = true;
-        window.addEventListener('pointerup', up);
-        window.addEventListener('pointercancel', up);
-      };
-      const input = () => {
-        // 제외 값(밑 a=1 등)은 움직이던 쪽으로 건너뛴다
-        const v = sliderSnap(s, Number(el.value), live.current.vars[s.id] ?? s.value);
-        if (v !== Number(el.value)) el.value = String(v);
-        live.current = {
-          ...live.current,
-          vars: { ...live.current.vars, [s.id]: v },
-        };
-        apply(draw(p, live.current, boxRef.current));
-        const t = sliderText(s, v);
-        const out = els.current.get(`s:${s.id}`);
-        if (out) out.textContent = t;
-        // 화면 낭독기도 원시 소수(0.785…) 대신 보이는 글자(π/4)를 읽게 — 끄는 동안은 렌더 없이 직접 고친다
-        el.setAttribute('aria-valuetext', t);
-      };
-      const change = () => {
-        sliding.current = false;
-        settleRef.current(live.current, hand ? 'hand' : 'key');
-      };
-      const blur = () => judge.flush();
-      el.addEventListener('pointerdown', ptr);
-      el.addEventListener('input', input);
-      el.addEventListener('change', change);
-      el.addEventListener('blur', blur);
-      offs.push(() => {
-        el.removeEventListener('pointerdown', ptr);
-        el.removeEventListener('input', input);
-        el.removeEventListener('change', change);
-        el.removeEventListener('blur', blur);
-        up();
-      });
-    }
-    return () => {
-      for (const o of offs) o();
-    };
-  }, [p]);
+      apply(draw(p, live.current, boxRef.current));
+      return sliderText(s, v);
+    },
+    change(hand) {
+      sliding.current = false;
+      settle(live.current, hand ? 'hand' : 'key');
+    },
+    blur: () => judge.flush(),
+  });
 
   const d = useMemo(() => draw(p, st, box), [p, st, box]);
   const g = useMemo(() => grid(p, box), [p, box]);
@@ -615,24 +581,16 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
         </div>
       )}
       {p.sliders.map((s) => (
-        <label key={s.id} className="cslider">
-          <LRich inline src={s.label} />
-          <input
-            ref={(el) => {
-              if (el) sliderRefs.current.set(s.id, el);
-              else sliderRefs.current.delete(s.id);
-            }}
-            type="range"
-            min={s.min}
-            max={s.max}
-            step={s.step}
-            defaultValue={s.value}
-            aria-valuetext={sliderText(s, st.vars[s.id] ?? s.value)}
-          />
-          <b className="num" ref={reg(`s:${s.id}`)}>
-            {sliderText(s, st.vars[s.id] ?? s.value)}
-          </b>
-        </label>
+        <SliderRow
+          key={s.id}
+          label={s.label}
+          min={s.min}
+          max={s.max}
+          step={s.step}
+          value={s.value}
+          text={sliderText(s, st.vars[s.id] ?? s.value)}
+          h={sliderH(s)}
+        />
       ))}
       {p.mode === 'explore' && p.goal ? (
         <GoalLine

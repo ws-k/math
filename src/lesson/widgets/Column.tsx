@@ -16,7 +16,17 @@ import {
   useRef,
   useState,
 } from 'react';
-import { centerOf, clamp, FAILS_FOR_TAP, inBox, isTap, keyStep, nearest } from '../drag.ts';
+import {
+  centerOf,
+  clamp,
+  inBox,
+  isTap,
+  keyStep,
+  missHint,
+  nearest,
+  TAP_ON,
+  tapMode,
+} from '../drag.ts';
 import { landAt } from '../fly.ts';
 import { reducedMotion } from '../ui.tsx';
 import { useDrag } from '../useDrag.ts';
@@ -75,7 +85,6 @@ import './column.css';
 const FLY_MS = 220;
 /** 조립제법: 곱한 값이 올라간 뒤 더한 값이 내려오기까지(시안 380ms) — 두 일이 차례로 보이게 */
 const SUM_MS = 380;
-const TAP_ON = '끌기가 어려우면 눌러도 돼요.';
 /** 눌러서 하기 안내(모드마다 무엇을 누르나) */
 const TAP_BAR = '막대에서 덜어 낼 높이를 누르세요.';
 const SYN_TAP = '수를 누르고, 놓을 빈칸을 누르세요.';
@@ -96,17 +105,17 @@ export function Column({ params: p, onDone, onMiss }: WidgetProps<ColumnParams>)
 type Part<P> = { p: P; finish(): void; onMiss(): void };
 
 /**
- * 그냥 누르기·놓친 끌기를 센다. 첫 번째는 끄는 법(drag), 두 번째(FAILS_FOR_TAP)에 '눌러도 돼요'(tapOn)로 바꾸고
+ * 그냥 누르기·놓친 끌기를 센다. 첫 번째는 끄는 법(drag), 두 번째(drag.ts missHint)에 '눌러도 돼요'(tapOn)로 바꾸고
  * 그때부터 누르기로도 된다 — 한 번은 실수일 수 있고 두 번이면 끌기가 어려운 사람의 신호로 본다(count·저울과 같은 기준).
  */
 function useFails(say: (m: Msg) => void) {
   const [fails, setFails] = useState(0);
   return {
-    tapMode: fails >= FAILS_FOR_TAP,
+    tapMode: tapMode(fails),
     miss(m: Msg, tapOn: string) {
       const f = fails + 1;
       setFails(f);
-      say(f === FAILS_FOR_TAP ? { text: `${TAP_ON} ${tapOn}`, cls: '' } : m);
+      say(missHint(f) === 'tap' ? { text: `${TAP_ON} ${tapOn}`, cls: '' } : m);
     },
   };
 }

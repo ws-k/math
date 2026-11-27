@@ -49,7 +49,7 @@ export function applyDrawing(root: ParentNode, d: Drawing) {
  * 글자 바꾸기. textContent 로 통째 바꾸면 React 가 쥐고 있던 글자 노드가 떨어져 나가 손을 뗀 뒤 다시 그릴 때
  * 옛 글자가 남는다 — 그래서 React 가 만든 글자 노드의 값만 바꾼다.
  */
-function setText(el: Element, t: string) {
+export function setText(el: Element, t: string) {
   const n = el.firstChild;
   if (n && n.nodeType === 3 && !n.nextSibling) {
     if (n.nodeValue !== t) n.nodeValue = t;

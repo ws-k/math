@@ -1,5 +1,6 @@
 // 세계 좌표 ↔ 화면 px, 화면 숫자·눈금 글자, 격자. 어떤 객체 종류에도 매이지 않는 그리기 바탕이라
 // 아래층에 둔다 — 객체 파일·과제·손 조작이 모두 이 변환을 같이 쓴다.
+import { NARROW_CARD_W } from '../../drag.ts';
 import type { Axis, Box, CoordParams, Frame, Grid } from './types.ts';
 
 /** 화면 숫자: 자리수만큼, 음수는 진짜 빼기 기호, 정의 안 되면 — */
@@ -41,7 +42,7 @@ export const AXIS_LABEL_GAP = 12;
  * 가장 좁은 화면(접음 382pt, docs/design.md)의 좌표평면 상자 폭: 레슨 좌우 여백 20px×2(lesson.css .lesson)와
  * 카드 안쪽 여백 22px×2(.lesson .card)를 뺀 폭. 상자 폭이 곧 카드 안쪽 폭이다(Coord.tsx measure).
  */
-export const NARROW_BOX_W = 382 - 2 * 20 - 2 * 22;
+export const NARROW_BOX_W = NARROW_CARD_W; // 수직선·count 와 같은 값(drag.ts)
 /** 좌표평면 상자의 가장 낮은 높이(Coord.tsx measure 의 바닥값) */
 export const MIN_BOX_H = 200;
 /** 그림 영역 바깥 여백(눈금 글자 자리): 왼쪽 34 · 오른쪽 14 · 위 14 · 아래 26 — frame() 과 같은 값 */

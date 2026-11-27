@@ -1313,9 +1313,13 @@
   align-items: center;
   gap: 10px;
 }
+/* 슬라이더 줄(SliderRow — 좌표평면·수직선 공용). touch-action:none 은 막대에만: 손가락이 막대를 끄는 도중 조금만
+   위아래로 흔들려도 브라우저가 페이지 스크롤로 가로채 끌기가 끊긴다(분수 자르기·확률 되감기 막대와 같은 이유).
+   막대 밖(이름·값 글자)에서 쓸면 페이지는 그대로 스크롤된다 */
 .lesson .cslider input {
   flex: 1;
   min-height: 44px;
+  touch-action: none;
   accent-color: var(--primary);
 }
 /* 조각 함수의 끝: 찬 점(닫힘 — 그 값을 가짐)은 곡선 색으로 채우고, 빈 점(열림)은 바탕색 속에 곡선 색 테두리.

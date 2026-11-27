@@ -64,6 +64,21 @@ export const isTap = (dx: number, dy: number) => Math.hypot(dx, dy) < TAP_PX;
  * 한 번은 실수일 수 있고, 두 번이면 끌기가 어려운 사람의 신호로 본다.
  */
 export const FAILS_FOR_TAP = 2;
+/** '눌러서 해도 돼요' 안내의 앞말. 부품마다 뒤에 무엇을 누르는지 붙인다 — 앞말이 부품마다 다르면 같은 상황이 달리 들린다 */
+export const TAP_ON = '끌기가 어려우면 눌러도 돼요.';
+/** fails 번째 놓침 뒤의 안내: 첫 번째는 끄는 법(drag), FAILS_FOR_TAP 번째에 '눌러도 돼요'(tap), 그 뒤는 같은 말을 되풀이하지 않는다 */
+export const missHint = (fails: number): 'drag' | 'tap' | null =>
+  fails === 1 ? 'drag' : fails === FAILS_FOR_TAP ? 'tap' : null;
+/** 눌러서 하기가 켜졌나(그 뒤로는 계속 켜 둔다) */
+export const tapMode = (fails: number) => fails >= FAILS_FOR_TAP;
+
+/** 가장 좁은 화면(접은 382px)에서 카드 안쪽 폭: 화면 여백 20 × 2 · 카드 안 여백 22 × 2 */
+export const NARROW_CARD_W = 382 - 2 * 20 - 2 * 22;
+/**
+ * 손가락으로 한 칸에 멈출 수 있는 칸 폭 하한(px). 이보다 촘촘하면 목표 칸 하나에 놓기 어렵다 — 좌표평면 슬라이더 목표와
+ * 수직선 점프가 같은 기준을 쓴다(한쪽만 느슨하면 같은 손가락이 부품마다 다르게 헛돈다)
+ */
+export const MIN_CELL_PX = 7;
 
 /** 놓은 요소의 가운데(화면 좌표). 손가락 끝이 아니라 요소 가운데로 판정해야 어디를 잡고 끌었든 같은 결과다 */
 export const centerOf = (r: { left: number; top: number; width: number; height: number }) =>

@@ -1,11 +1,13 @@
 // 슬라이더: 형식 검사·제외 값 건너뛰기·정확한 값(분수)·닿는 값 목록. 목표 판정과 검산이 슬라이더 값을
 // 분수로 다시 만들어 써야 해서(소수 0.1+0.2 오차로 '중근'을 놓치지 않게) 한곳에 모았다.
+import { MIN_CELL_PX } from '../../drag.ts';
 import { exactOf } from '../../expr.ts';
 import { formatValue } from '../../format.ts';
 import { growStates } from '../../goal.ts';
 import { arr, fail, obj, str } from '../../parse.ts';
 import type { Rational } from '../../sym.ts';
 import { add, mul, num, qi, ratStr } from '../q.ts';
+import { SLIDER_ID, SLIDER_ID_MSG } from '../sliderInput.ts';
 import { near, numExpr, toIndex } from './common.ts';
 import { fmtNum, isWide, NARROW_BOX_W, piText } from './frame.ts';
 import type { Slider, StateOpt } from './types.ts';
@@ -15,8 +17,7 @@ export function parseSliders(raw: unknown): Slider[] {
     const at = `좌표 슬라이더${k + 1}`;
     const s = obj(rs, at, ['id', 'min', 'max', 'step', 'value', 'label'], ['exclude']);
     const id = str(s.id, `${at} id`);
-    if (!/^[abcdhkmnpqrst]$/.test(id))
-      fail(`${at} id`, '식에 쓸 수 있는 한 글자(a·b·c·d·h·k·m·n·p·q·r·s·t)');
+    if (!SLIDER_ID.test(id)) fail(`${at} id`, SLIDER_ID_MSG);
     const min = numExpr(s.min, `${at} min`);
     const max = numExpr(s.max, `${at} max`).n;
     const step = numExpr(s.step, `${at} step`);
@@ -61,7 +62,7 @@ export function parseSliders(raw: unknown): Slider[] {
  * 목표가 보는 슬라이더의 한 칸 최소 폭(px). 이보다 촘촘하면 손가락으로 목표 칸에 멈추기 어렵다(◀▶ 버튼 대신
  * 하한을 둔 까닭: 접은 화면은 이미 높이가 모자라 버튼 줄을 더할 자리가 없다).
  */
-export const MIN_SLIDER_STEP_PX = 7;
+export const MIN_SLIDER_STEP_PX = MIN_CELL_PX;
 
 /**
  * 슬라이더 줄(.cslider, 17px) 글자의 어림 폭. 크롬 실측(382pt 접음): 한글 15.5·숫자 10.8·빈칸 4.5·점 5·

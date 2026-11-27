@@ -19,6 +19,12 @@ export interface DragHandleProps {
   onKey(key: string): boolean;
   /** 포커스가 떠날 때 */
   onBlur?(): void;
+  /**
+   * 누른 자리(화면 좌표)에서 끌기를 시작할지(없으면 늘). 부품 안에서 다른 손잡이를 끄는 중이면 false 로 거절한다
+   * (P9 동시 끌기 1개). 거절해도 이 손잡이 위에서 시작한 터치는 페이지가 스크롤되지 않는다 — useSvgDrag 가 손잡이의
+   * touchstart 를 늘 막기 때문이다(SVG 안쪽 요소의 touch-action 을 브라우저가 무시해서). 그 손가락은 그냥 헛돈다
+   */
+  pick?(x: number, y: number): boolean;
   onStart?(): void;
   /** 누른 곳에서 움직인 거리(SVG 좌표) */
   onMove(dx: number, dy: number): void;
@@ -27,7 +33,13 @@ export interface DragHandleProps {
 
 export function DragHandle(p: DragHandleProps) {
   const ref = useRef<SVGGElement>(null);
-  useSvgDrag(ref, { onStart: p.onStart, onMove: p.onMove, onEnd: p.onEnd });
+  const pick = p.pick;
+  useSvgDrag(ref, {
+    ...(pick ? { pick: (x: number, y: number) => pick(x, y) } : {}),
+    onStart: p.onStart,
+    onMove: p.onMove,
+    onEnd: p.onEnd,
+  });
   const key = (e: KeyboardEvent) => {
     if (p.onKey(e.key)) e.preventDefault();
   };
