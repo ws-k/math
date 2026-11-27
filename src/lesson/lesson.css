@@ -1443,9 +1443,10 @@
   stroke-dasharray: 5 3;
   stroke-linecap: round;
 }
-/* 계단 변의 길이 글자: 선이 지나가도 읽히게 바탕색 테두리(점 이름표와 같은 방식) */
+/* 계단 변의 길이 글자: 선이 지나가도 읽히게 바탕색 테두리(점 이름표와 같은 방식). 11px 굵게 — 자리를 고르는 폭 어림
+   (frame.ts labelWidth, 축 끝 글자와 같은 글꼴)과 맞춘다 */
 .lesson .coord .zlen {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   fill: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -1480,8 +1481,13 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* 방향 낭독 글자(오른쪽으로 걷는 중·멈춤): 그림이 말하는 것을 낭독기에만 — 보이지 않게 */
+.lesson .coord .strip .sdir {
+  opacity: 0;
+  pointer-events: none;
+}
 .lesson .coord .strip .scab {
-  fill: var(--bg);
+  fill: var(--surface);
   stroke: var(--ink);
   stroke-width: 1.6;
   stroke-linejoin: round;

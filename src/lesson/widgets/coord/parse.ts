@@ -9,7 +9,7 @@ import { KINDS } from './kinds.ts';
 import { checkRightGoal, rightKey, stairKey, vlineKey } from './mark.ts';
 import { segKey } from './segment.ts';
 import { parseSliders } from './slider.ts';
-import { parseStrip, stripDir } from './strip.ts';
+import { checkStripMovers, parseStrip, stripDir } from './strip.ts';
 import { parseTask } from './task.ts';
 import type {
   BarsObj,
@@ -177,6 +177,9 @@ export function parseCoord(raw: unknown): CoordParams {
     ...(o.intro !== undefined ? { intro: str(o.intro, '좌표 intro') } : {}),
     ...(o.done !== undefined ? { done: str(o.done, '좌표 done') } : {}),
   };
+
+  // 길 띠의 방향이 자리와 같은 것을 따라 움직이는가(점·슬라이더 표가 다 있어야 셀 수 있다)
+  checkStripMovers(p);
 
   if (o.goal !== undefined) {
     p.goal = parseGoal(o.goal, p, goalCtx);

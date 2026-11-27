@@ -106,7 +106,8 @@ export function unitOf(
   }
 }
 
-const withUnit = (t: string, u: string | undefined) => (u && t !== '—' ? `${t} ${u}` : t);
+/** 숫자 글자 뒤 단위(정의 안 됨 — 에는 붙이지 않는다). 계단 길이 글자도 같은 꼴 */
+export const withUnit = (t: string, u: string | undefined) => (u && t !== '—' ? `${t} ${u}` : t);
 
 /**
  * 실근 개수를 셀 곡선(읽기): 곡선의 슬라이더가 분수 칸이고(π 칸이 아님) 처음 값에서 x 의 다항식이어야 한다.

@@ -23,10 +23,10 @@ import { compareAnswer } from '../../lib/answer.ts';
 import { parseSym } from '../sym.ts';
 import { checkBarsFit } from './coord/bars.ts';
 import { coordChecks } from './coord/checks.ts';
-import { checkLabels } from './coord/draw.ts';
+import { checkLabels, checkStairs } from './coord/draw.ts';
 import { checkReachable, goalTexts } from './coord/goal.ts';
 import { kindOf } from './coord/kinds.ts';
-import { checkShown } from './coord/mark.ts';
+import { checkShown, checkStairDigits } from './coord/mark.ts';
 import { parseCoord } from './coord/parse.ts';
 import { checkPolyCurves } from './coord/readout.ts';
 import { checkSmooth } from './coord/smooth.ts';
@@ -126,6 +126,8 @@ export const coordDef: WidgetDef<CoordParams> = {
     checkBarsFit(p);
     checkLabels(p);
     checkShown(p);
+    checkStairDigits(p);
+    checkStairs(p);
     checkStrip(p);
   },
   checks: coordChecks,

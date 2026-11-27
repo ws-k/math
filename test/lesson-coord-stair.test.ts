@@ -12,6 +12,8 @@ import {
   frame,
   type Item,
   initial,
+  labelWidth,
+  nameWidth,
   parseCoord,
   toPx,
 } from '../src/lesson/widgets/coord.ts';
@@ -147,6 +149,17 @@ test('형식 오류: 같은 점 두 번 · 늘 같은 두 점(겹친 고정 점)
   assert.throws(() => parseCoord(secantRaw({ stair: ['P', 'Z'] })), /앞에 없는 점 Z/);
   assert.throws(() => parseCoord(secantRaw({ wide: 1 })), /모르는 칸 wide/);
   assert.throws(() => parseCoord(secantRaw({ digits: 7 })), /digits/);
+  // 숨긴 점(맞힌 뒤 공개)은 가리키지 못한다 — 계단 글자가 숨긴 자리를 드러낸다
+  const hidden = {
+    ...secantRaw(),
+    objects: [
+      ...secantRaw().objects.slice(0, 3),
+      { id: 'H', point: { x: 2, y: 4 }, hide: true },
+      { stair: ['P', 'H'] },
+    ],
+    goal: { approach: ['Q', 'P'] },
+  };
+  assert.throws(() => parseCoord(hidden), /숨긴 점 H/);
   const fixed = {
     ...secantRaw(),
     objects: [
@@ -185,4 +198,95 @@ test('검산: 닿는 상태마다 가로·세로 길이 = sympy Abs(원문 식�
   }));
   const r2 = runChecks(bad);
   assert.equal(r2.ok, false);
+});
+
+/** 그린 글자 항목의 상자(왼쪽 위 기준) — 계단 글자는 11px 굵게(labelWidth), 점 이름표는 13px 굵게(nameWidth) */
+const box = (it: Item) => {
+  assert.ok(it.t === 'label');
+  const w = it.cls === 'zlen' ? labelWidth(it.text) : nameWidth(it.text);
+  return { l: it.x, t: it.y - 10, r: it.x + w, b: it.y + 3 };
+};
+const hit = (a: ReturnType<typeof box>, b: ReturnType<typeof box>) =>
+  a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+
+test('글자 자리: 계단 글자는 점을 피해 변의 다른 쪽으로, 점 이름표는 계단 글자를 피한다(이름표 자리 고르기의 장애물)', () => {
+  // A 오른쪽 위(이름표 첫 자리)가 짧은 가로 변 위 글자 '0.25' 자리와 겹치는 장면
+  const raw = {
+    mode: 'explore',
+    x: { min: 0, max: 4, step: '1/4' },
+    y: { min: 0, max: 4, step: '1/4' },
+    objects: [
+      { id: 'A', point: { x: 1, y: 2 }, name: 'A' },
+      { id: 'B', point: { x: '5/4', y: 1 }, name: 'B' },
+      { stair: ['A', 'B'] },
+    ],
+  };
+  const p = parseCoord(raw);
+  const xs = draw(p, initial(p), { w: 298, h: 200 }).items;
+  const zx = one(xs, 'zx2');
+  const nameA = one(xs, 'n0');
+  assert.ok(!hit(box(zx), box(nameA)), `${JSON.stringify(zx)} ${JSON.stringify(nameA)}`);
+  assert.doesNotThrow(() => coordDef.deep?.(p));
+});
+
+test('secant 꼴: Q 가 닿는 모든 칸에서 계단 글자가 이름표·점·서로와 겹치지 않는다(무거운 검사 통과)', () => {
+  const p = parseCoord(secantRaw());
+  assert.doesNotThrow(() => coordDef.deep?.(p));
+  for (let i = 0; i <= 35; i++) {
+    const xs = draw(p, atQ(p, i), { w: 298, h: 200 }).items;
+    const zs = ['zx4', 'zy4'].map((k) => one(xs, k)).filter((it) => it.t === 'label' && !it.hidden);
+    const names = ['n1', 'n2'].map((k) => one(xs, k));
+    for (const z of zs) for (const n of names) assert.ok(!hit(box(z), box(n)), `Q 칸 ${i}`);
+  }
+});
+
+test('무거운 검사: 계단 글자가 어느 쪽에 두어도 다른 점과 겹치면 형식 오류', () => {
+  // 가로 변(A→(2,2)) 위·아래 글자 자리 여섯 곳(틈 7·17·27px)을 점 넷이 막는다 — 세로 한 칸 1/8 = 5px
+  const raw = {
+    mode: 'explore',
+    x: { min: 0, max: 4, step: '1/4' },
+    y: { min: 0, max: 4, step: '1/8' },
+    objects: [
+      { id: 'A', point: { x: 1, y: 2 } },
+      { id: 'B', point: { x: 2, y: 1 } },
+      { id: 'C', point: { x: '3/2', y: '19/8' } },
+      { id: 'D', point: { x: '3/2', y: '13/8' } },
+      { id: 'E', point: { x: '3/2', y: '23/8' } },
+      { id: 'G', point: { x: '3/2', y: '9/8' } },
+      { stair: ['A', 'B'] },
+    ],
+  };
+  assert.throws(() => coordDef.deep?.(parseCoord(raw)), /계단 A-B 글자.*겹침/);
+});
+
+test('따라오는 끝점이 그림 밖이면 계단을 통째로 숨긴다(그림 안 글자만 홀로 뜨지 않게)', () => {
+  const raw = {
+    ...secantRaw(),
+    objects: [
+      ...secantRaw().objects.slice(0, 3),
+      { id: 'H', point: { x: 'x(Q)', y: 'y(Q)+1' } },
+      { stair: ['P', 'H'] },
+    ],
+  };
+  const p = parseCoord(raw);
+  // Q x=3 → H y=10(그림 끝 안) · Q x=3.5 → H y=13.25(밖)
+  const inView = its(p, atQ(p, 30));
+  const out = its(p, atQ(p, 35));
+  assert.ok(((one(inView, 'z4') as { d: string }).d ?? '') !== '');
+  const leg = one(out, 'z4');
+  assert.ok(leg.t === 'path' && leg.d === '');
+  for (const k of ['zq4']) {
+    const it = one(out, k);
+    assert.ok(it.t === 'path' && it.d === '');
+  }
+  for (const k of ['zx4', 'zy4']) {
+    const it = one(out, k);
+    assert.ok(it.t === 'label' && it.hidden);
+  }
+});
+
+test('무거운 검사: 닿는 상태의 길이가 digits 자리로 정확히 안 적히면 오류(반올림한 길이로 기울기를 셈하게 되지 않게)', () => {
+  // snap 1/10 → Δy = x²−1 은 소수 둘째 자리까지 — digits 1 이면 0.21 을 0.2 로 적는다
+  assert.throws(() => coordDef.deep?.(parseCoord(secantRaw({ digits: 1 }))), /digits 를 올리/);
+  assert.doesNotThrow(() => coordDef.deep?.(parseCoord(secantRaw())));
 });

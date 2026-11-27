@@ -469,6 +469,13 @@ export interface StateOpt {
 
 // ---- 화면 좌표 ----
 
+/** 화면 상자(px) */
+export interface Box4 {
+  l: number;
+  t: number;
+  r: number;
+  b: number;
+}
 export interface Box {
   w: number;
   h: number;
@@ -611,6 +618,11 @@ export interface DrawCtx {
   pins: { it: Extract<Item, { t: 'label' }>; x: number; y: number }[];
   /** 이름표가 피할 점 자리(px) */
   spots: { x: number; y: number }[];
+  /**
+   * 점 이름표 자리를 고른 뒤 할 일(계단 길이 글자 자리 고르기). 받는 것은 이미 놓인 글자 상자(이름표 + 앞서 놓은 길이
+   * 글자), 돌려주는 것은 이번에 놓은 상자 — 이름표 자리 고르기는 그대로 두고 길이 글자가 이름표를 피한다
+   */
+  later: ((placed: Box4[]) => Box4[])[];
 }
 
 /** 검산 중의 공용 자리 */

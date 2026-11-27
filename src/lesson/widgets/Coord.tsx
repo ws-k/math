@@ -528,25 +528,31 @@ export function Coord({ params: p, onDone, onMiss }: WidgetProps<CoordParams>) {
           <g clipPath={`url(#${clip})`}>{d.items.map(node)}</g>
           {/* 길 띠는 그림 영역 밖(아래·오른쪽 여백)이라 잘라 내지 않는 층. 띠·숫자 다음에 표식(띠를 덮게) */}
           {sv && (
-            <g className={`strip s-${sv.dir}`}>
+            // 띠 묶음 이름은 자리 읽는 값의 이름. 눈금 숫자는 낭독하지 않고(같은 값이 읽는 값 줄에 있다), 방향 글자(.sdir)만 읽힌다
+            // biome-ignore lint/a11y/useSemanticElements: SVG 안이라 fieldset 을 쓸 수 없다
+            // biome-ignore lint/a11y/noInteractiveElementToNoninteractiveRole: SVG g 는 누르는 것이 아닌데 규칙이 잘못 짚는다
+            <g className={`strip s-${sv.dir}`} role="group" aria-label={sv.name}>
               <path d={sv.band} className="sband" />
               <path d={sv.tickD} className="stick" />
-              {sv.nums.map((n) => (
-                <text
-                  key={`sn${n.text}`}
-                  x={n.x}
-                  y={n.y}
-                  textAnchor={n.anchor === 'middle' ? 'middle' : undefined}
-                  className="snum"
-                >
-                  {n.text}
-                </text>
-              ))}
-              {sv.unit && (
-                <text x={sv.unit.x} y={sv.unit.y} textAnchor="middle" className="snum sunit">
-                  {sv.unit.text}
-                </text>
-              )}
+              {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: SVG g 는 포커스를 받지 않는데 규칙이 잘못 짚는다 */}
+              <g aria-hidden="true">
+                {sv.nums.map((n) => (
+                  <text
+                    key={`sn${n.text}`}
+                    x={n.x}
+                    y={n.y}
+                    textAnchor={n.anchor === 'middle' ? 'middle' : undefined}
+                    className="snum"
+                  >
+                    {n.text}
+                  </text>
+                ))}
+                {sv.unit && (
+                  <text x={sv.unit.x} y={sv.unit.y} className="snum sunit">
+                    {sv.unit.text}
+                  </text>
+                )}
+              </g>
               {d.outer.map(node)}
             </g>
           )}

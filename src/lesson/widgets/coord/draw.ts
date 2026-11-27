@@ -1,12 +1,15 @@
 // 그릴 목록 draw: 객체를 순서대로 종류 표(kinds.ts)에 나눠 주고, 그 뒤에 과제 모드의 그릴 것을 쌓는다.
 // 끄는 동안의 갱신은 draw(매개변수, 상태, 크기) → 그릴 목록 하나로 한다. 화면은 이 목록을 React 로 처음 그리고,
 // 끄는 동안에는 같은 목록을 DOM 에 직접 적용한다(React 렌더 없음) — 두 갈래로 그리면 어긋난다.
+import { GOAL_MAX_STATES } from '../../goal.ts';
 import { fail } from '../../parse.ts';
 import { placeLabels, type Rect } from '../labels.ts';
 import { frame, MIN_BOX_H, NARROW_BOX_W, r1 } from './frame.ts';
 import { kindOf } from './kinds.ts';
+import { stairDeps, zlenBox } from './mark.ts';
 import { initial } from './model.ts';
-import { nameWidth } from './point.ts';
+import { depStates, nameWidth } from './point.ts';
+import { symText } from './stat.ts';
 import { drawStrip } from './strip.ts';
 import { drawTask } from './task.ts';
 import type { Box, CoordParams, CoordState, DrawCtx, Drawing } from './types.ts';
@@ -53,6 +56,47 @@ export function checkLabels(p: CoordParams): void {
 
 const hit = (a: Rect, b: Rect) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
 
+/**
+ * 무거운 형식 검사(계단 표시 — 요청 64): 가장 좁은 화면, 계단 두 점을 움직이는 것이 닿는 상태(2000 넘으면 고르게 덜어 냄)마다
+ * 길이 글자가 점 이름표·점(반지름 6)·손잡이의 보이는 점(반지름 10)·다른 길이 글자와 겹치면 오류. 그리기는 비는 자리를 고르고
+ * 이름표도 길이 글자를 피하지만, 자리가 모자라면 겹치는 자리라도 고르므로(안 그리는 것보다 낫게) 그 경우를 여기서 잡는다
+ */
+export function checkStairs(p: CoordParams): void {
+  const box = { w: NARROW_BOX_W, h: MIN_BOX_H };
+  for (const [k, o] of p.objects.entries()) {
+    if (o.kind !== 'stair') continue;
+    for (const q of depStates(p, stairDeps(p, o), GOAL_MAX_STATES)) {
+      const { d, rects, spots } = drawWith(p, q.s, box);
+      const zs = d.items.flatMap((it) =>
+        it.t === 'label' && it.cls === 'zlen' && !it.hidden
+          ? [{ key: it.key, text: it.text, r: zlenBox(it.x, it.y, it.text) }]
+          : [],
+      );
+      const mine = zs.filter((z) => z.key === `zx${k}` || z.key === `zy${k}`);
+      const others = [
+        ...rects.map((x) => ({ what: `이름표 '${x.text}'`, r: x.r })),
+        ...spots.map((x) => ({
+          what: '점',
+          r: { l: x.x - 6, t: x.y - 6, r: x.x + 6, b: x.y + 6 },
+        })),
+        ...d.handles.map((h) => ({
+          what: '손잡이',
+          r: { l: h.x - 10, t: h.y - 10, r: h.x + 10, b: h.y + 10 },
+        })),
+      ];
+      for (const z of mine) {
+        const clash =
+          others.find((x) => hit(z.r, x.r))?.what ?? zs.find((x) => x !== z && hit(z.r, x.r))?.text;
+        if (clash)
+          fail(
+            '좌표 가장 좁은 화면에서',
+            `계단 ${o.a}-${o.b} 글자 '${z.text}' 이 ${clash} 과 겹침 (${symText(q.sym) || '처음 자리'}) — 점 사이를 넓히거나 축 범위를 바꾸세요`,
+          );
+      }
+    }
+  }
+}
+
 function drawWith(p: CoordParams, s: CoordState, box: Box) {
   const f = frame(box, p);
   const cx: DrawCtx = {
@@ -69,6 +113,7 @@ function drawWith(p: CoordParams, s: CoordState, box: Box) {
     readouts: [],
     pins: [],
     spots: [],
+    later: [],
   };
   for (const [k, o] of p.objects.entries()) kindOf(o).draw?.(o, k, cx);
   drawStrip(cx);
@@ -87,6 +132,9 @@ function drawWith(p: CoordParams, s: CoordState, box: Box) {
     q.it.x = r1(r.l);
     q.it.y = r1(r.t + LABEL_ASCENT);
   });
+  // 그다음 계단 길이 글자: 이름표와 앞서 놓은 길이 글자를 피해 자리를 고른다(mark.ts)
+  const placed = [...rects];
+  for (const job of cx.later) placed.push(...job(placed));
   // 층: 칠하기(격자 아래, 따로) · 조각 · 곡선·점·직선 · 글자(점 이름표 → 영역 이름표) — 객체 순서와 상관없이 곡선이
   // 조각에, 글자가 선에 가리지 않게. 점 이름표는 점과 같은 자리(items)에서 만들어지므로 여기서 글자만 맨 뒤로 뺀다 —
   // 뒤에 적은 선분이 앞 점의 이름표 위를 지나가던 것(co-foot 의 OP 가 'O' 를 가림). 나누는 기준이 항목 종류뿐이라

@@ -13,6 +13,7 @@ import {
   frame,
   type Item,
   initial,
+  labelWidth,
   narrowFrame,
   parseCoord,
   readout,
@@ -44,7 +45,6 @@ const tripRaw = (strip: Record<string, unknown> = {}, over: Record<string, unkno
     max: 4,
     step: '1/2',
     label: '1',
-    unit: 'km',
     at: 'net(F)',
     face: 'y(B)',
     ...strip,
@@ -69,7 +69,6 @@ const liftRaw = (strip: Record<string, unknown> = {}) => ({
     min: -1,
     max: 5,
     step: '1',
-    unit: 'm',
     at: 'y(P)',
     face: 'deriv(X,P)',
     ...strip,
@@ -233,27 +232,53 @@ test('띠 눈금·숫자 = 수직선 nlTicks 를 띠 길이에 옮긴 것(숫자
   for (const n of v.nums) assert.ok(n.y > f.b + 26 && n.y <= BOX.h);
 });
 
-test('세로 띠 숫자는 띠 오른쪽, 단위는 띠 위에 따로(세로 숫자 줄 끝에 붙이면 폭을 넘음)', () => {
+test('세로 띠 숫자는 띠 오른쪽, 단위는 숫자 줄 위에 따로 — 리프트 칸(반폭 7)이 맨 위에 와도 덮지 않는 자리', () => {
   const p = parseCoord(liftRaw());
   const v = stripView(p, BOX);
   assert.deepEqual(
     v.nums.map((n) => n.text),
     ['−1', '0', '1', '2', '3', '4', '5'],
   );
-  assert.equal(v.unit?.text, '(m)');
+  const line = BOX.w - 30;
+  assert.equal(v.unit?.text, 'm');
+  assert.ok((v.unit?.x ?? 0) >= line + 7, '칸 오른쪽 끝 바깥');
+  assert.ok((v.unit?.x ?? 0) + labelWidth('m') <= BOX.w);
+  // 맨 위 숫자(5)와 겹치지 않게 그보다 한 줄 위
+  assert.ok((v.unit?.y ?? 99) <= (v.nums.at(-1)?.y ?? 0) - 11);
   for (const n of v.nums) assert.ok(n.x > BOX.w - STRIP_PX && n.x < BOX.w);
+  // 단위 글자가 띠 폭(칸 바깥 ~ 상자 끝 21.5px)을 넘으면 형식 오류
+  assert.throws(
+    () =>
+      parseCoord({ ...liftRaw(), y: { min: -1, max: 5, step: 1, name: '높이', unit: 'km/시' } }),
+    /세로 띠 단위.*띠 폭/,
+  );
+});
+
+test('띠 단위는 읽는 값 단위와 하나(unitOf) — 따로 적는 칸은 없다', () => {
+  assert.throws(() => parseCoord(tripRaw({ unit: 'km' })), /모르는 칸 unit/);
+  // trip: net(F) → 세로축 areaUnit(km), move: y(P) → 세로축 단위(m), 단위 없는 축이면 단위 글자도 없음
+  assert.equal(stripView(parseCoord(tripRaw()), BOX).nums.at(-1)?.text, '4 km');
+  const bare = parseCoord({
+    ...liftRaw(),
+    x: { min: 0, max: 4, step: 1 },
+    y: { min: -1, max: 5, step: 1 },
+  });
+  assert.equal(stripView(bare, BOX).unit, undefined);
 });
 
 test('형식: 읽는 값 객체가 없는 at · 띠에 못 쓰는 읽는 값 · 방향 없음 · 칸·범위 · 모르는 칸', () => {
   assert.throws(() => parseCoord(tripRaw({ at: 'y(B)' })), /같은 글자의 읽는 값 객체/);
   assert.throws(() => parseCoord(tripRaw({ at: 'abs(F)' })), /띠에 못 씀/);
   assert.throws(() => parseCoord(tripRaw({ face: 'roots(v)' })), /띠에 못 씀/);
-  assert.throws(() => parseCoord(tripRaw({ face: undefined })), /face/);
+  assert.throws(() => parseCoord(tripRaw({ face: undefined })), /face: 진행 방향/);
   assert.throws(() => parseCoord(tripRaw({ dir: 'z' })), /dir/);
-  assert.throws(() => parseCoord(tripRaw({ min: 4, max: 0 })), /max 가 min 보다/);
-  assert.throws(() => parseCoord(tripRaw({ min: 0.5 })), /정수/);
+  assert.throws(() => parseCoord(tripRaw({ min: 4, max: 0 })), /max: min 보다 커야/);
+  assert.throws(() => parseCoord(tripRaw({ min: 0.5 })), /정수가 아님/);
   assert.throws(() => parseCoord(tripRaw({ step: '3' })), /나누어떨어/);
-  assert.throws(() => parseCoord(tripRaw({ step: '1/100' })), /100칸/);
+  assert.throws(() => parseCoord(tripRaw({ step: '1/100' })), /100칸까지/);
+  assert.throws(() => parseCoord(tripRaw({ label: '0' })), /label.*0 보다 커야/);
+  // 구분구적 어림(big·small·gap)도 한 자리 값이라 쓸 수 있다고 오류 글이 알려 준다
+  assert.throws(() => parseCoord(tripRaw({ at: 'abs(F)' })), /big·small·gap/);
   assert.throws(() => parseCoord(tripRaw({ width: 3 })), /모르는 칸 width/);
 });
 
@@ -318,4 +343,89 @@ test('검산이 틀린 표식을 잡는다: 앱 값을 하나 비틀면 parity �
   assert.equal(r.ok, false);
   assert.match(r.out, /길 띠 표식/);
   assert.match(r.out, /길 띠 방향/);
+});
+
+test('그리기는 표식을 띠 끝(min~max)에 묶는다 — 형식 검사를 빠져나간 값이 와도 상자 밖으로 나가지 않게', () => {
+  const p = parseCoord(tripRaw({ max: 3, label: '1' }));
+  const f = frame(BOX, p);
+  // t=2 에서 위치 4 > 3
+  const m = stripAt(p, atB(p, 8), BOX);
+  assert.equal(m.v, 4);
+  assert.ok(Math.abs(m.px - f.r) < 1e-9);
+});
+
+test('낭독: 방향 글자(오른쪽으로 걷는 중·멈춤·왼쪽으로 걷는 중 / 오르는 중·멈춤·내려가는 중)가 바깥 층 항목으로 바뀐다', () => {
+  const p = parseCoord(tripRaw());
+  const say = (q: ReturnType<typeof parseCoord>, s: CoordState) => {
+    const it = outer(q, s).find((x) => x.key === 'sd');
+    assert.ok(it && it.t === 'label');
+    return it.text;
+  };
+  assert.deepEqual(
+    [4, 8, 12].map((i) => say(p, atB(p, i))),
+    ['오른쪽으로 걷는 중', '멈춤', '왼쪽으로 걷는 중'],
+  );
+  const l = parseCoord(liftRaw());
+  assert.deepEqual(
+    [0, 1, 2].map((t) => say(l, atT(l, t))),
+    ['오르는 중', '멈춤', '내려가는 중'],
+  );
+});
+
+test('방향이 자리와 따로 놀면 형식 오류: 움직이는 것이 안 겹침 · 이웃 칸에서 자리 증감과 방향 부호가 어긋남', () => {
+  // 방향이 자리를 움직이지 않는 슬라이더 k 에만 기댐
+  const k = {
+    ...liftRaw({ face: 'k' }),
+    sliders: [
+      { id: 't', min: 0, max: 4, step: '1/4', value: 0, label: '시각 $t$' },
+      { id: 'k', min: -1, max: 1, step: 1, value: 1, label: '$k$' },
+    ],
+  };
+  assert.throws(() => parseCoord(k), /face.*움직이는 것/);
+  // 방향 = 속도의 반대 부호(2t−4) — 가는 동안 왼쪽을 봄
+  const w = tripRaw(
+    { face: 'y(W)' },
+    {
+      objects: [
+        ...tripRaw().objects,
+        { id: 'w', curve: '2*x-4', tone: 'soft' },
+        { id: 'W', point: { on: 'w', x: 'x(B)' } },
+      ],
+    },
+  );
+  assert.throws(() => coordDef.deep?.(parseCoord(w)), /증감.*방향/);
+});
+
+test('정답 신호 금지(P3): 목표를 이룬 상태에 멈춘 모습(방향 0)이 있고 방향 읽는 값이 화면에 없으면 형식 오류', () => {
+  // 리프트 높이 4 인 때 두 곳(t=1 멈춤 · t=4) — 멈춘 모습이 끄는 도중 한 곳을 알려 준다
+  const goal = {
+    value: { of: 'y(P)', is: 4, places: 2 },
+    hint: '높이가 4 m 인 때를 두 번 찾아요.',
+  };
+  assert.throws(() => coordDef.deep?.(parseCoord({ ...liftRaw(), goal })), /정답.*멈춘 모습/);
+  // 속도를 읽는 값으로 보이면(숫자 0 이 이미 보임) 그림이 새로 알려 주는 것이 없다
+  const shown = liftRaw();
+  shown.objects = [...shown.objects, { readout: 'deriv(X,P)', label: '속도' }];
+  assert.doesNotThrow(() => coordDef.deep?.(parseCoord({ ...shown, goal })));
+  // trip 목표(위치 0 — t=0·4, 속도 ±4)는 멈춘 모습과 상관없다
+  assert.doesNotThrow(() =>
+    coordDef.deep?.(
+      parseCoord(
+        tripRaw({}, { goal: { value: { of: 'net(F)', is: 0, places: 2 }, hint: '두 번 찾아요.' } }),
+      ),
+    ),
+  );
+});
+
+test('표식이 바라보는 상태가 상한(2000)을 넘으면 덜어 내지 않고 형식 오류', () => {
+  // 방향이 B(17칸)와 자유 점 C(41×41칸)에 기댐 — 28577 상태
+  const raw = tripRaw(
+    { face: 'slope(B,C)' },
+    {
+      x: { min: 0, max: 4, step: '1/10', unit: '시간' },
+      y: { min: -4, max: 4, step: '1/5', name: '속도', unit: 'km/시', areaUnit: 'km' },
+      objects: [...tripRaw().objects, { id: 'C', point: { x: 1, y: 1, drag: 'xy' } }],
+    },
+  );
+  assert.throws(() => coordDef.deep?.(parseCoord(raw)), /길 띠.*상태.*2000/);
 });
