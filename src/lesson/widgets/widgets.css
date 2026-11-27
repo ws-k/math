@@ -190,6 +190,39 @@
 .lesson .wgt-read .t-median {
   color: var(--bad);
 }
+/* 끌 수 없는 점(고정 점·슬라이더 점): 끄는 손잡이(파란 점·바탕색 테두리)와 구별되게 진한 글자색 점 */
+.lesson .nl-fixed {
+  fill: var(--ink);
+  stroke: var(--bg);
+  stroke-width: 2;
+  pointer-events: none;
+}
+/* 점프: 다 뛴 점은 손잡이가 아니라 화살표 색 점, 출발점은 속 빈 고리(엉뚱한 칸에 놓았을 때 어디서 세는지) */
+.lesson .nl-jdot {
+  fill: var(--good);
+  pointer-events: none;
+}
+.lesson .nl-from {
+  fill: none;
+  stroke: var(--good);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+/* 슬라이더로 움직이는 점: 슬라이더 막대만 touch-action:none(페이지 스크롤은 산다), 누르는 높이 44px */
+.lesson .nl-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lesson .nl-slider input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  margin-block: 0;
+  touch-action: none;
+  accent-color: var(--primary);
+}
 
 /* 단위원 */
 .lesson .uc-axis {
