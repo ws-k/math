@@ -38,6 +38,8 @@ export function useWidgetDrag<S>(
 export function useSvgDrag(ref: RefObject<SVGGraphicsElement | null>, h: DragHandlers) {
   const unit = useRef(1);
   useDrag(ref, {
+    // 잡을지는 부품이 정한다 — 한 부품의 손잡이 여럿이 동시에 끌리지 않게(P9) 남이 끄는 중이면 거절한다
+    ...(h.pick ? { pick: h.pick } : {}),
     onStart(x: number, y: number) {
       const m = ref.current?.ownerSVGElement?.getScreenCTM();
       unit.current = m?.a ? 1 / m.a : 1;
