@@ -291,7 +291,6 @@ export const WIDGET_SCENES: Scene[] = [
       max: 4,
       step: '1/2',
       label: '1',
-      unit: 'km',
       at: 'net(F)',
       face: 'y(B)',
     },
@@ -313,7 +312,7 @@ export const WIDGET_SCENES: Scene[] = [
       { readout: 'value(t)', label: '시각' },
       { readout: 'y(P)', label: '높이' },
     ],
-    strip: { dir: 'y', min: -1, max: 5, step: '1', unit: 'm', at: 'y(P)', face: 'deriv(X,P)' },
+    strip: { dir: 'y', min: -1, max: 5, step: '1', at: 'y(P)', face: 'deriv(X,P)' },
   }),
   // 계단 표시(요청 64 — math2-diff-coefficient secant 꼴): P~Q 의 가로·세로 변과 길이
   explore('co-stair', 'coord', {
