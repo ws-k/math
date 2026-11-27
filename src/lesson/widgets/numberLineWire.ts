@@ -5,11 +5,11 @@
 //
 // 판정 규칙: 손을 떼면 바로(P3), 키·◀▶ 는 멈춘 뒤 한 번(useGoal). 놓침(엉뚱한 칸·그냥 누르기)만 세어 두 번째에
 // 눌러서 하기를 켠다(P4, drag.ts missHint). 키는 세지 않는다 — 키를 쓰는 사람은 이미 끌기 말고 다른 길로 하고 있다.
-import { missHint, TAP_ON } from '../drag.ts';
+import { missHint, nearest, TAP_ON } from '../drag.ts';
 import type { GoalProgress } from '../goal.ts';
 import {
   cellOfHandle,
-  JUMPER,
+  isJumper,
   jumpGuide,
   jumpHits,
   type NLParams,
@@ -40,6 +40,17 @@ export interface NLWireDeps {
 /** 눌러서 하기에서 무엇을 누르나 */
 const TAP_HOW = '◀ ▶ 로 한 칸씩 옮기면 돼요.';
 
+/**
+ * 누른 자리(at)에서 가장 가까운 손잡이 id. 손잡이 누르는 영역(지름 56)은 이웃 칸 손잡이와 겹칠 수 있어(두 끝 구간의
+ * 끝점이 바로 옆 칸, 잘게 나뉜 칸) 먼저 그려진 손잡이가 아니라 손가락에 가까운 손잡이를 잡는다 — 좌표평면과 같은 규칙(drag.ts nearest)
+ */
+export function nearestHandle(
+  hs: { id: string; x: number; y: number }[],
+  at: { x: number; y: number },
+): string | null {
+  return nearest(hs, at, Number.POSITIVE_INFINITY)?.id ?? null;
+}
+
 export function nlWire(p: NLParams, d: NLWireDeps) {
   /** 부품 안에서 끄는 중인가(손잡이·슬라이더 공용, P9) */
   const busy = { current: false };
@@ -55,11 +66,11 @@ export function nlWire(p: NLParams, d: NLWireDeps) {
     d.live.current = n;
     d.setState(n);
   };
-  const miss = (n: NLState, from: number) => {
+  const miss = (n: NLState, id: string, from: number) => {
     fails++;
     d.setFails(fails);
     d.onMiss();
-    const moved = n.pts[JUMPER] !== from;
+    const moved = cellOfHandle(n, id) !== from;
     const g = jumpGuide(p, n);
     const head =
       moved && g
@@ -84,7 +95,7 @@ export function nlWire(p: NLParams, d: NLWireDeps) {
       busy.current = true;
       active = { id, from: cellOfHandle(d.live.current, id) };
       // 키로 옮긴 자리의 판정이 기다리는 중이면 지금 끝낸다 — 끄는 도중 타이머가 터지지 않게
-      if (id === JUMPER) d.judge.flush();
+      if (isJumper(id)) d.judge.flush();
     },
     letGo() {
       busy.current = false;
@@ -95,11 +106,11 @@ export function nlWire(p: NLParams, d: NLWireDeps) {
       const n = now(n0);
       put(n);
       const a = active;
-      if (a?.id === JUMPER) {
+      if (a && isJumper(a.id)) {
         const hit = jumpHits(p, n);
         viaKey = false;
         d.judge.release(hit);
-        if (!hit.length) miss(n, a.from);
+        if (!hit.length) miss(n, a.id, a.from);
       } else if (!p.task && !p.jumps) d.finish(); // 과제·점프가 없으면 한 번 만져 보면 끝
       return now(n);
     },
@@ -108,7 +119,7 @@ export function nlWire(p: NLParams, d: NLWireDeps) {
       const n = nlKey(p, now(d.live.current), id, key);
       if (!n) return false;
       put(n);
-      if (id === JUMPER) {
+      if (isJumper(id)) {
         viaKey = true;
         d.judge.later(() => jumpHits(p, now(d.live.current)));
       } else if (!p.task && !p.jumps) d.finish();
