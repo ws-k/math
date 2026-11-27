@@ -220,7 +220,8 @@
   fill: var(--primary);
   pointer-events: none;
 }
-/* 편차 막대: 평균보다 작은 쪽·큰 쪽 색을 나눈다(합이 0 이 되는 걸 눈으로 비교하게). 점 아래에 깔린다 */
+/* 편차 막대: 평균보다 작은 쪽·큰 쪽 색을 나눈다(합이 0 이 되는 걸 눈으로 비교하게). 점 아래에 깔린다.
+   빨강·초록(틀림·맞음 색)이 아니라 중립 두 색 — 평균보다 작은 값이 '틀린' 값이 아니다(검토) */
 .lesson .nl-dev {
   stroke-width: 4;
   stroke-linecap: round;
@@ -228,11 +229,11 @@
   pointer-events: none;
 }
 .lesson .nl-dev.neg {
-  stroke: var(--bad);
+  stroke: var(--coin-edge);
 }
 .lesson .nl-dev.pos,
 .lesson .nl-dev.zero {
-  stroke: var(--good);
+  stroke: var(--primary);
 }
 /* 점 무게: 개수를 적은 큰 점. 끄는 점이면 손잡이 위에 덮어 그리므로 눌림은 손잡이가 받는다 */
 .lesson .nl-dot.top {
@@ -244,12 +245,13 @@
   font-weight: 800;
   pointer-events: none;
 }
-/* 진리집합 줄: 집합마다 색(1번째 파랑·2번째 초록·3번째 빨강), 끝점에서 수직선까지 옅은 점선 */
+/* 진리집합 줄: 집합마다 구분 색(1번째 파랑·2번째 호박·3번째 회청), 끝점에서 수직선까지 옅은 점선.
+   맞음·틀림 색(초록·빨강)은 쓰지 않는다 — 집합이 맞거나 틀린 것이 아니다(검토) */
 .lesson .nl-region.set1 {
-  stroke: var(--good);
+  stroke: var(--coin-edge);
 }
 .lesson .nl-region.set2 {
-  stroke: var(--bad);
+  stroke: var(--sub);
 }
 .lesson .nl-region.set0,
 .lesson .nl-region.set1,
@@ -258,19 +260,19 @@
 }
 .lesson .nl-arrow.set1,
 .lesson .wgt-svg .nl-setname.set1 {
-  fill: var(--good);
+  fill: var(--coin-edge);
 }
 .lesson .nl-arrow.set2,
 .lesson .wgt-svg .nl-setname.set2 {
-  fill: var(--bad);
+  fill: var(--sub);
 }
 .lesson .nl-end.set1 {
-  fill: var(--good);
-  stroke: var(--good);
+  fill: var(--coin-edge);
+  stroke: var(--coin-edge);
 }
 .lesson .nl-end.set2 {
-  fill: var(--bad);
-  stroke: var(--bad);
+  fill: var(--sub);
+  stroke: var(--sub);
 }
 .lesson .nl-end.open.set1,
 .lesson .nl-end.open.set2 {
@@ -279,6 +281,22 @@
 .lesson .wgt-svg .nl-setname {
   fill: var(--primary);
   font-weight: 800;
+}
+/* 진리집합 조건 머리글: 집합마다 한 덩어리, 좁으면 다음 줄로 */
+.lesson .nl-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px 16px;
+}
+/* 점프 둘째 벌: 첫 벌(초록)과 다른 색·더 높은 줄 — 두 뜀이 만나는 자리(공배수)가 보이게 */
+.lesson .nl-jump.two path {
+  stroke: var(--coin-edge);
+}
+.lesson .nl-jump.two polygon,
+.lesson .nl-jump.two text,
+.lesson .nl-jdot.two {
+  fill: var(--coin-edge);
 }
 /* 두 끝 구간 단추 셋을 한 줄에(버튼 줄 안의 한 줄 — 높이 52px 그대로, 폭을 고르게 나눈다) */
 .lesson .nl-iw {
@@ -290,6 +308,11 @@
   flex: 1 1 0;
   min-width: 0;
   padding: 0 4px;
+}
+/* 단추 글은 고정이라 지금 상태(빈 점·바깥)는 눌린 모양으로 보인다 */
+.lesson .nl-iw .lbtn[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-ink);
 }
 .lesson .nl-guide {
   stroke: var(--faint);

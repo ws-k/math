@@ -5,8 +5,12 @@
 // 구간(부등식의 해, 고르기 과제), 자료 점과 평균·중앙값(점을 끌면 평균선·중앙값선이 따라 움직인다),
 // 슬라이더로 움직이는 점(점 자리 = 슬라이더 글자의 식).
 // 2-라(추가형 옵션): 범위 확대(끝 ±1,000,000·100칸)·소수 눈금(decimal), 두 줄(second — 같은 길이의 다른 눈금),
-// 양쪽 막힌·두 조각 구간(region·구간 과제의 lo·hi·out — 계산은 numberLineSet.ts), 무리수 점(고정 점의 식 자리,
-// 무리수에 가장 가까운 칸 찍기 near — P10), 편차 막대·분산·표준편차·점 무게(numberLineStats.ts), 진리집합 비교(sets).
+// 양쪽 막힌·두 조각 구간(region·구간 과제의 lo·hi·out — 계산은 numberLineSet.ts), 연립부등식(부등식 1~2개),
+// 무리수 점(고정 점의 식 자리, 무리수에 가장 가까운 칸 찍기 near — P10), 편차 막대·분산·표준편차·점 무게
+// (numberLineStats.ts), 진리집합 비교(sets), 점프 두 벌(jumps2 — 공배수: 4씩·6씩 뛰어 처음 만나는 자리, 요청 13).
+//
+// 칸 폭 하한: 끄는 것(점·자료·구간 끝점·점프)이 있으면 가장 좁은 화면에서 한 칸이 손가락 하한(MIN_CELL_PX) 이상, 누르는
+// 지름이 MIN_HIT_PX 이상이어야 한다. 그림이 키 크면 382×580 에서 높이 상한으로 줄어드는 것까지 잰다(nlNarrowScale).
 //
 // 점프를 '다음 이동 보기' 단추에서 끌기로 바꾼 까닭(docs/plan-widgets-v2.md P2): 단추는 결과를 대신 그려 주어 학생이
 // 셈하지 않는다. 지금은 점프하는 점(JUMPER)을 다음 도착 칸에 놓아야 화살표가 생긴다 — 놓는 자리가 곧 셈이다.
@@ -15,7 +19,14 @@
 // 다른 부품이 빌려 쓰는 함수(3-가 좌표평면 길 띠 — 읽어 쓰기만): valueAt(칸 → 값) · xOf(칸 → 그림 x) · nlTicks(눈금·숫자).
 // 셋 다 매개변수(min·max·step·label)만 보고 상태를 보지 않는다. 쓰임새는 docs/widgets.md 'numberLine — 빌려 쓰는 함수'.
 import { LITERAL } from '../../content/check.ts';
-import { clamp, keyStep, MIN_CELL_PX, NARROW_CARD_W } from '../drag.ts';
+import {
+  clamp,
+  keyStep,
+  MIN_CELL_PX,
+  MIN_HIT_PX,
+  NARROW_CARD_W,
+  NARROW_SVG_MAX_H,
+} from '../drag.ts';
 import { compile, evalExact, evalNum } from '../expr.ts';
 import { formatValue } from '../format.ts';
 import { arr, fail, int, type Obj, obj, oneOf, optStr, rationalStr, str } from '../parse.ts';
@@ -56,10 +67,10 @@ export interface NLSecond {
   label?: string;
   unit?: string;
 }
-/** 진리집합 하나: 이름·조건(부등식 하나)·그린 구간 */
+/** 진리집합 하나: 이름·조건(부등식 1~2개 — 둘이면 연립, 해는 교집합)·그린 구간 */
 export interface NLSetDef extends NLSet {
   name: string;
-  cond: string;
+  cond: string[];
 }
 export type NLStat = 'mean' | 'median' | 'dev' | 'var' | 'sd';
 /** 구간 고르기 정답: 끝점 하나 + 방향(옛 꼴) 또는 끝점 둘(양쪽 막힌·두 조각) */
@@ -82,13 +93,22 @@ export interface NLAnswer {
 }
 export type NLDir = 'left' | 'right';
 export type NLTask =
+  /** 점 찍기: 끄는 점을 답 칸에. check 는 답을 문제 조건으로 계산하는 sympy 식 */
+  | { type: 'point'; point: string; answer: string; check: string; near?: undefined }
   /**
-   * 점 찍기. near 가 있으면 무리수에 가장 가까운 칸 찍기(P10) — answer 는 그 칸의 값(형식 검사가 계산해 넣는다)이고
-   * check 는 없다(검산이 near 원문으로 '반 칸 안'을 따로 본다)
+   * 무리수 점 찍기(P10): 무리수(near)에 가장 가까운 칸. answer 는 그 칸의 값(형식 검사가 계산해 넣는다)이고 check 는
+   * 없다 — 검산이 near 원문으로 '반 칸 안'을 따로 본다
    */
-  | { type: 'point'; point: string; answer: string; check?: string; near?: string }
+  | { type: 'point'; point: string; answer: string; near: string; check?: undefined }
   | { type: 'points'; answers: NLAnswer[] }
-  | { type: 'interval'; ineq: string; answer: NLRay | NLTwoEnds };
+  /** 구간 고르기. ineq 는 부등식 1~2개(둘이면 연립 — 해는 교집합) */
+  | { type: 'interval'; ineq: string[]; answer: NLRay | NLTwoEnds };
+
+/** 점프 한 벌: 출발점과 차례로 뛸 이동 */
+export interface NLJumps {
+  start: string;
+  moves: string[];
+}
 
 export interface NLParams {
   min: number;
@@ -103,7 +123,9 @@ export interface NLParams {
   unit?: string;
   second?: NLSecond;
   points: NLPoint[];
-  jumps?: { start: string; moves: string[] };
+  jumps?: NLJumps;
+  /** 점프 둘째 벌(jumps 를 다 뛴 뒤 다른 점·다른 줄로). 공배수처럼 두 뜀이 만나는 자리를 보게 */
+  jumps2?: NLJumps;
   /** 보여 주기만 하는 구간(부등식의 해) */
   region?: NLSet;
   data?: { values: string[]; weights?: number[]; drag: boolean; show: NLStat[]; digits: number };
@@ -115,7 +137,10 @@ export interface NLParams {
   compare?: boolean;
 }
 
-/** 두 끝 구간 고르기의 선택. a·b 는 손잡이 ia·ib 의 칸(엇갈려도 된다 — 읽을 때 왼쪽부터) */
+/**
+ * 두 끝 구간 고르기의 선택. a 는 왼쪽 끝(손잡이 ia)·b 는 오른쪽 끝(ib)의 칸이고 늘 a < b 다 — 끝점이 엇갈리면 단추의
+ * '왼쪽·오른쪽'이 어느 점인지 바뀌고, 같은 칸에 겹치면 한 점·빈 집합이 되어 '구간'이 아니다(검토)
+ */
 export interface NLTwoState {
   a: number;
   b: number;
@@ -148,6 +173,9 @@ export interface NLState {
  * 10장면이 칸을 바꾸지 않고 형식 검사를 통과해야 한다(plan-remaining 2-2).
  */
 export const JUMPER = 'j';
+/** 둘째 벌(jumps2)의 뛰는 점. 소문자 한 글자라 다른 손잡이 id 와 겹치지 않는다 */
+export const JUMPER2 = 'k';
+export const isJumper = (id: string) => id === JUMPER || id === JUMPER2;
 
 // ---- 칸 ↔ 값 ----
 
@@ -170,13 +198,16 @@ const LABEL_ROW = 14;
 const SET_ROW = 18;
 /** 두 줄 수직선의 줄 사이(위 줄 숫자 아래에 아래 줄 눈금이 닿지 않게) */
 const LINE_GAP = 44;
+/** 점프 화살표 줄 높이. 둘째 벌은 그 위에 한 줄 더(더 높은 호) */
+const JUMP_ROW = 46;
+const JUMP2_ROW = 32;
 /** 자료 점 쌓기 한 층. 무게가 있으면 개수를 적은 큰 점(반지름 10)이라 넓힌다 */
 const dataRow = (p: NLParams) => (p.data?.weights ? 22 : 14);
 
 function layout(p: NLParams) {
   let y = 10;
   const jumpTop = y;
-  if (p.jumps) y += 46;
+  if (p.jumps) y += JUMP_ROW + (p.jumps2 ? JUMP2_ROW : 0);
   const setsTop = y;
   if (p.sets) y += p.sets.length * SET_ROW + 6;
   const dataTop = y;
@@ -191,18 +222,42 @@ function layout(p: NLParams) {
   return { jumpTop, setsTop, dataTop, line, line2, h: line2 + 40, rows };
 }
 
+/** 한글·한자 같은 넓은 글자(13px 글꼴에서 거의 정사각) */
+const WIDE = /[ᄀ-ᇿ　-鿿가-힯]/;
+/** 글자 폭 어림(SVG 단위): 13px 글꼴에서 숫자·부호(− 포함)·영문 한 글자 ch, 한글 등 넓은 글자는 13 */
+const textW = (t: string, ch: number) => [...t].reduce((w, c) => w + (WIDE.test(c) ? 13 : ch), 0);
+/** 점 이름표(굵은 13px) 한 글자 폭과, 옆 이름표와 띄울 틈 */
+const PLABEL_CH = 7.8;
+const PLABEL_GAP = 2;
+
 /**
- * 한 칸에 모일 수 있는 점의 최대 수(이름표 층 수). 고정 점은 제자리라 같은 칸 것끼리만, 움직이는 점(끄는 점·슬라이더 점)은
- * 어디든 올 수 있어 모두 더한다. 층을 점 수만큼만 두면 넉넉하고, 모자라 겹치는 일이 없다
+ * 이름표 층 쌓기: 앞에서부터 놓으며, 이미 놓인 이름표와 가로로 글자 폭만큼 가까우면 한 층 위로(같은 칸만이 아니라 —
+ * 무리수 점·잘게 나뉜 칸에서 이웃 칸 이름표도 겹친다). 놓는 순서가 곧 아래층 우선이다
+ */
+function stackLabels(items: { x: number; w: number }[]): number[] {
+  const placed: { x: number; w: number; lv: number }[] = [];
+  return items.map((it) => {
+    let lv = 0;
+    while (placed.some((o) => o.lv === lv && Math.abs(o.x - it.x) < (o.w + it.w) / 2 + PLABEL_GAP))
+      lv++;
+    placed.push({ ...it, lv });
+    return lv;
+  });
+}
+const plabelW = (pt: NLPoint) => textW(pt.label ?? pt.id, PLABEL_CH);
+/** 고정 점(제자리)의 x. 칸 위 값이면 그 칸, 무리수면 식의 값 자리 */
+const fixedX = (p: NLParams, pt: NLPoint) =>
+  pt.irr ? xNum(p, irrX(pt)) : xVal(p, q(pt.at as string));
+
+/**
+ * 이름표 층 수의 상한. 고정 점은 제자리라 서로 가까운 것끼리 쌓은 층 수, 움직이는 점(끄는 점·슬라이더 점)은 어디든 올 수
+ * 있어 하나씩 더한다. 층을 이만큼 두면 넉넉하고, 모자라 겹치는 일이 없다
  */
 function labelRows(p: NLParams): number {
-  const fixed = new Map<string, number>();
-  let moving = 0;
-  for (const pt of p.points) {
-    if (pt.drag || pt.follow) moving++;
-    else if (pt.at !== undefined) fixed.set(pt.at, (fixed.get(pt.at) ?? 0) + 1);
-  }
-  return Math.max(0, ...fixed.values()) + moving;
+  const fixed = p.points.filter((pt) => !pt.drag && !pt.follow && pt.at !== undefined);
+  const lv = stackLabels(fixed.map((pt) => ({ x: fixedX(p, pt), w: plabelW(pt) })));
+  const moving = p.points.filter((pt) => pt.drag || pt.follow).length;
+  return (fixed.length ? Math.max(...lv) + 1 : 0) + moving;
 }
 export const nlHeight = (p: NLParams) => layout(p).h;
 export const nlLine = (p: NLParams) => layout(p).line;
@@ -214,8 +269,15 @@ export const xOf = (p: NLParams, k: number) => r2(PAD + k * unitPx(p));
 const xNum = (p: NLParams, v: number) => r2(PAD + ((v - p.min) / (p.max - p.min)) * (W - 2 * PAD));
 const xVal = (p: NLParams, v: Q) => xNum(p, num(v));
 
-/** 가장 좁은 화면(382)에서 한 칸의 화면 폭(px). 그림 폭 W 가 카드 안쪽 폭으로 줄어 그려지는 비율로 잰다(헤드리스 실측 298) */
-const narrowCellPx = (p: NLParams) => unitPx(p) * (NARROW_CARD_W / W);
+/**
+ * 가장 좁은 화면(382×580)에서 그림이 줄어드는 배율(화면 px ÷ SVG 단위). 폭은 카드 안쪽 폭(NARROW_CARD_W, 헤드리스 실측
+ * 298)으로, 높이는 그림 높이 상한(NARROW_SVG_MAX_H — widgets.css 의 max-height 36svh)으로 묶이므로 둘 중 작은 쪽.
+ * 키 큰 그림(자료 여러 층·진리집합·두 줄)은 높이에 묶여 칸·손잡이가 더 작아진다(검토 M2)
+ */
+export const nlNarrowScale = (p: NLParams) =>
+  Math.min(NARROW_CARD_W / W, NARROW_SVG_MAX_H / nlHeight(p));
+/** 손잡이 누르는 지름(SVG 단위) — SvgHandle 의 HANDLE_HIT(반지름 28) 두 배 */
+const HIT_D = 56;
 
 // ---- 글자 ----
 
@@ -226,8 +288,12 @@ export const isDecimal = (v: Q) => {
   for (const f of [2n, 5n]) while (d % f === 0n) d /= f;
   return d === 1n;
 };
-/** 유한소수를 정확한 소수 글자로(자리 수는 분모가 정한다 — 3/4 → 0.75) */
+/**
+ * 유한소수를 정확한 소수 글자로(자리 수는 분모가 정한다 — 3/4 → 0.75). 유한소수가 아니면 분수 글자로 — 자리 수를
+ * 찾는 되풀이가 끝나지 않는다(검토 C1: 형식 검사를 빠져나간 값이 와도 화면이 멈추지 않게 하는 안전망)
+ */
 function decExact(v: Q): string {
+  if (!isDecimal(v)) return fmt(v);
   let k = 0;
   while (10n ** BigInt(k) % v[1] !== 0n) k++;
   return formatValue(ratStr(v), { digits: k });
@@ -272,8 +338,16 @@ const followQ = (p: NLParams, pt: NLPoint, v: Q): Q | null =>
 
 /** 무리수 점의 읽는 값 자리 수. 검산(approx)도 같은 자리에서 반올림한다 */
 const IRR_DIGITS = 2;
-/** 식(무리수)의 값. 형식 검사가 실수·범위 안임을 확인했다 */
-const irrNum = (src: string) => evalNum(parseSym(src), {});
+/** 무리수 점의 값은 점마다 한 번만 계산한다(끄는 동안 다른 점이 움직여도 매 프레임 식을 다시 읽지 않게) */
+const irrValues = new WeakMap<NLPoint, number>();
+function irrX(pt: NLPoint): number {
+  let x = irrValues.get(pt);
+  if (x === undefined) {
+    x = evalNum(parseSym(pt.at as string), {});
+    irrValues.set(pt, x);
+  }
+  return x;
+}
 /** 반올림한 근삿값 글자(ASCII 부호 — 검산 value 와 같은 글자). 0.5 는 0 에서 먼 쪽(verify.py check_approx 와 같게) */
 function irrDec(x: number, digits = IRR_DIGITS): string {
   const r = (Math.round(Math.abs(x) * 10 ** digits) / 10 ** digits).toFixed(digits);
@@ -285,11 +359,13 @@ const sdDec = (x: number, digits: number) => {
   return t.includes('.') ? t.replace(/\.?0+$/, '') : t;
 };
 /**
- * 유리수로 보이는 실수인가(분모 1000 까지의 분수와 1e-12 안). sqrt(4) 처럼 식은 무리수 꼴이어도 값이 유리수면 '≈' 로
- * 적을 까닭이 없고 칸에 놓아야 한다. 교과서의 무리수(√2·π·log₂5)가 이만큼 분수에 붙는 일은 없다
+ * 유리수로 볼 분모 상한. 교과서의 무리수(√2·π·log₂5)는 분모 1000 까지의 어떤 분수와도 1e-12 안으로 붙지 않고, 수직선
+ * 칸(100칸·끝 ±1,000,000)에서 쓸 유리수는 이 안에 든다
  */
+const RATIONAL_DEN_MAX = 1000;
+/** 유리수로 보이는 실수인가. sqrt(4) 처럼 식은 무리수 꼴이어도 값이 유리수면 '≈' 로 적을 까닭이 없고 칸에 놓아야 한다 */
 function looksRational(x: number): boolean {
-  for (let d = 1; d <= 1000; d++)
+  for (let d = 1; d <= RATIONAL_DEN_MAX; d++)
     if (Math.abs(x - Math.round(x * d) / d) < 1e-12 * Math.max(1, Math.abs(x))) return true;
   return false;
 }
@@ -322,17 +398,19 @@ export function nlInit(p: NLParams): NLState {
   for (const pt of p.points)
     if (pt.at !== undefined && !pt.irr) pts[pt.id] = cellOf(p, q(pt.at)) as number;
   if (p.jumps) pts[JUMPER] = cellOf(p, q(p.jumps.start)) as number;
+  if (p.jumps2) pts[JUMPER2] = cellOf(p, q(p.jumps2.start)) as number;
   const data = (p.data?.values ?? []).map((v) => cellOf(p, q(v)) as number);
   const sl = p.slider ? nlSliderValues(p).indexOf(ratStr(q(p.slider.value))) : 0;
   let iv: NLState['iv'] = null;
   let iw: NLTwoState | null = null;
   if (p.task?.type === 'interval') {
     if ('lo' in p.task.answer) {
-      // 두 끝: 3등분 자리에 찬 점·사이로 시작. 그대로 정답이면 바깥으로(처음 모양이 답이 되지 않게)
+      // 두 끝: 3등분 자리(왼쪽 < 오른쪽)에 찬 점·사이로 시작. 그대로 정답이면 바깥으로(처음 모양이 답이 되지 않게)
       const n = K(p);
+      const a = Math.round(n / 3);
       iw = {
-        a: Math.round(n / 3),
-        b: Math.round((2 * n) / 3),
+        a,
+        b: Math.max(a + 1, Math.round((2 * n) / 3)),
         aOpen: false,
         bOpen: false,
         out: false,
@@ -348,50 +426,59 @@ export function nlInit(p: NLParams): NLState {
   return { pts, data, jump: 0, iv, ...(iw ? { iw } : {}), sl };
 }
 
-/** 두 끝 선택 → 구간(왼쪽 끝부터). 끝점이 엇갈려 놓였으면 빈 점/찬 점은 그 손잡이를 따라간다 */
-function twoSet(p: NLParams, w: NLTwoState): NLSet {
-  const [l, lo, r, ro] = w.a <= w.b ? [w.a, w.aOpen, w.b, w.bOpen] : [w.b, w.bOpen, w.a, w.aOpen];
-  return {
-    lo: { at: ratStr(valueAt(p, l)), open: lo },
-    hi: { at: ratStr(valueAt(p, r)), open: ro },
-    out: w.out,
-  };
-}
+/** 두 끝 선택 → 구간(a 가 왼쪽 끝) */
+const twoSet = (p: NLParams, w: NLTwoState): NLSet => ({
+  lo: { at: ratStr(valueAt(p, w.a)), open: w.aOpen },
+  hi: { at: ratStr(valueAt(p, w.b)), open: w.bOpen },
+  ...(w.out ? { out: true } : {}),
+});
 
-/**
- * 두 끝 구간의 단추: 'lo'·'hi' 는 지금 왼쪽·오른쪽에 놓인 끝의 빈 점/찬 점, 'out' 은 사이/바깥. 단추 글이 손잡이 이름이
- * 아니라 자리('왼쪽 끝')인 까닭: 학생은 끝점을 엇갈려 옮길 수 있고, 그때 'ia' 같은 이름은 화면에서 보이지 않는다
- */
+/** 두 끝 구간의 단추: 'lo'·'hi' 는 왼쪽·오른쪽 끝의 빈 점/찬 점, 'out' 은 사이/바깥 */
 export function nlIwFlip(s: NLState, what: 'lo' | 'hi' | 'out'): NLState {
   const w = s.iw;
   if (!w) return s;
   if (what === 'out') return { ...s, iw: { ...w, out: !w.out } };
-  const aLeft = w.a <= w.b;
-  const flipA = what === 'lo' ? aLeft : !aLeft;
-  return { ...s, iw: flipA ? { ...w, aOpen: !w.aOpen } : { ...w, bOpen: !w.bOpen } };
-}
-/** 두 끝 선택의 왼쪽·오른쪽 끝이 빈 점인가(단추 글) */
-export function nlIwEnds(s: NLState): { lo: boolean; hi: boolean } | null {
-  const w = s.iw;
-  if (!w) return null;
-  return w.a <= w.b ? { lo: w.aOpen, hi: w.bOpen } : { lo: w.bOpen, hi: w.aOpen };
+  return { ...s, iw: what === 'lo' ? { ...w, aOpen: !w.aOpen } : { ...w, bOpen: !w.bOpen } };
 }
 
-// ---- 점프 ----
+// ---- 점프(두 벌까지) ----
+// 둘째 벌(jumps2)은 첫 벌을 다 뛴 뒤 다른 점(JUMPER2)으로 이어서 뛴다. 마친 점프 수(s.jump)는 두 벌을 이어 센 수 하나 —
+// 목표 판정기(useGoal)가 열쇠 수로 끝을 보므로 두 벌이어도 판정 규칙이 하나다.
 
-/** 점프를 done 번 마친 자리(값) */
-function jumpValue(p: NLParams, done: number): Q {
-  const j = p.jumps;
-  if (!j) return qi(0);
-  return j.moves.slice(0, done).reduce((v, m) => add(v, q(m)), q(j.start));
+const jumpSets = (p: NLParams): NLJumps[] =>
+  p.jumps ? [p.jumps, ...(p.jumps2 ? [p.jumps2] : [])] : [];
+/** 뛸 점프 수(두 벌 합) */
+export const nlJumpCount = (p: NLParams) => jumpSets(p).reduce((n, j) => n + j.moves.length, 0);
+/** done 번 마친 뒤 다음에 뛸 점프: 몇째 벌(0·1)의 몇째 이동, 그 벌의 뛰는 점. 다 뛰었으면 null */
+function nextJump(
+  p: NLParams,
+  done: number,
+): { set: number; j: NLJumps; i: number; id: string } | null {
+  let left = done;
+  for (const [set, j] of jumpSets(p).entries()) {
+    if (left < j.moves.length) return { set, j, i: left, id: set === 0 ? JUMPER : JUMPER2 };
+    left -= j.moves.length;
+  }
+  return null;
 }
-const jumpsLeft = (p: NLParams, s: NLState) => !!p.jumps && s.jump < p.jumps.moves.length;
-/** 지금 점프의 출발 칸(마지막으로 도착한 칸). 엉뚱한 칸에 놓아도 출발점은 그대로다 */
-export const jumpFrom = (p: NLParams, s: NLState): number =>
-  cellOf(p, jumpValue(p, s.jump)) as number;
+/** 한 벌에서 i 번 뛴 자리(값) */
+const valueAfter = (j: NLJumps, i: number): Q =>
+  j.moves.slice(0, i).reduce((v, m) => add(v, q(m)), q(j.start));
+const jumpsLeft = (p: NLParams, s: NLState) => s.jump < nlJumpCount(p);
+/** 지금 뛸 점의 손잡이 id. 다 뛰었으면 null */
+export const nlJumper = (p: NLParams, s: NLState) => nextJump(p, s.jump)?.id ?? null;
+/** 지금 점프의 출발 칸(그 벌에서 마지막으로 도착한 칸). 엉뚱한 칸에 놓아도 출발점은 그대로다. 다 뛰었으면 마지막 도착 칸 */
+export function jumpFrom(p: NLParams, s: NLState): number {
+  const n = nextJump(p, s.jump);
+  if (n) return cellOf(p, valueAfter(n.j, n.i)) as number;
+  const last = jumpSets(p).at(-1);
+  return last ? (cellOf(p, valueAfter(last, last.moves.length)) as number) : 0;
+}
 /** 다음 점프가 닿을 칸. 다 뛰었으면 null */
-export const jumpTarget = (p: NLParams, s: NLState): number | null =>
-  jumpsLeft(p, s) ? (cellOf(p, jumpValue(p, s.jump + 1)) as number) : null;
+export function jumpTarget(p: NLParams, s: NLState): number | null {
+  const n = nextJump(p, s.jump);
+  return n ? (cellOf(p, valueAfter(n.j, n.i + 1)) as number) : null;
+}
 /**
  * 놓친 뒤 짚어 줄 다음 점프: 출발 값·방향·크기(글자). 이동량은 문제가 준 조건이라 숨길 답이 아니다 — 놓친 학생에게
  * '어디서부터 얼마만큼'을 다시 말해 줄 뿐 도착 값(셈의 결과)은 말하지 않는다. 다 뛰었으면 null
@@ -400,39 +487,48 @@ export function jumpGuide(
   p: NLParams,
   s: NLState,
 ): { from: string; dir: '왼쪽' | '오른쪽'; amt: string } | null {
-  const m = p.jumps?.moves[s.jump];
-  if (m === undefined) return null;
-  const mv = q(m);
+  const n = nextJump(p, s.jump);
+  if (!n) return null;
+  const mv = q(n.j.moves[n.i] as string);
   return {
-    from: fmtP(p, jumpValue(p, s.jump)),
+    from: fmtP(p, valueAfter(n.j, n.i)),
     dir: cmp(mv, qi(0)) < 0 ? '왼쪽' : '오른쪽',
     amt: fmtP(p, cmp(mv, qi(0)) < 0 ? mul(mv, qi(-1)) : mv),
   };
 }
 
 /**
- * 놓은 상태의 판정 열쇠: 점프하는 점이 다음 도착 칸이면 그 점프 번호 하나. 목표 판정기(goal.ts)는 열쇠를 모아
+ * 놓은 상태의 판정 열쇠: 지금 뛰는 점이 다음 도착 칸이면 그 점프 번호 하나. 목표 판정기(goal.ts)는 열쇠를 모아
  * 개수로 끝을 보므로, 번호를 열쇠로 쓰면 '모은 열쇠 수 = 마친 점프 수'가 된다
  */
 export function jumpHits(p: NLParams, s: NLState): string[] {
+  const n = nextJump(p, s.jump);
   const t = jumpTarget(p, s);
-  return t !== null && s.pts[JUMPER] === t ? [String(s.jump)] : [];
+  return n && t !== null && s.pts[n.id] === t ? [String(s.jump)] : [];
 }
 
+/** 점 무게가 있는 자료 손잡이의 이름 — 낭독기가 몇 개짜리 점을 옮기는지 듣게 */
+const dataName = (p: NLParams, i: number) => {
+  const w = p.data?.weights?.[i];
+  return w === undefined ? `자료 ${i + 1}` : `자료 ${i + 1}(${w}개)`;
+};
+
 /**
- * 지금 끌 수 있는 손잡이(순서 = 화면 순서). 점프가 남았으면 점프하는 점 하나만 — 다른 점(점 찍기 과제의 P)이
+ * 지금 끌 수 있는 손잡이(순서 = 화면 순서). 점프가 남았으면 지금 뛰는 점 하나만 — 다른 점(점 찍기 과제의 P)이
  * 같은 칸 근처에 있으면 누르는 영역(반지름 28)이 겹쳐 엉뚱한 점이 잡히고, 장면 글도 '다 뛴 뒤 P 를 옮겨요' 순서다.
+ * 두 끝 구간의 손잡이 이름은 자리(왼쪽 끝·오른쪽 끝) — 둘은 엇갈리지 않는다(nlDrag)
  */
 export function nlActive(p: NLParams, s: NLState): { id: string; name: string }[] {
-  if (jumpsLeft(p, s)) return [{ id: JUMPER, name: '뛰는 점' }];
+  const n = nextJump(p, s.jump);
+  if (n) return [{ id: n.id, name: n.set === 0 ? '뛰는 점' : '뛰는 점 2' }];
   return [
     ...p.points.filter((x) => x.drag).map((x) => ({ id: x.id, name: x.label ?? x.id })),
-    ...(p.data?.drag ? p.data.values.map((_, i) => ({ id: `d${i}`, name: `자료 ${i + 1}` })) : []),
+    ...(p.data?.drag ? p.data.values.map((_, i) => ({ id: `d${i}`, name: dataName(p, i) })) : []),
     ...(s.iv ? [{ id: 'iv', name: '끝점' }] : []),
     ...(s.iw
       ? [
-          { id: 'ia', name: '끝점 1' },
-          { id: 'ib', name: '끝점 2' },
+          { id: 'ia', name: '왼쪽 끝' },
+          { id: 'ib', name: '오른쪽 끝' },
         ]
       : []),
   ];
@@ -447,6 +543,22 @@ export function cellOfHandle(s: NLState, id: string): number {
   return s.pts[id] ?? 0;
 }
 
+/**
+ * 손잡이가 읽어 주는 글(낭독기 valueText): 이름 + 이 수직선의 수 글자(소수 눈금이면 소수, 아니면 분수). 화면 읽는 값과
+ * 같은 글자를 써야 듣는 값과 보는 값이 어긋나지 않는다(예전엔 실수 글자 0.3333…)
+ */
+export function nlHandleText(p: NLParams, s: NLState, id: string): string {
+  const name = nlActive(p, s).find((h) => h.id === id)?.name ?? id;
+  return `${name} ${fmtP(p, valueAt(p, cellOfHandle(s, id)))}`;
+}
+
+/** 손잡이가 갈 수 있는 칸 범위. 두 끝 구간의 끝점은 서로 엇갈리거나 같은 칸에 겹치지 않는다 */
+function handleRange(p: NLParams, s: NLState, id: string): [number, number] {
+  if (id === 'ia' && s.iw) return [0, s.iw.b - 1];
+  if (id === 'ib' && s.iw) return [s.iw.a + 1, K(p)];
+  return [0, K(p)];
+}
+
 function setCell(s: NLState, id: string, k: number): NLState {
   if (id === 'iv') return s.iv ? { ...s, iv: { ...s.iv, at: k } } : s;
   if (id === 'ia' || id === 'ib')
@@ -459,15 +571,16 @@ function setCell(s: NLState, id: string, k: number): NLState {
   return { ...s, pts: { ...s.pts, [id]: k } };
 }
 
-/** 끌기: 시작 상태 s 에서 손잡이를 dx(SVG 단위)만큼 옮긴 상태. 가장 가까운 칸에 붙고 양끝에서 멈춘다 */
+/** 끌기: 시작 상태 s 에서 손잡이를 dx(SVG 단위)만큼 옮긴 상태. 가장 가까운 칸에 붙고 갈 수 있는 끝에서 멈춘다 */
 export function nlDrag(p: NLParams, s: NLState, id: string, dx: number): NLState {
-  const k = clamp(Math.round(cellOfHandle(s, id) + dx / unitPx(p)), 0, K(p));
-  return setCell(s, id, k);
+  const [lo, hi] = handleRange(p, s, id);
+  return setCell(s, id, clamp(Math.round(cellOfHandle(s, id) + dx / unitPx(p)), lo, hi));
 }
 
 /** 방향키 한 칸 이동. 다루지 않는 키면 null */
 export function nlKey(p: NLParams, s: NLState, id: string, key: string): NLState | null {
-  const k = keyStep(cellOfHandle(s, id), key, 1, 0, K(p));
+  const [lo, hi] = handleRange(p, s, id);
+  const k = keyStep(cellOfHandle(s, id), key, 1, lo, hi);
   return k === null ? null : setCell(s, id, k);
 }
 
@@ -478,15 +591,14 @@ export function nlGrade(p: NLParams, s: NLState): boolean {
   if (t.type === 'points') return t.answers.every((a) => s.pts[a.point] === cellOf(p, q(a.answer)));
   const a = t.answer;
   if ('lo' in a) {
-    if (!s.iw) return false;
-    const g = twoSet(p, s.iw);
-    // 같은 값 비교는 분수로(칸 값 글자가 기약분수라 글자 비교와 같다)
+    const w = s.iw;
     return (
-      g.lo?.at === a.lo.at &&
-      g.lo.open === a.lo.open &&
-      g.hi?.at === a.hi.at &&
-      g.hi.open === a.hi.open &&
-      !!g.out === a.out
+      !!w &&
+      w.a === cellOf(p, q(a.lo.at)) &&
+      w.aOpen === a.lo.open &&
+      w.b === cellOf(p, q(a.hi.at)) &&
+      w.bOpen === a.hi.open &&
+      w.out === a.out
     );
   }
   return !!s.iv && s.iv.at === cellOf(p, q(a.at)) && s.iv.dir === a.dir && s.iv.open === a.open;
@@ -504,45 +616,40 @@ const dataStats = (p: NLParams, s: NLState) =>
     p.data?.weights,
   );
 
-const ivText = (p: NLParams, iv: NonNullable<NLState['iv']>) =>
-  `x ${iv.dir === 'left' ? (iv.open ? '<' : '≤') : iv.open ? '>' : '≥'} ${fmtP(p, valueAt(p, iv.at))}`;
+/** 끝점 하나 + 방향(옛 꼴 구간) → 구간. 글자·sympy 식은 구간 계산(numberLineSet.ts) 하나로 낸다 */
+const rayToSet = (r: { at: string; dir: NLDir; open: boolean }): NLSet =>
+  r.dir === 'left' ? { hi: { at: r.at, open: r.open } } : { lo: { at: r.at, open: r.open } };
 
 /**
- * 점프 식. 마친 이동 + 다음 이동을 "= ?" 로("5 − 7 = ?"), 다 뛰면 값("5 − 7 + 3 = 1").
+ * 점프 식(한 벌). 마친 이동 + 다음 이동을 "= ?" 로("5 − 7 = ?"), 다 뛰면 값("5 − 7 + 3 = 1").
  * 다음 이동을 미리 적는 까닭: 몇만큼 옮길지는 문제가 준 조건이라 숨길 답이 아니고, 학생이 할 일은 그 이동이 닿는 칸을
  * 셈하는 것이다. 도착값은 놓아서 맞혀야 식에 적힌다.
  */
-function jumpText(p: NLParams, done: number): string {
-  const j = p.jumps;
-  if (!j) return '';
+function jumpText(p: NLParams, j: NLJumps, done: number): string {
   const n = j.moves.length;
   let t = fmtP(p, q(j.start));
   for (const m of j.moves.slice(0, Math.min(done + 1, n))) {
     const mv = q(m);
     t += cmp(mv, qi(0)) < 0 ? ` − ${fmtP(p, mul(mv, qi(-1)))}` : ` + ${fmtP(p, mv)}`;
   }
-  return done >= n ? `${t} = ${fmtP(p, jumpValue(p, n))}` : `${t} = ?`;
+  return done >= n ? `${t} = ${fmtP(p, valueAfter(j, n))}` : `${t} = ?`;
 }
 
-/** 점프 화살표 i 의 [출발, 도착] 값 */
-export function jumpEnds(p: NLParams): [Q, Q][] {
-  const out: [Q, Q][] = [];
-  if (!p.jumps) return out;
-  let v = q(p.jumps.start);
-  for (const m of p.jumps.moves) {
-    const nv = add(v, q(m));
-    out.push([v, nv]);
-    v = nv;
-  }
-  return out;
+/** 한 벌의 점프 화살표 i 의 [출발, 도착] 값 */
+function endsOf(j: NLJumps | undefined): [Q, Q][] {
+  if (!j) return [];
+  return j.moves.map((_, i) => [valueAfter(j, i), valueAfter(j, i + 1)] as [Q, Q]);
 }
+/** 첫 벌 점프 화살표 i 의 [출발, 도착] 값 */
+export const jumpEnds = (p: NLParams) => endsOf(p.jumps);
 
 type EndX = { x: number; open: boolean };
 
 /**
  * 구간 그림(끝점·빈 점·화살촉). 선은 끝점에서 그 방향 끝까지, 끝에 화살촉. out 이면 lo 왼쪽·hi 오른쪽 두 조각.
  * 키는 모양이 바뀌어도 같다 — 두 끝 고르기에서 학생이 사이/바깥을 바꿀 때 끄는 중 직접 고치기(applyDrawing)가 같은
- * 요소를 찾도록, 안 쓰는 조각(seg2)·화살촉은 지우지 않고 숨긴다(draw.ts 규칙)
+ * 요소를 찾도록, 안 쓰는 조각(seg2)·화살촉은 지우지 않고 숨긴다(draw.ts 규칙). x0 은 왼쪽 화살촉 자리(진리집합 줄은
+ * 왼쪽 여백에 이름을 두려고 안쪽에서 시작한다)
  */
 function regionMarks(
   p: NLParams,
@@ -605,12 +712,10 @@ export function nlDraw(p: NLParams, s: NLState): Drawing {
   const texts: Record<string, string> = {};
   const jumping = jumpsLeft(p, s);
   const sv = p.slider ? sliderQ(p, s) : null;
-  // 같은 자리 점의 이름표는 위로 쌓는다(부등호 두 점 과제는 a 위에서 P 를 끌어 출발한다). 고정 점이 먼저 아래층을
-  // 차지한다 — 끄는 점이 지나가거나 와 앉아도 고정 점 이름표가 위아래로 뛰지 않게(목록 순서와 무관하게)
   const placed = p.points.map((pt) => {
     if (pt.irr) {
       // 무리수 점: 칸이 아니라 식의 값 자리. 읽는 값은 근삿값(검산은 같은 자리 수의 approx)
-      const xv = irrNum(pt.at as string);
+      const xv = irrX(pt);
       return { pt, v: null, xv, x: xNum(p, xv), hide: false, lv: 0 };
     }
     const v = pt.follow && sv ? (followQ(p, pt, sv) as Q) : valueAt(p, s.pts[pt.id] as number);
@@ -618,13 +723,16 @@ export function nlDraw(p: NLParams, s: NLState): Drawing {
     // 점프가 남았을 때 끄는 점은 숨긴다(nlActive) — 이름표·읽는 값도 함께
     return { pt, v, xv: 0, x, hide: jumping && pt.drag, lv: 0 };
   });
-  const stack = new Map<number, number>();
+  // 가까운 점의 이름표는 위로 쌓는다(부등호 두 점 과제는 a 위에서 P 를 끌어 출발한다). 고정 점이 먼저 아래층을
+  // 차지한다 — 끄는 점이 지나가거나 와 앉아도 고정 점 이름표가 위아래로 뛰지 않게(목록 순서와 무관하게)
   const moving = (pt: NLPoint) => pt.drag || !!pt.follow;
-  for (const a of [...placed.filter((a) => !moving(a.pt)), ...placed.filter((a) => moving(a.pt))]) {
-    if (a.hide) continue;
-    a.lv = stack.get(a.x) ?? 0;
-    stack.set(a.x, a.lv + 1);
-  }
+  const order = [
+    ...placed.filter((a) => !moving(a.pt)),
+    ...placed.filter((a) => moving(a.pt)),
+  ].filter((a) => !a.hide);
+  stackLabels(order.map((a) => ({ x: a.x, w: plabelW(a.pt) }))).forEach((lv, i) => {
+    (order[i] as (typeof order)[number]).lv = lv;
+  });
   for (const { pt, v, xv, x, hide, lv } of placed) {
     if (pt.drag)
       marks.push({ k: `h:${pt.id}`, tag: 'g', a: { transform: `translate(${x} ${L.line})` } });
@@ -671,32 +779,7 @@ export function nlDraw(p: NLParams, s: NLState): Drawing {
     }
   }
   if (p.slider && sv) texts.slider = `${p.slider.id} = ${fmtP(p, sv)}`;
-  if (p.jumps) {
-    const k = s.pts[JUMPER] as number;
-    const x = xOf(p, k);
-    // 끄는 점(손잡이)과 다 뛴 뒤의 점을 따로 그린다 — 다 뛰면 손잡이를 없애 다음 점(P)을 잡을 때 겹치지 않게
-    marks.push({ k: `h:${JUMPER}`, tag: 'g', a: { transform: `translate(${x} ${L.line})` } });
-    marks.push({
-      k: 'jdot',
-      tag: 'circle',
-      a: { cx: x, cy: L.line, r: 6, class: 'nl-jdot', visibility: jumping ? 'hidden' : 'visible' },
-    });
-    // 출발점 고리: 엉뚱한 칸에 놓았을 때 어디서부터 세는지 보이게(점이 그 위에 있으면 손잡이에 가린다)
-    marks.push({
-      k: 'jfrom',
-      tag: 'circle',
-      a: {
-        cx: xOf(p, jumpFrom(p, s)),
-        cy: L.line,
-        r: 11,
-        class: 'nl-from',
-        visibility: jumping ? 'visible' : 'hidden',
-      },
-    });
-    texts.jump = jumpText(p, s.jump);
-    // 지금 자리: 칸이 잘아(1/16) 눈금 숫자만으로는 어느 칸인지 세기 어렵다. 끄는 동안 직접 고친다(P8)
-    if (jumping) texts.jnow = `지금 ${fmtP(p, valueAt(p, k))}`;
-  }
+  if (p.jumps) marks.push(...jumpMarks(p, s, L.line, texts));
   if (p.data) marks.push(...dataMarks(p, s, L, texts));
   if (s.iv) {
     const x = xOf(p, s.iv.at);
@@ -709,13 +792,12 @@ export function nlDraw(p: NLParams, s: NLState): Drawing {
       tag: 'circle',
       a: { cx: x, cy: L.line, r: 7, class: s.iv.open ? 'nl-end top open' : 'nl-end top' },
     });
-    texts.iv = ivText(p, s.iv);
+    texts.iv = setText(rayToSet({ ...s.iv, at: ratStr(valueAt(p, s.iv.at)) }), (v) => fmtP(p, v));
   }
   if (s.iw) {
     const w = s.iw;
     const g = twoSet(p, w);
-    const ex = (e?: NLEnd) => ({ x: xVal(p, q(e?.at ?? '0')), open: !!e?.open });
-    marks.push(...regionMarks(p, 'iv', { lo: ex(g.lo), hi: ex(g.hi), out: w.out }));
+    marks.push(...regionMarks(p, 'iv', endsX(p, { ...g, out: w.out })));
     for (const [id, k, open] of [
       ['ia', w.a, w.aOpen],
       ['ib', w.b, w.bOpen],
@@ -736,13 +818,59 @@ export function nlDraw(p: NLParams, s: NLState): Drawing {
   return { marks, texts };
 }
 
+/**
+ * 점프의 점·출발점 고리·식. 벌마다 손잡이 자리(h:j·h:k)와 '지금 뛰지 않을 때의 점'(jdot·jdot2 — 첫 벌은 다 뛴 뒤의
+ * 자리, 둘째 벌은 차례가 오기 전 출발 자리와 다 뛴 뒤의 자리)을 따로 그린다 — 다 뛰면 손잡이를 없애 다음 점을 잡을 때
+ * 겹치지 않게
+ */
+function jumpMarks(p: NLParams, s: NLState, line: number, texts: Record<string, string>): Mark[] {
+  const marks: Mark[] = [];
+  const n = nextJump(p, s.jump);
+  let before = 0;
+  for (const [set, j] of jumpSets(p).entries()) {
+    const id = set === 0 ? JUMPER : JUMPER2;
+    const x = xOf(p, s.pts[id] as number);
+    const active = n?.set === set;
+    marks.push({ k: `h:${id}`, tag: 'g', a: { transform: `translate(${x} ${line})` } });
+    marks.push({
+      k: set === 0 ? 'jdot' : 'jdot2',
+      tag: 'circle',
+      a: {
+        cx: x,
+        cy: line,
+        r: 6,
+        class: set === 0 ? 'nl-jdot' : 'nl-jdot two',
+        visibility: active ? 'hidden' : 'visible',
+      },
+    });
+    texts[set === 0 ? 'jump' : 'jump2'] = jumpText(p, j, Math.max(0, s.jump - before));
+    before += j.moves.length;
+  }
+  // 출발점 고리: 엉뚱한 칸에 놓았을 때 어디서부터 세는지 보이게(점이 그 위에 있으면 손잡이에 가린다)
+  marks.push({
+    k: 'jfrom',
+    tag: 'circle',
+    a: {
+      cx: xOf(p, jumpFrom(p, s)),
+      cy: line,
+      r: 11,
+      class: 'nl-from',
+      visibility: n ? 'visible' : 'hidden',
+    },
+  });
+  // 지금 자리: 칸이 잘아(1/16) 눈금 숫자만으로는 어느 칸인지 세기 어렵다. 끄는 동안 직접 고친다(P8)
+  if (n) texts.jnow = `지금 ${fmtP(p, valueAt(p, s.pts[n.id] as number))}`;
+  return marks;
+}
+
 /** 손잡이 위에 덮어 그리는 표시(끝점 모양·점 무게 개수). 화면이 손잡이 다음에 그린다 — 눌림은 손잡이가 받는다(CSS) */
 export const isTopMark = (k: string) =>
   k.endsWith('-top') || /^dw\d+$/.test(k) || /^dwc\d+$/.test(k);
 
 /**
  * 자료 점과 통계선. 무게가 있으면 값마다 큰 점 하나에 개수를 적는다(요청 85 — 12점 상한을 넘는 자료도 한 점으로).
- * 편차 막대(dev)는 각 점의 높이에서 평균선까지의 가로 막대 — 평균보다 작으면 neg, 크면 pos(색이 다르다)
+ * 편차 막대(dev)는 각 점의 높이에서 평균선까지의 가로 막대 — 평균보다 작으면 neg, 크면 pos(색이 다르다). 부호는 그림
+ * 좌표가 아니라 분수로 견준다(평균과 같은 값이 반올림한 x 로 한쪽에 붙지 않게)
  */
 function dataMarks(
   p: NLParams,
@@ -762,7 +890,7 @@ function dataMarks(
     const x = xOf(p, k);
     const y = r2(L.line - (d.weights ? 16 : 14) - Math.min(h, STACK - 1) * row);
     if (d.show.includes('dev')) {
-      const c = x < meanX ? 'neg' : x > meanX ? 'pos' : 'zero';
+      const c = ['neg', 'zero', 'pos'][cmp(valueAt(p, k), st.mean) + 1];
       marks.push({
         k: `dev${i}`,
         tag: 'line',
@@ -867,14 +995,31 @@ export function nlSets(p: NLParams): Mark[] {
   return out;
 }
 
-/** 눈금 숫자 한 글자 폭 어림(13px 글꼴, SVG 단위)과 숫자 사이 최소 틈 */
+/** 눈금 숫자 한 글자 폭 어림(13px 보통 글꼴, SVG 단위)과 숫자 사이 최소 틈 */
 const NUM_CH = 7.5;
 const NUM_GAP = 6;
+/** 숫자 간격을 넓힐 때 쓰는 배수(1·2·5×10ⁿ — 사람이 세기 쉬운 간격) */
+const NICE = [1, 2, 5];
 
 /**
- * 한 줄의 눈금·숫자. 숫자 간격(every)은 ① 13개 넘으면 ceil(개수/12) 배(옛 규칙 그대로) ② 그래도 가장 긴 숫자 글자가
- * 옆 숫자와 겹치면 겹치지 않을 때까지 더 넓힌다(범위 확대 — "5,000" 같은 긴 숫자). ②는 지금 36장면에서 넓어지는
- * 곳이 없다(테스트)
+ * 숫자 간격 후보(작은 것부터): 작성자가 정한 간격(every0)의 1·2·5×10ⁿ 배와, 그 사이에 드는 1·2·5×10ⁿ 정수(every0 의
+ * 배수일 때만 — 1/4 칸이면 1/2 다음에 1). 칸 위에 없는 숫자는 적지 않는다(눈금과 숫자가 어긋나지 않게)
+ */
+function everyCandidates(every0: Q, range: Q): Q[] {
+  const out: Q[] = [];
+  for (let e = 1n; out.length === 0 || cmp(out.at(-1) as Q, range) < 0; e *= 10n)
+    for (const m of NICE) {
+      out.push(mul(every0, [BigInt(m) * e, 1n]));
+      const c: Q = [BigInt(m) * e, 1n];
+      if (div(c, every0)[1] === 1n) out.push(c);
+    }
+  return [...new Map(out.map((v) => [ratStr(v), v])).values()].sort(cmp);
+}
+
+/**
+ * 한 줄의 눈금·숫자. 숫자는 범위에 0 이 있으면 0 에서부터, 없으면 왼쪽 끝에서부터 간격마다. 간격은 후보(everyCandidates)
+ * 가운데 ① 숫자가 13개 이하이고 ② 이웃한 두 숫자 글자(마지막 숫자는 뒤에 붙는 단위까지)가 겹치지 않는 가장 작은 것
+ * (검토 M3 — 예전 ceil(개수/12) 배는 6·7 같은 셈하기 어려운 간격이 나왔다). 지금 36장면의 숫자는 그대로다(테스트)
  */
 function ticksOf(
   n: number,
@@ -883,33 +1028,42 @@ function ticksOf(
   every0: Q,
   xAt: (k: number) => number,
   f: (v: Q) => string,
+  unit?: string,
 ): { x: number; label?: string }[] {
   const range = mul(step, qi(n));
-  let every = every0;
-  const count = num(div(range, every));
-  if (count > 12) every = mul(every, qi(Math.ceil(count / 12)));
+  const max = add(min, range);
+  const origin = cmp(min, qi(0)) <= 0 && cmp(max, qi(0)) >= 0 ? qi(0) : min;
   const vAt = (k: number) => add(min, mul(qi(k), step));
-  const on = (v: Q, e: Q) => div(sub(v, min), e)[1] === 1n;
-  for (let m = 1; m < 1000; m++) {
-    const e = mul(every, qi(m));
-    let len = 0;
-    for (let k = 0; k <= n; k++) if (on(vAt(k), e)) len = Math.max(len, f(vAt(k)).length);
-    if (num(div(e, range)) * (W - 2 * PAD) >= len * NUM_CH + NUM_GAP || num(e) >= num(range)) {
-      every = e;
-      break;
-    }
-  }
-  const out: { x: number; label?: string }[] = [];
-  for (let k = 0; k <= n; k++) {
-    const v = vAt(k);
-    out.push({ x: xAt(k), ...(on(v, every) ? { label: f(v) } : {}) });
-  }
-  return out;
+  const on = (k: number, e: Q) => div(sub(vAt(k), origin), e)[1] === 1n;
+  const labelled = (e: Q) => {
+    const ks = Array.from({ length: n + 1 }, (_, k) => k).filter((k) => on(k, e));
+    return ks.map((k, i) => ({
+      k,
+      text: i === ks.length - 1 && unit ? `${f(vAt(k))} ${unit}` : f(vAt(k)),
+    }));
+  };
+  const fits = (e: Q) => {
+    if (num(div(range, e)) > 12) return false;
+    const ls = labelled(e);
+    return ls.every((l, i) => {
+      const m = ls[i + 1];
+      return (
+        !m || xAt(m.k) - xAt(l.k) >= (textW(l.text, NUM_CH) + textW(m.text, NUM_CH)) / 2 + NUM_GAP
+      );
+    });
+  };
+  const cands = everyCandidates(every0, range);
+  const every = cands.find(fits) ?? (cands.at(-1) as Q);
+  const texts = new Map(labelled(every).map((l) => [l.k, l.text]));
+  return Array.from({ length: n + 1 }, (_, k) => {
+    const label = texts.get(k);
+    return { x: xAt(k), ...(label !== undefined ? { label } : {}) };
+  });
 }
 const everyOf = (step: string, label?: string) =>
   q(label ?? (cmp(q(step), qi(1)) > 0 ? step : '1'));
 
-/** 눈금·숫자(화면이 한 번 그린다) */
+/** 눈금·숫자(화면이 한 번 그린다). 단위(unit)가 있으면 마지막 숫자 뒤에 붙는다 */
 export function nlTicks(p: NLParams): { x: number; label?: string }[] {
   return ticksOf(
     K(p),
@@ -918,6 +1072,7 @@ export function nlTicks(p: NLParams): { x: number; label?: string }[] {
     everyOf(p.step, p.label),
     (k) => xOf(p, k),
     (v) => fmtP(p, v),
+    p.unit,
   );
 }
 
@@ -934,6 +1089,7 @@ export function nlTicks2(p: NLParams): { x: number; label?: string }[] {
     everyOf(s.step, s.label),
     (k) => r2(PAD + (k * (W - 2 * PAD)) / n),
     (v) => fmtP(p, v),
+    s.unit,
   );
 }
 
@@ -941,54 +1097,88 @@ export function nlTicks2(p: NLParams): { x: number; label?: string }[] {
 const JUMP_CH = 7.8;
 
 /**
- * 점프 화살표(호·화살촉·이름표). 이름표가 다른 이름표와 겹치면 생략한다(calc-seq-limit 처럼 이동이 1/16 까지 줄면
- * '+3/4 −3/8 …' 이 가운데에 뭉친다 — 2-다 검토). 생략해도 잃는 것이 없다: 읽는 값 줄의 점프 식이 모든 이동을 차례로
- * 적는다(한 줄 요약). 옆으로 비켜 놓으면 어느 호의 이름표인지 끊기고, 줄을 늘리면 그림이 높아져 382 한 화면을 넘는다.
+ * 점프 화살표(호·화살촉·이름표). 두 벌이면 둘째 벌은 더 높은 호(다른 줄)·다른 색 — 두 뜀이 만나는 자리가 보이게.
+ * 이름표가 같은 줄의 다른 이름표와 겹치면 생략한다(calc-seq-limit 처럼 이동이 1/16 까지 줄면 '+3/4 −3/8 …' 이
+ * 가운데에 뭉친다 — 2-다 검토). 생략해도 잃는 것이 없다: 읽는 값 줄의 점프 식이 모든 이동을 차례로 적는다(한 줄 요약).
+ * 옆으로 비켜 놓으면 어느 호의 이름표인지 끊기고, 줄을 늘리면 그림이 높아져 382 한 화면을 넘는다.
  * 큰 이동부터 자리를 준다 — 큰 호는 이름표가 들어갈 폭이 있고, 작은 호는 눈으로도 크기가 보인다.
  * 자리는 매개변수만으로 정한다(화살표가 하나씩 나타나도 이미 보인 이름표가 사라지거나 움직이지 않게)
  */
-export function nlJumpArcs(
-  p: NLParams,
-): { d: string; arrow: string; label?: { x: number; y: number; text: string; w: number } }[] {
+export function nlJumpArcs(p: NLParams): {
+  set: 1 | 2;
+  d: string;
+  arrow: string;
+  label?: { x: number; y: number; text: string; w: number };
+}[] {
   const line = layout(p).line;
-  const ends = jumpEnds(p);
-  const arcs = ends.map(([a, b], i) => {
-    const x1 = xVal(p, a);
-    const x2 = xVal(p, b);
-    const y = line - 4;
-    const top = y - 34;
-    const dir = x2 > x1 ? 1 : -1;
-    const mv = q(p.jumps?.moves[i] ?? '0');
-    const text = cmp(mv, qi(0)) < 0 ? `−${fmtP(p, mul(mv, qi(-1)))}` : `+${fmtP(p, mv)}`;
-    return {
-      d: `M${x1} ${y} Q${r2((x1 + x2) / 2)} ${top} ${x2} ${y}`,
-      arrow: `${x2},${y} ${r2(x2 - dir * 9)},${y - 9} ${r2(x2 - dir * 2)},${y - 12}`,
-      span: Math.abs(x2 - x1),
-      label: { x: r2((x1 + x2) / 2), y: top + 8, text, w: r2(text.length * JUMP_CH + 4) },
-    };
-  });
-  const kept: { x: number; w: number }[] = [];
+  const arcs = [p.jumps, p.jumps2].flatMap((j, si) =>
+    endsOf(j).map(([a, b], i) => {
+      const set = (si + 1) as 1 | 2;
+      const x1 = xVal(p, a);
+      const x2 = xVal(p, b);
+      const y = line - 4;
+      const top = y - 34 - (set === 2 ? JUMP2_ROW : 0);
+      const dir = x2 > x1 ? 1 : -1;
+      const mv = q(j?.moves[i] ?? '0');
+      const text = cmp(mv, qi(0)) < 0 ? `−${fmtP(p, mul(mv, qi(-1)))}` : `+${fmtP(p, mv)}`;
+      return {
+        set,
+        d: `M${x1} ${y} Q${r2((x1 + x2) / 2)} ${top} ${x2} ${y}`,
+        arrow: `${x2},${y} ${r2(x2 - dir * 9)},${y - 9} ${r2(x2 - dir * 2)},${y - 12}`,
+        span: Math.abs(x2 - x1),
+        label: { x: r2((x1 + x2) / 2), y: top + 8, text, w: r2(textW(text, JUMP_CH) + 4) },
+      };
+    }),
+  );
+  const kept: { x: number; w: number; set: number }[] = [];
   const keep = new Set<number>();
   for (const i of arcs
     .map((_, i) => i)
     .sort((a, b) => (arcs[b]?.span ?? 0) - (arcs[a]?.span ?? 0))) {
-    const l = (arcs[i] as (typeof arcs)[number]).label;
-    if (kept.some((o) => Math.abs(o.x - l.x) < (o.w + l.w) / 2)) continue;
-    kept.push(l);
+    const a = arcs[i] as (typeof arcs)[number];
+    const l = a.label;
+    if (kept.some((o) => o.set === a.set && Math.abs(o.x - l.x) < (o.w + l.w) / 2)) continue;
+    kept.push({ ...l, set: a.set });
     keep.add(i);
   }
-  return arcs.map(({ d, arrow, label }, i) => ({ d, arrow, ...(keep.has(i) ? { label } : {}) }));
+  return arcs.map(({ set, d, arrow, label }, i) => ({
+    set,
+    d,
+    arrow,
+    ...(keep.has(i) ? { label } : {}),
+  }));
 }
 
+const REL_TEX: Record<string, string> = { '<': '<', '<=': '\\le', '>': '>', '>=': '\\ge' };
 export function ineqTex(ineq: string): string {
   const [l, rel, r] = splitIneq(ineq);
-  const t: Record<string, string> = { '<': '<', '<=': '\\le', '>': '>', '>=': '\\ge' };
-  return `${symToTex(l)}${t[rel]}${symToTex(r)}`;
+  return `${symToTex(l)}${REL_TEX[rel]}${symToTex(r)}`;
 }
 function splitIneq(s: string): [string, string, string] {
   const m = s.replace(/\s+/g, '').match(/^([^<>=]+)(<=|>=|<|>)([^<>=]+)$/);
   if (!m) throw new Error(`부등식이 아님 (${s})`);
   return [m[1] as string, m[2] as string, m[3] as string];
+}
+/**
+ * 부등식 1~2개의 해(sympy 글자). 하나면 예전 글자 그대로(검산 기준선이 바뀌지 않게), 둘이면 연립 — 두 해의 교집합
+ */
+const solPy = (ineqs: string[]) => {
+  const one = (s: string) => {
+    const [l, rel, r] = splitIneq(s);
+    return `solveset(${l}${rel}${r}, x, S.Reals)`;
+  };
+  return ineqs.length === 1
+    ? one(ineqs[0] as string)
+    : `Intersection(${ineqs.map(one).join(', ')})`;
+};
+
+/**
+ * 그림 위 머리글(TeX, 줄마다 하나): 구간 고르기는 부등식마다, 진리집합은 '이름: 조건' 하나씩. 화면이 KaTeX 로 그린다
+ * (진리집합은 그림 안에 이름만 있어 무슨 조건의 집합인지 화면에서 보이게 — 검토)
+ */
+export function nlHeadTex(p: NLParams): string[] {
+  if (p.task?.type === 'interval') return p.task.ineq.map(ineqTex);
+  return (p.sets ?? []).map((st) => `${st.name}:\\ ${st.cond.map(ineqTex).join(',\\ ')}`);
 }
 
 // ---- 형식 검사·검산 ----
@@ -1014,11 +1204,18 @@ const end = (v: unknown, where: string, p: NLParams): NLEnd => {
   return { at: at(o.at, `${where} at`, p), open: bool(o.open, `${where} open`) };
 };
 
-const ivPy = (a: { at: string; dir: NLDir; open: boolean }) => {
-  const v = py(q(a.at));
-  const o = a.open ? 'True' : 'False';
-  return a.dir === 'left' ? `Interval(-oo, ${v}, True, ${o})` : `Interval(${v}, oo, ${o}, True)`;
-};
+/**
+ * 범위(min~max)를 step 으로 나눈 칸 수. step > 0·max > min·나누어떨어짐·칸 수 상한을 본다 — 위 줄·아래 줄·슬라이더가
+ * 같은 규칙이라 한곳에서
+ */
+function cellCount(min: string, max: string, step: string, where: string, cap: number): number {
+  if (cmp(q(step), qi(0)) <= 0) fail(`${where} step`, '0 보다 커야 함');
+  if (cmp(q(max), q(min)) <= 0) fail(`${where} max`, 'min 보다 커야 함');
+  const n = div(sub(q(max), q(min)), q(step));
+  if (n[1] !== 1n) fail(`${where} step`, `범위(${min}~${max})를 나누어떨어지게 하지 않음`);
+  if (n[0] > BigInt(cap)) fail(`${where} step`, `칸이 너무 많음(${n[0]}칸, ${cap}칸까지)`);
+  return Number(n[0]);
+}
 
 /** 슬라이더 칸 수 상한. 슬라이더 점은 닿는 값마다 검산 항목이 하나씩 생긴다 */
 const SLIDER_MAX_STATES = 40;
@@ -1033,23 +1230,20 @@ function parseSlider(raw: unknown): NLSlider {
   const max = rationalStr(s.max, `${w} max`);
   const step = rationalStr(s.step, `${w} step`);
   const value = rationalStr(s.value, `${w} value`);
-  if (cmp(q(step), qi(0)) <= 0) fail(`${w} step`, '0 보다 커야 함');
-  if (cmp(q(max), q(min)) <= 0) fail(`${w} max`, 'min 보다 커야 함');
-  const n = div(sub(q(max), q(min)), q(step));
-  if (n[1] !== 1n) fail(`${w} step`, `범위(${min}~${max})를 나누어떨어지게 하지 않음`);
-  if (n[0] > BigInt(SLIDER_MAX_STATES))
-    fail(`${w} step`, `칸이 너무 많음(${n[0]}칸, ${SLIDER_MAX_STATES}칸까지)`);
+  cellCount(min, max, step, w, SLIDER_MAX_STATES);
   const k = div(sub(q(value), q(min)), q(step));
   if (k[1] !== 1n || cmp(q(value), q(min)) < 0 || cmp(q(value), q(max)) > 0)
     fail(`${w} value`, `칸 위의 범위 안 값이 아님 (${value})`);
   return { id, min, max, step, value, label: str(s.label, `${w} label`) };
 }
 
-/** 칸 수 상한. 60칸 넘는 줄(2-라 범위 확대)은 382 폭에서 한 칸이 손가락보다 좁아 끄는 것 없이 보여 주기만 된다(칸 폭 하한) */
+/**
+ * 칸 수 상한. 60칸 넘는 줄(2-라 범위 확대)은 382 폭에서 한 칸이 손가락보다 좁아(36칸 넘으면 7px 미만) 끄는 것 없이
+ * 보여 주기만 된다(칸 폭 하한). 100칸이면 눈금 간격 약 2.5px — 그보다 촘촘하면 눈금이 한 덩어리로 보인다
+ */
 const MAX_CELLS = 100;
-/** 옛 범위(2-다 까지): 정수 끝 ±1000·60칸. 이 안의 옛 옵션만 쓰는 수직선은 칸 폭 하한을 점프에만 건다(아래) */
-const OLD_END = 1000;
-const OLD_CELLS = 60;
+/** 점 무게(개수) 상한: 반지름 10 원 안 11px 글자가 두 자리까지 든다 */
+const MAX_WEIGHT = 99;
 
 /** 구간 하나(lo·hi·out). lo·hi 가 다 있으면 lo < hi(같으면 한 점·빈 집합이라 '구간'이 아니다) */
 function setOf(o: Obj, where: string, p: NLParams): NLSet {
@@ -1073,11 +1267,7 @@ function parseSecond(raw: unknown): NLSecond {
   const min = rationalStr(o.min, `${w} min`);
   const max = rationalStr(o.max, `${w} max`);
   const step = rationalStr(o.step, `${w} step`);
-  if (cmp(q(step), qi(0)) <= 0) fail(`${w} step`, '0 보다 커야 함');
-  if (cmp(q(max), q(min)) <= 0) fail(`${w} max`, 'min 보다 커야 함');
-  const n = div(sub(q(max), q(min)), q(step));
-  if (n[1] !== 1n) fail(`${w} step`, `범위(${min}~${max})를 나누어떨어지게 하지 않음`);
-  if (n[0] > BigInt(MAX_CELLS)) fail(`${w} step`, `칸이 너무 많음(${n[0]}칸, ${MAX_CELLS}칸까지)`);
+  cellCount(min, max, step, w, MAX_CELLS);
   const s: NLSecond = { min, max, step };
   if (o.label !== undefined) {
     s.label = rationalStr(o.label, `${w} label`);
@@ -1088,8 +1278,11 @@ function parseSecond(raw: unknown): NLSecond {
   return s;
 }
 
-/** 무리수 고정 점의 자리 식: 실수이고 수직선 안, 값이 유리수가 아니어야 한다(유리수면 칸 위 "a/b" 로) */
-function irrAt(src: string, where: string, p: NLParams): string {
+/**
+ * 무리수 식의 값: 실수이고 수직선 안, 값이 유리수가 아니어야 한다(유리수면 칸 위 "a/b" 로). 무리수 고정 점과 무리수
+ * 찍기(near)가 같은 검사를 쓴다
+ */
+function irrValue(src: string, where: string, p: NLParams): number {
   let x: number;
   try {
     x = evalNum(compile(src, []), {});
@@ -1097,14 +1290,15 @@ function irrAt(src: string, where: string, p: NLParams): string {
     return fail(where, (e as Error).message);
   }
   if (!Number.isFinite(x)) fail(where, `실수로 계산되지 않음 (${src})`);
-  if (looksRational(x)) fail(where, `값이 유리수 — 칸 위 값이면 "a/b" 로 적기 (${src})`);
+  if (looksRational(x))
+    fail(where, `값이 유리수 — 칸 위에 놓이게 step 을 골라 "a/b" 로 적기 (${src})`);
   if (x < p.min || x > p.max) fail(where, `범위 밖 (${src} ≈ ${irrDec(x)})`);
-  return src;
+  return x;
 }
 
 const STATS = ['mean', 'median', 'dev', 'var', 'sd'] as const;
 
-/** 진리집합(1~3개). 이름은 대문자 한 글자, 조건은 x 의 부등식 하나 */
+/** 진리집합(1~3개). 이름은 대문자 한 글자, 조건은 x 의 부등식 1~2개 */
 function parseSets(raw: unknown, p: NLParams): NLSetDef[] {
   const names = new Set<string>();
   return arr(raw, '수직선 sets', 1, 3).map((rs, i) => {
@@ -1114,8 +1308,7 @@ function parseSets(raw: unknown, p: NLParams): NLSetDef[] {
     if (!/^[A-Z]$/.test(name)) fail(`${w} name`, '대문자 한 글자');
     if (names.has(name)) fail(`${w} name`, `중복 (${name})`);
     names.add(name);
-    const cond = ineqOf(o.cond, `${w} cond`);
-    return { name, cond, ...setOf(o, w, p) };
+    return { name, cond: ineqsOf(o.cond, `${w} cond`), ...setOf(o, w, p) };
   });
 }
 
@@ -1131,10 +1324,19 @@ function ineqOf(raw: unknown, where: string): string {
   }
   return ineq;
 }
+/** 부등식 1~2개: 글자 하나(옛 꼴) 또는 목록(둘이면 연립 — 해는 교집합, 검토 M5) */
+function ineqsOf(raw: unknown, where: string): string[] {
+  if (typeof raw === 'string') return [ineqOf(raw, where)];
+  if (!Array.isArray(raw) || raw.length < 1 || raw.length > 2)
+    return fail(where, '부등식 하나(글자)나 1~2개 목록');
+  return raw.map((x, i) => ineqOf(x, `${where}${i + 1}`));
+}
 
 /**
  * 소수 눈금(decimal)이면 화면에 나오는 값이 모두 유한소수여야 한다 — 1/3 은 소수 글자로 정확히 적을 수 없다.
- * 칸 값은 step 의 배수라 step·label·끝이 유한소수면 모두 유한소수다. 점프·슬라이더·두 줄은 따로 본다
+ * 칸 값은 step 의 배수라 step·label·끝이 유한소수면 모두 유한소수다. 점프·슬라이더·두 줄은 따로 본다.
+ * 슬라이더 점은 칸 위가 아니라 식의 값 자리라, 두 줄이면 그 값마다 아래 줄 값도 본다(검토 C1 — 위 한 칸의 아래 값이
+ * 유한소수여도 칸 사이 값(1/2)의 아래 값(1/6)은 아닐 수 있다)
  */
 function checkDecimal(p: NLParams) {
   const need = (v: string, where: string) => {
@@ -1142,18 +1344,10 @@ function checkDecimal(p: NLParams) {
   };
   need(p.step, '수직선 step');
   if (p.label) need(p.label, '수직선 label');
-  p.jumps?.moves.forEach((m, i) => {
-    need(m, `수직선 이동${i + 1}`);
-  });
-  const sl = p.slider;
-  if (sl) {
-    need(sl.min, '수직선 slider min');
-    need(sl.step, '수직선 slider step');
-    for (const pt of p.points)
-      if (pt.follow)
-        for (const v of nlSliderValues(p))
-          need(ratStr(followQ(p, pt, q(v)) as Q), `수직선 점 ${pt.id} follow (${sl.id}=${v})`);
-  }
+  for (const [n, j] of [p.jumps, p.jumps2].entries())
+    j?.moves.forEach((m, i) => {
+      need(m, `수직선 ${n ? '둘째 벌 ' : ''}이동${i + 1}`);
+    });
   const s = p.second;
   if (s) {
     need(s.min, '수직선 second min');
@@ -1161,6 +1355,19 @@ function checkDecimal(p: NLParams) {
     if (s.label) need(s.label, '수직선 second label');
     // 위 줄 칸 하나만큼의 아래 줄 값(점의 아래 줄 읽는 값이 이 배수로 움직인다)
     need(ratStr(sub(secondOf(p, valueAt(p, 1)), q(s.min))), '수직선 second(위 한 칸의 아래 값)');
+  }
+  const sl = p.slider;
+  if (sl) {
+    need(sl.min, '수직선 slider min');
+    need(sl.step, '수직선 slider step');
+    for (const pt of p.points)
+      if (pt.follow)
+        for (const v of nlSliderValues(p)) {
+          const at = followQ(p, pt, q(v)) as Q;
+          const w = `수직선 점 ${pt.id} follow (${sl.id}=${v})`;
+          need(ratStr(at), w);
+          if (s) need(ratStr(secondOf(p, at)), `${w} 아래 줄`);
+        }
   }
 }
 
@@ -1172,21 +1379,57 @@ const hasCellDrag = (p: NLParams) =>
   p.points.some((x) => x.drag) || !!p.data?.drag || p.task?.type === 'interval' || !!p.jumps;
 
 /**
- * 칸 폭 하한을 거는가. 점프(2-다)와 2-라 에서 새로 연 범위·옵션(60칸 넘게·끝 1000 너머·소수 눈금·무리수 찍기·두 끝 구간)을
- * 쓰는 수직선. 옛 범위의 옛 옵션만 쓰는 지금 36장면은 그대로 통과해야 한다(plan-remaining 2-2) — 그 중 하한(7px)에 못 미치는
- * 것이 하나 있다(m2-repeating-decimal ruler, 1/40 칸 40개 ≈ 6.3px). 그 장면의 손질은 단원 적용(3-아) 몫이라 여기서 막지 않는다
+ * 칸 폭 하한(검토 M1 — 예외 없이): 끄는 것이 있으면 가장 좁은 화면에서 한 칸이 손가락 하한(MIN_CELL_PX, 좌표평면
+ * 슬라이더와 같은 기준)보다 넓고, 누르는 지름이 MIN_HIT_PX 이상이어야 한다. 배율은 폭·높이 중 작은 쪽(nlNarrowScale) —
+ * 키 큰 그림은 높이 상한에 묶여 칸·손잡이가 함께 줄어든다. 끄는 것이 없는 줄(보여 주기만)은 100칸까지 된다
  */
-function needsCellFloor(p: NLParams): boolean {
-  if (p.jumps) return true;
-  const t = p.task;
-  return (
-    K(p) > OLD_CELLS ||
-    Math.abs(p.min) > OLD_END ||
-    Math.abs(p.max) > OLD_END ||
-    !!p.decimal ||
-    (t?.type === 'point' && !!t.near) ||
-    (t?.type === 'interval' && 'lo' in t.answer)
-  );
+function checkCellFloor(p: NLParams) {
+  if (!hasCellDrag(p)) return;
+  const scale = nlNarrowScale(p);
+  const hit = HIT_D * scale;
+  if (hit < MIN_HIT_PX)
+    fail(
+      '수직선',
+      `그림이 키 커서 가장 좁은 화면에서 누르는 지름이 ${hit.toFixed(1)}px — ${MIN_HIT_PX}px 보다 작음(진리집합·자료 층·두 줄 같은 줄 수를 줄이기)`,
+    );
+  const px = unitPx(p) * scale;
+  if (px < MIN_CELL_PX)
+    fail(
+      '수직선 step',
+      `${p.jumps ? '점프 칸' : '끄는 칸'}이 가장 좁은 화면에서 ${px.toFixed(1)}px — ${MIN_CELL_PX}px 보다 좁아 칸 하나에 놓기 어려움(step 을 키우거나 범위를 줄이기)`,
+    );
+}
+
+/** 점프 한 벌: 출발점은 칸 위, 이동은 0 이 아닌 분수, 도착점은 모두 범위 안 */
+function parseJumps(raw: unknown, where: string, label: string, p: NLParams): NLJumps {
+  const j = obj(raw, where, ['start', 'moves']);
+  const jm: NLJumps = {
+    start: at(j.start, `${where}.start`, p),
+    moves: arr(j.moves, `${where}.moves`, 1, 4).map((m, i) => {
+      const mv = rationalStr(m, `수직선 ${label}이동${i + 1}`);
+      // 0 만큼의 이동은 놓지 않아도 도착이라 '옮겨서 셈하기'가 뜻이 없다
+      if (cmp(q(mv), qi(0)) === 0) fail(`수직선 ${label}이동${i + 1}`, '0 만큼은 뛸 수 없음');
+      return mv;
+    }),
+  };
+  for (const [i, [, to]] of endsOf(jm).entries()) {
+    const k = cellOf(p, to);
+    if (k === null || k < 0 || k > K(p)) fail(`수직선 ${label}이동${i + 1}`, '도착점이 범위 밖');
+  }
+  return jm;
+}
+
+/** 점프 한 벌의 도착점 검산(P7 — 끌기로 생기는 중간 상태도). 답은 앱 모델이 더한 값, 검산식은 매개변수 글자를 sympy 가 따로 더한다 */
+function jumpChecks(j: NLJumps, prefix: string): WidgetCheck[] {
+  const ends = endsOf(j);
+  const parts = [j.start, ...j.moves].map((v) => `(${py(q(v))})`);
+  return ends.map(([, to], i) => ({
+    // 마지막 것은 이름을 예전 그대로('점프 도착') — 기준선 비교(verify:diff)에서 바뀌지 않은 항목이 바뀐 것으로 나오지 않게
+    name: i === ends.length - 1 ? `${prefix} 도착` : `${prefix} ${i + 1} 도착`,
+    answer: ratStr(to),
+    answerType: 'fraction',
+    check: parts.slice(0, i + 2).join('+'),
+  }));
 }
 
 export const numberLineDef: WidgetDef<NLParams> = {
@@ -1199,6 +1442,7 @@ export const numberLineDef: WidgetDef<NLParams> = {
         'label',
         'points',
         'jumps',
+        'jumps2',
         'region',
         'data',
         'task',
@@ -1214,11 +1458,7 @@ export const numberLineDef: WidgetDef<NLParams> = {
     const min = int(o.min, '수직선 min', -1_000_000, 1_000_000);
     const max = int(o.max, '수직선 max', min + 1, 1_000_000);
     const step = rationalStr(o.step, '수직선 step');
-    if (cmp(q(step), qi(0)) <= 0) fail('수직선 step', '0 보다 커야 함');
-    const kk = div(qi(max - min), q(step));
-    if (kk[1] !== 1n) fail('수직선 step', `범위(${min}~${max})를 나누어떨어지게 하지 않음`);
-    if (kk[0] > BigInt(MAX_CELLS))
-      fail('수직선 step', `칸이 너무 많음(${kk[0]}칸, ${MAX_CELLS}칸까지)`);
+    cellCount(String(min), String(max), step, '수직선', MAX_CELLS);
     const p: NLParams = { min, max, step, points: [] };
     if (o.label !== undefined) {
       p.label = rationalStr(o.label, '수직선 label');
@@ -1250,25 +1490,16 @@ export const numberLineDef: WidgetDef<NLParams> = {
       // 분수 꼴이 아니면 무리수 식(√2·π·log₂5 — 요청 57). 끄는 점은 칸에 붙으므로 칸 위 값만
       if (typeof x.at === 'string' && !/^-?\d+(\/\d+)?$/.test(x.at)) {
         if (drag) fail(`${w} at`, `끄는 점은 칸 위의 값만 (${x.at})`);
-        return { id, at: irrAt(x.at, `${w} at`, p), drag, irr: true, ...lab };
+        irrValue(x.at, `${w} at`, p);
+        return { id, at: x.at, drag, irr: true, ...lab };
       }
       return { id, at: at(x.at, `${w} at`, p), drag, ...lab };
     });
-    if (o.jumps !== undefined) {
-      const j = obj(o.jumps, '수직선 jumps', ['start', 'moves']);
-      p.jumps = {
-        start: at(j.start, '수직선 jumps.start', p),
-        moves: arr(j.moves, '수직선 jumps.moves', 1, 4).map((m, i) => {
-          const mv = rationalStr(m, `수직선 이동${i + 1}`);
-          // 0 만큼의 이동은 놓지 않아도 도착이라 '옮겨서 셈하기'가 뜻이 없다
-          if (cmp(q(mv), qi(0)) === 0) fail(`수직선 이동${i + 1}`, '0 만큼은 뛸 수 없음');
-          return mv;
-        }),
-      };
-      for (const [i, [, to]] of jumpEnds(p).entries()) {
-        const k = cellOf(p, to);
-        if (k === null || k < 0 || k > K(p)) fail(`수직선 이동${i + 1}`, '도착점이 범위 밖');
-      }
+    if (o.jumps !== undefined) p.jumps = parseJumps(o.jumps, '수직선 jumps', '', p);
+    if (o.jumps2 !== undefined) {
+      // 둘째 벌은 첫 벌 다음 차례 — 첫 벌 없이 둘째 벌만이면 차례가 정해지지 않는다
+      if (!p.jumps) fail('수직선 jumps2', '첫 벌(jumps)이 있을 때만');
+      p.jumps2 = parseJumps(o.jumps2, '수직선 jumps2', '둘째 벌 ', p);
     }
     if (o.region !== undefined)
       p.region = setOf(obj(o.region, '수직선 region', [], ['lo', 'hi', 'out']), '수직선 region', p);
@@ -1277,23 +1508,25 @@ export const numberLineDef: WidgetDef<NLParams> = {
       const values = arr(d.values, '수직선 data.values', 2, 12).map((v, i) =>
         at(v, `수직선 자료${i + 1}`, p),
       );
+      const show = arr(d.show, '수직선 data.show', 1, STATS.length).map((v) =>
+        oneOf(v, '수직선 data.show', STATS),
+      );
+      // 편차는 평균에서의 거리 — 평균선이 없으면 막대가 어디서 시작하는지 보이지 않는다
+      if (show.includes('dev') && !show.includes('mean'))
+        fail('수직선 data.show', 'dev(편차 막대)는 mean(평균)과 함께');
       p.data = {
         values,
         drag: bool(d.drag, '수직선 data.drag'),
-        show: arr(d.show, '수직선 data.show', 1, STATS.length).map((v) =>
-          oneOf(v, '수직선 data.show', STATS),
-        ),
+        show,
         digits: d.digits === undefined ? 1 : int(d.digits, '수직선 data.digits', 0, 3),
       };
       if (d.weights !== undefined) {
         // 점 무게(요청 85): 값마다 개수. 같은 값이 두 번이면 어느 점의 개수인지 겹쳐 보여 한 점으로 합쳐 적게 한다
-        const ws = arr(d.weights, '수직선 data.weights', values.length, values.length).map((v, i) =>
-          int(v, `수직선 data.weights${i + 1}`, 1, 99),
+        p.data.weights = arr(d.weights, '수직선 data.weights', values.length, values.length).map(
+          (v, i) => int(v, `수직선 data.weights${i + 1}`, 1, MAX_WEIGHT),
         );
-        if (ws.length !== values.length) fail('수직선 data.weights', '값과 같은 수만큼');
         if (new Set(values).size !== values.length)
           fail('수직선 data.values', '점 무게가 있으면 같은 값을 두 번 적지 않음(개수로 합치기)');
-        p.data.weights = ws;
       }
     }
     if (o.task !== undefined) p.task = parseTask(o.task, p);
@@ -1310,24 +1543,16 @@ export const numberLineDef: WidgetDef<NLParams> = {
       if (p.slider) fail('수직선 slider', '점프와 슬라이더는 함께 못 씀');
     }
     if (p.decimal) checkDecimal(p);
-    // 칸 폭 하한: 칸 하나에 손가락으로 놓아야 하므로 가장 좁은 화면에서 한 칸이 손가락 하한보다 넓어야 한다(좌표평면
-    // 슬라이더와 같은 기준 MIN_CELL_PX). 끄는 것이 없는 줄(보여 주기만)은 100칸까지 된다
-    if (hasCellDrag(p) && needsCellFloor(p)) {
-      const px = narrowCellPx(p);
-      if (px < MIN_CELL_PX)
-        fail(
-          '수직선 step',
-          `${p.jumps ? '점프 칸' : '끄는 칸'}이 가장 좁은 화면에서 ${px.toFixed(1)}px — ${MIN_CELL_PX}px 보다 좁아 칸 하나에 놓기 어려움(step 을 키우거나 범위를 줄이기)`,
-        );
-    }
+    checkCellFloor(p);
     return p;
   },
   checks(p) {
     const out: WidgetCheck[] = [];
     const t = p.task;
-    if (t?.type === 'point' && t.near) out.push(...nearChecks(p, t.near, t.answer));
-    else if (t?.type === 'point')
-      out.push({ name: '점 찍기', answer: t.answer, answerType: 'fraction', check: t.check ?? '' });
+    if (t?.type === 'point') {
+      if (t.near !== undefined) out.push(...nearChecks(p, t.near, t.answer));
+      else out.push({ name: '점 찍기', answer: t.answer, answerType: 'fraction', check: t.check });
+    }
     if (t?.type === 'points')
       for (const a of t.answers)
         out.push({
@@ -1337,47 +1562,30 @@ export const numberLineDef: WidgetDef<NLParams> = {
           check: a.check,
         });
     if (t?.type === 'interval') {
-      const [l, rel, r] = splitIneq(t.ineq);
-      const sol = `solveset(${l}${rel}${r}, x, S.Reals)`;
-      const same = (py: string) => `1 if ${sol} == ${py} else 0`;
+      // 정답 구간이 부등식(연립이면 교집합)의 해와 같은지. 끝점 하나(옛 꼴)는 빈 점·찬 점을 바꾼 것이 다른지도 본다 —
+      // 기준선에 있는 항목이라 그대로 둔다. 두 끝 구간은 한 가지씩 바꾼 비교를 두지 않는다: 끝점 하나를 넣고 빼거나
+      // 안팎을 바꾸면 집합이 늘 달라져 검산이 실패할 일이 없다(뜻 없는 항목, 검토)
+      const same = (set: NLSet) => `1 if ${solPy(t.ineq)} == ${setPy(set)} else 0`;
       const a = t.answer;
       if ('lo' in a) {
-        // 정답 구간이 부등식의 해와 같은지, 그리고 한 가지씩 바꾼 것(왼쪽 끝·오른쪽 끝 빈 점/찬 점, 사이/바깥)은
-        // 모두 다른지(과제가 그 차이를 가려내는지)
-        const base: NLSet = { lo: a.lo, hi: a.hi, ...(a.out ? { out: true } : {}) };
-        const flip = (e: NLEnd) => ({ ...e, open: !e.open });
-        out.push({ name: '구간', answer: '1', answerType: 'int', check: same(setPy(base)) });
-        for (const [name, s] of [
-          ['구간 왼쪽 끝 반대', { ...base, lo: flip(a.lo) }],
-          ['구간 오른쪽 끝 반대', { ...base, hi: flip(a.hi) }],
-          ['구간 안팎 반대', { lo: a.lo, hi: a.hi, ...(a.out ? {} : { out: true }) }],
-        ] as const)
-          out.push({ name, answer: '0', answerType: 'int', check: same(setPy(s)) });
+        out.push({
+          name: '구간',
+          answer: '1',
+          answerType: 'int',
+          check: same({ lo: a.lo, hi: a.hi, ...(a.out ? { out: true } : {}) }),
+        });
       } else {
-        out.push({ name: '구간', answer: '1', answerType: 'int', check: same(ivPy(a)) });
+        out.push({ name: '구간', answer: '1', answerType: 'int', check: same(rayToSet(a)) });
         out.push({
           name: '구간 끝점 반대',
           answer: '0',
           answerType: 'int',
-          check: same(ivPy({ ...a, open: !a.open })),
+          check: same(rayToSet({ ...a, open: !a.open })),
         });
       }
     }
-    if (p.jumps) {
-      // 점프로 닿는 상태(도착점)마다 하나씩(P7 — 끌기로 생기는 중간 상태도 검산). 답은 앱 모델이 더한 값,
-      // 검산식은 매개변수 글자(출발·이동)를 sympy 가 따로 더한다. 마지막 것은 이름을 예전 그대로('점프 도착') —
-      // 기준선 비교(verify:diff)에서 바뀌지 않은 항목이 바뀐 것으로 나오지 않게
-      const ends = jumpEnds(p);
-      const parts = [p.jumps.start, ...p.jumps.moves].map((v) => `(${py(q(v))})`);
-      ends.forEach(([, to], i) => {
-        out.push({
-          name: i === ends.length - 1 ? '점프 도착' : `점프 ${i + 1} 도착`,
-          answer: ratStr(to),
-          answerType: 'fraction',
-          check: parts.slice(0, i + 2).join('+'),
-        });
-      });
-    }
+    if (p.jumps) out.push(...jumpChecks(p.jumps, '점프'));
+    if (p.jumps2) out.push(...jumpChecks(p.jumps2, '점프2'));
     if (p.slider) {
       const sl = p.slider;
       // 슬라이더 점: 닿는 슬라이더 값마다 앱이 낸 자리 = sympy 가 식에 그 값을 넣은 것
@@ -1401,32 +1609,30 @@ export const numberLineDef: WidgetDef<NLParams> = {
           name: `무리수 점 ${pt.id}`,
           kind: 'approx',
           expr: pt.at as string,
-          value: irrDec(irrNum(pt.at as string)),
+          value: irrDec(irrX(pt)),
           digits: IRR_DIGITS,
         });
     if (p.second) out.push(...secondChecks(p));
     if (p.data) out.push(...dataChecks(p));
     if (p.sets) {
       // 그린 진리집합 = 조건의 해(solveset). 포함 관계는 그린 구간이 아니라 조건에서 sympy 가 따로(is_subset 두 번)
-      const sol = (c: string) => {
-        const [l, rel, r] = splitIneq(c);
-        return `solveset(${l}${rel}${r}, x, S.Reals)`;
-      };
       for (const st of p.sets)
         out.push({
           name: `진리집합 ${st.name}`,
           answer: '1',
           answerType: 'int',
-          check: `1 if ${sol(st.cond)} == ${setPy(st)} else 0`,
+          check: `1 if ${solPy(st.cond)} == ${setPy(st)} else 0`,
         });
       const [A, B] = p.sets;
-      if (p.compare && A && B)
+      if (p.compare && A && B) {
+        const [a, b] = [solPy(A.cond), solPy(B.cond)];
         out.push({
           name: '포함 관계',
           answer: String(RELATION_CODE[relation(A, B)]),
           answerType: 'int',
-          check: `(1 if (${sol(A.cond)}).is_subset(${sol(B.cond)}) else 0) + (2 if (${sol(B.cond)}).is_subset(${sol(A.cond)}) else 0)`,
+          check: `(1 if (${a}).is_subset(${b}) else 0) + (2 if (${b}).is_subset(${a}) else 0)`,
         });
+      }
     }
     return out;
   },
@@ -1442,8 +1648,8 @@ export const numberLineDef: WidgetDef<NLParams> = {
 
 /**
  * 무리수 점 찍기(P10): 앱이 고른 칸(answer)이 sympy 의 정확한 값에서 반 칸 안에 들고, 바로 옆 두 칸은 반 칸 밖인가.
- * 식은 매개변수 원문(near) 그대로 — 앱이 계산한 부동소수를 옮겨 적지 않는다. 반 칸 안의 칸은 늘 많아야 하나라서
- * 옆 두 칸이 밖이면 '오차 안 자리가 정답 하나뿐'이 정확한 값으로 확인된다
+ * 식은 매개변수 원문(near) 그대로 — 앱이 계산한 부동소수를 옮겨 적지 않는다. 둘째 항목(이웃)은 P10 이 요구하는
+ * '오차 안 자리가 정답 하나뿐'을 sympy 가 정확한 값으로 되풀이하는 것이다(형식 검사는 부동소수로 본다)
  */
 function nearChecks(p: NLParams, near: string, answer: string): WidgetCheck[] {
   const h = py(div(q(p.step), qi(2)));
@@ -1462,9 +1668,11 @@ function nearChecks(p: NLParams, near: string, answer: string): WidgetCheck[] {
 }
 
 /**
- * 두 줄: 점이 읽히는 자리(점 찍기 답 칸, 고정 점이면 그 자리)마다 아래 줄 값 = sympy 가 두 줄의 끝 값(원문)으로
- * 따로 비례 계산한 값. 끄는 동안 닿는 모든 칸을 다 늘어놓지 않는 까닭: 같은 일차식이라 앱 계산이 맞는 자리와 틀리는
- * 자리가 갈리지 않고, 학생이 답으로 읽는 자리는 답 칸이다
+ * 두 줄: 아래 줄 값 = sympy 가 두 줄의 끝 값(원문)으로 따로 비례 계산한 값. 재는 자리(검토 M4):
+ * - 점 찍기 과제의 점은 답 칸(학생이 답으로 읽는 자리), 고정 점은 그 자리
+ * - 과제 없는 끄는 점은 처음 자리, 그리고 양 끝(왼쪽 끝·오른쪽 끝 — 끄는 점이 닿는 범위의 두 끝) 한 번씩
+ * - 슬라이더 점은 슬라이더 값마다(칸 사이 값이 아래 줄에서 어떤 값인지가 화면에 나온다)
+ * 끄는 동안 닿는 모든 칸을 늘어놓지 않는 까닭: 같은 일차식이라 앱 계산이 맞는 자리와 틀리는 자리가 갈리지 않는다
  */
 function secondChecks(p: NLParams): WidgetCheck[] {
   const s = p.second as NLSecond;
@@ -1472,18 +1680,29 @@ function secondChecks(p: NLParams): WidgetCheck[] {
   const answers = new Map<string, string>();
   if (t?.type === 'point') answers.set(t.point, t.answer);
   if (t?.type === 'points') for (const a of t.answers) answers.set(a.point, a.answer);
+  const [a, b, c, d] = [String(p.min), String(p.max), s.min, s.max].map((x) => `(${py(q(x))})`);
+  const item = (name: string, v: Q): WidgetCheck => ({
+    name,
+    answer: ratStr(secondOf(p, v)),
+    answerType: 'fraction',
+    check: `${c} + ((${py(v)}) - ${a})*(${d} - ${c})/(${b} - ${a})`,
+  });
   const out: WidgetCheck[] = [];
+  let free = false;
   for (const pt of p.points) {
-    if (pt.irr || pt.follow) continue;
-    const v = answers.get(pt.id) ?? (pt.drag ? undefined : pt.at);
-    if (v === undefined) continue;
-    const [a, b, c, d] = [p.min, p.max, s.min, s.max].map((x) => `(${py(q(String(x)))})`);
-    out.push({
-      name: `두 줄 ${pt.id}`,
-      answer: ratStr(secondOf(p, q(v))),
-      answerType: 'fraction',
-      check: `${c} + ((${py(q(v))}) - ${a})*(${d} - ${c})/(${b} - ${a})`,
-    });
+    if (pt.irr) continue;
+    if (pt.follow) {
+      for (const v of nlSliderValues(p))
+        out.push(item(`두 줄 ${pt.id} (${p.slider?.id}=${v})`, followQ(p, pt, q(v)) as Q));
+      continue;
+    }
+    const ans = answers.get(pt.id);
+    if (pt.drag && ans === undefined) free = true;
+    out.push(item(`두 줄 ${pt.id}`, q(ans ?? (pt.at as string))));
+  }
+  if (free) {
+    out.push(item('두 줄 왼쪽 끝', qi(p.min)));
+    out.push(item('두 줄 오른쪽 끝', qi(p.max)));
   }
   return out;
 }
@@ -1497,7 +1716,7 @@ function dataChecks(p: NLParams): WidgetCheck[] {
   const st = dataStats(p, nlInit(p));
   const vals = d.values.map((v) => py(q(v)));
   const digits = d.digits;
-  // 무게가 있으면 개수만큼 늘어놓은 목록(최대 12 × 99)
+  // 무게가 있으면 개수만큼 늘어놓은 목록(최대 12 × MAX_WEIGHT)
   const list = d.weights
     ? `[x for x, w in zip([${vals.join(', ')}], [${d.weights.join(', ')}]) for _ in range(w)]`
     : `[${vals.join(', ')}]`;
@@ -1588,17 +1807,7 @@ function parseTask(raw: unknown, p: NLParams): NLTask {
     // 무리수에 가장 가까운 칸(P10): 정답 칸은 형식 검사가 정하고, 검산은 near 원문으로 sympy 가 '반 칸 안'을 되풀이
     const t = obj(raw, '수직선 task', ['type', 'point', 'near']);
     const near = str(t.near, '수직선 task.near');
-    let x: number;
-    try {
-      x = evalNum(compile(near, []), {});
-    } catch (e) {
-      return fail('수직선 task.near', (e as Error).message);
-    }
-    if (!Number.isFinite(x)) fail('수직선 task.near', `실수로 계산되지 않음 (${near})`);
-    if (looksRational(x))
-      fail('수직선 task.near', `유리수 — 칸 위에 놓이게 step 을 골라 answer·check 로 (${near})`);
-    if (x < p.min || x > p.max) fail('수직선 task.near', `범위 밖 (${near} ≈ ${irrDec(x)})`);
-    const k = nearestCell(p, x);
+    const k = nearestCell(p, irrValue(near, '수직선 task.near', p));
     if (k === null)
       fail(
         '수직선 task.near',
@@ -1636,7 +1845,7 @@ function parseTask(raw: unknown, p: NLParams): NLTask {
     return { type, answers };
   }
   const t = obj(raw, '수직선 task', ['type', 'ineq', 'answer']);
-  const ineq = ineqOf(t.ineq, '수직선 task.ineq');
+  const ineq = ineqsOf(t.ineq, '수직선 task.ineq');
   const a0 = obj(t.answer, '수직선 task.answer', [], ['at', 'dir', 'open', 'lo', 'hi', 'out']);
   if (a0.lo !== undefined || a0.hi !== undefined) {
     // 끝점 둘(요청 54 — 양쪽 막힌 a<x<b·두 조각 x<a 또는 x>b). 한쪽만 막힌 해는 옛 꼴(at·dir)로 쓴다

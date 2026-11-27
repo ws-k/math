@@ -6,14 +6,25 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { mark } from '../src/lesson/widgets/draw.ts';
 import {
+  isJumper,
+  JUMPER,
+  JUMPER2,
+  jumpHits,
   type NLParams,
   nearestCell,
+  nlActive,
   nlDrag,
   nlDraw,
   nlGrade,
+  nlHandleText,
+  nlHeadTex,
+  nlHeight,
   nlInit,
   nlIwFlip,
   nlJumpArcs,
+  nlJumpCount,
+  nlKey,
+  nlNarrowScale,
   nlRegion,
   nlSets,
   nlTicks,
@@ -22,6 +33,7 @@ import {
   xOf,
 } from '../src/lesson/widgets/numberLine.ts';
 import { type NLSet, relation, setPy, setText } from '../src/lesson/widgets/numberLineSet.ts';
+import { nearestHandle } from '../src/lesson/widgets/numberLineWire.ts';
 import { q } from '../src/lesson/widgets/q.ts';
 import { runChecks, tamper } from './widget-verify.ts';
 
@@ -90,7 +102,7 @@ test('소수 눈금(decimal): 눈금 숫자·읽는 값이 소수 글자, 유한
   assert.equal(nlDraw(j, { ...nlInit(j), jump: 2 }).texts.jump, '0 + 0.3 + 0.5 = 0.8');
 });
 
-test('칸 폭 하한: 새 범위(60칸 넘게·끝 1000 너머·소수)에서 끄는 것이 있으면 가장 좁은 화면 한 칸이 7px 이상', () => {
+test('칸 폭 하한(검토 M1): 끄는 것이 있는 수직선은 모두 가장 좁은 화면 한 칸이 7px 이상 — 옛 범위·분수 칸도 예외 없음', () => {
   // 100칸 = 272/100 × 298/320 ≈ 2.5px — 보여 주기만이면 되고, 끄는 점이 있으면 오류
   assert.throws(
     () => parse({ min: 0, max: 100, step: '1', points: [{ id: 'P', at: '0', drag: true }] }),
@@ -98,14 +110,41 @@ test('칸 폭 하한: 새 범위(60칸 넘게·끝 1000 너머·소수)에서 �
   );
   parse({ min: 0, max: 100, step: '1', points: [{ id: 'A', at: '50' }] });
   assert.throws(() => parse({ min: 0, max: 101, step: '1' }), /100칸/);
-  // 소수 40칸(≈6.3px)에 끄는 점 → 오류. 같은 칸을 분수로 쓰는 옛 장면(m2-repeating-decimal ruler)은 그대로 통과
-  const ruler = { min: 0, max: 1, step: '1/40', points: [{ id: 'P', at: '0', drag: true }] };
-  assert.throws(() => parse({ ...ruler, decimal: true }), /7px/);
-  parse(ruler);
-  // 끝 1000 너머 + 끄는 구간 끝점: 20칸이면 통과, 50칸이면 오류
+  // 분수 40칸(≈6.3px)도 이제 오류(예전엔 옛 옵션이면 통과). 16칸이면 통과
+  const ruler = { min: 0, max: 1, points: [{ id: 'P', at: '0', drag: true }] };
+  assert.throws(() => parse({ ...ruler, step: '1/40' }), /7px/);
+  parse({ ...ruler, step: '1/16' });
+  // 끄는 구간 끝점: 20칸이면 통과, 50칸이면 오류
   const iv = { type: 'interval', ineq: 'x<1000', answer: { at: '1000', dir: 'left', open: true } };
   parse({ min: 0, max: 2000, step: '100', task: iv });
   assert.throws(() => parse({ min: 0, max: 2000, step: '40', task: iv }), /7px/);
+});
+
+test('칸 폭 배율(검토 M2): 키 큰 그림은 382×580 에서 높이 상한으로 줄어든다 — 누르는 지름이 44px 미만이면 오류', () => {
+  const short = parse({ min: 0, max: 10, step: '1', points: [{ id: 'P', at: '0', drag: true }] });
+  assert.equal(nlNarrowScale(short), 298 / 320); // 폭이 정한다
+  const tall = {
+    min: 0,
+    max: 10,
+    step: '1',
+    jumps: { start: '0', moves: ['2'] },
+    sets: [
+      { name: 'A', cond: 'x>1', lo: { at: '1', open: true } },
+      { name: 'B', cond: 'x>2', lo: { at: '2', open: true } },
+      { name: 'C', cond: 'x>3', lo: { at: '3', open: true } },
+    ],
+    data: {
+      values: ['0', '1', '2', '3', '4', '5', '6'],
+      weights: [1, 1, 1, 1, 1, 1, 1],
+      show: ['mean'],
+    },
+    second: { min: '0', max: '20', step: '2' },
+  };
+  const p = parse({ ...tall, jumps: undefined });
+  // 보여 주기만이면 된다. 배율은 높이 상한 209 ÷ 그림 높이
+  assert.equal(nlNarrowScale(p), 209 / nlHeight(p));
+  assert.ok(nlNarrowScale(p) * 56 < 44);
+  assert.throws(() => parse(tall), /44px/);
 });
 
 // ---- 두 줄 수직선 ----
@@ -121,10 +160,10 @@ const TWO = parse({
   task: { type: 'point', point: 'P', answer: '2/3', check: 'Rational(2)/3' },
 });
 
-test('두 줄: 아래 줄은 같은 길이의 다른 눈금, 점의 아래 줄 값(정확한 분수)을 함께 읽는다', () => {
+test('두 줄: 아래 줄은 같은 길이의 다른 눈금(단위는 마지막 숫자 뒤), 점의 아래 줄 값(정확한 분수)을 함께 읽는다', () => {
   assert.deepEqual(
     nlTicks2(TWO).map((t) => t.label),
-    ['0', '1', '2', '3', '4', '5', '6'],
+    ['0', '1', '2', '3', '4', '5', '6 컵'],
   );
   // 아래 줄 끝과 위 줄 끝이 같은 x
   assert.equal(nlTicks2(TWO).at(-1)?.x, xOf(TWO, 6));
@@ -220,7 +259,7 @@ const OUT = parse({
   },
 });
 
-test('두 끝 구간 고르기: 끝점 둘을 끌고 빈 점/찬 점·사이/바깥을 골라야 정답, 끝점이 엇갈려도 왼쪽부터 읽는다', () => {
+test('두 끝 구간 고르기: 끝점 둘을 끌고 빈 점/찬 점·사이/바깥을 골라야 정답', () => {
   const s = nlInit(OUT);
   assert.ok(s.iw);
   assert.equal(nlGrade(OUT, s), false);
@@ -229,29 +268,31 @@ test('두 끝 구간 고르기: 끝점 둘을 끌고 빈 점/찬 점·사이/바
   const right = { ...s, iw: { a: 4, b: 8, aOpen: true, bOpen: true, out: true } };
   assert.equal(nlGrade(OUT, right), true);
   assert.equal(nlDraw(OUT, right).texts.iv, 'x < −1 또는 x > 3');
-  // 엇갈려 놓아도(ib 가 왼쪽) 같은 구간
-  assert.equal(
-    nlGrade(OUT, { ...s, iw: { a: 8, b: 4, aOpen: true, bOpen: true, out: true } }),
-    true,
-  );
   assert.equal(nlGrade(OUT, { ...right, iw: { ...right.iw, out: false } }), false);
   assert.equal(nlGrade(OUT, { ...right, iw: { ...right.iw, bOpen: false } }), false);
-  // 끄는 손잡이 둘 — 끌면 칸에 붙는다
-  assert.equal(nlDrag(OUT, s, 'ia', 9999).iw?.a, 10);
-  // 단추는 '왼쪽 끝'·'오른쪽 끝'(지금 놓인 자리 기준)을 바꾼다 — 엇갈려 있으면 ib 의 점을 바꾼다
-  const crossed = { ...s, iw: { a: 8, b: 4, aOpen: false, bOpen: false, out: false } };
-  assert.equal(nlIwFlip(crossed, 'lo').iw?.bOpen, true);
-  assert.equal(nlIwFlip(crossed, 'hi').iw?.aOpen, true);
-  assert.equal(nlIwFlip(crossed, 'out').iw?.out, true);
+  // 끝점은 엇갈리거나 같은 칸에 겹치지 않는다(검토 — 겹치면 한 점·빈 집합이 되어 '구간'이 아니다): 왼쪽 끝(ia)은
+  // 오른쪽 끝(ib) 바로 앞에서 멈추고, 오른쪽 끝은 왼쪽 끝 바로 뒤에서 멈춘다
+  assert.ok(s.iw.a < s.iw.b);
+  assert.equal(nlDrag(OUT, s, 'ia', 9999).iw?.a, s.iw.b - 1);
+  assert.equal(nlDrag(OUT, s, 'ib', -9999).iw?.b, s.iw.a + 1);
+  assert.equal(nlDrag(OUT, s, 'ib', 9999).iw?.b, 10);
+  const near = { ...s, iw: { ...s.iw, a: 6, b: 7 } };
+  assert.equal(nlKey(OUT, near, 'ia', 'ArrowRight')?.iw?.a, 6);
+  assert.equal(nlKey(OUT, near, 'ib', 'ArrowLeft')?.iw?.b, 7);
+  // 낭독 이름은 자리(왼쪽 끝·오른쪽 끝), 값 글자는 수직선 글자 그대로
+  assert.deepEqual(
+    nlActive(OUT, s).map((h) => h.name),
+    ['왼쪽 끝', '오른쪽 끝'],
+  );
+  assert.equal(nlHandleText(OUT, s, 'ia'), '왼쪽 끝 −2');
+  // 단추: 왼쪽 끝·오른쪽 끝의 빈 점, 사이/바깥
+  assert.equal(nlIwFlip(s, 'lo').iw?.aOpen, true);
+  assert.equal(nlIwFlip(s, 'hi').iw?.bOpen, true);
+  assert.equal(nlIwFlip(s, 'out').iw?.out, true);
 });
 
-test('두 끝 구간 검산: 정답 = solveset, 왼쪽·오른쪽 끝·사이/바깥을 하나씩 바꾼 것은 모두 다르다', () => {
-  assert.deepEqual(names(OUT), [
-    '구간',
-    '구간 왼쪽 끝 반대',
-    '구간 오른쪽 끝 반대',
-    '구간 안팎 반대',
-  ]);
+test('두 끝 구간 검산: 정답 = solveset. 한 가지씩 바꾼 구간 비교는 늘 달라 뜻이 없어 두지 않는다(검토)', () => {
+  assert.deepEqual(names(OUT), ['구간']);
   const r = runChecks(numberLineDef.checks(OUT));
   assert.ok(r.ok, r.out);
   // 사이 구간(−1 ≤ x ≤ 3)도
@@ -526,4 +567,262 @@ test('점프 이름표: 지금 단원의 점프 장면 어디서도 이름표가
       if (u.id !== 'calc-seq-limit') assert.equal(shown.length, arcs.length, `${u.id}/${s.id}`);
     }
   }
+});
+
+// ---- 검토 반영(C1·M3~M5·Minor) ----
+
+test('C1: 소수 눈금 + 두 줄 + 슬라이더 점에서 아래 줄 값이 유한소수가 아니면 형식 오류, 그림은 멈추지 않는다', {
+  timeout: 3000,
+}, () => {
+  const raw = {
+    min: 0,
+    max: 3,
+    step: '3',
+    decimal: true,
+    second: { min: '0', max: '1', step: '1/2' },
+    slider: { id: 't', min: '0', max: '1', step: '1/2', value: '0', label: '$t$' },
+    points: [{ id: 'P', follow: 't' }],
+  };
+  // t = 1/2 → 아래 줄 1/6(유한소수 아님)
+  assert.throws(() => parse(raw), /유한소수/);
+  // 형식 검사를 거치지 않은 매개변수로 그려도(안전망) 분수 글자로 끝난다
+  const p = { ...raw, points: [{ id: 'P', drag: false, follow: 't' }] } as unknown as NLParams;
+  const t = nlDraw(p, { ...nlInit(p), sl: 1 }).texts['pt:P'];
+  assert.match(String(t), /1\/6/);
+});
+
+test('M3: 숫자 간격은 1·2·5×10ⁿ(분수 칸이면 label 배수 다음 정수), 범위에 0 이 있으면 0 기준', () => {
+  assert.deepEqual(labels(parse({ min: 0, max: 70, step: '1' })), [
+    '0',
+    '10',
+    '20',
+    '30',
+    '40',
+    '50',
+    '60',
+    '70',
+  ]);
+  const z = labels(parse({ min: -3, max: 17, step: '1' }));
+  assert.equal(z[0], '−2');
+  assert.ok(z.includes('0') && !z.includes('−3'));
+  assert.deepEqual(labels(parse({ min: 0, max: 6, step: '1/4', label: '1/4' })), [
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+  ]);
+});
+
+test('Minor: 단위 글자도 숫자 간격에 든다 — 마지막 숫자 뒤 단위가 옆 숫자와 겹치면 넓힌다', () => {
+  assert.equal(labels(parse({ min: 0, max: 10, step: '1' })).length, 11);
+  const u = labels(parse({ min: 0, max: 10, step: '1', unit: '킬로미터' }));
+  assert.deepEqual(u, ['0', '2', '4', '6', '8', '10 킬로미터']);
+});
+
+test('M4: 두 줄 검산 — 과제가 없으면 끄는 점의 처음 자리와 양 끝, 슬라이더 점은 슬라이더 값마다', () => {
+  const free = parse({
+    min: 0,
+    max: 2,
+    step: '1/3',
+    second: { min: '0', max: '6', step: '1' },
+    points: [{ id: 'P', at: '1/3', drag: true }],
+  });
+  assert.deepEqual(names(free), ['두 줄 P', '두 줄 왼쪽 끝', '두 줄 오른쪽 끝']);
+  assert.ok(runChecks(numberLineDef.checks(free)).ok);
+  const fol = parse({
+    min: 0,
+    max: 4,
+    step: '1',
+    second: { min: '0', max: '8', step: '2' },
+    slider: { id: 't', min: '0', max: '2', step: '1', value: '0', label: '$t$' },
+    points: [{ id: 'P', follow: 't**2' }],
+  });
+  assert.deepEqual(
+    names(fol).filter((n) => n.startsWith('두 줄')),
+    ['두 줄 P (t=0)', '두 줄 P (t=1)', '두 줄 P (t=2)'],
+  );
+  const cs = numberLineDef.checks(fol);
+  assert.ok(runChecks(cs).ok, runChecks(cs).out);
+});
+
+test('M5: 부등식 1~2개(연립) — 구간 과제·진리집합 조건, 머리글에 둘 다, 검산은 두 해의 교집합', () => {
+  const p = parse({
+    min: -2,
+    max: 6,
+    step: '1',
+    task: {
+      type: 'interval',
+      ineq: ['x>1', 'x<=4'],
+      answer: { lo: { at: '1', open: true }, hi: { at: '4', open: false } },
+    },
+  });
+  assert.equal(nlHeadTex(p).length, 2);
+  const cs = numberLineDef.checks(p);
+  assert.match(
+    String((cs[0] as { check: string }).check),
+    /Intersection\(solveset\(x>1, x, S\.Reals\), solveset\(x<=4, x, S\.Reals\)\)/,
+  );
+  assert.ok(runChecks(cs).ok, runChecks(cs).out);
+  // 부등식 하나(옛 꼴 글자)는 검산식이 예전 그대로(verify:diff 변화 없음)
+  const one = parse({
+    min: -5,
+    max: 5,
+    step: '1',
+    task: { type: 'interval', ineq: '2*x+1<7', answer: { at: '3', dir: 'left', open: true } },
+  });
+  assert.equal(
+    (numberLineDef.checks(one)[0] as { check: string }).check,
+    '1 if solveset(2*x+1<7, x, S.Reals) == Interval(-oo, Integer(3), True, True) else 0',
+  );
+  assert.throws(
+    () =>
+      parse({
+        min: 0,
+        max: 5,
+        step: '1',
+        task: {
+          type: 'interval',
+          ineq: ['x>1', 'x<4', 'x<3'],
+          answer: { at: '1', dir: 'right', open: true },
+        },
+      }),
+    /1~2/,
+  );
+  // 진리집합 조건도 연립, 머리글에 이름과 조건
+  const st = parse({
+    min: -2,
+    max: 6,
+    step: '1',
+    sets: [
+      {
+        name: 'P',
+        cond: ['x>1', 'x<=3'],
+        lo: { at: '1', open: true },
+        hi: { at: '3', open: false },
+      },
+    ],
+  });
+  assert.deepEqual(nlHeadTex(st), ['P:\\ x>1,\\ x\\le3']);
+  assert.ok(runChecks(numberLineDef.checks(st)).ok);
+});
+
+test('Minor: 편차 막대는 평균과 함께만, 점 무게는 개수까지 낭독', () => {
+  assert.throws(
+    () => parse({ min: 0, max: 10, step: '1', data: { values: ['1', '2'], show: ['dev'] } }),
+    /mean/,
+  );
+  const s = nlInit(WEIGHT);
+  assert.deepEqual(
+    nlActive(WEIGHT, s).map((h) => h.name),
+    ['자료 1(3개)', '자료 2(2개)', '자료 3(1개)'],
+  );
+  assert.equal(nlHandleText(WEIGHT, s, 'd1'), '자료 2(2개) 3');
+});
+
+test('Minor: 이름표는 같은 칸만이 아니라 글자 폭만큼 가까우면 위로 쌓는다(무리수 점·잘게 나뉜 칸)', () => {
+  const p = parse({
+    min: 0,
+    max: 10,
+    step: '1/4',
+    points: [
+      { id: 'A', at: 'sqrt(2)', label: '√2' },
+      { id: 'B', at: '3/2' },
+      { id: 'C', at: '8' },
+    ],
+  });
+  const d = nlDraw(p, nlInit(p));
+  const y = (k: string) => Number(mark(d, k)?.a.y);
+  assert.notEqual(y('pl:A'), y('pl:B'));
+  assert.equal(y('pl:A'), y('pl:C'));
+  // 쌓인 층까지 그림 안
+  assert.ok(Math.min(y('pl:A'), y('pl:B')) >= 10);
+});
+
+test('Minor: 두 손잡이의 누르는 영역이 겹치면 누른 자리에서 가장 가까운 손잡이가 잡힌다', () => {
+  const hs = [
+    { id: 'ia', x: 100, y: 50 },
+    { id: 'ib', x: 107, y: 50 },
+  ];
+  assert.equal(nearestHandle(hs, { x: 105, y: 52 }), 'ib');
+  assert.equal(nearestHandle(hs, { x: 101, y: 52 }), 'ia');
+});
+
+// ---- 점프 두 벌(요청 13 — 공배수: 4씩·6씩 뛰어 처음 만나는 자리) ----
+
+const J2 = parse({
+  min: 0,
+  max: 24,
+  step: '1',
+  label: '4',
+  points: [{ id: 'P', at: '1', drag: true }],
+  jumps: { start: '0', moves: ['4', '4', '4'] },
+  jumps2: { start: '0', moves: ['6', '6'] },
+  task: { type: 'point', point: 'P', answer: '12', check: 'ilcm(4,6)' },
+});
+
+test('점프 두 벌: 첫 벌을 다 뛰면 둘째 벌의 점이 나오고, 다 뛰면 점 찍기 P 가 나온다(끄는 방식은 점프와 같다)', () => {
+  assert.equal(nlJumpCount(J2), 5);
+  const s = nlInit(J2);
+  assert.equal(s.pts[JUMPER2], 0);
+  assert.ok(isJumper(JUMPER) && isJumper(JUMPER2) && !isJumper('P'));
+  assert.deepEqual(
+    nlActive(J2, s).map((h) => h.id),
+    [JUMPER],
+  );
+  const three = { ...s, jump: 3 };
+  assert.deepEqual(
+    nlActive(J2, three).map((h) => h.id),
+    [JUMPER2],
+  );
+  assert.deepEqual(
+    nlActive(J2, { ...s, jump: 5 }).map((h) => h.id),
+    ['P'],
+  );
+  // 둘째 벌 판정: 6 칸에 놓으면 점프 번호 3
+  const on6 = { ...three, pts: { ...three.pts, [JUMPER2]: 6 } };
+  assert.deepEqual(jumpHits(J2, on6), ['3']);
+  assert.deepEqual(jumpHits(J2, { ...three, pts: { ...three.pts, [JUMPER]: 6 } }), []);
+  // 식 두 줄, 지금 자리는 뛰는 점을 따라
+  const d = nlDraw(J2, on6);
+  assert.equal(d.texts.jump, '0 + 4 + 4 + 4 = 12');
+  assert.equal(d.texts.jump2, '0 + 6 = ?');
+  assert.equal(d.texts.jnow, '지금 6');
+  // 화살표: 둘째 벌은 다른 줄(더 높은 호)
+  const arcs = nlJumpArcs(J2);
+  assert.deepEqual(
+    arcs.map((a) => a.set),
+    [1, 1, 1, 2, 2],
+  );
+  assert.ok((arcs[3]?.label?.y ?? 0) < (arcs[0]?.label?.y ?? 0));
+});
+
+test('점프 두 벌 검산·형식: 도착점마다(점프2 …), 첫 벌 없이 둘째 벌만은 오류, 도착이 범위 밖이면 오류', () => {
+  assert.deepEqual(names(J2), [
+    '점 찍기',
+    '점프 1 도착',
+    '점프 2 도착',
+    '점프 도착',
+    '점프2 1 도착',
+    '점프2 도착',
+  ]);
+  const cs = numberLineDef.checks(J2);
+  assert.ok(runChecks(cs).ok, runChecks(cs).out);
+  assert.throws(
+    () => parse({ min: 0, max: 24, step: '1', jumps2: { start: '0', moves: ['6'] } }),
+    /jumps2/,
+  );
+  assert.throws(
+    () =>
+      parse({
+        min: 0,
+        max: 24,
+        step: '1',
+        jumps: { start: '0', moves: ['4'] },
+        jumps2: { start: '0', moves: ['30'] },
+      }),
+    /범위/,
+  );
 });

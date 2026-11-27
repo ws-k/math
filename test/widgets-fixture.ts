@@ -56,6 +56,17 @@ export const WIDGET_SCENES: Scene[] = [
     label: '1000',
     jumps: { start: '5000', moves: ['-1200', '-1200', '-1200'] },
   }),
+  // 점프 두 벌(요청 13 — 공배수): 4씩 다 뛴 뒤 6씩, 둘이 처음 만나는 자리에 P
+  explore('nl-jump2', 'numberLine', {
+    min: 0,
+    max: 24,
+    step: '1',
+    label: '4',
+    points: [{ id: 'P', at: '1', drag: true }],
+    jumps: { start: '0', moves: ['4', '4', '4'] },
+    jumps2: { start: '0', moves: ['6', '6'] },
+    task: { type: 'point', point: 'P', answer: '12', check: 'ilcm(4,6)' },
+  }),
   explore('nl-irr', 'numberLine', {
     min: 0,
     max: 4,

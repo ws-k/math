@@ -4,8 +4,10 @@
 //
 // 점프: 점을 다음 도착 칸에 '놓으면' 화살표가 생긴다(P2·P3). 두 번 놓치면 ◀▶ 단추가 나온다(P4).
 // 점 찍기 점의 ◀▶ 는 예전처럼 늘 보인다: 점 찍기는 '확인'으로 채점해 놓을 때 판정이 없고, 지금 26장면의 화면을 그대로 둔다.
-// 2-라: 두 줄(아래 줄 축·눈금), 진리집합 줄(nlSets), 두 끝 구간 고르기(끝점 둘 + 왼쪽 끝·오른쪽 끝·사이/바깥 단추),
-// 점프 화살표 이름표 자리(nlJumpArcs — 겹치면 생략)는 모두 모델이 정하고 여기서는 그리기만 한다.
+// 2-라: 두 줄(아래 줄 축·눈금), 진리집합 줄(nlSets)과 머리글의 조건(nlHeadTex), 두 끝 구간 고르기(끝점 둘 + 왼쪽 끝·
+// 오른쪽 끝·바깥 단추 — 글은 고정, 상태는 aria-pressed), 점프 두 벌(둘째 벌은 다른 줄·색), 화살표 이름표 자리
+// (nlJumpArcs — 겹치면 생략)는 모두 모델이 정하고 여기서는 그리기만 한다.
+// 손잡이 누르는 영역이 겹치면(두 끝이 이웃 칸) 손가락에 가장 가까운 손잡이가 잡힌다(pickAt).
 import { useEffect, useRef, useState } from 'react';
 import { clamp, tapMode } from '../drag.ts';
 import { Tex } from '../ui.tsx';
@@ -15,18 +17,20 @@ import type { WidgetProps } from './index.tsx';
 import { Marks } from './Marks.tsx';
 import {
   cellOfHandle,
-  ineqTex,
+  isJumper,
   isTopMark,
-  JUMPER,
   type NLParams,
   type NLState,
   nlActive,
   nlGrade,
+  nlHandleText,
+  nlHeadTex,
   nlHeight,
   nlInit,
-  nlIwEnds,
   nlIwFlip,
   nlJumpArcs,
+  nlJumpCount,
+  nlJumper,
   nlLine,
   nlLine2,
   nlRegion,
@@ -37,7 +41,7 @@ import {
   valueAt,
   W,
 } from './numberLine.ts';
-import { type NLMsg, nlWire } from './numberLineWire.ts';
+import { type NLMsg, nearestHandle, nlWire } from './numberLineWire.ts';
 import { num } from './q.ts';
 import { SliderRow } from './SliderRow.tsx';
 import { useGoal } from './useGoal.ts';
@@ -67,7 +71,7 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
   /** 다 뛰었을 때 키보드 초점이 이 부품 안에 있었나(뛰는 점 손잡이가 사라지면 초점을 다음 할 일로 옮긴다) */
   const refocus = useRef(false);
   const { prog, judge } = useGoal(
-    Math.max(1, p.jumps?.moves.length ?? 0),
+    Math.max(1, nlJumpCount(p)),
     () => {
       // 판정 순간(손잡이가 아직 있을 때) 초점이 부품 안이면 키보드·◀▶ 로 하던 사람이다. 손가락으로 한 사람은 초점이
       // 바깥(body)이라 옮기지 않는다 — 옮기면 손가락 사용자에게 뜬금없는 초점 테두리가 보인다(헤드리스 실측)
@@ -90,7 +94,7 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
   // 마친 점프 수는 판정기가 센 것 하나만 믿는다(상태에 따로 들면 둘이 어긋날 수 있다)
   const st: NLState = { ...s, jump: prog.seen.length };
   live.current = st;
-  const jumping = !!p.jumps && st.jump < p.jumps.moves.length;
+  const jumping = st.jump < nlJumpCount(p);
   const drag = useWidgetDrag(root, st, w.draw, w.release);
   const d = w.draw(st);
   const line = nlLine(p);
@@ -104,6 +108,51 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
       root.current?.querySelector<HTMLElement>('.wgt-read');
     next?.focus();
   }, [jumping]);
+
+  /** 마지막으로 눌린 손가락(포인터) — 더 가까운 손잡이로 누름을 넘길 때 같은 손가락으로 잡게 */
+  const pointer = useRef(0);
+  useEffect(() => {
+    const el = root.current;
+    const note = (e: PointerEvent) => {
+      pointer.current = e.pointerId;
+    };
+    el?.addEventListener('pointerdown', note, true);
+    return () => el?.removeEventListener('pointerdown', note, true);
+  }, []);
+  /**
+   * 누른 자리에서 이 손잡이(id)를 잡을까. 누름은 맨 위에 그려진 손잡이가 받으므로, 누르는 영역이 겹친 곳에서 다른
+   * 손잡이가 손가락에 더 가까우면 그 손잡이에 같은 누름을 다시 보내고 여기서는 거절한다(그 손잡이가 포인터를 잡는다)
+   */
+  const pickAt = (id: string, x: number, y: number) => {
+    if (!w.pick()) return false;
+    const hs = [...(root.current?.querySelectorAll<SVGGElement>('g[data-k^="h:"]') ?? [])].map(
+      (g) => {
+        const b = g.getBoundingClientRect();
+        return {
+          id: (g.dataset.k ?? '').slice(2),
+          x: b.left + b.width / 2,
+          y: b.top + b.height / 2,
+          g,
+        };
+      },
+    );
+    const best = nearestHandle(hs, { x, y });
+    if (!best || best === id) return true;
+    hs.find((h) => h.id === best)
+      ?.g.querySelector('.svg-handle')
+      ?.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          pointerId: pointer.current,
+          clientX: x,
+          clientY: y,
+          isPrimary: true,
+          button: 0,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    return false;
+  };
 
   const step = (id: string, key: string) => {
     const ok = w.step(id, key);
@@ -159,7 +208,7 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
   // ◀▶ 가 옮기는 점: 점프 중이면 (두 번 놓친 뒤) 뛰는 점, 아니면 고른 점(처음엔 첫 손잡이)
   const arrows = jumping
     ? tapMode(fails)
-      ? JUMPER
+      ? nlJumper(p, st)
       : null
     : handles.some((h) => h.id === sel)
       ? sel
@@ -167,31 +216,37 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
   const arrowsName = handles.find((h) => h.id === arrows)?.name;
   const arcs = nlJumpArcs(p);
   const line2 = nlLine2(p);
-  const iwEnds = nlIwEnds(st);
+  const head = nlHeadTex(p);
   const reads = Object.entries(d.texts).filter(([k]) => k !== 'slider');
 
   return (
     <div className="wgt nl" ref={root}>
-      {p.task?.type === 'interval' && (
-        <div className="wgt-head">
-          <Tex tex={ineqTex(p.task.ineq)} />
+      {head.length > 0 && (
+        <div className="wgt-head nl-head">
+          {head.map((t) => (
+            <Tex key={t} tex={t} />
+          ))}
         </div>
       )}
       <svg viewBox={`0 0 ${W} ${nlHeight(p)}`} className="wgt-svg">
         <title>수직선</title>
         <line x1={4} y1={line} x2={W - 4} y2={line} className="nl-axis" />
-        <Ticks ticks={nlTicks(p)} y={line} unit={p.unit} />
+        <Ticks ticks={nlTicks(p)} y={line} />
         {p.second && (
           <>
             <line x1={4} y1={line2} x2={W - 4} y2={line2} className="nl-axis" />
-            <Ticks ticks={nlTicks2(p)} y={line2} unit={p.second.unit} />
+            <Ticks ticks={nlTicks2(p)} y={line2} />
           </>
         )}
         <Marks marks={nlSets(p)} />
         <Marks marks={nlRegion(p)} />
         {arcs.map((a, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: 점프 순서는 매개변수에서 고정
-          <g key={i} className="nl-jump" visibility={i < st.jump ? 'visible' : 'hidden'}>
+          <g
+            // biome-ignore lint/suspicious/noArrayIndexKey: 점프 순서는 매개변수에서 고정
+            key={i}
+            className={a.set === 2 ? 'nl-jump two' : 'nl-jump'}
+            visibility={i < st.jump ? 'visible' : 'hidden'}
+          >
             <path d={a.d} />
             <polygon points={a.arrow} />
             {a.label && (
@@ -219,10 +274,10 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
               value={num(v)}
               min={p.min}
               max={p.max}
-              valueText={`${h.name} ${num(v)}`}
+              valueText={nlHandleText(p, st, h.id)}
               onKey={(key) => step(h.id, key)}
-              {...(h.id === JUMPER ? { onBlur: judge.flush } : {})}
-              pick={() => w.pick()}
+              {...(isJumper(h.id) ? { onBlur: judge.flush } : {})}
+              pick={(px, py) => pickAt(h.id, px, py)}
               onStart={() => {
                 w.grab(h.id);
                 g.onStart();
@@ -255,7 +310,7 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
               className="lbtn soft"
               aria-label={`${arrowsName} 한 칸 왼쪽`}
               onClick={() => step(arrows, 'ArrowLeft')}
-              {...(arrows === JUMPER ? { onBlur: judge.flush } : {})}
+              {...(isJumper(arrows) ? { onBlur: judge.flush } : {})}
             >
               ◀ 한 칸
             </button>
@@ -264,7 +319,7 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
               className="lbtn soft"
               aria-label={`${arrowsName} 한 칸 오른쪽`}
               onClick={() => step(arrows, 'ArrowRight')}
-              {...(arrows === JUMPER ? { onBlur: judge.flush } : {})}
+              {...(isJumper(arrows) ? { onBlur: judge.flush } : {})}
             >
               한 칸 ▶
             </button>
@@ -295,36 +350,37 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
             </button>
           </>
         )}
-        {st.iw && iwEnds && (
+        {st.iw && (
           // 세 단추를 한 줄에(382 폭에서 두 줄씩 접히면 '확인'이 아래 고정 단추에 가린다 — 헤드리스 실측).
-          // 글은 지금 모양(● 찬 점·○ 빈 점, 사이·바깥), 낭독은 aria-label 로 풀어서
+          // 글은 고정이고 지금 상태는 눌림(aria-pressed)으로만 — 글이 상태에 따라 바뀌면 '누르면 무엇이 되는지'와
+          // '지금 무엇인지'가 헷갈린다(검토). 눌린 모양은 CSS(.nl-iw [aria-pressed=true])
           <div className="nl-iw">
             <button
               type="button"
               className="lbtn soft"
-              aria-pressed={iwEnds.lo}
-              aria-label={`왼쪽 끝 ${iwEnds.lo ? '빈 점' : '찬 점'}`}
+              aria-pressed={st.iw.aOpen}
+              aria-label="왼쪽 끝 빈 점"
               onClick={() => setS({ ...s, iw: nlIwFlip(st, 'lo').iw ?? null })}
             >
-              {iwEnds.lo ? '왼쪽 ○' : '왼쪽 ●'}
+              왼쪽 ○
             </button>
             <button
               type="button"
               className="lbtn soft"
-              aria-pressed={iwEnds.hi}
-              aria-label={`오른쪽 끝 ${iwEnds.hi ? '빈 점' : '찬 점'}`}
+              aria-pressed={st.iw.bOpen}
+              aria-label="오른쪽 끝 빈 점"
               onClick={() => setS({ ...s, iw: nlIwFlip(st, 'hi').iw ?? null })}
             >
-              {iwEnds.hi ? '오른쪽 ○' : '오른쪽 ●'}
+              오른쪽 ○
             </button>
             <button
               type="button"
               className="lbtn soft"
               aria-pressed={st.iw.out}
-              aria-label={st.iw.out ? '바깥 두 조각' : '사이 한 구간'}
+              aria-label="바깥 두 조각"
               onClick={() => setS({ ...s, iw: nlIwFlip(st, 'out').iw ?? null })}
             >
-              {st.iw.out ? '바깥' : '사이'}
+              바깥
             </button>
           </div>
         )}
@@ -341,20 +397,8 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
   );
 }
 
-/**
- * 한 줄의 눈금·숫자. 단위는 마지막 숫자 뒤에 붙인다(자처럼 "60 분") — 두 줄일 때 어느 줄이 무엇인지 보이게.
- * 줄 이름을 왼쪽 여백에 따로 두면 첫 숫자·끝 손잡이와 겹친다(여백 24 단위)
- */
-function Ticks({
-  ticks,
-  y,
-  unit,
-}: {
-  ticks: { x: number; label?: string }[];
-  y: number;
-  unit?: string;
-}) {
-  const last = ticks.findLastIndex((t) => t.label !== undefined);
+/** 한 줄의 눈금·숫자(단위는 모델이 마지막 숫자 뒤에 붙여 준다 — 숫자 간격을 정할 때 그 폭까지 본다) */
+function Ticks({ ticks, y }: { ticks: { x: number; label?: string }[]; y: number }) {
   return (
     <>
       {ticks.map((t, i) => (
@@ -363,7 +407,7 @@ function Ticks({
           <line x1={t.x} y1={y - 6} x2={t.x} y2={y + 6} className="nl-tick" />
           {t.label !== undefined && (
             <text x={t.x} y={y + 26} className="nl-num">
-              {unit && i === last ? `${t.label} ${unit}` : t.label}
+              {t.label}
             </text>
           )}
         </g>

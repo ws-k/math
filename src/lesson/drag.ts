@@ -79,6 +79,13 @@ export const NARROW_CARD_W = 382 - 2 * 20 - 2 * 22;
  * 수직선 점프가 같은 기준을 쓴다(한쪽만 느슨하면 같은 손가락이 부품마다 다르게 헛돈다)
  */
 export const MIN_CELL_PX = 7;
+/**
+ * 가장 좁은 화면(382×580)에서 부품 그림(.wgt-svg)의 높이 상한(px): widgets.css 의 max-height max(36svh, 203px) —
+ * 580 × 0.36 ≈ 209. 키 큰 그림은 폭이 아니라 이 높이에 묶여 줄어들므로, 칸 폭·누르는 지름을 잴 때 이 배율도 본다
+ */
+export const NARROW_SVG_MAX_H = 209;
+/** 손가락으로 누르는 영역의 지름 하한(px, iOS 최소 터치 크기 44pt). widgets.css 의 그림 높이 하한 203px 도 이 값에서 나왔다 */
+export const MIN_HIT_PX = 44;
 
 /** 놓은 요소의 가운데(화면 좌표). 손가락 끝이 아니라 요소 가운데로 판정해야 어디를 잡고 끌었든 같은 결과다 */
 export const centerOf = (r: { left: number; top: number; width: number; height: number }) =>
