@@ -14,6 +14,7 @@ import {
   nlDrag,
   nlDraw,
   nlGrade,
+  nlHeight,
   nlInit,
   nlKey,
   nlSliderValues,
@@ -136,6 +137,45 @@ test('점프 형식: 0 만큼 뛰는 이동은 오류(놓지 않아도 도착이
   );
 });
 
+test('점프 형식: 가장 좁은 화면(382)에서 한 칸이 7px 보다 좁으면 오류 — 손가락으로 도착 칸 하나에 놓기 어렵다', () => {
+  // 50칸: 272 ÷ 50 × (298 ÷ 320) ≈ 5.1px
+  assert.throws(
+    () => parse({ min: 0, max: 50, step: '1', jumps: { start: '50', moves: ['-12'] } }),
+    /7px/,
+  );
+  // 같은 범위를 2 간격(25칸, ≈10.1px)이면 통과, 36칸(≈7.04px)도 통과
+  parse({ min: 0, max: 50, step: '2', jumps: { start: '50', moves: ['-12'] } });
+  parse({ min: 0, max: 36, step: '1', jumps: { start: '0', moves: ['12'] } });
+  // 점프가 없는 수직선은 그대로(점 찍기는 ◀▶ 단추가 늘 있다)
+  parse({ min: 0, max: 50, step: '1', points: [{ id: 'P', at: '0', drag: true }] });
+});
+
+test('점프 형식: 점프와 함께 못 쓰는 것(구간 고르기·끄는 자료·슬라이더)은 오류', () => {
+  const j = { min: -5, max: 5, step: '1', jumps: { start: '0', moves: ['2'] } };
+  assert.throws(
+    () =>
+      parse({
+        ...j,
+        task: { type: 'interval', ineq: 'x<3', answer: { at: '3', dir: 'left', open: true } },
+      }),
+    /점프/,
+  );
+  assert.throws(
+    () => parse({ ...j, data: { values: ['1', '2'], show: ['mean'], drag: true } }),
+    /점프/,
+  );
+  assert.throws(
+    () =>
+      parse({
+        ...j,
+        slider: { id: 't', min: '0', max: '2', step: '1', value: '0', label: 't' },
+      }),
+    /점프/,
+  );
+  // 보여 주기만 하는 자료는 된다
+  parse({ ...j, data: { values: ['1', '2'], show: ['mean'] } });
+});
+
 test('점프·과제는 목표가 있는 부품(afterGoal 을 쓸 수 있음), 자료만 있으면 없다', () => {
   assert.equal(numberLineDef.hasGoal?.(JUMP), true);
   const data = parse({ min: 0, max: 10, step: '1', data: { values: ['2', '3'], show: ['mean'] } });
@@ -151,14 +191,15 @@ const FLIP = parse({
   points: [
     { id: 'A', at: '2', label: 'a' },
     { id: 'B', at: '5', label: 'b' },
-    { id: 'P', at: '5', drag: true, label: '−b' },
-    { id: 'Q', at: '2', drag: true, label: '−a' },
+    // 이름표를 −a·−b 로 하지 않는다: 옮기는 도중 읽는 값이 "−a = 2" 같은 틀린 등식이 된다
+    { id: 'P', at: '2', drag: true },
+    { id: 'Q', at: '5', drag: true },
   ],
   task: {
     type: 'points',
     answers: [
-      { point: 'P', answer: '-5', check: '5*(-1)' },
-      { point: 'Q', answer: '-2', check: '2*(-1)' },
+      { point: 'P', answer: '-2', check: '2*(-1)' },
+      { point: 'Q', answer: '-5', check: '5*(-1)' },
     ],
   },
 });
@@ -167,9 +208,9 @@ test('점 여러 개 과제: 모든 점이 제 답 칸에 있어야 정답', () 
   const s = nlInit(FLIP);
   assert.equal(nlGrade(FLIP, s), false);
   const cell = (v: number) => v + 6;
-  const one = { ...s, pts: { ...s.pts, P: cell(-5) } };
+  const one = { ...s, pts: { ...s.pts, P: cell(-2) } };
   assert.equal(nlGrade(FLIP, one), false);
-  assert.equal(nlGrade(FLIP, { ...one, pts: { ...one.pts, Q: cell(-2) } }), true);
+  assert.equal(nlGrade(FLIP, { ...one, pts: { ...one.pts, Q: cell(-5) } }), true);
   // 끌 수 있는 손잡이는 두 점
   assert.deepEqual(
     nlActive(FLIP, s).map((h) => h.id),
@@ -233,13 +274,64 @@ test('점 그림: 고정 점도 점이 보이고, 같은 칸에 점이 여럿이
   assert.equal(mark(d, 'fx:A')?.tag, 'circle');
   assert.equal(mark(d, 'fx:P'), undefined); // 끄는 점은 손잡이가 그린다
   const y = (k: string) => Number(mark(d, k)?.a.y);
-  // A·Q 가 2 에, B·P 가 5 에 — 나중 점의 이름표가 한 줄 위
+  // A·P 가 2 에, B·Q 가 5 에 — 끄는 점의 이름표가 한 줄 위
   assert.equal(y('pl:A'), y('pl:B'));
-  assert.ok(y('pl:Q') < y('pl:A'));
-  assert.ok(y('pl:P') < y('pl:B'));
+  assert.ok(y('pl:P') < y('pl:A'));
+  assert.ok(y('pl:Q') < y('pl:B'));
   // 옮기면 쌓기가 풀린다(끄는 동안 직접 적용되는 그림 목록에서 나온다)
-  const moved = nlDraw(FLIP, nlDrag(FLIP, s, 'Q', -100));
-  assert.equal(Number(mark(moved, 'pl:Q')?.a.y), y('pl:A'));
+  const moved = nlDraw(FLIP, nlDrag(FLIP, s, 'P', -100));
+  assert.equal(Number(mark(moved, 'pl:P')?.a.y), y('pl:A'));
+});
+
+test('이름표 층: 고정 점이 먼저 아래층 — 끄는 점이 와서 겹쳐도 고정 점 이름표는 그 자리(뛰지 않는다)', () => {
+  // 목록에서 끄는 점이 고정 점보다 앞이어도
+  const p = parse({
+    min: 0,
+    max: 6,
+    step: '1',
+    points: [
+      { id: 'P', at: '0', drag: true },
+      { id: 'A', at: '3' },
+    ],
+  });
+  const s = nlInit(p);
+  const yA = Number(mark(nlDraw(p, s), 'pl:A')?.a.y);
+  const on = nlDraw(p, { ...s, pts: { ...s.pts, P: 3 } });
+  assert.equal(Number(mark(on, 'pl:A')?.a.y), yA);
+  assert.ok(Number(mark(on, 'pl:P')?.a.y) < yA);
+});
+
+test('이름표 층 수 = 한 칸에 모일 수 있는 점 수: 넷이 모여도 겹치지 않고 그림 안, 끄는 점 하나면 높이 그대로', () => {
+  const four = parse({
+    min: 0,
+    max: 6,
+    step: '1',
+    points: [
+      { id: 'A', at: '3' },
+      { id: 'B', at: '3' },
+      { id: 'P', at: '0', drag: true },
+      { id: 'Q', at: '6', drag: true },
+    ],
+  });
+  const s = nlInit(four);
+  const d = nlDraw(four, { ...s, pts: { ...s.pts, P: 3, Q: 3 } });
+  const ys = ['A', 'B', 'P', 'Q'].map((id) => Number(mark(d, `pl:${id}`)?.a.y));
+  assert.equal(new Set(ys).size, 4);
+  // 글자 윗부분(약 10)까지 그림 위쪽 밖으로 나가지 않는다
+  assert.ok(Math.min(...ys) >= 10, String(ys));
+  // 고정 점 둘이 다른 칸 + 끄는 점 하나면 두 층(지금 장면들의 높이 그대로)
+  const one = parse({
+    min: 0,
+    max: 24,
+    step: '1',
+    points: [
+      { id: 'A', at: '12' },
+      { id: 'B', at: '18' },
+      { id: 'P', at: '1', drag: true },
+    ],
+  });
+  const plain = parse({ min: 0, max: 24, step: '1', points: [{ id: 'P', at: '1', drag: true }] });
+  assert.equal(nlHeight(one), nlHeight(plain));
 });
 
 // ---- 슬라이더로 움직이는 점(요청 81) ----
@@ -269,6 +361,8 @@ test('슬라이더 점 검산: 닿는 슬라이더 값마다 sympy 가 식에 �
   const cs = numberLineDef.checks(SLIDE);
   assert.equal(cs.length, 9);
   assert.equal(cs[1]?.name, '슬라이더 점 P (t=1/2)');
+  // 검산식은 앱이 읽은 식 구조를 거치지 않고 원문 글자 그대로 — 앱의 식 읽기가 틀려도 검산이 같이 틀리지 않게
+  assert.equal((cs[1] as { check: string }).check, '(t**2-4*t).subs(t, Rational(1,2))');
   const r = runChecks(cs);
   assert.ok(r.ok, r.out);
   assert.equal(runChecks(tamper(cs)).ok, false);

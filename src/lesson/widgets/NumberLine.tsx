@@ -1,14 +1,12 @@
-// 수직선 화면. 상태 → 그릴 것은 numberLine.ts(nlDraw)가 정하고, 여기서는 그리기만 한다.
-// 끄는 동안은 useWidgetDrag 가 SVG 를 직접 고치고(React 렌더 없음, P8), 놓을 때 한 번 상태를 바꾼다.
-// 손잡이는 한 번에 하나만 잡힌다(P9): 손가락 둘이 두 점을 동시에 끌면 놓는 순서에 따라 한쪽 결과가 사라진다.
+// 수직선 화면. 상태 → 그릴 것은 numberLine.ts(nlDraw), 손짓 → 상태·판정·안내의 순서는 numberLineWire.ts(배선)가
+// 정하고, 여기서는 그 둘을 React 에 잇기만 한다. 끄는 동안은 useWidgetDrag 가 SVG 를 직접 고치고(React 렌더 없음, P8),
+// 놓을 때 한 번 상태를 바꾼다. 손잡이·슬라이더는 한 번에 하나만 잡힌다(P9 — 배선의 busy).
 //
-// 점프: 점을 다음 도착 칸에 '놓으면' 화살표가 생긴다(P2·P3). 판정 시점은 좌표평면·도형판과 같은 판정기(useGoal) —
-// 손을 떼면 바로, 방향키·◀▶ 는 멈춘 뒤 0.6초(연타로 도착 칸을 지나가기만 해도 맞았다고 세지 않게).
-// 두 번 놓치면(엉뚱한 칸·그냥 누르기) ◀▶ 단추가 나온다(P4 — 끌기가 어려운 사람의 신호, count·저울과 같은 기준).
+// 점프: 점을 다음 도착 칸에 '놓으면' 화살표가 생긴다(P2·P3). 두 번 놓치면 ◀▶ 단추가 나온다(P4).
 // 점 찍기 점의 ◀▶ 는 예전처럼 늘 보인다: 점 찍기는 '확인'으로 채점해 놓을 때 판정이 없고, 지금 26장면의 화면을 그대로 둔다.
 import { useEffect, useRef, useState } from 'react';
-import { FAILS_FOR_TAP } from '../drag.ts';
-import { LRich, Tex } from '../ui.tsx';
+import { clamp, tapMode } from '../drag.ts';
+import { Tex } from '../ui.tsx';
 import { DragHandle } from './DragHandle.tsx';
 import { applyDrawing } from './draw.ts';
 import type { WidgetProps } from './index.tsx';
@@ -18,16 +16,12 @@ import {
   ineqTex,
   JUMPER,
   jumpEnds,
-  jumpHits,
   type NLParams,
   type NLState,
   nlActive,
-  nlDrag,
-  nlDraw,
   nlGrade,
   nlHeight,
   nlInit,
-  nlKey,
   nlLine,
   nlRegion,
   nlSliderValues,
@@ -36,95 +30,78 @@ import {
   W,
   xOf,
 } from './numberLine.ts';
+import { type NLMsg, nlWire } from './numberLineWire.ts';
 import { num } from './q.ts';
+import { SliderRow } from './SliderRow.tsx';
 import { useGoal } from './useGoal.ts';
 import { useWidgetDrag } from './useWidgetDrag.ts';
-
-type Msg = { text: string; cls: '' | 'ok' | 'bad' };
-
-const TAP_ON = '끌기가 어려우면 눌러도 돼요. ◀ ▶ 로 한 칸씩 옮기면 돼요.';
 
 export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>) {
   const [s, setS] = useState<NLState>(() => nlInit(p));
   const [sel, setSel] = useState<string | null>(null);
-  const [msg, setMsg] = useState<Msg>({ text: '', cls: '' });
+  const [msg, setMsg] = useState<NLMsg>({ text: '', cls: '' });
   const [done, setDone] = useState(false);
-  /** 점프를 놓친 횟수(엉뚱한 칸에 놓기·그냥 누르기). FAILS_FOR_TAP 이면 ◀▶ 가 나온다 */
+  /** 점프를 놓친 횟수. 눌러서 하기(◀▶)를 보일지만 정한다 — 세는 일은 배선이 한다 */
   const [fails, setFails] = useState(0);
   const root = useRef<HTMLDivElement>(null);
-  const slider = useRef<HTMLInputElement>(null);
-  /** 부품 안에서 끄는 중인가(손잡이·슬라이더 공용, P9) */
-  const busy = useRef(false);
-  /** 지금 끄는 손잡이와 그 손잡이를 잡은 칸(제자리에 놓으면 '그냥 누르기'로 센다) */
-  const active = useRef<{ id: string; from: number } | null>(null);
-  const moves = p.jumps?.moves.length ?? 0;
+  const live = useRef(s);
+  /** 장면 끝은 한 번만(배선·슬라이더·확인이 여러 번 불러도) */
+  const ended = useRef(false);
   const finish = () => {
-    if (done) return;
+    if (ended.current) return;
+    ended.current = true;
     setDone(true);
     onDone();
   };
+  // 배선은 한 번만 만든다(끄는 중 잡은 손잡이·놓침 수를 다시 그릴 때 잃지 않게). 바깥 콜백은 최신 것을 부른다
+  const cb = useRef({ finish, onMiss });
+  cb.current = { finish, onMiss };
+  const wire = useRef<ReturnType<typeof nlWire> | null>(null);
+  /** 다 뛰었을 때 키보드 초점이 이 부품 안에 있었나(뛰는 점 손잡이가 사라지면 초점을 다음 할 일로 옮긴다) */
+  const refocus = useRef(false);
   const { prog, judge } = useGoal(
-    Math.max(1, moves),
+    Math.max(1, p.jumps?.moves.length ?? 0),
     () => {
-      // 다 뛰었다. 점 찍기 과제가 있으면 그 점이 이제 나오고 '확인'으로 끝낸다
-      if (p.task) setMsg({ text: '', cls: '' });
-      else {
-        setMsg({ text: '다 옮겼어요.', cls: 'ok' });
-        finish();
-      }
+      // 판정 순간(손잡이가 아직 있을 때) 초점이 부품 안이면 키보드·◀▶ 로 하던 사람이다. 손가락으로 한 사람은 초점이
+      // 바깥(body)이라 옮기지 않는다 — 옮기면 손가락 사용자에게 뜬금없는 초점 테두리가 보인다(헤드리스 실측)
+      const a = document.activeElement;
+      refocus.current = !!root.current && !!a && root.current.contains(a);
+      wire.current?.onDone();
     },
-    (g) => {
-      if (!g.done && g.seen.length > live.current.jump) setMsg({ text: '', cls: '' });
-    },
+    (g) => wire.current?.onJudge(g),
   );
+  wire.current ??= nlWire(p, {
+    judge,
+    live,
+    setState: setS,
+    say: setMsg,
+    onMiss: () => cb.current.onMiss(),
+    finish: () => cb.current.finish(),
+    setFails,
+  });
+  const w = wire.current;
   // 마친 점프 수는 판정기가 센 것 하나만 믿는다(상태에 따로 들면 둘이 어긋날 수 있다)
   const st: NLState = { ...s, jump: prog.seen.length };
-  const live = useRef(st);
   live.current = st;
-  const jumpsDone = () => judge.get().seen.length;
-  const jumping = !!p.jumps && st.jump < moves;
-
-  /** 놓은 상태 반영(끌기). 점프하는 점이면 그 자리를 판정한다 */
-  const release = (n0: NLState) => {
-    const n = { ...n0, jump: jumpsDone() };
-    setS(n);
-    live.current = n;
-    const a = active.current;
-    if (a?.id === JUMPER) {
-      const hit = jumpHits(p, n);
-      judge.release(hit);
-      if (!hit.length) {
-        const f = fails + 1;
-        setFails(f);
-        const moved = n.pts[JUMPER] !== a.from;
-        setMsg({
-          text:
-            f === FAILS_FOR_TAP
-              ? TAP_ON
-              : moved
-                ? '그 자리가 아니에요. 다시 옮겨 보세요.'
-                : '점을 끌어서 옮겨요.',
-          cls: moved && f !== FAILS_FOR_TAP ? 'bad' : '',
-        });
-        onMiss();
-      }
-    } else if (!p.task && !p.jumps) finish(); // 과제·점프가 없는 부품은 한 번 만져 보면 목표를 이룬 것으로 본다
-    return n;
-  };
-  const drag = useWidgetDrag(root, st, (x: NLState) => nlDraw(p, x), release);
-  const d = nlDraw(p, st);
+  const jumping = !!p.jumps && st.jump < p.jumps.moves.length;
+  const drag = useWidgetDrag(root, st, w.draw, w.release);
+  const d = w.draw(st);
   const line = nlLine(p);
 
+  // 다 뛰어 뛰는 점 손잡이가 사라졌다: 초점이 그 안에 있었으면 다음 할 일(나온 점 P, 없으면 결과 식)로
+  useEffect(() => {
+    if (jumping || !refocus.current) return;
+    refocus.current = false;
+    const next =
+      root.current?.querySelector<SVGElement>('.svg-handle') ??
+      root.current?.querySelector<HTMLElement>('.wgt-read');
+    next?.focus();
+  }, [jumping]);
+
   const step = (id: string, key: string) => {
-    const n = nlKey(p, live.current, id, key);
-    if (!n) return false;
-    setSel(id);
-    setS(n);
-    live.current = n;
-    // 키·단추는 멈춘 뒤 그 자리 하나만 판정(연타로 도착 칸을 지나가도 세지 않게)
-    if (id === JUMPER) judge.later(() => jumpHits(p, live.current));
-    else if (!p.task && !p.jumps) finish();
-    return true;
+    const ok = w.step(id, key);
+    if (ok) setSel(id);
+    return ok;
   };
   const check = () => {
     if (nlGrade(p, st)) {
@@ -136,55 +113,45 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
     }
   };
 
-  // 슬라이더: 움직이는 동안은 그림만 직접 고치고(P8) 놓을 때(change) 한 번 상태로
+  // 슬라이더: 움직이는 동안은 그림만 직접 고치고(P8) 놓을 때(change) 한 번 상태로. 손 처리는 좌표평면과 같은 SliderRow
   const values = nlSliderValues(p);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 슬라이더는 매개변수에서 고정. 최신 상태는 live 로 읽는다
-  useEffect(() => {
-    const el = slider.current;
-    if (!el) return;
-    const up = () => {
-      busy.current = false;
-      window.removeEventListener('pointerup', up);
-      window.removeEventListener('pointercancel', up);
-    };
-    const down = (e: PointerEvent) => {
-      // 다른 손가락이 점을 끄는 중이면 슬라이더는 잡지 않는다(P9)
-      if (busy.current) {
-        e.preventDefault();
-        return;
-      }
-      busy.current = true;
-      window.addEventListener('pointerup', up);
-      window.addEventListener('pointercancel', up);
-    };
-    const input = () => {
-      const n = { ...live.current, sl: Number(el.value) };
-      live.current = n;
-      const d = nlDraw(p, n);
-      if (root.current) applyDrawing(root.current, d);
-      // 화면 낭독기도 칸 번호(3) 대신 보이는 값(t = 3/2)을 읽게 — 끄는 동안은 렌더 없이 직접 고친다
-      el.setAttribute('aria-valuetext', d.texts.slider ?? '');
-    };
-    const change = () => {
-      setS(live.current);
-      if (!p.task && !p.jumps) finish();
-    };
-    el.addEventListener('pointerdown', down);
-    el.addEventListener('input', input);
-    el.addEventListener('change', change);
-    return () => {
-      el.removeEventListener('pointerdown', down);
-      el.removeEventListener('input', input);
-      el.removeEventListener('change', change);
-      up();
-    };
-  }, [p]);
+  const slider = p.slider && (
+    <SliderRow
+      label={p.slider.label}
+      min={0}
+      max={values.length - 1}
+      step={1}
+      value={st.sl}
+      text={d.texts.slider ?? ''}
+      h={{
+        grab() {
+          if (w.busy.current) return false;
+          w.busy.current = true;
+          return true;
+        },
+        release() {
+          w.busy.current = false;
+        },
+        input(v) {
+          // 칸 번호로만(범위 밖·소수가 와도 가장 가까운 칸)
+          const n = { ...live.current, sl: clamp(Math.round(v), 0, values.length - 1) };
+          live.current = n;
+          const dr = w.draw(n);
+          if (root.current) applyDrawing(root.current, dr);
+          return dr.texts.slider;
+        },
+        change() {
+          setS(live.current);
+          if (!p.task && !p.jumps) finish();
+        },
+      }}
+    />
+  );
 
   const handles = nlActive(p, st);
-  const tapMode = fails >= FAILS_FOR_TAP;
-  // ◀▶ 가 옮기는 점: 점프 중이면 (놓친 뒤) 점프하는 점, 아니면 고른 점(처음엔 첫 손잡이)
+  // ◀▶ 가 옮기는 점: 점프 중이면 (두 번 놓친 뒤) 뛰는 점, 아니면 고른 점(처음엔 첫 손잡이)
   const arrows = jumping
-    ? tapMode
+    ? tapMode(fails)
       ? JUMPER
       : null
     : handles.some((h) => h.id === sel)
@@ -241,8 +208,7 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
           const [, x = '0', y = '0'] =
             String(m?.a.transform).match(/\(([-\d.]+) ([-\d.]+)\)/) ?? [];
           const v = valueAt(p, k);
-          const g = drag((s0, dx) => nlDrag(p, s0, h.id, dx));
-          const jumper = h.id === JUMPER;
+          const g = drag((s0, dx) => w.move(s0, h.id, dx));
           return (
             <DragHandle
               key={h.id}
@@ -255,23 +221,16 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
               max={p.max}
               valueText={`${h.name} ${num(v)}`}
               onKey={(key) => step(h.id, key)}
-              {...(jumper ? { onBlur: judge.flush } : {})}
-              pick={() => !busy.current}
+              {...(h.id === JUMPER ? { onBlur: judge.flush } : {})}
+              pick={() => w.pick()}
               onStart={() => {
-                busy.current = true;
-                active.current = { id: h.id, from: k };
-                // 슬라이더는 손잡이를 끄는 동안 잡히지 않게(렌더 없이 DOM 으로 — 모양은 그대로)
-                if (slider.current) slider.current.style.pointerEvents = 'none';
-                // 키로 옮긴 자리의 판정이 기다리는 중이면 지금 끝낸다(끄는 도중 터지지 않게)
-                if (jumper) judge.flush();
+                w.grab(h.id);
                 g.onStart();
               }}
               onMove={g.onMove}
               onEnd={(dx, dy, c) => {
-                busy.current = false;
-                if (slider.current) slider.current.style.pointerEvents = '';
                 g.onEnd(dx, dy, c);
-                active.current = null;
+                w.letGo();
                 setSel(h.id);
               }}
             />
@@ -279,30 +238,15 @@ export function NumberLine({ params: p, onDone, onMiss }: WidgetProps<NLParams>)
         })}
         <Marks marks={d.marks.filter((m) => m.k === 'iv-top')} />
       </svg>
-      <div className="wgt-read" aria-live="polite">
+      {/* 다 뛴 뒤 초점을 받을 수 있게(tabIndex −1 — 탭 순서에는 넣지 않는다) */}
+      <div className="wgt-read" aria-live="polite" tabIndex={-1}>
         {reads.map(([k, t]) => (
           <span key={k} data-t={k} className={`num t-${k.replace(/[:]/g, '-')}`}>
             {t}
           </span>
         ))}
       </div>
-      {p.slider && (
-        <label className="nl-slider">
-          <LRich inline src={p.slider.label} />
-          <input
-            ref={slider}
-            type="range"
-            min={0}
-            max={values.length - 1}
-            step={1}
-            defaultValue={st.sl}
-            aria-valuetext={d.texts.slider}
-          />
-          <b className="num" data-t="slider">
-            {d.texts.slider}
-          </b>
-        </label>
-      )}
+      {slider}
       <div className="wgt-ctl">
         {arrows && (
           <>

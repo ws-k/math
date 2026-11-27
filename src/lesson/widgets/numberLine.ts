@@ -12,13 +12,14 @@
 // 다른 부품이 빌려 쓰는 함수(3-가 좌표평면 길 띠 — 읽어 쓰기만): valueAt(칸 → 값) · xOf(칸 → 그림 x) · nlTicks(눈금·숫자).
 // 셋 다 매개변수(min·max·step·label)만 보고 상태를 보지 않는다. 쓰임새는 docs/widgets.md 'numberLine — 빌려 쓰는 함수'.
 import { LITERAL } from '../../content/check.ts';
-import { clamp, keyStep } from '../drag.ts';
-import { compile, evalExact, toSym } from '../expr.ts';
+import { clamp, keyStep, MIN_CELL_PX, NARROW_CARD_W } from '../drag.ts';
+import { compile, evalExact } from '../expr.ts';
 import { formatValue } from '../format.ts';
 import { arr, fail, int, type Obj, obj, oneOf, optStr, rationalStr, str } from '../parse.ts';
 import { type Node, parseSym, symToTex } from '../sym.ts';
 import { type Drawing, type Mark, r2 } from './draw.ts';
 import { add, cmp, div, mul, num, py, type Q, q, qi, ratStr, sub } from './q.ts';
+import { SLIDER_ID, SLIDER_ID_MSG } from './sliderInput.ts';
 import type { WidgetCheck, WidgetDef } from './specs.ts';
 
 export interface NLPoint {
@@ -118,12 +119,26 @@ function layout(p: NLParams) {
   const dataTop = y;
   if (p.data) y += Math.min(p.data.values.length, STACK) * 14 + 30;
   if (p.points.length || p.task?.type === 'interval') y += 30;
-  // 이름표 두 층(한 칸에 점 둘)까지는 점 줄 30 안에 든다. 끄는 점이 둘 이상이면 셋이 한 칸에 모일 수 있어 한 층 더 —
+  // 이름표 두 층(한 칸에 점 둘)까지는 점 줄 30 안에 든다. 그보다 많이 모일 수 있으면 모자란 층만큼 높인다 —
   // 끄는 점이 하나인 지금 장면들은 높이가 그대로다
-  const rows = p.points.filter((x) => x.drag).length >= 2 ? 3 : 2;
-  if (rows > 2) y += LABEL_ROW;
+  const rows = Math.max(2, labelRows(p));
+  y += (rows - 2) * LABEL_ROW;
   const line = y + 8;
   return { jumpTop, dataTop, line, h: line + 40, rows };
+}
+
+/**
+ * 한 칸에 모일 수 있는 점의 최대 수(이름표 층 수). 고정 점은 제자리라 같은 칸 것끼리만, 움직이는 점(끄는 점·슬라이더 점)은
+ * 어디든 올 수 있어 모두 더한다. 층을 점 수만큼만 두면 넉넉하고, 모자라 겹치는 일이 없다
+ */
+function labelRows(p: NLParams): number {
+  const fixed = new Map<string, number>();
+  let moving = 0;
+  for (const pt of p.points) {
+    if (pt.drag || pt.follow) moving++;
+    else if (pt.at !== undefined) fixed.set(pt.at, (fixed.get(pt.at) ?? 0) + 1);
+  }
+  return Math.max(0, ...fixed.values()) + moving;
 }
 export const nlHeight = (p: NLParams) => layout(p).h;
 export const nlLine = (p: NLParams) => layout(p).line;
@@ -201,6 +216,24 @@ export const jumpFrom = (p: NLParams, s: NLState): number =>
 /** 다음 점프가 닿을 칸. 다 뛰었으면 null */
 export const jumpTarget = (p: NLParams, s: NLState): number | null =>
   jumpsLeft(p, s) ? (cellOf(p, jumpValue(p, s.jump + 1)) as number) : null;
+/**
+ * 놓친 뒤 짚어 줄 다음 점프: 출발 값·방향·크기(글자). 이동량은 문제가 준 조건이라 숨길 답이 아니다 — 놓친 학생에게
+ * '어디서부터 얼마만큼'을 다시 말해 줄 뿐 도착 값(셈의 결과)은 말하지 않는다. 다 뛰었으면 null
+ */
+export function jumpGuide(
+  p: NLParams,
+  s: NLState,
+): { from: string; dir: '왼쪽' | '오른쪽'; amt: string } | null {
+  const m = p.jumps?.moves[s.jump];
+  if (m === undefined) return null;
+  const mv = q(m);
+  return {
+    from: fmt(jumpValue(p, s.jump)),
+    dir: cmp(mv, qi(0)) < 0 ? '왼쪽' : '오른쪽',
+    amt: fmt(cmp(mv, qi(0)) < 0 ? mul(mv, qi(-1)) : mv),
+  };
+}
+
 /**
  * 놓은 상태의 판정 열쇠: 점프하는 점이 다음 도착 칸이면 그 점프 번호 하나. 목표 판정기(goal.ts)는 열쇠를 모아
  * 개수로 끝을 보므로, 번호를 열쇠로 쓰면 '모은 열쇠 수 = 마친 점프 수'가 된다
@@ -358,15 +391,22 @@ export function nlDraw(p: NLParams, s: NLState): Drawing {
   const texts: Record<string, string> = {};
   const jumping = jumpsLeft(p, s);
   const sv = p.slider ? sliderQ(p, s) : null;
-  // 같은 자리 점의 이름표는 위로 쌓는다(부등호 두 점 과제는 a 위에서 −a 를 끌어 출발한다). 층은 그림 높이 안까지만
-  const stack = new Map<number, number>();
-  for (const pt of p.points) {
+  // 같은 자리 점의 이름표는 위로 쌓는다(부등호 두 점 과제는 a 위에서 P 를 끌어 출발한다). 고정 점이 먼저 아래층을
+  // 차지한다 — 끄는 점이 지나가거나 와 앉아도 고정 점 이름표가 위아래로 뛰지 않게(목록 순서와 무관하게)
+  const placed = p.points.map((pt) => {
     const v = pt.follow && sv ? (followQ(p, pt, sv) as Q) : valueAt(p, s.pts[pt.id] as number);
     const x = pt.follow ? xVal(p, v) : xOf(p, s.pts[pt.id] as number);
     // 점프가 남았을 때 끄는 점은 숨긴다(nlActive) — 이름표·읽는 값도 함께
-    const hide = jumping && pt.drag;
-    const lv = hide ? 0 : (stack.get(x) ?? 0);
-    if (!hide) stack.set(x, lv + 1);
+    return { pt, v, x, hide: jumping && pt.drag, lv: 0 };
+  });
+  const stack = new Map<number, number>();
+  const moving = (pt: NLPoint) => pt.drag || !!pt.follow;
+  for (const a of [...placed.filter((a) => !moving(a.pt)), ...placed.filter((a) => moving(a.pt))]) {
+    if (a.hide) continue;
+    a.lv = stack.get(a.x) ?? 0;
+    stack.set(a.x, a.lv + 1);
+  }
+  for (const { pt, v, x, hide, lv } of placed) {
     if (pt.drag)
       marks.push({ k: `h:${pt.id}`, tag: 'g', a: { transform: `translate(${x} ${L.line})` } });
     // 끌 수 없는 점(고정 점·슬라이더 점)도 점을 그린다 — 이름표만 있으면 어느 칸인지 안 보인다
@@ -541,9 +581,8 @@ function parseSlider(raw: unknown): NLSlider {
   const w = '수직선 slider';
   const s = obj(raw, w, ['id', 'min', 'max', 'step', 'value', 'label']);
   const id = str(s.id, `${w} id`);
-  // 좌표평면 슬라이더와 같은 글자(검산기 verify.py 가 기호로 미리 둔 글자 중 수식에 흔한 것)
-  if (!/^[abcdhkmnpqrst]$/.test(id))
-    fail(`${w} id`, '식에 쓸 수 있는 한 글자(a·b·c·d·h·k·m·n·p·q·r·s·t)');
+  // 좌표평면 슬라이더와 같은 글자(sliderInput.ts)
+  if (!SLIDER_ID.test(id)) fail(`${w} id`, SLIDER_ID_MSG);
   const min = rationalStr(s.min, `${w} min`);
   const max = rationalStr(s.max, `${w} max`);
   const step = rationalStr(s.step, `${w} step`);
@@ -615,6 +654,14 @@ export const numberLineDef: WidgetDef<NLParams> = {
         const k = cellOf(p, to);
         if (k === null || k < 0 || k > K(p)) fail(`수직선 이동${i + 1}`, '도착점이 범위 밖');
       }
+      // 도착 칸 하나에 손가락으로 놓아야 하므로 가장 좁은 화면에서 한 칸이 손가락 하한보다 넓어야 한다(좌표평면 슬라이더와
+      // 같은 기준). 그림 폭 W 가 카드 안쪽 폭(NARROW_CARD_W)으로 줄어 그려지는 비율로 잰다(헤드리스 382 실측: 그림 폭 298)
+      const px = unitPx(p) * (NARROW_CARD_W / W);
+      if (px < MIN_CELL_PX)
+        fail(
+          '수직선 step',
+          `점프 칸이 가장 좁은 화면에서 ${px.toFixed(1)}px — ${MIN_CELL_PX}px 보다 좁아 도착 칸에 놓기 어려움(step 을 키우거나 범위를 줄이기)`,
+        );
     }
     if (o.region !== undefined) {
       const r = obj(o.region, '수직선 region', [], ['lo', 'hi']);
@@ -638,6 +685,13 @@ export const numberLineDef: WidgetDef<NLParams> = {
       };
     }
     if (o.task !== undefined) p.task = parseTask(o.task, p);
+    // 점프가 남은 동안 끌 수 있는 것은 뛰는 점 하나뿐이다(nlActive) — 구간 끝점·끄는 자료·슬라이더를 함께 두면 그것들이
+    // 점프를 마칠 때까지 잠겨 있거나(장면 글과 어긋남) 두 조작이 한 그림에서 엉킨다
+    if (p.jumps) {
+      if (p.task?.type === 'interval') fail('수직선 task', '점프와 구간 고르기는 함께 못 씀');
+      if (p.data?.drag) fail('수직선 data.drag', '점프와 끄는 자료는 함께 못 씀');
+      if (p.slider) fail('수직선 slider', '점프와 슬라이더는 함께 못 씀');
+    }
     return p;
   },
   checks(p) {
@@ -690,7 +744,8 @@ export const numberLineDef: WidgetDef<NLParams> = {
       // 슬라이더 점: 닿는 슬라이더 값마다 앱이 낸 자리 = sympy 가 식에 그 값을 넣은 것
       for (const pt of p.points) {
         if (!pt.follow) continue;
-        const expr = toSym(followNode(p, pt));
+        // 원문 그대로 넘긴다 — 앱이 읽은 식 구조(toSym)를 거치면 앱의 식 읽기가 틀릴 때 검산도 같이 틀린다(coord/follow.ts 와 같은 원칙)
+        const expr = pt.follow;
         for (const v of nlSliderValues(p))
           out.push({
             name: `슬라이더 점 ${pt.id} (${sl.id}=${v})`,
