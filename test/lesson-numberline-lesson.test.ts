@@ -31,9 +31,47 @@ test('점프 장면 글은 점을 끌라고 말한다(10장면)', () => {
   assert.deepEqual(silent, []);
 });
 
-test('부등호 뒤집기(m2-linear-ineq flip)는 두 점을 옮기는 과제다(D2)', () => {
+test('부등호 뒤집기(m2-linear-ineq flip)는 두 점을 옮기는 과제다(D2) — P 는 a 위에서 −a 로, Q 는 b 위에서 −b 로', () => {
   const flip = scenes.find((x) => x.ref === 'm2-linear-ineq/flip');
-  const task = flip?.s.widget?.params.task as { type: string; answers: unknown[] } | undefined;
-  assert.equal(task?.type, 'points');
-  assert.equal(task?.answers.length, 2);
+  const w = flip?.s.widget?.params as {
+    points: { id: string; at: string; label?: string }[];
+    task: { type: string; answers: { point: string; answer: string }[] };
+  };
+  assert.equal(w.task.type, 'points');
+  const at = (id: string) => w.points.find((x) => x.id === id)?.at;
+  const ans = (id: string) => w.task.answers.find((x) => x.point === id)?.answer;
+  // 알파벳 순서대로 짝(P↔a, Q↔b) — 글을 읽고 헷갈리지 않게
+  assert.equal(at('P'), at('A'));
+  assert.equal(at('Q'), at('B'));
+  assert.equal(ans('P'), `-${at('A')}`);
+  assert.equal(ans('Q'), `-${at('B')}`);
+  assert.match(
+    String((flip?.s as { lead?: string } | undefined)?.lead),
+    /\$a\$ 위의 P[^.]*\$-a\$[^.]*\$b\$ 위의 Q[^.]*\$-b\$/,
+  );
+});
+
+test('결론 글이 목표의 답을 말하는 장면은 목표 뒤에 공개(afterGoal) — 검토 M3', () => {
+  for (const ref of [
+    'm2-linear-ineq/flip',
+    'e-whole-ops/remain',
+    'e-divisor-multiple/bus',
+    'm2-exponent-poly/jumps',
+    'math1-induction/jumps',
+  ]) {
+    const sc = scenes.find((x) => x.ref === ref)?.s as { afterGoal?: boolean } | undefined;
+    assert.equal(sc?.afterGoal, true, ref);
+  }
+  // 다음 장면들이 쓰는 용어(몫·나머지)는 머무는 동안 보이는 lead 에 먼저 — after 는 목표 뒤에야 보인다
+  const remain = scenes.find((x) => x.ref === 'e-whole-ops/remain')?.s as { lead?: string };
+  assert.match(String(remain.lead), /몫/);
+  assert.match(String(remain.lead), /나머지/);
+});
+
+test('칸이 1 이 아닌 점프 장면은 "N칸씩" 이라고 하지 않는다(칸 수와 이동량이 다르다)', () => {
+  const bad = scenes
+    .filter(({ s }) => s.widget?.params.jumps && s.widget.params.step !== '1')
+    .filter(({ s }) => /\d+칸씩/.test(String((s as { lead?: string }).lead)))
+    .map((x) => x.ref);
+  assert.deepEqual(bad, []);
 });
